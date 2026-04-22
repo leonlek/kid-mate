@@ -180,9 +180,11 @@
     aspect-ratio: 1 / 1;
     margin: 2px 0 0;
     border-radius: 16px;
-    object-fit: cover;
+    /* `contain` so landscape photos (T. rex, dolphin, etc.) aren't cropped
+       through the head. Light bg fills the letter-boxing cleanly. */
+    object-fit: contain;
     box-shadow: 0 3px 0 rgba(0,0,0,0.08);
-    background: #f5f5f5;
+    background: #fafafa;
     transition: transform .2s ease;
   }
   .card.selected .emoji,
