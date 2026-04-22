@@ -43,8 +43,8 @@ works under the same terms where ShareAlike applies.
 | `cheetah` | audio | CC BY 4.0 | Smirnova D, Volodin I, Demina T, Volodina E | [Commons](https://commons.wikimedia.org/wiki/File%3AAcoustic-Structure-and-Contextual-Use-of-Calls-by-Captive-Male-and-Female-Cheetahs-%28Acinonyx-pone.0158546.s001.oga) |
 | `sailfish` | image | Public domain | Kawahara Keiga | [Commons](https://commons.wikimedia.org/wiki/File%3ANaturalis_Biodiversity_Center_-_RMNH.ART.194_-_Istiophorus_platypterus_%28Shaw_and_Nodder%29_-_Kawahara_Keiga_-_1823_-_1829_-_Siebold_Collection_-_new_version.jpeg) |
 | `unicorn` | image | Public domain | Conrad Gessner | [Commons](https://commons.wikimedia.org/wiki/File%3AOftheunicorn.jpg) |
-| `pterodactyl` | image | CC BY 3.0 | Matt Martyniuk | [Commons](https://commons.wikimedia.org/wiki/File%3APteranodon_amnh_martyniuk.jpg) |
-| `pterodactyl` | audio | CC0 | nick121087 | [Commons](https://commons.wikimedia.org/wiki/File%3ANick121087%20-%20Demonic%20Woman%20Scream%20%28cc0%29%20%28freesound%29.mp3) |
+| `pterodactyl` | image | CC BY-SA 3.0 | ABelov2014 | [Commons](https://commons.wikimedia.org/wiki/File%3APteranodontians%20and%20mosasaur.jpg) |
+| `pterodactyl` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
 | `swan` | image | CC BY-SA 4.0 | Geni | [Commons](https://commons.wikimedia.org/wiki/File%3AMute_Swan_Emsworth2.JPG) |
 | `swan` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3ACygnus%20buccinator%20-%20Trumpeter%20Swan%20XC96531.mp3) |
 | `deer` | image | CC BY-SA 3.0 | This image is a derivative work of the following images: File:White-tailed deer.jpg (USDA photo by Scott Bauer) File:RangiferTarandus.jpg (uploaded by User:Sydpolen) File:Red deer stag 2009 denmark.jpg (uploaded by User:Atomicbre) File:The barasingha.jpg (uploaded by aloshbennett) File:Dama dama 002.jpg (uploaded by User:Lily_M)) | [Commons](https://commons.wikimedia.org/wiki/File%3AFamily_Cervidae_five_species.jpg) |
@@ -58,7 +58,6 @@ works under the same terms where ShareAlike applies.
 | `crow` | image | CC BY 2.0 | Ian Kirk from Broadstone, Dorset, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg) |
 | `crow` | audio | CC BY-SA 4.0 | Marie-Lan Taÿ Pamart | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus%20corone%20-%20Carrion%20Crow%20XC507917.mp3) |
 | `zebra` | image | GFDL 1.2 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg) |
-| `zebra` | audio | CC BY-SA 4.0 | Peter Russell | [Commons](https://commons.wikimedia.org/wiki/File%3AOcyphaps%20lophotes%20-%20Crested%20Pigeon%20XC496697.mp3) |
 | `tiger` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ABengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg) |
 | `tiger` | audio | CC BY 4.0 | About Zoos | [Commons](https://commons.wikimedia.org/wiki/File%3AJaguar%20saw.flac) |
 | `owl` | image | CC BY-SA 4.0 | Carlos Delgado | [Commons](https://commons.wikimedia.org/wiki/File%3ABubo_bubo_sibiricus_-_01.JPG) |
@@ -80,7 +79,7 @@ works under the same terms where ShareAlike applies.
 | `cat` | audio | CC BY-SA 3.0 | The original uploader was Dcrosby at English Wikipedia. | [Commons](https://commons.wikimedia.org/wiki/File%3AMeow.ogg) |
 | `dog` | image | CC BY 2.0 | M. Rehemtulla | [Commons](https://commons.wikimedia.org/wiki/File%3AHuskiesatrest.jpg) |
 | `dog` | audio | CC BY-SA 3.0 | Amada44 | [Commons](https://commons.wikimedia.org/wiki/File%3ABarking_of_a_dog.ogg) |
-| `raptor` | image | CC BY 3.0 | Eduard Solà Vázquez | [Commons](https://commons.wikimedia.org/wiki/File%3AVelociraptor_skeleton_white_background.jpg) |
+| `raptor` | image | CC BY-SA 3.0 | Durbed | [Commons](https://commons.wikimedia.org/wiki/File%3ADromaeosaurid%20parade%20by%20durbed.jpg) |
 | `raptor` | audio | CC BY-SA 4.0 | Niels Krabbe | [Commons](https://commons.wikimedia.org/wiki/File%3AMegascops%20roboratus%20-%20West%20Peruvian%20Screech%20Owl%20XC251095.mp3) |
 | `elephant` | image | GFDL 1.2 | Muhammad Mahdi Karim Facebook The making of this document was supported by Wikimedia CH. (Submit your project!) For all the files concerned, please see the category Supported by Wikimedia CH. العربية ∙ বাংলা ∙ čeština ∙ Deutsch ∙ English ∙ Esperanto ∙ español ∙ français ∙ galego ∙ हिन्दी ∙ magyar ∙ italiano ∙ 日本語 ∙ македонски ∙ Nederlands ∙ português do Brasil ∙ rumantsch ∙ русский ∙ sicilianu ∙ slovenščina ∙ தமிழ் ∙ українська ∙ 中文 ∙ +/− | [Commons](https://commons.wikimedia.org/wiki/File%3AAfrican_Bush_Elephant.jpg) |
 | `elephant` | audio | CC0 | தகவலுழவன் | [Commons](https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg) |
@@ -91,21 +90,20 @@ works under the same terms where ShareAlike applies.
 | `cow` | image | CC BY-SA 3.0 | Kim Hansen | [Commons](https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg) |
 | `seal` | image | CC0 | From a variety of images credited above. | [Commons](https://commons.wikimedia.org/wiki/File%3APinnipeds_vertical_version_montage.jpg) |
 | `hippo` | image | CC BY-SA 4.0 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg) |
-| `trex` | image | CC BY-SA 3.0 | ScottRobertAnselmo | [Commons](https://commons.wikimedia.org/wiki/File%3ATyrannosaurus_Rex_Holotype.jpg) |
+| `trex` | image | CC BY-SA 4.0 | RJPalmerArt | [Commons](https://commons.wikimedia.org/wiki/File%3ARjpalmer%20tyrannosaurusrex%20%28white%20background%29.jpg) |
 | `trex` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3A27alligator2bellow.ogg) |
 | `monkey` | image | CC BY-SA 3.0 | http://www.birdphotos.com edit by Fir0002 | [Commons](https://commons.wikimedia.org/wiki/File%3ABrownSpiderMonkey_%28edit2%29.jpg) |
 | `bee` | image | CC BY 4.0 | Tanner Smida | [Commons](https://commons.wikimedia.org/wiki/File%3AThe_Lone_Pollinator.jpg) |
-| `bee` | audio | CC BY-SA 4.0 | JennyTerritorioSociedad | [Commons](https://commons.wikimedia.org/wiki/File%3ATestimonio%20oral%20que%20describe%20la%20relaci%C3%B3n%20con%20las%20abejas%20en%20el%20Barrio%20de%20la%20Tosca%20%28Tejeda%29%20Avete.%20Uni%C3%B3n%20de%20Asociaciones%20de%20la%20Reserva%20de%20la%20Biosfera%20de%20Gran%20Canaria.ogg) |
 | `parrot` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ARainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg) |
 | `hornet` | image | CC BY-SA 4.0 | Mehdi Taba | [Commons](https://commons.wikimedia.org/wiki/File%3AHornet.jpg) |
 | `crocodile` | image | CC BY-SA 2.0 | Dewet | [Commons](https://commons.wikimedia.org/wiki/File%3ANileCrocodile.jpg) |
 | `squirrel` | image | CC BY 3.0 | Chicoutimi (montage) Karakal AndiW National Park Service en:User:Markus Krötzsch The Lilac Breasted Roller Nico Conradie from Centurion, South Africa Hans Hillewaert Sylvouille National Park Service | [Commons](https://commons.wikimedia.org/wiki/File%3ASciuridae.jpg) |
-| `supercroc` | image | CC BY 2.0 | Shadowgate from Novara, ITALY | [Commons](https://commons.wikimedia.org/wiki/File%3AMuseum_of_Natural_History_Sarcosuchus.jpg) |
+| `supercroc` | image | CC BY-SA 4.0 | Rhunevild | [Commons](https://commons.wikimedia.org/wiki/File%3ASarcosuchus%20Illustration.jpg) |
 | `pig` | image | CC BY-SA 4.0 | kallerna | [Commons](https://commons.wikimedia.org/wiki/File%3APig_farm_Vampula_1.jpg) |
 | `chicken` | image | CC BY-SA 2.0 | Andrei Niemimäki from Turku, Finland | [Commons](https://commons.wikimedia.org/wiki/File%3AMale_and_female_chicken_sitting_together.jpg) |
 | `chicken` | audio | CC BY-SA 4.0 | Filo gèn' | [Commons](https://commons.wikimedia.org/wiki/File%3AYoung%20rooster%20crowing.ogg) |
 | `duck` | image | CC BY-SA 3.0 | Mdf | [Commons](https://commons.wikimedia.org/wiki/File%3ABucephala-albeola-010.jpg) |
-| `longneck` | image | CC BY 3.0 | Matt Wedel | [Commons](https://commons.wikimedia.org/wiki/File%3ABrachiosaurus_mount.jpg) |
+| `longneck` | image | CC BY-SA 3.0 | Deavila | [Commons](https://commons.wikimedia.org/wiki/File%3ABrachiosaurus%20aliment%C3%A1ndose%20del%20follage.jpg) |
 | `longneck` | audio | CC0 | தகவலுழவன் | [Commons](https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg) |
 | `penguin` | image | CC BY 2.0 | Ian Duffy from UK | [Commons](https://commons.wikimedia.org/wiki/File%3AAptenodytes_forsteri_-Snow_Hill_Island%2C_Antarctica_-adults_and_juvenile-8.jpg) |
 | `penguin` | audio | CC BY 3.0 | Mikeybear | [Commons](https://commons.wikimedia.org/wiki/File%3A20091121%20Little%20Penguin%20calls%20at%20St%20Kilda%20Breakwater.ogg) |

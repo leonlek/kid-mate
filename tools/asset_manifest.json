@@ -462,16 +462,6 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg",
       "file": "animal-race/assets/images/zebra.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/96/Plains_Zebra_Equus_quagga_cropped.jpg"
-    },
-    "audio": {
-      "title": "File:Ocyphaps lophotes - Crested Pigeon XC496697.mp3",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AOcyphaps%20lophotes%20-%20Crested%20Pigeon%20XC496697.mp3",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Ocyphaps_lophotes_-_Crested_Pigeon_XC496697.mp3",
-      "license": "CC BY-SA 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "author": "Peter Russell",
-      "query": "zebra bark",
-      "file": "animal-race/assets/sounds/zebra.ogg"
     }
   },
   "tiger": {
@@ -790,33 +780,35 @@
   "pterodactyl": {
     "en": "Pterodactyl",
     "image": {
-      "license": "CC BY 3.0",
-      "license_url": "https://creativecommons.org/licenses/by/3.0",
-      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Dinoguy2\" title=\"User:Dinoguy2\">Matt Martyniuk</a>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3APteranodon_amnh_martyniuk.jpg",
-      "file": "animal-race/assets/images/pterodactyl.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/77/Pteranodon_amnh_martyniuk.jpg"
+      "title": "File:Pteranodontians and mosasaur.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APteranodontians%20and%20mosasaur.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/84/Pteranodontians_and_mosasaur.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "ABelov2014",
+      "file": "animal-race/assets/images/pterodactyl.jpg"
     },
     "audio": {
-      "title": "File:Nick121087 - Demonic Woman Scream (cc0) (freesound).mp3",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ANick121087%20-%20Demonic%20Woman%20Scream%20%28cc0%29%20%28freesound%29.mp3",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Nick121087_-_Demonic_Woman_Scream_%28cc0%29_%28freesound%29.mp3",
-      "license": "CC0",
-      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://freesound.org/people/nick121087/\">nick121087</a>",
-      "query": "hawk screech",
+      "title": "[shared] File:Accipiter cooperii - Cooper's Hawk - XC74741.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/29/Accipiter_cooperii_-_Cooper%27s_Hawk_-_XC74741.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "Jonathon Jongsma",
+      "shared_from": "falcon",
       "file": "animal-race/assets/sounds/pterodactyl.ogg"
     }
   },
   "raptor": {
     "en": "Velociraptor",
     "image": {
-      "license": "CC BY 3.0",
-      "license_url": "https://creativecommons.org/licenses/by/3.0",
-      "author": "Eduard Solà Vázquez",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AVelociraptor_skeleton_white_background.jpg",
-      "file": "animal-race/assets/images/raptor.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Velociraptor_skeleton_white_background.jpg"
+      "title": "File:Dromaeosaurid parade by durbed.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ADromaeosaurid%20parade%20by%20durbed.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/21/Dromaeosaurid_parade_by_durbed.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"http://durbed.deviantart.com/\">Durbed</a>",
+      "file": "animal-race/assets/images/raptor.jpg"
     },
     "audio": {
       "title": "File:Megascops roboratus - West Peruvian Screech Owl XC251095.mp3",
@@ -832,12 +824,13 @@
   "trex": {
     "en": "Tyrannosaurus Rex",
     "image": {
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:ScottRobertAnselmo&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:ScottRobertAnselmo (page does not exist)\">ScottRobertAnselmo</a>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ATyrannosaurus_Rex_Holotype.jpg",
-      "file": "animal-race/assets/images/trex.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/94/Tyrannosaurus_Rex_Holotype.jpg"
+      "title": "File:Rjpalmer tyrannosaurusrex (white background).jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ARjpalmer%20tyrannosaurusrex%20%28white%20background%29.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Rjpalmer_tyrannosaurusrex_%28white_background%29.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:RJPalmerArt&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:RJPalmerArt (page does not exist)\">RJPalmerArt</a>",
+      "file": "animal-race/assets/images/trex.jpg"
     },
     "audio": {
       "title": "File:27alligator2bellow.ogg",
@@ -853,23 +846,25 @@
   "supercroc": {
     "en": "Sarcosuchus",
     "image": {
-      "license": "CC BY 2.0",
-      "license_url": "https://creativecommons.org/licenses/by/2.0",
-      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/79586279@N00\">Shadowgate</a> from Novara, ITALY",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AMuseum_of_Natural_History_Sarcosuchus.jpg",
-      "file": "animal-race/assets/images/supercroc.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Museum_of_Natural_History_Sarcosuchus.jpg"
+      "title": "File:Sarcosuchus Illustration.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ASarcosuchus%20Illustration.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Sarcosuchus_Illustration.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Rhunevild&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Rhunevild (page does not exist)\">Rhunevild</a>",
+      "file": "animal-race/assets/images/supercroc.jpg"
     }
   },
   "longneck": {
     "en": "Brachiosaurus",
     "image": {
-      "license": "CC BY 3.0",
-      "license_url": "https://creativecommons.org/licenses/by/3.0",
-      "author": "Matt Wedel",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ABrachiosaurus_mount.jpg",
-      "file": "animal-race/assets/images/longneck.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Brachiosaurus_mount.jpg"
+      "title": "File:Brachiosaurus alimentándose del follage.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABrachiosaurus%20aliment%C3%A1ndose%20del%20follage.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Brachiosaurus_aliment%C3%A1ndose_del_follage.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Deavila&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Deavila (page does not exist)\">Deavila</a>",
+      "file": "animal-race/assets/images/longneck.jpg"
     },
     "audio": {
       "title": "File:Elephant voice - trumpeting.ogg",
@@ -902,16 +897,6 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AThe_Lone_Pollinator.jpg",
       "file": "animal-race/assets/images/bee.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/11/The_Lone_Pollinator.jpg"
-    },
-    "audio": {
-      "title": "File:Testimonio oral que describe la relación con las abejas en el Barrio de la Tosca (Tejeda) Avete. Unión de Asociaciones de la Reserva de la Biosfera de Gran Canaria.ogg",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ATestimonio%20oral%20que%20describe%20la%20relaci%C3%B3n%20con%20las%20abejas%20en%20el%20Barrio%20de%20la%20Tosca%20%28Tejeda%29%20Avete.%20Uni%C3%B3n%20de%20Asociaciones%20de%20la%20Reserva%20de%20la%20Biosfera%20de%20Gran%20Canaria.ogg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Testimonio_oral_que_describe_la_relaci%C3%B3n_con_las_abejas_en_el_Barrio_de_la_Tosca_%28Tejeda%29_Avete._Uni%C3%B3n_de_Asociaciones_de_la_Reserva_de_la_Biosfera_de_Gran_Canaria.ogg",
-      "license": "CC BY-SA 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:JennyTerritorioSociedad&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:JennyTerritorioSociedad (page does not exist)\">JennyTerritorioSociedad</a>",
-      "query": "bee buzz",
-      "file": "animal-race/assets/sounds/bee.ogg"
     }
   },
   "hornet": {
