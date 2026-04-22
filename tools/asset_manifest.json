@@ -519,14 +519,13 @@
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/96/Plains_Zebra_Equus_quagga_cropped.jpg"
     },
     "audio": {
-      "title": "Freesound #277234 — Sweep-005.wav",
-      "source_page": "https://freesound.org/s/277234/",
-      "source_original": "https://cdn.freesound.org/previews/277/277234_967364-hq.mp3",
-      "license": "CC BY",
-      "license_url": "http://creativecommons.org/licenses/by/3.0/",
-      "author": "raaghav81",
-      "query": "zebra",
-      "duration": 2.86714,
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:DiegoC472&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:DiegoC472 (page does not exist)\">DiegoC472</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Gr%C3%A9vys_zebra_%28Sound_Effects%29.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Gr%C3%A9vys_zebra_%28Sound_Effects%29.ogg",
+      "title": "File:Grévys zebra (Sound Effects).ogg",
+      "query": "zebra bray",
       "file": "animal-race/assets/sounds/zebra.ogg"
     }
   },

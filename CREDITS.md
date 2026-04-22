@@ -62,7 +62,7 @@ works under the same terms where ShareAlike applies.
 | `crow` | image | CC BY 2.0 | Ian Kirk from Broadstone, Dorset, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg) |
 | `crow` | audio | CC BY-SA 4.0 | Marie-Lan Taÿ Pamart | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus%20corone%20-%20Carrion%20Crow%20XC507917.mp3) |
 | `zebra` | image | GFDL 1.2 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg) |
-| `zebra` | audio | CC BY | raaghav81 | [Commons](https://freesound.org/s/277234/) |
+| `zebra` | audio | CC BY-SA 4.0 | DiegoC472 | [Commons](https://commons.wikimedia.org/wiki/File:Gr%C3%A9vys_zebra_%28Sound_Effects%29.ogg) |
 | `tiger` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ABengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg) |
 | `tiger` | audio | CC BY 4.0 | About Zoos | [Commons](https://commons.wikimedia.org/wiki/File%3AJaguar%20saw.flac) |
 | `owl` | image | CC BY-SA 4.0 | Carlos Delgado | [Commons](https://commons.wikimedia.org/wiki/File%3ABubo_bubo_sibiricus_-_01.JPG) |
