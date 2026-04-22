@@ -13,3 +13,7 @@ node_modules/
 # Audio asset backups — kept locally for re-trimming only, not needed at runtime.
 animal-race/assets/sounds/_originals/
 animal-race/assets/sounds/_pre_normalize/
+
+# Raw audio + intermediate manifest from tools/fetch_assets.py — runtime
+# uses the trimmed files only.
+tools/_raw_audio/

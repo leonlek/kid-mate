@@ -1,0 +1,1030 @@
+{
+  "shuttle": {
+    "en": "Space shuttle",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "NASA; edited by <a href=\"//commons.wikimedia.org/wiki/User:Jjron\" title=\"User:Jjron\">jjron</a> (tilt corrected)",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ASTS120LaunchHiRes-edit1.jpg",
+      "file": "animal-race/assets/images/shuttle.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d6/STS120LaunchHiRes-edit1.jpg"
+    },
+    "audio": {
+      "title": "[shared] ",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWWS_SaabJ35DDraken8211passingtwotimes.ogg",
+      "source_original": "",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/Commons:Work_With_Sounds\" title=\"Commons:Work With Sounds\">Work With Sounds</a> / Torsten Nilsson",
+      "shared_from": "f22",
+      "file": "animal-race/assets/sounds/shuttle.ogg"
+    }
+  },
+  "f16": {
+    "en": "F-16",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "Master Sgt. Andy Dunaway",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AF-16_June_2008.jpg",
+      "file": "animal-race/assets/images/f16.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c9/F-16_June_2008.jpg"
+    },
+    "audio": {
+      "title": "[shared] ",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWWS_SaabJ35DDraken8211passingtwotimes.ogg",
+      "source_original": "",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/Commons:Work_With_Sounds\" title=\"Commons:Work With Sounds\">Work With Sounds</a> / Torsten Nilsson",
+      "shared_from": "f22",
+      "file": "animal-race/assets/sounds/f16.ogg"
+    }
+  },
+  "f18": {
+    "en": "F-18 Hornet",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "US Air Force",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFA-18C_desert_refueling.jpg",
+      "file": "animal-race/assets/images/f18.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/44/FA-18C_desert_refueling.jpg"
+    },
+    "audio": {
+      "title": "[shared] ",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWWS_SaabJ35DDraken8211passingtwotimes.ogg",
+      "source_original": "",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/Commons:Work_With_Sounds\" title=\"Commons:Work With Sounds\">Work With Sounds</a> / Torsten Nilsson",
+      "shared_from": "f22",
+      "file": "animal-race/assets/sounds/f18.ogg"
+    }
+  },
+  "airliner": {
+    "en": "Airliner",
+    "image": {
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/130275500@N02\">G B_NZ</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AUnited_A320_N405UA_at_BOS_%2833787222465%29.jpg",
+      "file": "animal-race/assets/images/airliner.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/83/United_A320_N405UA_at_BOS_%2833787222465%29.jpg"
+    },
+    "audio": {
+      "title": "File:2011-06-05 19-32 Berlin TXL Airplane Flyover plus Wingtip Vortex.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A2011-06-05%2019-32%20Berlin%20TXL%20Airplane%20Flyover%20plus%20Wingtip%20Vortex.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9b/2011-06-05_19-32_Berlin_TXL_Airplane_Flyover_plus_Wingtip_Vortex.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "Fritz Schlüter",
+      "query": "airplane",
+      "file": "animal-race/assets/sounds/airliner.ogg"
+    }
+  },
+  "f1": {
+    "en": "Formula 1",
+    "audio": {
+      "title": "File:Aston Martin DB3 (1952).ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAston%20Martin%20DB3%20%281952%29.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Aston_Martin_DB3_%281952%29.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Edvvc\" title=\"User:Edvvc\">Edvvc</a>",
+      "query": "racecar",
+      "file": "animal-race/assets/sounds/f1.ogg"
+    },
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Lukas_Raich\" title=\"User:Lukas Raich\">Lukas Raich</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFIA_F1_Austria_2023_Nr._55_%281%29.jpg",
+      "file": "animal-race/assets/images/f1.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9f/FIA_F1_Austria_2023_Nr._55_%281%29.jpg"
+    }
+  },
+  "lambo": {
+    "en": "Lamborghini",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Calreyn88&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Calreyn88 (page does not exist)\">Calreyn88</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A2016_Lamborghini_Aventador_SV_%2882931%29.jpg",
+      "file": "animal-race/assets/images/lambo.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/0b/2016_Lamborghini_Aventador_SV_%2882931%29.jpg"
+    },
+    "audio": {
+      "title": "File:Lamborghini Gallardo LP570-4 Superleggera.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ALamborghini%20Gallardo%20LP570-4%20Superleggera.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Lamborghini_Gallardo_LP570-4_Superleggera.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Edvvc\" title=\"User:Edvvc\">Edvvc</a>",
+      "query": "lamborghini engine",
+      "file": "animal-race/assets/sounds/lambo.ogg"
+    }
+  },
+  "ferrari": {
+    "en": "Ferrari",
+    "image": {
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/32569229@N06\">Alexandre Prevot</a> from Nancy, France",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ARed_2019_Ferrari_SF90_Stradale_%2848264238897%29_%28cropped%29.jpg",
+      "file": "animal-race/assets/images/ferrari.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/13/Red_2019_Ferrari_SF90_Stradale_%2848264238897%29_%28cropped%29.jpg"
+    },
+    "audio": {
+      "title": "File:Ferrari F355 under-hood exhaust sound.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFerrari%20F355%20under-hood%20exhaust%20sound.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/23/Ferrari_F355_under-hood_exhaust_sound.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "enginemusic",
+      "query": "ferrari engine",
+      "file": "animal-race/assets/sounds/ferrari.ogg"
+    }
+  },
+  "ducati": {
+    "en": "Ducati motorcycle",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:MB-one\" title=\"User:MB-one\">Matti Blume</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ADucati_Panigale_V4_-_Tuning_World_Bodensee_2018%2C_Friedrichshafen_%28OW1A0484%29.jpg",
+      "file": "animal-race/assets/images/ducati.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Ducati_Panigale_V4_-_Tuning_World_Bodensee_2018%2C_Friedrichshafen_%28OW1A0484%29.jpg"
+    },
+    "audio": {
+      "title": "File:Kawasaki ER-5.oga",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AKawasaki%20ER-5.oga",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/79/Kawasaki_ER-5.oga",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:OllemanW&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:OllemanW (page does not exist)\">OllemanW</a>",
+      "query": "motorcycle engine",
+      "file": "animal-race/assets/sounds/ducati.ogg"
+    }
+  },
+  "falcon": {
+    "en": "Peregrine falcon",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Mykola_Swarnyk\" title=\"User:Mykola Swarnyk\">Mykola Swarnyk</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFalco_peregrinus_m_Humber_Bay_Park_Toronto.jpg",
+      "file": "animal-race/assets/images/falcon.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Falco_peregrinus_m_Humber_Bay_Park_Toronto.jpg"
+    },
+    "audio": {
+      "title": "File:Accipiter cooperii - Cooper's Hawk - XC74741.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/29/Accipiter_cooperii_-_Cooper%27s_Hawk_-_XC74741.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "Jonathon Jongsma",
+      "query": "hawk",
+      "file": "animal-race/assets/sounds/falcon.ogg"
+    }
+  },
+  "eagle": {
+    "en": "Eagle",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Punetor_i_Rregullt5\" title=\"User:Punetor i Rregullt5\">User:Punetor i Rregullt5</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AEagles_together.jpg",
+      "file": "animal-race/assets/images/eagle.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/60/Eagles_together.jpg"
+    }
+  },
+  "swan": {
+    "en": "Swan",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Geni",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMute_Swan_Emsworth2.JPG",
+      "file": "animal-race/assets/images/swan.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Mute_Swan_Emsworth2.JPG"
+    },
+    "audio": {
+      "title": "File:Cygnus buccinator - Trumpeter Swan XC96531.mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACygnus%20buccinator%20-%20Trumpeter%20Swan%20XC96531.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Cygnus_buccinator_-_Trumpeter_Swan_XC96531.mp3",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "Jonathon Jongsma",
+      "query": "swan call",
+      "file": "animal-race/assets/sounds/swan.ogg"
+    }
+  },
+  "crow": {
+    "en": "Crow",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/76592037@N00\">Ian Kirk</a> from Broadstone, Dorset, UK",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg",
+      "file": "animal-race/assets/images/crow.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Corvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg"
+    },
+    "audio": {
+      "title": "File:Corvus corone - Carrion Crow XC507917.mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACorvus%20corone%20-%20Carrion%20Crow%20XC507917.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Corvus_corone_-_Carrion_Crow_XC507917.mp3",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Marie-Lan Taÿ Pamart",
+      "query": "crow caw",
+      "file": "animal-race/assets/sounds/crow.ogg"
+    }
+  },
+  "owl": {
+    "en": "Owl",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Kadellar\" title=\"User:Kadellar\">Carlos Delgado</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABubo_bubo_sibiricus_-_01.JPG",
+      "file": "animal-race/assets/images/owl.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/5/56/Bubo_bubo_sibiricus_-_01.JPG"
+    },
+    "audio": {
+      "title": "File:Strix aluco male.oga",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AStrix%20aluco%20male.oga",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Strix_aluco_male.oga",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Vnyyy&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Vnyyy (page does not exist)\">Vianney Bajart</a>",
+      "query": "owl hoot",
+      "file": "animal-race/assets/sounds/owl.ogg"
+    }
+  },
+  "flamingo": {
+    "en": "Flamingo",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/valdiney/\">Valdiney Pimenta</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFlamingos_Laguna_Colorada.jpg",
+      "file": "animal-race/assets/images/flamingo.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/38/Flamingos_Laguna_Colorada.jpg"
+    },
+    "audio": {
+      "title": "File:Phoenicopterus roseus - Greater Flamingo XC432217.mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APhoenicopterus%20roseus%20-%20Greater%20Flamingo%20XC432217.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Phoenicopterus_roseus_-_Greater_Flamingo_XC432217.mp3",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Joost van Bruggen",
+      "query": "flamingo call",
+      "file": "animal-race/assets/sounds/flamingo.ogg"
+    }
+  },
+  "parrot": {
+    "en": "Parrot",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ARainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg",
+      "file": "animal-race/assets/images/parrot.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Rainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg"
+    }
+  },
+  "chicken": {
+    "en": "Chicken",
+    "image": {
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/29465285@N00\">Andrei Niemimäki</a> from Turku, Finland",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMale_and_female_chicken_sitting_together.jpg",
+      "file": "animal-race/assets/images/chicken.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/84/Male_and_female_chicken_sitting_together.jpg"
+    },
+    "audio": {
+      "title": "File:Young rooster crowing.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AYoung%20rooster%20crowing.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/43/Young_rooster_crowing.ogg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Filo_g%C3%A8n%27\" title=\"User:Filo gèn'\">Filo gèn'</a>",
+      "query": "rooster crow",
+      "file": "animal-race/assets/sounds/chicken.ogg"
+    }
+  },
+  "duck": {
+    "en": "Duck",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Mdf\" title=\"User:Mdf\">Mdf</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABucephala-albeola-010.jpg",
+      "file": "animal-race/assets/images/duck.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Bucephala-albeola-010.jpg"
+    }
+  },
+  "penguin": {
+    "en": "Penguin",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/38323841@N00\">Ian Duffy</a> from UK",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAptenodytes_forsteri_-Snow_Hill_Island%2C_Antarctica_-adults_and_juvenile-8.jpg",
+      "file": "animal-race/assets/images/penguin.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Aptenodytes_forsteri_-Snow_Hill_Island%2C_Antarctica_-adults_and_juvenile-8.jpg"
+    },
+    "audio": {
+      "title": "File:20091121 Little Penguin calls at St Kilda Breakwater.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A20091121%20Little%20Penguin%20calls%20at%20St%20Kilda%20Breakwater.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/5/5a/20091121_Little_Penguin_calls_at_St_Kilda_Breakwater.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Mikeybear\" title=\"User:Mikeybear\">Mikeybear</a>",
+      "query": "penguin call",
+      "file": "animal-race/assets/sounds/penguin.ogg"
+    }
+  },
+  "dragon": {
+    "en": "Dragon",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "Friedrich-Johann-Justin-Bertuch",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFriedrich-Johann-Justin-Bertuch_Mythical-Creature-Dragon_1806.jpg",
+      "file": "animal-race/assets/images/dragon.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Friedrich-Johann-Justin-Bertuch_Mythical-Creature-Dragon_1806.jpg"
+    },
+    "audio": {
+      "title": "[shared] File:Bear growl.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bear_growl.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Shizhao\" title=\"User:Shizhao\">Shizhao</a>",
+      "shared_from": "bear",
+      "file": "animal-race/assets/sounds/dragon.ogg"
+    }
+  },
+  "unicorn": {
+    "en": "Unicorn",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Conrad_Gessner\" class=\"extiw\" title=\"w:en:Conrad Gessner\"><span title=\"Swiss physician, bibliographer and naturalist (1516–1565)\">Conrad Gessner</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AOftheunicorn.jpg",
+      "file": "animal-race/assets/images/unicorn.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/70/Oftheunicorn.jpg"
+    }
+  },
+  "deer": {
+    "en": "Deer",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<p>This image is a derivative work of the following images: \n</p>\n<ul><li><a href=\"//commons.wikimedia.org/wiki/File:White-tailed_deer.jpg\" title=\"File:White-tailed deer.jpg\">File:White-tailed deer.jpg</a> (USDA photo by Scott Bauer)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:RangiferTarandus.jpg\" title=\"File:RangiferTarandus.jpg\">File:RangiferTarandus.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/w/index.php?title=User:Sydpolen&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Sydpolen (page does not exist)\">User:Sydpolen</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:Red_deer_stag_2009_denmark.jpg\" title=\"File:Red deer stag 2009 denmark.jpg\">File:Red deer stag 2009 denmark.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/wiki/User:Atomicbre\" title=\"User:Atomicbre\">User:Atomicbre</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:The_barasingha.jpg\" title=\"File:The barasingha.jpg\">File:The barasingha.jpg</a> (uploaded by <a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/aloshbennett/\">aloshbennett</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:Dama_dama_002.jpg\" class=\"mw-redirect\" title=\"File:Dama dama 002.jpg\">File:Dama dama 002.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/w/index.php?title=User:Lily_M&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Lily M (page does not exist)\">User:Lily_M</a>))</li></ul>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFamily_Cervidae_five_species.jpg",
+      "file": "animal-race/assets/images/deer.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Family_Cervidae_five_species.jpg"
+    },
+    "audio": {
+      "title": "File:Hirsch roehrt.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AHirsch%20roehrt.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/95/Hirsch_roehrt.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Jugr%C3%BC&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Jugrü (page does not exist)\">Jugrü</a>",
+      "query": "deer call",
+      "file": "animal-race/assets/sounds/deer.ogg"
+    }
+  },
+  "lion": {
+    "en": "Lion",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Giles_Laurent\" title=\"User:Giles Laurent\">Giles Laurent</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A020_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg",
+      "file": "animal-race/assets/images/lion.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/a6/020_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg"
+    },
+    "audio": {
+      "title": "[shared] File:Bear growl.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bear_growl.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Shizhao\" title=\"User:Shizhao\">Shizhao</a>",
+      "shared_from": "bear",
+      "file": "animal-race/assets/sounds/lion.ogg"
+    }
+  },
+  "wolf": {
+    "en": "Wolf",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Mas3cf&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Mas3cf (page does not exist)\">User:Mas3cf</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AEurasian_wolf_2.jpg",
+      "file": "animal-race/assets/images/wolf.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/68/Eurasian_wolf_2.jpg"
+    },
+    "audio": {
+      "title": "[shared] File:Bear growl.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bear_growl.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Shizhao\" title=\"User:Shizhao\">Shizhao</a>",
+      "shared_from": "bear",
+      "file": "animal-race/assets/sounds/wolf.ogg"
+    }
+  },
+  "kangaroo": {
+    "en": "Kangaroo",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AForester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg",
+      "file": "animal-race/assets/images/kangaroo.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/df/Forester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg"
+    }
+  },
+  "zebra": {
+    "en": "Zebra",
+    "image": {
+      "license": "GFDL 1.2",
+      "license_url": "http://www.gnu.org/licenses/old-licenses/fdl-1.2.html",
+      "author": "<b><a href=\"https://en.wikipedia.org/wiki/User:Muhammad_Mahdi_Karim\" class=\"extiw\" title=\"w:User:Muhammad Mahdi Karim\">Muhammad Mahdi Karim</a></b>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg",
+      "file": "animal-race/assets/images/zebra.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/96/Plains_Zebra_Equus_quagga_cropped.jpg"
+    },
+    "audio": {
+      "title": "File:Ocyphaps lophotes - Crested Pigeon XC496697.mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AOcyphaps%20lophotes%20-%20Crested%20Pigeon%20XC496697.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Ocyphaps_lophotes_-_Crested_Pigeon_XC496697.mp3",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Peter Russell",
+      "query": "zebra bark",
+      "file": "animal-race/assets/sounds/zebra.ogg"
+    }
+  },
+  "tiger": {
+    "en": "Tiger",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg",
+      "file": "animal-race/assets/images/tiger.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Bengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg"
+    },
+    "audio": {
+      "title": "File:Jaguar saw.flac",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AJaguar%20saw.flac",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Jaguar_saw.flac",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "About Zoos",
+      "query": "big cat",
+      "file": "animal-race/assets/sounds/tiger.ogg"
+    }
+  },
+  "giraffe": {
+    "en": "Giraffe",
+    "image": {
+      "license": "GFDL 1.2",
+      "license_url": "http://www.gnu.org/licenses/old-licenses/fdl-1.2.html",
+      "author": "<p><b><a href=\"https://en.wikipedia.org/wiki/User:Muhammad_Mahdi_Karim\" class=\"extiw\" title=\"w:User:Muhammad Mahdi Karim\">Muhammad Mahdi Karim</a></b> <a rel=\"nofollow\" class=\"external text\" href=\"https://facebook.com/micro2macro\">Facebook</a>\n</p>\n<table lang=\"en\" dir=\"ltr\" cellspacing=\"8\" cellpadding=\"0\" style=\"width:100%; clear:both; margin:0.5em auto; background-color:var(--background-color-neutral-subtle, #f8f9fa); color:inherit; border:2px solid #66A7CC\">\n<tbody><tr>\n<td style=\"width:60px\"><span typeof=\"mw:File\"><span title=\"Wikimédia CH\"><img alt=\"Wikimédia CH\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/WikimediaCHLogo.svg/60px-WikimediaCHLogo.svg.png\" decoding=\"async\" width=\"60\" height=\"66\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/WikimediaCHLogo.svg/120px-WikimediaCHLogo.svg.png 2x\" data-file-width=\"491\" data-file-height=\"539\"></span></span>\n</td>\n<td style=\"text-align:center;\">The making of this document was supported by <b><a href=\"https://meta.wikimedia.org/wiki/Wikimedia_CH\" class=\"extiw\" title=\"m:Wikimedia CH\">Wikimedia CH</a></b>. <b><small>(<a rel=\"nofollow\" class=\"external text\" href=\"https://www.wikimedia.ch/\">Submit your project!</a>)</small></b><br>\n<p>For all the files concerned, please see the category <a href=\"//commons.wikimedia.org/wiki/Category:Supported_by_Wikimedia_CH\" title=\"Category:Supported by Wikimedia CH\">Supported by Wikimedia CH</a>.\n</p>\n<hr>\n<div lang=\"\"><span style=\"font-size:small;line-height:1.4\" class=\"plainlinks noprint\"><a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ar\"><bdi class=\"language lang-ar\" lang=\"ar\">العربية</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/bn\"><bdi class=\"language lang-bn\" lang=\"bn\">বাংলা</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/cs\"><bdi class=\"language lang-cs\" lang=\"cs\">čeština</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/de\"><bdi class=\"language lang-de\" lang=\"de\">Deutsch</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/en\"><bdi class=\"language lang-en\" lang=\"en\">English</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/eo\"><bdi class=\"language lang-eo\" lang=\"eo\">Esperanto</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/es\"><bdi class=\"language lang-es\" lang=\"es\">español</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/fr\"><bdi class=\"language lang-fr\" lang=\"fr\">français</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/gl\"><bdi class=\"language lang-gl\" lang=\"gl\">galego</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/hi\"><bdi class=\"language lang-hi\" lang=\"hi\">हिन्दी</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/hu\"><bdi class=\"language lang-hu\" lang=\"hu\">magyar</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/it\"><bdi class=\"language lang-it\" lang=\"it\">italiano</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ja\"><bdi class=\"language lang-ja\" lang=\"ja\">日本語</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/mk\"><bdi class=\"language lang-mk\" lang=\"mk\">македонски</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/nl\"><bdi class=\"language lang-nl\" lang=\"nl\">Nederlands</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/pt-br\"><bdi class=\"language lang-pt-br\" lang=\"pt-br\">português do Brasil</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/rm\"><bdi class=\"language lang-rm\" lang=\"rm\">rumantsch</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ru\"><bdi class=\"language lang-ru\" lang=\"ru\">русский</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/scn\"><bdi class=\"language lang-scn\" lang=\"scn\">sicilianu</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/sl\"><bdi class=\"language lang-sl\" lang=\"sl\">slovenščina</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ta\"><bdi class=\"language lang-ta\" lang=\"ta\">தமிழ்</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/uk\"><bdi class=\"language lang-uk\" lang=\"uk\">українська</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/zh\"><bdi class=\"language lang-zh\" lang=\"zh\">中文</bdi></a> <b>∙</b> <small class=\"plainlinks\"><a class=\"external text\" href=\"https://commons.wikimedia.org/w/index.php?title=Template:Supported_by_Wikimedia_CH/lang&amp;action=edit\">+/−</a></small></span></div>\n</td></tr></tbody></table>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AGiraffe_Mikumi_National_Park.jpg",
+      "file": "animal-race/assets/images/giraffe.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Giraffe_Mikumi_National_Park.jpg"
+    }
+  },
+  "rhino": {
+    "en": "Rhinoceros",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:PaleoMatt&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:PaleoMatt (page does not exist)\">PaleoMatt</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ARhino_collage.png",
+      "file": "animal-race/assets/images/rhino.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Rhino_collage.png"
+    }
+  },
+  "fox": {
+    "en": "Fox",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:ClaudiaTen&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:ClaudiaTen (page does not exist)\">ClaudiaTen</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APortrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg",
+      "file": "animal-race/assets/images/fox.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Portrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg"
+    }
+  },
+  "bear": {
+    "en": "Bear",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Yathin_sk\" title=\"User:Yathin sk\">Yathin S Krishnappa</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A2010-kodiak-bear-1.jpg",
+      "file": "animal-race/assets/images/bear.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg"
+    },
+    "audio": {
+      "title": "File:Bear growl.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bear_growl.ogg",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Shizhao\" title=\"User:Shizhao\">Shizhao</a>",
+      "query": "bear growl",
+      "file": "animal-race/assets/sounds/bear.ogg"
+    }
+  },
+  "elephant": {
+    "en": "Elephant",
+    "image": {
+      "license": "GFDL 1.2",
+      "license_url": "http://www.gnu.org/licenses/old-licenses/fdl-1.2.html",
+      "author": "<p><b><a href=\"https://en.wikipedia.org/wiki/User:Muhammad_Mahdi_Karim\" class=\"extiw\" title=\"w:User:Muhammad Mahdi Karim\">Muhammad Mahdi Karim</a></b> <a rel=\"nofollow\" class=\"external text\" href=\"https://facebook.com/micro2macro\">Facebook</a>\n</p>\n<table lang=\"en\" dir=\"ltr\" cellspacing=\"8\" cellpadding=\"0\" style=\"width:100%; clear:both; margin:0.5em auto; background-color:var(--background-color-neutral-subtle, #f8f9fa); color:inherit; border:2px solid #66A7CC\">\n<tbody><tr>\n<td style=\"width:60px\"><span typeof=\"mw:File\"><span title=\"Wikimédia CH\"><img alt=\"Wikimédia CH\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/WikimediaCHLogo.svg/60px-WikimediaCHLogo.svg.png\" decoding=\"async\" width=\"60\" height=\"66\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/WikimediaCHLogo.svg/120px-WikimediaCHLogo.svg.png 2x\" data-file-width=\"491\" data-file-height=\"539\"></span></span>\n</td>\n<td style=\"text-align:center;\">The making of this document was supported by <b><a href=\"https://meta.wikimedia.org/wiki/Wikimedia_CH\" class=\"extiw\" title=\"m:Wikimedia CH\">Wikimedia CH</a></b>. <b><small>(<a rel=\"nofollow\" class=\"external text\" href=\"https://www.wikimedia.ch/\">Submit your project!</a>)</small></b><br>\n<p>For all the files concerned, please see the category <a href=\"//commons.wikimedia.org/wiki/Category:Supported_by_Wikimedia_CH\" title=\"Category:Supported by Wikimedia CH\">Supported by Wikimedia CH</a>.\n</p>\n<hr>\n<div lang=\"\"><span style=\"font-size:small;line-height:1.4\" class=\"plainlinks noprint\"><a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ar\"><bdi class=\"language lang-ar\" lang=\"ar\">العربية</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/bn\"><bdi class=\"language lang-bn\" lang=\"bn\">বাংলা</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/cs\"><bdi class=\"language lang-cs\" lang=\"cs\">čeština</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/de\"><bdi class=\"language lang-de\" lang=\"de\">Deutsch</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/en\"><bdi class=\"language lang-en\" lang=\"en\">English</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/eo\"><bdi class=\"language lang-eo\" lang=\"eo\">Esperanto</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/es\"><bdi class=\"language lang-es\" lang=\"es\">español</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/fr\"><bdi class=\"language lang-fr\" lang=\"fr\">français</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/gl\"><bdi class=\"language lang-gl\" lang=\"gl\">galego</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/hi\"><bdi class=\"language lang-hi\" lang=\"hi\">हिन्दी</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/hu\"><bdi class=\"language lang-hu\" lang=\"hu\">magyar</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/it\"><bdi class=\"language lang-it\" lang=\"it\">italiano</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ja\"><bdi class=\"language lang-ja\" lang=\"ja\">日本語</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/mk\"><bdi class=\"language lang-mk\" lang=\"mk\">македонски</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/nl\"><bdi class=\"language lang-nl\" lang=\"nl\">Nederlands</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/pt-br\"><bdi class=\"language lang-pt-br\" lang=\"pt-br\">português do Brasil</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/rm\"><bdi class=\"language lang-rm\" lang=\"rm\">rumantsch</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ru\"><bdi class=\"language lang-ru\" lang=\"ru\">русский</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/scn\"><bdi class=\"language lang-scn\" lang=\"scn\">sicilianu</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/sl\"><bdi class=\"language lang-sl\" lang=\"sl\">slovenščina</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/ta\"><bdi class=\"language lang-ta\" lang=\"ta\">தமிழ்</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/uk\"><bdi class=\"language lang-uk\" lang=\"uk\">українська</bdi></a> <b>∙</b> <a class=\"external text\" href=\"https://commons.wikimedia.org/wiki/Template:Supported_by_Wikimedia_CH/zh\"><bdi class=\"language lang-zh\" lang=\"zh\">中文</bdi></a> <b>∙</b> <small class=\"plainlinks\"><a class=\"external text\" href=\"https://commons.wikimedia.org/w/index.php?title=Template:Supported_by_Wikimedia_CH/lang&amp;action=edit\">+/−</a></small></span></div>\n</td></tr></tbody></table>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAfrican_Bush_Elephant.jpg",
+      "file": "animal-race/assets/images/elephant.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg"
+    },
+    "audio": {
+      "title": "File:Elephant voice - trumpeting.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/40/Elephant_voice_-_trumpeting.ogg",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:%E0%AE%A4%E0%AE%95%E0%AE%B5%E0%AE%B2%E0%AF%81%E0%AE%B4%E0%AE%B5%E0%AE%A9%E0%AF%8D\" class=\"mw-redirect\" title=\"User:தகவலுழவன்\">தகவலுழவன்</a>",
+      "query": "elephant trumpet",
+      "file": "animal-race/assets/sounds/elephant.ogg"
+    }
+  },
+  "polarbear": {
+    "en": "Polar bear",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "Alan Wilson",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg",
+      "file": "animal-race/assets/images/polarbear.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/66/Polar_Bear_-_Alaska_%28cropped%29.jpg"
+    }
+  },
+  "monkey": {
+    "en": "Monkey",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Tomfriedel\" title=\"User:Tomfriedel\">http://www.birdphotos.com</a> edit by <a href=\"//commons.wikimedia.org/wiki/User:Fir0002\" title=\"User:Fir0002\">Fir0002</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABrownSpiderMonkey_%28edit2%29.jpg",
+      "file": "animal-race/assets/images/monkey.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/BrownSpiderMonkey_%28edit2%29.jpg"
+    }
+  },
+  "squirrel": {
+    "en": "Squirrel",
+    "image": {
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<p><a href=\"//commons.wikimedia.org/w/index.php?title=User:Chicoutimi&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Chicoutimi (page does not exist)\">Chicoutimi</a> (montage)<br>\n</p>\n<figure class=\"mw-halign-right\" typeof=\"mw:File/Thumb\"><a href=\"//commons.wikimedia.org/wiki/File:Montage_9_pictures.jpg\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Montage_9_pictures.jpg/250px-Montage_9_pictures.jpg\" decoding=\"async\" width=\"150\" height=\"150\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Montage_9_pictures.jpg/330px-Montage_9_pictures.jpg 2x\" data-file-width=\"600\" data-file-height=\"600\"></a><figcaption></figcaption></figure>\n<ol><li><a href=\"//commons.wikimedia.org/wiki/User:Karakal\" title=\"User:Karakal\">Karakal</a></li>\n<li><a href=\"//commons.wikimedia.org/wiki/User:AndiW\" title=\"User:AndiW\">AndiW</a></li>\n<li>National Park Service</li>\n<li><a href=\"https://en.wikipedia.org/wiki/User:Markus_Kr%C3%B6tzsch\" class=\"extiw\" title=\"en:User:Markus Krötzsch\">en:User:Markus Krötzsch</a></li>\n<li>The Lilac Breasted Roller</li>\n<li><a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/25263277@N00\">Nico Conradie</a> from Centurion, South Africa</li>\n<li><a href=\"//commons.wikimedia.org/wiki/User:Lycaon\" title=\"User:Lycaon\">Hans Hillewaert</a></li>\n<li><a href=\"https://fr.wikipedia.org/wiki/User:Sylvouille\" class=\"extiw\" title=\"fr:User:Sylvouille\">Sylvouille</a></li>\n<li>National Park Service</li></ol>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ASciuridae.jpg",
+      "file": "animal-race/assets/images/squirrel.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/68/Sciuridae.jpg"
+    }
+  },
+  "sloth": {
+    "en": "Sloth",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Daniella_Maraschiello&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Daniella Maraschiello (page does not exist)\">Daniella Maraschiello</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABicho-pregui%C3%A7a_3.jpg",
+      "file": "animal-race/assets/images/sloth.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/be/Bicho-pregui%C3%A7a_3.jpg"
+    }
+  },
+  "horse": {
+    "en": "Horse",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Amada44\" title=\"User:Amada44\">Amada44</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AHorse_007.jpg",
+      "file": "animal-race/assets/images/horse.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Horse_007.jpg"
+    }
+  },
+  "rabbit": {
+    "en": "Rabbit",
+    "image": {
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Alur%C3%ADn\" title=\"User:Alurín\">JM Ligero Loarte</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AOryctolagus_cuniculus_Rcdo.jpg",
+      "file": "animal-race/assets/images/rabbit.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Oryctolagus_cuniculus_Rcdo.jpg"
+    }
+  },
+  "cat": {
+    "en": "Cat",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Alvesgaspar\" title=\"User:Alvesgaspar\">Alvesgaspar</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACat_August_2010-4.jpg",
+      "file": "animal-race/assets/images/cat.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/15/Cat_August_2010-4.jpg"
+    },
+    "audio": {
+      "title": "File:Meow.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMeow.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/62/Meow.ogg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "author": "The original uploader was <a href=\"https://en.wikipedia.org/wiki/User:Dcrosby\" class=\"extiw\" title=\"wikipedia:User:Dcrosby\">Dcrosby</a> at <a href=\"https://en.wikipedia.org/wiki/\" class=\"extiw\" title=\"wikipedia:\">English Wikipedia</a>.",
+      "query": "cat meow",
+      "file": "animal-race/assets/sounds/cat.ogg"
+    }
+  },
+  "cow": {
+    "en": "Cow",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Slaunger\" title=\"User:Slaunger\">Kim Hansen</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg",
+      "file": "animal-race/assets/images/cow.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg"
+    }
+  },
+  "pig": {
+    "en": "Pig",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Kallerna\" title=\"User:Kallerna\">kallerna</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APig_farm_Vampula_1.jpg",
+      "file": "animal-race/assets/images/pig.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Pig_farm_Vampula_1.jpg"
+    }
+  },
+  "sailfish": {
+    "en": "Sailfish",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Kawahara_Keiga\" class=\"extiw\" title=\"w:en:Kawahara Keiga\"><span title=\"Japanese painter\">Kawahara Keiga</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ANaturalis_Biodiversity_Center_-_RMNH.ART.194_-_Istiophorus_platypterus_%28Shaw_and_Nodder%29_-_Kawahara_Keiga_-_1823_-_1829_-_Siebold_Collection_-_new_version.jpeg",
+      "file": "animal-race/assets/images/sailfish.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/65/Naturalis_Biodiversity_Center_-_RMNH.ART.194_-_Istiophorus_platypterus_%28Shaw_and_Nodder%29_-_Kawahara_Keiga_-_1823_-_1829_-_Siebold_Collection_-_new_version.jpeg"
+    }
+  },
+  "shark": {
+    "en": "Shark",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/51647007@N08\">NOAA Photo Library</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACorl0207_%2828225976491%29.jpg",
+      "file": "animal-race/assets/images/shark.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/08/Corl0207_%2828225976491%29.jpg"
+    }
+  },
+  "orca": {
+    "en": "Orca",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "Robert Pittman",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AKillerwhales_jumping.jpg",
+      "file": "animal-race/assets/images/orca.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/37/Killerwhales_jumping.jpg"
+    },
+    "audio": {
+      "title": "File:Killer whale simple.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AKiller%20whale%20simple.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/21/Killer_whale_simple.ogg",
+      "license": "Public domain",
+      "license_url": "",
+      "author": "",
+      "query": "orca whale call",
+      "file": "animal-race/assets/sounds/orca.ogg"
+    }
+  },
+  "whale": {
+    "en": "Blue whale",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/51647007@N08\">NOAA Photo Library</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAnim1754_-_Flickr_-_NOAA_Photo_Library.jpg",
+      "file": "animal-race/assets/images/whale.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Anim1754_-_Flickr_-_NOAA_Photo_Library.jpg"
+    },
+    "audio": {
+      "title": "File:Killer whale simple.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AKiller%20whale%20simple.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/21/Killer_whale_simple.ogg",
+      "license": "Public domain",
+      "license_url": "",
+      "author": "",
+      "query": "whale",
+      "file": "animal-race/assets/sounds/whale.ogg"
+    }
+  },
+  "octopus": {
+    "en": "Octopus",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "albert kok",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AOctopus2.jpg",
+      "file": "animal-race/assets/images/octopus.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/5/57/Octopus2.jpg"
+    }
+  },
+  "dolphin": {
+    "en": "Dolphin",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "NASA",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ATursiops_truncatus_01.jpg",
+      "file": "animal-race/assets/images/dolphin.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/10/Tursiops_truncatus_01.jpg"
+    }
+  },
+  "seal": {
+    "en": "Seal",
+    "image": {
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "author": "From a variety of images credited above.",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APinnipeds_vertical_version_montage.jpg",
+      "file": "animal-race/assets/images/seal.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Pinnipeds_vertical_version_montage.jpg"
+    }
+  },
+  "crab": {
+    "en": "Crab",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<div class=\"fn value\">\n<a href=\"//commons.wikimedia.org/wiki/User:Biopics\" title=\"User:Biopics\">Hans Hillewaert</a></div>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACancer_pagurus.jpg",
+      "file": "animal-race/assets/images/crab.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/71/Cancer_pagurus.jpg"
+    }
+  },
+  "pterodactyl": {
+    "en": "Pterodactyl",
+    "image": {
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Dinoguy2\" title=\"User:Dinoguy2\">Matt Martyniuk</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APteranodon_amnh_martyniuk.jpg",
+      "file": "animal-race/assets/images/pterodactyl.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/77/Pteranodon_amnh_martyniuk.jpg"
+    },
+    "audio": {
+      "title": "File:Nick121087 - Demonic Woman Scream (cc0) (freesound).mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ANick121087%20-%20Demonic%20Woman%20Scream%20%28cc0%29%20%28freesound%29.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Nick121087_-_Demonic_Woman_Scream_%28cc0%29_%28freesound%29.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://freesound.org/people/nick121087/\">nick121087</a>",
+      "query": "hawk screech",
+      "file": "animal-race/assets/sounds/pterodactyl.ogg"
+    }
+  },
+  "raptor": {
+    "en": "Velociraptor",
+    "image": {
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "Eduard Solà Vázquez",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AVelociraptor_skeleton_white_background.jpg",
+      "file": "animal-race/assets/images/raptor.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Velociraptor_skeleton_white_background.jpg"
+    },
+    "audio": {
+      "title": "File:Megascops roboratus - West Peruvian Screech Owl XC251095.mp3",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMegascops%20roboratus%20-%20West%20Peruvian%20Screech%20Owl%20XC251095.mp3",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Megascops_roboratus_-_West_Peruvian_Screech_Owl_XC251095.mp3",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Niels Krabbe",
+      "query": "bird screech",
+      "file": "animal-race/assets/sounds/raptor.ogg"
+    }
+  },
+  "trex": {
+    "en": "Tyrannosaurus Rex",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:ScottRobertAnselmo&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:ScottRobertAnselmo (page does not exist)\">ScottRobertAnselmo</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ATyrannosaurus_Rex_Holotype.jpg",
+      "file": "animal-race/assets/images/trex.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/94/Tyrannosaurus_Rex_Holotype.jpg"
+    },
+    "audio": {
+      "title": "File:27alligator2bellow.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A27alligator2bellow.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/bf/27alligator2bellow.ogg",
+      "license": "Public domain",
+      "license_url": "",
+      "author": "",
+      "query": "alligator bellow",
+      "file": "animal-race/assets/sounds/trex.ogg"
+    }
+  },
+  "supercroc": {
+    "en": "Sarcosuchus",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/79586279@N00\">Shadowgate</a> from Novara, ITALY",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMuseum_of_Natural_History_Sarcosuchus.jpg",
+      "file": "animal-race/assets/images/supercroc.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Museum_of_Natural_History_Sarcosuchus.jpg"
+    }
+  },
+  "longneck": {
+    "en": "Brachiosaurus",
+    "image": {
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "author": "Matt Wedel",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABrachiosaurus_mount.jpg",
+      "file": "animal-race/assets/images/longneck.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Brachiosaurus_mount.jpg"
+    },
+    "audio": {
+      "title": "File:Elephant voice - trumpeting.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/40/Elephant_voice_-_trumpeting.ogg",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:%E0%AE%A4%E0%AE%95%E0%AE%B5%E0%AE%B2%E0%AF%81%E0%AE%B4%E0%AE%B5%E0%AE%A9%E0%AF%8D\" class=\"mw-redirect\" title=\"User:தகவலுழவன்\">தகவலுழவன்</a>",
+      "query": "elephant",
+      "file": "animal-race/assets/sounds/longneck.ogg"
+    }
+  },
+  "human": {
+    "en": "Human",
+    "image": {
+      "license": "CC BY-SA 2.0 de",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0/de/deed.en",
+      "author": "<a href=\"https://en.wikipedia.org/wiki/User:Weltenbummler84\" class=\"extiw\" title=\"en:User:Weltenbummler84\">Weltenbummler84</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAkha_cropped_hires.JPG",
+      "file": "animal-race/assets/images/human.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/68/Akha_cropped_hires.JPG"
+    }
+  },
+  "bee": {
+    "en": "Bee",
+    "image": {
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Tanner_Smida&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Tanner Smida (page does not exist)\">Tanner Smida</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AThe_Lone_Pollinator.jpg",
+      "file": "animal-race/assets/images/bee.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/11/The_Lone_Pollinator.jpg"
+    },
+    "audio": {
+      "title": "File:Testimonio oral que describe la relación con las abejas en el Barrio de la Tosca (Tejeda) Avete. Unión de Asociaciones de la Reserva de la Biosfera de Gran Canaria.ogg",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ATestimonio%20oral%20que%20describe%20la%20relaci%C3%B3n%20con%20las%20abejas%20en%20el%20Barrio%20de%20la%20Tosca%20%28Tejeda%29%20Avete.%20Uni%C3%B3n%20de%20Asociaciones%20de%20la%20Reserva%20de%20la%20Biosfera%20de%20Gran%20Canaria.ogg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Testimonio_oral_que_describe_la_relaci%C3%B3n_con_las_abejas_en_el_Barrio_de_la_Tosca_%28Tejeda%29_Avete._Uni%C3%B3n_de_Asociaciones_de_la_Reserva_de_la_Biosfera_de_Gran_Canaria.ogg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:JennyTerritorioSociedad&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:JennyTerritorioSociedad (page does not exist)\">JennyTerritorioSociedad</a>",
+      "query": "bee buzz",
+      "file": "animal-race/assets/sounds/bee.ogg"
+    }
+  },
+  "hornet": {
+    "en": "Hornet",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:MehdiTaba89&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:MehdiTaba89 (page does not exist)\">Mehdi Taba</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AHornet.jpg",
+      "file": "animal-race/assets/images/hornet.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Hornet.jpg"
+    }
+  },
+  "crocodile": {
+    "en": "Crocodile",
+    "image": {
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Dewet\" title=\"User:Dewet\">Dewet</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ANileCrocodile.jpg",
+      "file": "animal-race/assets/images/crocodile.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/81/NileCrocodile.jpg"
+    }
+  },
+  "turtle": {
+    "en": "Turtle",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://sites.google.com/site/thebrockeninglory/\">Brocken Inaglory</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AChelonia_mydas_is_going_for_the_air_edit.jpg",
+      "file": "animal-race/assets/images/turtle.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Chelonia_mydas_is_going_for_the_air_edit.jpg"
+    }
+  },
+  "cheetah": {
+    "en": "Cheetah",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:AfricanConservation&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:AfricanConservation (page does not exist)\">AfricanConservation</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AMale_cheetah_facing_left_in_South_Africa.jpg"
+    },
+    "audio": {
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "Smirnova D, Volodin I, Demina T, Volodina E",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AAcoustic-Structure-and-Contextual-Use-of-Calls-by-Captive-Male-and-Female-Cheetahs-%28Acinonyx-pone.0158546.s001.oga"
+    }
+  },
+  "dog": {
+    "en": "Dog",
+    "image": {
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "M. Rehemtulla",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AHuskiesatrest.jpg"
+    },
+    "audio": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Amada44\" title=\"User:Amada44\">Amada44</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABarking_of_a_dog.ogg"
+    }
+  },
+  "snail": {
+    "en": "Snail",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Geierunited~commonswiki\" title=\"User:Geierunited~commonswiki\">Geierunited</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ASnail.jpg"
+    }
+  },
+  "bugatti": {
+    "en": "Bugatti",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Calreyn88&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Calreyn88 (page does not exist)\">Calreyn88</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABugatti_Chiron_1.jpg"
+    },
+    "audio": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Edvvc\" title=\"User:Edvvc\">Edvvc</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AJaguar_XJR12_%281990%29.ogg"
+    }
+  },
+  "f22": {
+    "en": "F-22 Raptor",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<ul><li><a href=\"//commons.wikimedia.org/wiki/File:F-22_Raptor.JPG\" title=\"File:F-22 Raptor.JPG\">F-22_Raptor.JPG</a>: Master Sgt. Andy Dunaway</li></ul>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AF-22_Raptor_edit1_%28cropped%29.jpg"
+    },
+    "audio": {
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/Commons:Work_With_Sounds\" title=\"Commons:Work With Sounds\">Work With Sounds</a> / Torsten Nilsson",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWWS_SaabJ35DDraken8211passingtwotimes.ogg"
+    }
+  },
+  "hippo": {
+    "en": "Hippopotamus",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Muhammad_Mahdi_Karim\" title=\"User:Muhammad Mahdi Karim\">Muhammad Mahdi Karim</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg",
+      "file": "animal-race/assets/images/hippo.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Portrait_Hippopotamus_in_the_water.jpg"
+    }
+  }
+}
