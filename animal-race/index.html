@@ -71,6 +71,8 @@
   }
 
   .app { max-width: 960px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  /* Race screen gets more horizontal room — longer track feels more race-y */
+  body:has(#raceScreen.active) .app { max-width: 1200px; }
   .screen { display: none; }
   .screen.active { display: block; animation: fadeIn .4s ease; }
   @keyframes fadeIn {
@@ -286,7 +288,7 @@
   .race-title {
     text-align: center;
     font-family: 'Itim', cursive;
-    font-size: clamp(32px, 6vw, 48px);
+    font-size: clamp(40px, 7vw, 60px);
     color: var(--brand-dark);
     margin: 0 0 18px;
     text-shadow: 2px 2px 0 #fff;
@@ -296,13 +298,13 @@
   .track-wrap {
     background: #fff;
     border-radius: 28px;
-    padding: 12px;
+    padding: 14px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     border: 4px solid #fff;
     margin-bottom: 20px;
   }
   .lane {
-    height: 86px;
+    height: 108px;
     background:
       repeating-linear-gradient(90deg,
         var(--track) 0 40px,
@@ -343,7 +345,7 @@
     top: 50%;
     left: 0;
     transform: translate(0, -50%);
-    font-size: 54px;
+    font-size: 72px;
     line-height: 1;
     filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2));
     will-change: transform;
@@ -351,10 +353,10 @@
   }
   .runner img.racer-img {
     display: block;
-    width: 68px; height: 68px;
-    border-radius: 14px;
+    width: 96px; height: 96px;
+    border-radius: 16px;
     /* contain (not cover) so the shark's head, Bolt's mid-stride, etc.
-       stay visible in the tiny race-lane thumbnail. */
+       stay visible in the race-lane thumbnail. */
     object-fit: contain;
     border: 3px solid #fff;
     box-shadow: 0 2px 0 rgba(0,0,0,0.15);
@@ -373,11 +375,12 @@
 
   .lane-info {
     position: absolute;
-    top: 4px; left: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(0,0,0,0.5);
+    top: 6px; left: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.6);
     z-index: 1;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
   }
 
   .countdown {
@@ -498,9 +501,10 @@
     .card.selected .racer-img { box-shadow: 0 0 0 2px var(--brand), 0 2px 0 var(--brand-dark); }
     .card .name { font-size: 18px; }
     .card .speed { font-size: 14px; }
-    .lane { height: 74px; }
-    .runner { font-size: 42px; }
-    .runner img.racer-img { width: 56px; height: 56px; border-width: 2px; border-radius: 12px; }
+    .lane { height: 90px; }
+    .runner { font-size: 56px; }
+    .runner img.racer-img { width: 76px; height: 76px; border-width: 2px; border-radius: 14px; }
+    .lane-info { font-size: 15px; top: 4px; left: 10px; }
     .btn-main { font-size: 22px; padding: 14px 30px; }
     .countdown { font-size: 160px; }
   }
@@ -951,11 +955,13 @@
   }
 
   function paintRunner(r) {
-    // lane width minus finish line + runner width
+    // lane width minus finish line + runner width (actual size set in CSS).
+    // The runner width tracks the image width at ≥480px (96) and the mobile
+    // breakpoint value (76) below it — measuring the DOM keeps the two in sync.
     const lane = r.laneEl;
     const laneWidth = lane.clientWidth;
-    const runnerWidth = 60;
-    const finishOffset = 30;
+    const runnerWidth = r.runnerEl.offsetWidth || 96;
+    const finishOffset = 34;
     const travel = laneWidth - runnerWidth - finishOffset;
     const x = r.position * travel;
     // preserve the -50% y transform & keep running animation via CSS
