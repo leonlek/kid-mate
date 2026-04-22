@@ -1,0 +1,30 @@
+{
+  "name": "เกมเด็ก",
+  "short_name": "เกมเด็ก",
+  "description": "รวมเกมสำหรับเด็กไทย ฟรี เล่นในเบราว์เซอร์ ไม่ต้องโหลดแอป",
+  "lang": "th",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#b5e8ff",
+  "theme_color": "#ff6b9d",
+  "categories": ["games", "education", "kids"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "แข่งความเร็ว",
+      "short_name": "แข่งความเร็ว",
+      "description": "เกมแข่งความเร็วสัตว์และยานพาหนะ",
+      "url": "./animal-race/"
+    }
+  ]
+}

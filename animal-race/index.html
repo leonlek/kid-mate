@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🏁 แข่งความเร็ว — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมแข่งความเร็วสำหรับเด็ก เลือกสัตว์ รถ เครื่องบิน มาแข่งกันด้วยความเร็วจริง สนุก ฟรี ไม่ต้องโหลดแอป">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แข่งความเร็ว">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="🏁 แข่งความเร็ว — เกมสำหรับเด็ก">
+<meta property="og:description" content="เลือกสัตว์ รถ เครื่องบิน มาแข่งกันด้วยความเร็วจริง ฟรี ไม่ต้องโหลดแอป">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-1: #ffd56b;
+    --sky-2: #ffb4a2;
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --grass-2: #5bc13a;
+    --track: #f7d8a4;
+    --track-dark: #e0b97a;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --silver: #c8d6e5;
+    --bronze: #e17055;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.7; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 960px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .4s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Header ===== */
+  .hero {
+    text-align: center;
+    padding: 10px 10px 20px;
+  }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(38px, 8vw, 64px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow:
+      3px 3px 0 #fff,
+      6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p {
+    font-size: clamp(16px, 3.4vw, 22px);
+    margin: 10px 0 0;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* ===== Filter pills ===== */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 16px 14px;
+    margin: 0 -20px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-padding: 0 16px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border: 3px solid #fff;
+    border-radius: 999px;
+    background: #fff;
+    color: #777;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+  }
+  .pill:active { transform: scale(0.94); }
+  .pill.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 3px 0 var(--brand-dark);
+  }
+
+  /* ===== Selection grid ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin: 20px 0 100px;
+  }
+  .card {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 22px;
+    padding: 16px 12px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.03));
+    pointer-events: none;
+  }
+  .card:active { transform: scale(0.96); }
+  .card.selected {
+    border-color: var(--brand);
+    background: #fff5f9;
+    box-shadow: 0 6px 0 var(--brand-dark), 0 0 0 3px #fff inset;
+    transform: translateY(-2px);
+  }
+  .card .emoji {
+    font-size: 68px;
+    line-height: 1;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1));
+    transition: transform .2s ease;
+  }
+  .card .racer-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin: 2px 0 0;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    background: #f5f5f5;
+    transition: transform .2s ease;
+  }
+  .card.selected .emoji,
+  .card.selected .racer-img { animation: wiggle .6s ease infinite alternate; }
+  .card.selected .racer-img { box-shadow: 0 0 0 3px var(--brand), 0 3px 0 var(--brand-dark); }
+  @keyframes wiggle {
+    from { transform: rotate(-8deg) scale(1.05); }
+    to   { transform: rotate(8deg) scale(1.1); }
+  }
+  .card .name {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .card .speed {
+    font-size: 16px;
+    color: #888;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .card .badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 28px; height: 28px;
+    background: var(--brand);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 var(--brand-dark);
+    transform: scale(0);
+    transition: transform .25s cubic-bezier(.5,1.6,.5,1);
+  }
+  .card.selected .badge { transform: scale(1); }
+
+  /* ===== Action bar ===== */
+  .action-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95) 30%);
+    display: flex;
+    justify-content: center;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .btn-main {
+    pointer-events: auto;
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: 28px;
+    font-weight: 400;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffa3c5, var(--brand));
+    color: #fff;
+    box-shadow:
+      0 6px 0 var(--brand-dark),
+      0 10px 20px rgba(255,107,157,0.4);
+    cursor: pointer;
+    transition: all .12s ease;
+    letter-spacing: 1px;
+    text-shadow: 1px 2px 0 rgba(0,0,0,0.15);
+  }
+  .btn-main:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--brand-dark), 0 4px 10px rgba(255,107,157,0.3);
+  }
+  .btn-main:disabled {
+    background: #ddd;
+    color: #aaa;
+    box-shadow: 0 4px 0 #bbb;
+    cursor: not-allowed;
+    text-shadow: none;
+  }
+  .btn-main.pulse:not(:disabled) { animation: pulse 1.4s ease infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+
+  .btn-ghost {
+    pointer-events: auto;
+    font-family: 'Mitr', sans-serif;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: 3px solid var(--brand);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--brand-dark);
+    cursor: pointer;
+    font-weight: 600;
+    margin: 0 6px;
+    transition: all .12s ease;
+  }
+  .btn-ghost:active { transform: scale(0.95); }
+
+  /* ===== Race Track ===== */
+  .race-title {
+    text-align: center;
+    font-family: 'Itim', cursive;
+    font-size: clamp(32px, 6vw, 48px);
+    color: var(--brand-dark);
+    margin: 0 0 18px;
+    text-shadow: 2px 2px 0 #fff;
+    min-height: 1.2em;
+  }
+
+  .track-wrap {
+    background: #fff;
+    border-radius: 28px;
+    padding: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: 4px solid #fff;
+    margin-bottom: 20px;
+  }
+  .lane {
+    height: 86px;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--track) 0 40px,
+        var(--track-dark) 40px 41px);
+    border-radius: 14px;
+    position: relative;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border: 2px solid #e0b97a;
+  }
+  .lane:last-child { margin-bottom: 0; }
+
+  /* finish line on the right */
+  .lane::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; right: 8px;
+    width: 14px;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        #000 0 6px,
+        #fff 6px 12px
+      );
+    border-radius: 3px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+  }
+  .lane::before {
+    content: '🏁';
+    position: absolute;
+    top: -4px; right: 22px;
+    font-size: 24px;
+    z-index: 2;
+  }
+
+  .runner {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(0, -50%);
+    font-size: 54px;
+    line-height: 1;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2));
+    will-change: transform;
+    z-index: 3;
+  }
+  .runner img.racer-img {
+    display: block;
+    width: 68px; height: 68px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    background: #f5f5f5;
+  }
+  .runner.running { animation: bob 0.3s ease-in-out infinite alternate; }
+  @keyframes bob {
+    from { transform: translate(0, -50%) rotate(-4deg) scaleX(1); }
+    to   { transform: translate(0, -58%) rotate(4deg) scaleX(1.05); }
+  }
+  .runner.finished { animation: celebrate 0.5s ease infinite alternate; }
+  @keyframes celebrate {
+    from { transform: translate(0, -50%) scale(1); }
+    to   { transform: translate(0, -70%) scale(1.2); }
+  }
+
+  .lane-info {
+    position: absolute;
+    top: 4px; left: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.5);
+    z-index: 1;
+  }
+
+  .countdown {
+    position: fixed;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Itim', cursive;
+    font-size: 240px;
+    color: var(--brand);
+    text-shadow: 6px 6px 0 #fff, 12px 12px 0 rgba(0,0,0,0.1);
+    pointer-events: none;
+    z-index: 100;
+    animation: countPop 1s ease;
+  }
+  @keyframes countPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    30%  { transform: scale(1.1); opacity: 1; }
+    80%  { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  /* ===== Results ===== */
+  .trophy {
+    text-align: center;
+    font-size: clamp(80px, 20vw, 140px);
+    margin: 10px 0 4px;
+    animation: bounce 1s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-12px) rotate(5deg); }
+  }
+  .winner-name {
+    text-align: center;
+    font-family: 'Itim', cursive;
+    font-size: clamp(30px, 6vw, 48px);
+    color: var(--brand-dark);
+    margin: 0 0 6px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .winner-sub {
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+    margin: 0 0 20px;
+  }
+
+  .rankings {
+    background: #fff;
+    border-radius: 22px;
+    padding: 16px;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+    margin-bottom: 100px;
+  }
+  .rank-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 10px;
+    border-bottom: 2px dashed #f0f0f0;
+  }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-num {
+    font-family: 'Itim', cursive;
+    font-size: 38px;
+    width: 60px;
+    text-align: center;
+    color: #888;
+  }
+  .rank-row[data-pos="1"] .rank-num { color: var(--gold); text-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+  .rank-row[data-pos="2"] .rank-num { color: #8395a7; }
+  .rank-row[data-pos="3"] .rank-num { color: var(--bronze); }
+  .rank-emoji { font-size: 48px; line-height: 1; }
+  .rank-emoji img.racer-img {
+    display: block;
+    width: 72px; height: 72px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--card-border);
+  }
+  .rank-details { flex: 1; }
+  .rank-name {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .rank-speed {
+    font-size: 14px;
+    color: #777;
+    margin-top: 2px;
+  }
+  .rank-time {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+  }
+
+  /* confetti */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .card { padding: 12px 8px 10px; border-width: 3px; border-radius: 18px; }
+    .card .emoji { font-size: 52px; }
+    .card .racer-img { border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+    .card.selected .racer-img { box-shadow: 0 0 0 2px var(--brand), 0 2px 0 var(--brand-dark); }
+    .card .name { font-size: 18px; }
+    .card .speed { font-size: 14px; }
+    .lane { height: 74px; }
+    .runner { font-size: 42px; }
+    .runner img.racer-img { width: 56px; height: 56px; border-width: 2px; border-radius: 12px; }
+    .btn-main { font-size: 22px; padding: 14px 30px; }
+    .countdown { font-size: 160px; }
+  }
+
+  /* ===== Home button (back to hub) ===== */
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    z-index: 60;
+    transition: transform .12s ease;
+  }
+  .home-btn:active { transform: scale(0.92); }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="app">
+
+  <!-- SELECT SCREEN -->
+  <section id="selectScreen" class="screen active">
+    <div class="hero">
+      <h1>🏁 แข่งความเร็ว 🏁</h1>
+      <p>เลือกอะไรก็ได้มาแข่งกัน <br/><small style="font-size:.85em;color:#888">(เลือก 2 อย่างขึ้นไป)</small></p>
+    </div>
+    <div id="filterRow" class="filter-row"></div>
+    <div id="animalGrid" class="grid"></div>
+    <div class="action-bar">
+      <button id="startBtn" class="btn-main pulse" disabled>แข่งเลย! 🚀</button>
+    </div>
+  </section>
+
+  <!-- RACE SCREEN -->
+  <section id="raceScreen" class="screen">
+    <h2 id="raceMsg" class="race-title">พร้อม... ระวัง... ไป!</h2>
+    <div id="trackWrap" class="track-wrap"></div>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="resultsScreen" class="screen">
+    <div class="trophy">🏆</div>
+    <h2 id="winnerName" class="winner-name">—</h2>
+    <p id="winnerSub" class="winner-sub">—</p>
+    <div id="rankings" class="rankings"></div>
+    <div class="action-bar">
+      <button id="againBtn" class="btn-ghost">🔄 แข่งอีก</button>
+      <button id="newBtn" class="btn-main">เลือกใหม่ 🐾</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ============ DATA ============
+  const ANIMALS = [
+    { id: 'shuttle',     emoji: '🚀',  name: 'กระสวยอวกาศ',     speed: 28000, cat: 'aircraft' },
+    { id: 'f22',         emoji: '🛩️',  name: 'F-22 แร็พเตอร์',  speed: 2410,  cat: 'aircraft', img: 'assets/images/f22.jpg',     sfx: 'assets/sounds/f22.ogg',     en: 'F-22 Raptor' },
+    { id: 'f16',         emoji: '🛩️',  name: 'F-16',            speed: 2180,  cat: 'aircraft' },
+    { id: 'f18',         emoji: '🛩️',  name: 'F-18 ฮอร์เน็ต',   speed: 1915,  cat: 'aircraft' },
+    { id: 'airliner',    emoji: '✈️',  name: 'เครื่องบินโดยสาร', speed: 920,   cat: 'aircraft' },
+    { id: 'bugatti',     emoji: '🏎️',  name: 'บูกัตติ',          speed: 490,   cat: 'vehicle',  img: 'assets/images/bugatti.jpg', sfx: 'assets/sounds/bugatti.ogg', en: 'Bugatti' },
+    { id: 'f1',          emoji: '🏎️',  name: 'รถ F1',           speed: 375,   cat: 'vehicle'  },
+    { id: 'lambo',       emoji: '🏎️',  name: 'ลัมโบร์กินี',     speed: 355,   cat: 'vehicle'  },
+    { id: 'ferrari',     emoji: '🏎️',  name: 'เฟอร์รารี่',      speed: 340,   cat: 'vehicle'  },
+    { id: 'ducati',      emoji: '🏍️',  name: 'ดูคาติ',          speed: 300,   cat: 'vehicle'  },
+    { id: 'falcon',      emoji: '🦅',  name: 'เหยี่ยวเพเรกริน', speed: 240,   cat: 'bird'     },
+    { id: 'eagle',       emoji: '🦅',  name: 'นกอินทรี',        speed: 160,   cat: 'bird'     },
+    { id: 'dragon',      emoji: '🐉',  name: 'มังกร',           speed: 130,   cat: 'fantasy'  },
+    { id: 'cheetah',     emoji: '🐆',  name: 'เสือชีตาห์',      speed: 120,   cat: 'wild',     img: 'assets/images/cheetah.jpg', sfx: 'assets/sounds/cheetah.ogg', en: 'Cheetah' },
+    { id: 'sailfish',    emoji: '🐟',  name: 'ปลาเซลฟิช',       speed: 110,   cat: 'water'    },
+    { id: 'unicorn',     emoji: '🦄',  name: 'ยูนิคอร์น',       speed: 95,    cat: 'fantasy'  },
+    { id: 'pterodactyl', emoji: '🦇',  name: 'เทอโรแด็กทิล',    speed: 80,    cat: 'dino'     },
+    { id: 'swan',        emoji: '🦢',  name: 'หงส์',            speed: 80,    cat: 'bird'     },
+    { id: 'deer',        emoji: '🦌',  name: 'กวาง',            speed: 80,    cat: 'wild'     },
+    { id: 'lion',        emoji: '🦁',  name: 'สิงโต',           speed: 80,    cat: 'wild'     },
+    { id: 'wolf',        emoji: '🐺',  name: 'หมาป่า',          speed: 75,    cat: 'wild'     },
+    { id: 'horse',       emoji: '🐎',  name: 'ม้า',             speed: 70,    cat: 'farm'     },
+    { id: 'kangaroo',    emoji: '🦘',  name: 'จิงโจ้',          speed: 70,    cat: 'wild'     },
+    { id: 'crow',        emoji: '🐦',  name: 'นกกา',            speed: 70,    cat: 'bird'     },
+    { id: 'zebra',       emoji: '🦓',  name: 'ม้าลาย',          speed: 65,    cat: 'wild'     },
+    { id: 'tiger',       emoji: '🐅',  name: 'เสือโคร่ง',       speed: 65,    cat: 'wild'     },
+    { id: 'owl',         emoji: '🦉',  name: 'นกฮูก',           speed: 65,    cat: 'bird'     },
+    { id: 'giraffe',     emoji: '🦒',  name: 'ยีราฟ',           speed: 60,    cat: 'wild'     },
+    { id: 'flamingo',    emoji: '🦩',  name: 'ฟลามิงโก',        speed: 60,    cat: 'bird'     },
+    { id: 'rabbit',      emoji: '🐰',  name: 'กระต่าย',         speed: 56,    cat: 'farm'     },
+    { id: 'shark',       emoji: '🦈',  name: 'ฉลาม',            speed: 56,    cat: 'water'    },
+    { id: 'orca',        emoji: '🐳',  name: 'วาฬออก้า',        speed: 56,    cat: 'water'    },
+    { id: 'rhino',       emoji: '🦏',  name: 'แรด',             speed: 55,    cat: 'wild'     },
+    { id: 'fox',         emoji: '🦊',  name: 'จิ้งจอก',         speed: 50,    cat: 'wild'     },
+    { id: 'bear',        emoji: '🐻',  name: 'หมี',             speed: 50,    cat: 'wild'     },
+    { id: 'whale',       emoji: '🐋',  name: 'วาฬสีน้ำเงิน',    speed: 50,    cat: 'water'    },
+    { id: 'cat',         emoji: '🐈',  name: 'แมว',             speed: 48,    cat: 'farm'     },
+    { id: 'dog',         emoji: '🐕',  name: 'สุนัข',            speed: 45,    cat: 'farm',     img: 'assets/images/dog.jpg',     sfx: 'assets/sounds/dog.ogg',     en: 'Dog' },
+    { id: 'raptor',      emoji: '🦖',  name: 'แรพเตอร์',         speed: 40,    cat: 'dino'     },
+    { id: 'elephant',    emoji: '🐘',  name: 'ช้าง',            speed: 40,    cat: 'wild'     },
+    { id: 'polarbear',   emoji: '🐻‍❄️', name: 'หมีขาว',         speed: 40,    cat: 'wild'     },
+    { id: 'octopus',     emoji: '🐙',  name: 'ปลาหมึก',         speed: 40,    cat: 'water'    },
+    { id: 'human',       emoji: '🏃',  name: 'คน',              speed: 37,    cat: 'other'    },
+    { id: 'dolphin',     emoji: '🐬',  name: 'โลมา',            speed: 37,    cat: 'water'    },
+    { id: 'cow',         emoji: '🐮',  name: 'วัว',             speed: 35,    cat: 'farm'     },
+    { id: 'seal',        emoji: '🦭',  name: 'แมวน้ำ',          speed: 35,    cat: 'water'    },
+    { id: 'hippo',       emoji: '🦛',  name: 'ฮิปโป',           speed: 30,    cat: 'wild'     },
+    { id: 'trex',        emoji: '🦖',  name: 'ทีเร็กซ์',         speed: 27,    cat: 'dino'     },
+    { id: 'monkey',      emoji: '🐒',  name: 'ลิง',             speed: 24,    cat: 'wild'     },
+    { id: 'bee',         emoji: '🐝',  name: 'ผึ้ง',            speed: 24,    cat: 'other'    },
+    { id: 'parrot',      emoji: '🦜',  name: 'นกแก้ว',          speed: 24,    cat: 'bird'     },
+    { id: 'hornet',      emoji: '🐝',  name: 'แตน',             speed: 22,    cat: 'other'    },
+    { id: 'crocodile',   emoji: '🐊',  name: 'จระเข้',           speed: 20,    cat: 'other'    },
+    { id: 'squirrel',    emoji: '🐿️',  name: 'กระรอก',          speed: 20,    cat: 'wild'     },
+    { id: 'supercroc',   emoji: '🐊',  name: 'ซูเปอร์คร็อค',    speed: 18,    cat: 'dino'     },
+    { id: 'pig',         emoji: '🐖',  name: 'หมู',             speed: 17,    cat: 'farm'     },
+    { id: 'chicken',     emoji: '🐔',  name: 'ไก่',             speed: 14,    cat: 'bird'     },
+    { id: 'duck',        emoji: '🦆',  name: 'เป็ด',            speed: 10,    cat: 'bird'     },
+    { id: 'longneck',    emoji: '🦕',  name: 'ไดโนคอยาว',       speed: 8,     cat: 'dino'     },
+    { id: 'penguin',     emoji: '🐧',  name: 'เพนกวิน',         speed: 6,     cat: 'bird'     },
+    { id: 'crab',        emoji: '🦀',  name: 'ปู',              speed: 1.6,   cat: 'water'    },
+    { id: 'turtle',      emoji: '🐢',  name: 'เต่า',            speed: 1,     cat: 'other'    },
+    { id: 'sloth',       emoji: '🦥',  name: 'สลอท',            speed: 0.27,  cat: 'wild'     },
+    { id: 'snail',       emoji: '🐌',  name: 'หอยทาก',          speed: 0.05,  cat: 'other',    img: 'assets/images/snail.jpg',   en: 'Snail' },
+  ];
+
+  const CATEGORIES = [
+    { id: 'all',      label: '🌍 ทั้งหมด' },
+    { id: 'wild',     label: '🦁 สัตว์ป่า' },
+    { id: 'farm',     label: '🐮 ฟาร์ม/บ้าน' },
+    { id: 'bird',     label: '🦅 นก' },
+    { id: 'water',    label: '🦈 สัตว์น้ำ' },
+    { id: 'dino',     label: '🦖 ไดโนเสาร์' },
+    { id: 'fantasy',  label: '🦄 จินตนาการ' },
+    { id: 'vehicle',  label: '🏎️ ยานยนต์' },
+    { id: 'aircraft', label: '✈️ อากาศ' },
+    { id: 'other',    label: '🐌 อื่นๆ' },
+  ];
+
+  const state = {
+    selected: new Set(),
+    category: 'all',
+  };
+
+  // ============ SCREENS ============
+  const screens = {
+    select:  document.getElementById('selectScreen'),
+    race:    document.getElementById('raceScreen'),
+    results: document.getElementById('resultsScreen'),
+  };
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ============ SELECT SCREEN ============
+  const grid = document.getElementById('animalGrid');
+  const filterRow = document.getElementById('filterRow');
+  const startBtn = document.getElementById('startBtn');
+
+  function renderFilters() {
+    filterRow.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'pill' + (state.category === c.id ? ' active' : '');
+      btn.textContent = c.label;
+      btn.addEventListener('click', () => {
+        state.category = c.id;
+        renderFilters();
+        renderGrid();
+        // bring page back to top so filters + grid are visible
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // center the new active pill horizontally inside the filter row
+        requestAnimationFrame(() => {
+          const active = filterRow.querySelector('.pill.active');
+          if (!active) return;
+          const target = active.offsetLeft - filterRow.clientWidth / 2 + active.clientWidth / 2;
+          filterRow.scrollTo({ left: target, behavior: 'smooth' });
+        });
+      });
+      filterRow.appendChild(btn);
+    });
+  }
+
+  // Render a racer's visual: real image if available, emoji otherwise.
+  // `lazy` controls <img loading> — use true for the grid (64 cards), false for
+  // race lanes/results where we want the image ready immediately.
+  function visual(a, { lazy = false } = {}) {
+    if (a.img) {
+      const loading = lazy ? 'loading="lazy" decoding="async"' : 'decoding="async"';
+      return `<img class="racer-img" src="${a.img}" alt="${a.name}" ${loading}>`;
+    }
+    return `<div class="emoji">${a.emoji}</div>`;
+  }
+
+  function renderGrid() {
+    grid.innerHTML = '';
+    const list = state.category === 'all'
+      ? ANIMALS
+      : ANIMALS.filter(a => a.cat === state.category);
+    list.forEach(a => {
+      const isSel = state.selected.has(a.id);
+      const div = document.createElement('div');
+      div.className = 'card' + (isSel ? ' selected' : '');
+      div.innerHTML = `
+        <div class="badge">✓</div>
+        ${visual(a, { lazy: true })}
+        <div class="name">${a.name}</div>
+        <div class="speed">${formatSpeed(a.speed)} กม./ชม.</div>
+      `;
+      div.addEventListener('click', () => {
+        if (state.selected.has(a.id)) {
+          state.selected.delete(a.id);
+        } else {
+          state.selected.add(a.id);
+          tapRacer(a); // speak English name, then play SFX
+        }
+        renderGrid();
+        updateStartBtn();
+      });
+      grid.appendChild(div);
+    });
+  }
+
+  function formatSpeed(s) {
+    if (s < 1) return s.toString();
+    return s.toLocaleString('en-US');
+  }
+
+  function updateStartBtn() {
+    const n = state.selected.size;
+    startBtn.disabled = n < 2;
+    startBtn.textContent = n < 2
+      ? `เลือกอีก ${2 - n} อย่าง`
+      : `แข่งเลย! (${n} อย่าง) 🚀`;
+  }
+
+  // Haptic feedback (no-op on devices without support, e.g. iOS Safari)
+  function buzz(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  // Cache one Audio element per sfx src so files preload and subsequent
+  // taps play instantly. Before starting a new sound we stop every cached
+  // element — pausing just the "currently playing" one was unreliable when
+  // the previous play() promise hadn't resolved yet, causing overlap.
+  const sfxCache = new Map();
+  function getSfx(src) {
+    let a = sfxCache.get(src);
+    if (!a) {
+      a = new Audio(src);
+      a.preload = 'auto';
+      sfxCache.set(src, a);
+    }
+    return a;
+  }
+  function stopAllSfx() {
+    for (const a of sfxCache.values()) {
+      if (!a.paused || a.currentTime > 0) {
+        try { a.pause(); a.currentTime = 0; } catch (_) {}
+      }
+    }
+  }
+  function playSfx(src) {
+    if (!src) return;
+    console.debug('[sfx] play', src);
+    try {
+      stopAllSfx();
+      const a = getSfx(src);
+      a.currentTime = 0;
+      const p = a.play();
+      if (p && p.catch) p.catch((err) => console.warn('[sfx]', src, err));
+    } catch (e) { console.warn('[sfx] exception', src, e); }
+  }
+
+  // Speak an English word via built-in TTS (Siri/Google/etc. — no network).
+  // onDone fires when speech ends OR errors, so callers can chain reliably.
+  function speakEn(text, onDone) {
+    if (!('speechSynthesis' in window) || !text) { if (onDone) onDone(); return; }
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      u.pitch = 1;
+      if (onDone) { u.onend = onDone; u.onerror = onDone; }
+      speechSynthesis.speak(u);
+    } catch (_) { if (onDone) onDone(); }
+  }
+
+  // Called when a racer card is tapped: cancel any in-flight audio, speak
+  // the English name, then play the racer's SFX. A sequence counter makes
+  // sure a fast second tap doesn't trigger the first racer's SFX after its
+  // speech gets cancelled.
+  let tapSeq = 0;
+  function tapRacer(a) {
+    const seq = ++tapSeq;
+    stopAllSfx();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (a.en) {
+      speakEn(a.en, () => {
+        if (seq !== tapSeq) return; // newer tap has superseded this one
+        if (a.sfx) playSfx(a.sfx);
+      });
+    } else if (a.sfx) {
+      playSfx(a.sfx);
+    }
+  }
+
+  startBtn.addEventListener('click', () => {
+    buzz(15);
+    const racers = ANIMALS.filter(a => state.selected.has(a.id));
+    startRace(racers);
+  });
+
+  // ============ RACE SCREEN ============
+  const trackWrap = document.getElementById('trackWrap');
+  const raceMsg = document.getElementById('raceMsg');
+
+  async function startRace(animals) {
+    showScreen('race');
+    raceMsg.textContent = 'เตรียมตัว...';
+
+    // build lanes
+    trackWrap.innerHTML = '';
+    const racers = animals.map((a) => {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      const runnerContent = a.img
+        ? `<img class="racer-img" src="${a.img}" alt="" decoding="async">`
+        : a.emoji;
+      lane.innerHTML = `
+        <div class="lane-info">${a.name} · ${formatSpeed(a.speed)} กม./ชม.</div>
+        <div class="runner" data-id="${a.id}">${runnerContent}</div>
+      `;
+      trackWrap.appendChild(lane);
+      return {
+        ...a,
+        laneEl: lane,
+        runnerEl: lane.querySelector('.runner'),
+        position: 0,
+        finishTime: null,
+        // small per-race variance for fun (±12%)
+        variance: 0.88 + Math.random() * 0.24,
+      };
+    });
+
+    // countdown
+    await sleep(300);
+    await doCountdown('3');
+    await doCountdown('2');
+    await doCountdown('1');
+    await doCountdown('วิ่ง!');
+
+    raceMsg.textContent = '🏃‍♂️ กำลังแข่ง... 🏃‍♀️';
+
+    // race loop
+    const results = await runRace(racers);
+    await sleep(600);
+    showResults(results);
+  }
+
+  function doCountdown(text) {
+    return new Promise(resolve => {
+      const el = document.createElement('div');
+      el.className = 'countdown';
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.remove();
+        resolve();
+      }, 850);
+    });
+  }
+
+  function runRace(racers) {
+    return new Promise(resolve => {
+      // compute effective speed for animation: cube root compresses the huge
+      // range (0.05 km/h snail to 28,000 km/h shuttle) so that slow racers
+      // still make visible progress against fast ones
+      racers.forEach(r => {
+        r.effSpeed = Math.cbrt(r.speed) * r.variance;
+      });
+      const maxEff = Math.max(...racers.map(r => r.effSpeed));
+
+      // fastest should finish in ~4 seconds
+      const targetMs = 4000;
+      // pixels per ms for the fastest
+      // we'll use relative positions (0 to 1)
+
+      // mark runners as running
+      racers.forEach(r => r.runnerEl.classList.add('running'));
+
+      const start = performance.now();
+      const finished = [];
+      // hard cap: if slowest hasn't finished by 15s, end the race
+      const hardCap = 15000;
+
+      function tick(now) {
+        const elapsed = now - start;
+        let allDone = true;
+
+        for (const r of racers) {
+          if (r.finishTime !== null) continue;
+          // progress in range [0, 1]
+          const progress = (r.effSpeed / maxEff) * (elapsed / targetMs);
+          if (progress >= 1) {
+            r.position = 1;
+            r.finishTime = elapsed / 1000;
+            finished.push(r);
+            paintRunner(r);
+            r.runnerEl.classList.remove('running');
+            r.runnerEl.classList.add('finished');
+            buzz(finished.length === 1 ? [30, 40, 30] : 20);
+          } else {
+            r.position = progress;
+            allDone = false;
+            paintRunner(r);
+          }
+        }
+
+        if (allDone || elapsed >= hardCap) {
+          // force-finish stragglers, ranked by current position
+          const stragglers = racers
+            .filter(r => r.finishTime === null)
+            .sort((a, b) => b.position - a.position);
+          stragglers.forEach(r => {
+            r.finishTime = elapsed / 1000;
+            finished.push(r);
+            r.runnerEl.classList.remove('running');
+          });
+          resolve(finished);
+        } else {
+          requestAnimationFrame(tick);
+        }
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function paintRunner(r) {
+    // lane width minus finish line + runner width
+    const lane = r.laneEl;
+    const laneWidth = lane.clientWidth;
+    const runnerWidth = 60;
+    const finishOffset = 30;
+    const travel = laneWidth - runnerWidth - finishOffset;
+    const x = r.position * travel;
+    // preserve the -50% y transform & keep running animation via CSS
+    r.runnerEl.style.left = x + 'px';
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ============ RESULTS SCREEN ============
+  const rankings = document.getElementById('rankings');
+  const winnerName = document.getElementById('winnerName');
+  const winnerSub = document.getElementById('winnerSub');
+
+  function showResults(results) {
+    // results already in finishing order
+    const winner = results[0];
+    winnerName.textContent = `${winner.emoji} ${winner.name} ชนะ!`;
+    winnerSub.textContent = `วิ่งได้เร็ว ${formatSpeed(winner.speed)} กม./ชม.`;
+
+    rankings.innerHTML = '';
+    const medals = ['🥇', '🥈', '🥉'];
+    results.forEach((r, i) => {
+      const pos = i + 1;
+      const row = document.createElement('div');
+      row.className = 'rank-row';
+      row.dataset.pos = pos;
+      const rankVisual = r.img
+        ? `<img class="racer-img" src="${r.img}" alt="" decoding="async">`
+        : r.emoji;
+      row.innerHTML = `
+        <div class="rank-num">${medals[i] || '#' + pos}</div>
+        <div class="rank-emoji">${rankVisual}</div>
+        <div class="rank-details">
+          <div class="rank-name">${r.name}</div>
+          <div class="rank-speed">${formatSpeed(r.speed)} กม./ชม.</div>
+        </div>
+        <div class="rank-time">${r.finishTime.toFixed(1)}s</div>
+      `;
+      rankings.appendChild(row);
+    });
+
+    showScreen('results');
+    celebrate();
+  }
+
+  function celebrate() {
+    const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.style.animationDelay = Math.random() * 0.8 + 's';
+      c.style.transform = `rotate(${Math.random() * 360}deg)`;
+      if (Math.random() > 0.5) c.style.borderRadius = '50%';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+  }
+
+  // ============ RESULT BUTTONS ============
+  document.getElementById('againBtn').addEventListener('click', () => {
+    // race same animals again
+    const racers = ANIMALS.filter(a => state.selected.has(a.id));
+    startRace(racers);
+  });
+  document.getElementById('newBtn').addEventListener('click', () => {
+    state.selected.clear();
+    state.category = 'all';
+    renderFilters();
+    renderGrid();
+    updateStartBtn();
+    showScreen('select');
+  });
+
+  // ============ INIT ============
+  renderFilters();
+  renderGrid();
+  updateStartBtn();
+  // Note: service worker is registered by the hub (../index.html). Its scope
+  // covers this page too, so offline play still works once the hub is cached.
+</script>
+</body>
+</html>

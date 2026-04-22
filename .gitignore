@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editor / OS junk
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (not used today, but prevents accidents)
+node_modules/
+
+# Audio asset backups — kept locally for re-trimming only, not needed at runtime.
+animal-race/assets/sounds/_originals/
+animal-race/assets/sounds/_pre_normalize/
