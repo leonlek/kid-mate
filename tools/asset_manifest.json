@@ -86,13 +86,14 @@
   "f1": {
     "en": "Formula 1",
     "audio": {
-      "title": "File:Aston Martin DB3 (1952).ogg",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AAston%20Martin%20DB3%20%281952%29.ogg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Aston_Martin_DB3_%281952%29.ogg",
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Edvvc\" title=\"User:Edvvc\">Edvvc</a>",
-      "query": "racecar",
+      "title": "Freesound #752264 — live formula 1 racing",
+      "source_page": "https://freesound.org/s/752264/",
+      "source_original": "https://cdn.freesound.org/previews/752/752264_10643461-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Geoff-Bremner-Audio",
+      "query": "formula 1 race car",
+      "duration": 9.51567,
       "file": "animal-race/assets/sounds/f1.ogg"
     },
     "image": {
@@ -197,6 +198,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ABald_eagle_about_to_fly_in_Alaska_%282016%29.jpg",
       "file": "animal-race/assets/images/eagle.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/db/Bald_eagle_about_to_fly_in_Alaska_%282016%29.jpg"
+    },
+    "audio": {
+      "title": "Freesound #556575 — Đại Bàng Trên Không",
+      "source_page": "https://freesound.org/s/556575/",
+      "source_original": "https://cdn.freesound.org/previews/556/556575_7554526-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "SieuAmThanh",
+      "query": "eagle cry",
+      "duration": 1.44753,
+      "file": "animal-race/assets/sounds/eagle.ogg"
     }
   },
   "swan": {
@@ -292,6 +304,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ARainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg",
       "file": "animal-race/assets/images/parrot.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Rainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg"
+    },
+    "audio": {
+      "title": "Freesound #111028 — hyacinth_macaw02.wav",
+      "source_page": "https://freesound.org/s/111028/",
+      "source_original": "https://cdn.freesound.org/previews/111/111028_1578278-hq.mp3",
+      "license": "CC BY",
+      "license_url": "http://creativecommons.org/licenses/by/3.0/",
+      "author": "soundbytez",
+      "query": "parrot squawk",
+      "duration": 12.3,
+      "file": "animal-race/assets/sounds/parrot.ogg"
     }
   },
   "chicken": {
@@ -324,6 +347,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ABucephala-albeola-010.jpg",
       "file": "animal-race/assets/images/duck.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Bucephala-albeola-010.jpg"
+    },
+    "audio": {
+      "title": "Freesound #774650 — Duck Quacking Jam 120 BPM Drum Loop with Rocking Waterfoul",
+      "source_page": "https://freesound.org/s/774650/",
+      "source_original": "https://cdn.freesound.org/previews/774/774650_16665092-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "CrashBulb",
+      "query": "duck quack",
+      "duration": 12.0,
+      "file": "animal-race/assets/sounds/duck.ogg"
     }
   },
   "penguin": {
@@ -377,6 +411,16 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AOftheunicorn.jpg",
       "file": "animal-race/assets/images/unicorn.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/70/Oftheunicorn.jpg"
+    },
+    "audio": {
+      "title": "[shared] Freesound #759006 — 13206 panicked horse neigh",
+      "source_page": "https://freesound.org/s/759006/",
+      "source_original": "https://cdn.freesound.org/previews/759/759006_321967-hq.mp3",
+      "license": "CC BY-NC",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "author": "Robinhood76",
+      "shared_from": "horse",
+      "file": "animal-race/assets/sounds/unicorn.ogg"
     }
   },
   "deer": {
@@ -516,6 +560,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APortrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg",
       "file": "animal-race/assets/images/fox.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Portrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg"
+    },
+    "audio": {
+      "title": "Freesound #485009 — Fox, Vocal Cry, Distant, 01.wav",
+      "source_page": "https://freesound.org/s/485009/",
+      "source_original": "https://cdn.freesound.org/previews/485/485009_5121236-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "InspectorJ",
+      "query": "fox scream",
+      "duration": 2.12907,
+      "file": "animal-race/assets/sounds/fox.ogg"
     }
   },
   "bear": {
@@ -580,6 +635,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ABrownSpiderMonkey_%28edit2%29.jpg",
       "file": "animal-race/assets/images/monkey.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/BrownSpiderMonkey_%28edit2%29.jpg"
+    },
+    "audio": {
+      "title": "Freesound #332726 — screaming monkey or bird.wav",
+      "source_page": "https://freesound.org/s/332726/",
+      "source_original": "https://cdn.freesound.org/previews/332/332726_4101863-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "sethlind",
+      "query": "monkey howl",
+      "duration": 6.70222,
+      "file": "animal-race/assets/sounds/monkey.ogg"
     }
   },
   "squirrel": {
@@ -591,6 +657,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AEasternGraySquirrel_GAm.jpg",
       "file": "animal-race/assets/images/squirrel.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/15/EasternGraySquirrel_GAm.jpg"
+    },
+    "audio": {
+      "title": "Freesound #122261 — angry-squirrel1.wav",
+      "source_page": "https://freesound.org/s/122261/",
+      "source_original": "https://cdn.freesound.org/previews/122/122261_1425819-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "echobones",
+      "query": "squirrel chatter",
+      "duration": 3.2037,
+      "file": "animal-race/assets/sounds/squirrel.ogg"
     }
   },
   "sloth": {
@@ -613,6 +690,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AHorse_007.jpg",
       "file": "animal-race/assets/images/horse.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Horse_007.jpg"
+    },
+    "audio": {
+      "title": "Freesound #759006 — 13206 panicked horse neigh",
+      "source_page": "https://freesound.org/s/759006/",
+      "source_original": "https://cdn.freesound.org/previews/759/759006_321967-hq.mp3",
+      "license": "CC BY-NC",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "author": "Robinhood76",
+      "query": "horse neigh whinny",
+      "duration": 5.3566,
+      "file": "animal-race/assets/sounds/horse.ogg"
     }
   },
   "rabbit": {
@@ -656,6 +744,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg",
       "file": "animal-race/assets/images/cow.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg"
+    },
+    "audio": {
+      "title": "Freesound #524138 — Creepy Cave Echo",
+      "source_page": "https://freesound.org/s/524138/",
+      "source_original": "https://cdn.freesound.org/previews/524/524138_9696641-hq.mp3",
+      "license": "CC BY-NC",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "author": "Audio_Dread",
+      "query": "cow moo",
+      "duration": 4.13351,
+      "file": "animal-race/assets/sounds/cow.ogg"
     }
   },
   "pig": {
@@ -667,6 +766,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APig_farm_Vampula_1.jpg",
       "file": "animal-race/assets/images/pig.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Pig_farm_Vampula_1.jpg"
+    },
+    "audio": {
+      "title": "Freesound #233177 — Pig - Grunt and Squeal 4 - 96kHz.wav",
+      "source_page": "https://freesound.org/s/233177/",
+      "source_original": "https://cdn.freesound.org/previews/233/233177_4056007-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "JarredGibb",
+      "query": "pig oink",
+      "duration": 1.1833,
+      "file": "animal-race/assets/sounds/pig.ogg"
     }
   },
   "sailfish": {
@@ -753,6 +863,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ATursiops_truncatus_01.jpg",
       "file": "animal-race/assets/images/dolphin.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/10/Tursiops_truncatus_01.jpg"
+    },
+    "audio": {
+      "title": "Freesound #442353 — dolphin torch locking push button.wav",
+      "source_page": "https://freesound.org/s/442353/",
+      "source_original": "https://cdn.freesound.org/previews/442/442353_9133009-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "toddcircle",
+      "query": "dolphin click",
+      "duration": 7.32652,
+      "file": "animal-race/assets/sounds/dolphin.ogg"
     }
   },
   "seal": {
@@ -764,6 +885,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg",
       "file": "animal-race/assets/images/seal.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/48/Common_seal_%28Phoca_vitulina%29_2.jpg"
+    },
+    "audio": {
+      "title": "Freesound #192555 — 2x99 TLs on 02 130626_04.wav",
+      "source_page": "https://freesound.org/s/192555/",
+      "source_original": "https://cdn.freesound.org/previews/192/192555_1648170-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "klankbeeld",
+      "query": "seal",
+      "duration": 11.2976,
+      "file": "animal-race/assets/sounds/seal.ogg"
     }
   },
   "crab": {
@@ -853,6 +985,16 @@
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Rhunevild&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Rhunevild (page does not exist)\">Rhunevild</a>",
       "file": "animal-race/assets/images/supercroc.jpg"
+    },
+    "audio": {
+      "title": "[shared] Freesound #734900 — Monster Guttural Growl, Dry",
+      "source_page": "https://freesound.org/s/734900/",
+      "source_original": "https://cdn.freesound.org/previews/734/734900_189858-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "DeqstersLab",
+      "shared_from": "crocodile",
+      "file": "animal-race/assets/sounds/supercroc.ogg"
     }
   },
   "longneck": {
@@ -886,6 +1028,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AUsain_Bolt_smiling_Berlin_2009.JPG",
       "file": "animal-race/assets/images/human.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Usain_Bolt_smiling_Berlin_2009.JPG"
+    },
+    "audio": {
+      "title": "Freesound #827320 — Dog Running Past",
+      "source_page": "https://freesound.org/s/827320/",
+      "source_original": "https://cdn.freesound.org/previews/827/827320_71257-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "qubodup",
+      "query": "footsteps running sprint",
+      "duration": 5.21587,
+      "file": "animal-race/assets/sounds/human.ogg"
     }
   },
   "bee": {
@@ -897,6 +1050,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AThe_Lone_Pollinator.jpg",
       "file": "animal-race/assets/images/bee.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/11/The_Lone_Pollinator.jpg"
+    },
+    "audio": {
+      "title": "Freesound #512663 — BUMBLEBEE.wav",
+      "source_page": "https://freesound.org/s/512663/",
+      "source_original": "https://cdn.freesound.org/previews/512/512663_8829909-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Robak1974",
+      "query": "bee buzz",
+      "duration": 8.32446,
+      "file": "animal-race/assets/sounds/bee.ogg"
     }
   },
   "hornet": {
@@ -908,6 +1072,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AHornet.jpg",
       "file": "animal-race/assets/images/hornet.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Hornet.jpg"
+    },
+    "audio": {
+      "title": "Freesound #398487 — Wasp Wings 2",
+      "source_page": "https://freesound.org/s/398487/",
+      "source_original": "https://cdn.freesound.org/previews/398/398487_7399650-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Wakerone",
+      "query": "wasp buzz",
+      "duration": 1.20954,
+      "file": "animal-race/assets/sounds/hornet.ogg"
     }
   },
   "crocodile": {
@@ -919,6 +1094,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ANileCrocodile.jpg",
       "file": "animal-race/assets/images/crocodile.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/8/81/NileCrocodile.jpg"
+    },
+    "audio": {
+      "title": "Freesound #734900 — Monster Guttural Growl, Dry",
+      "source_page": "https://freesound.org/s/734900/",
+      "source_original": "https://cdn.freesound.org/previews/734/734900_189858-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "DeqstersLab",
+      "query": "alligator growl",
+      "duration": 6.99698,
+      "file": "animal-race/assets/sounds/crocodile.ogg"
     }
   },
   "turtle": {
@@ -1010,6 +1196,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg",
       "file": "animal-race/assets/images/hippo.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Portrait_Hippopotamus_in_the_water.jpg"
+    },
+    "audio": {
+      "title": "Freesound #765905 — HorsesInStall",
+      "source_page": "https://freesound.org/s/765905/",
+      "source_original": "https://cdn.freesound.org/previews/765/765905_15688685-hq.mp3",
+      "license": "CC BY-NC",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "author": "Magnus_the_hippo",
+      "query": "hippo grunt",
+      "duration": 13.2543,
+      "file": "animal-race/assets/sounds/hippo.ogg"
     }
   }
 }

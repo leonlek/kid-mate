@@ -27,7 +27,7 @@ works under the same terms where ShareAlike applies.
 | `bugatti` | image | CC BY-SA 4.0 | Calreyn88 | [Commons](https://commons.wikimedia.org/wiki/File%3ABugatti_Chiron_1.jpg) |
 | `bugatti` | audio | CC BY-SA 3.0 | Edvvc | [Commons](https://commons.wikimedia.org/wiki/File%3AJaguar_XJR12_%281990%29.ogg) |
 | `f1` | image | CC BY-SA 4.0 | Lukas Raich | [Commons](https://commons.wikimedia.org/wiki/File%3AFIA_F1_Austria_2023_Nr._55_%281%29.jpg) |
-| `f1` | audio | CC BY-SA 3.0 | Edvvc | [Commons](https://commons.wikimedia.org/wiki/File%3AAston%20Martin%20DB3%20%281952%29.ogg) |
+| `f1` | audio | CC0 | Geoff-Bremner-Audio | [Commons](https://freesound.org/s/752264/) |
 | `lambo` | image | CC BY-SA 4.0 | Calreyn88 | [Commons](https://commons.wikimedia.org/wiki/File%3A2016_Lamborghini_Aventador_SV_%2882931%29.jpg) |
 | `lambo` | audio | CC BY-SA 3.0 | Edvvc | [Commons](https://commons.wikimedia.org/wiki/File%3ALamborghini%20Gallardo%20LP570-4%20Superleggera.ogg) |
 | `ferrari` | image | CC BY-SA 2.0 | Alexandre Prevot from Nancy, France | [Commons](https://commons.wikimedia.org/wiki/File%3ARed_2019_Ferrari_SF90_Stradale_%2848264238897%29_%28cropped%29.jpg) |
@@ -37,12 +37,14 @@ works under the same terms where ShareAlike applies.
 | `falcon` | image | CC BY-SA 3.0 | Mykola Swarnyk | [Commons](https://commons.wikimedia.org/wiki/File%3AFalco_peregrinus_m_Humber_Bay_Park_Toronto.jpg) |
 | `falcon` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
 | `eagle` | image | CC BY 2.0 | Andy Morffew from Itchen Abbas, Hampshire, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ABald_eagle_about_to_fly_in_Alaska_%282016%29.jpg) |
+| `eagle` | audio | CC0 | SieuAmThanh | [Commons](https://freesound.org/s/556575/) |
 | `dragon` | image | Public domain | Friedrich-Johann-Justin-Bertuch | [Commons](https://commons.wikimedia.org/wiki/File%3AFriedrich-Johann-Justin-Bertuch_Mythical-Creature-Dragon_1806.jpg) |
 | `dragon` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
 | `cheetah` | image | CC BY-SA 4.0 | AfricanConservation | [Commons](https://commons.wikimedia.org/wiki/File%3AMale_cheetah_facing_left_in_South_Africa.jpg) |
 | `cheetah` | audio | CC BY 4.0 | Smirnova D, Volodin I, Demina T, Volodina E | [Commons](https://commons.wikimedia.org/wiki/File%3AAcoustic-Structure-and-Contextual-Use-of-Calls-by-Captive-Male-and-Female-Cheetahs-%28Acinonyx-pone.0158546.s001.oga) |
 | `sailfish` | image | Public domain | Kawahara Keiga | [Commons](https://commons.wikimedia.org/wiki/File%3ANaturalis_Biodiversity_Center_-_RMNH.ART.194_-_Istiophorus_platypterus_%28Shaw_and_Nodder%29_-_Kawahara_Keiga_-_1823_-_1829_-_Siebold_Collection_-_new_version.jpeg) |
 | `unicorn` | image | Public domain | Conrad Gessner | [Commons](https://commons.wikimedia.org/wiki/File%3AOftheunicorn.jpg) |
+| `unicorn` | audio | CC BY-NC | Robinhood76 | [Commons](https://freesound.org/s/759006/) |
 | `pterodactyl` | image | CC BY-SA 3.0 | ABelov2014 | [Commons](https://commons.wikimedia.org/wiki/File%3APteranodontians%20and%20mosasaur.jpg) |
 | `pterodactyl` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
 | `swan` | image | CC BY-SA 4.0 | Geni | [Commons](https://commons.wikimedia.org/wiki/File%3AMute_Swan_Emsworth2.JPG) |
@@ -54,6 +56,7 @@ works under the same terms where ShareAlike applies.
 | `wolf` | image | CC BY-SA 4.0 | User:Mas3cf | [Commons](https://commons.wikimedia.org/wiki/File%3AEurasian_wolf_2.jpg) |
 | `wolf` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
 | `horse` | image | Public domain | Amada44 | [Commons](https://commons.wikimedia.org/wiki/File%3AHorse_007.jpg) |
+| `horse` | audio | CC BY-NC | Robinhood76 | [Commons](https://freesound.org/s/759006/) |
 | `kangaroo` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3AForester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg) |
 | `crow` | image | CC BY 2.0 | Ian Kirk from Broadstone, Dorset, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg) |
 | `crow` | audio | CC BY-SA 4.0 | Marie-Lan Taÿ Pamart | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus%20corone%20-%20Carrion%20Crow%20XC507917.mp3) |
@@ -71,6 +74,7 @@ works under the same terms where ShareAlike applies.
 | `orca` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3AKiller%20whale%20simple.ogg) |
 | `rhino` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3A109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg) |
 | `fox` | image | CC BY-SA 4.0 | ClaudiaTen | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg) |
+| `fox` | audio | CC BY | InspectorJ | [Commons](https://freesound.org/s/485009/) |
 | `bear` | image | CC BY-SA 3.0 | Yathin S Krishnappa | [Commons](https://commons.wikimedia.org/wiki/File%3A2010-kodiak-bear-1.jpg) |
 | `bear` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
 | `whale` | image | Public domain | NOAA Photo Library | [Commons](https://commons.wikimedia.org/wiki/File%3AAnim1754_-_Flickr_-_NOAA_Photo_Library.jpg) |
@@ -86,23 +90,37 @@ works under the same terms where ShareAlike applies.
 | `polarbear` | image | CC BY-SA 3.0 | Alan Wilson | [Commons](https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg) |
 | `octopus` | image | CC BY-SA 3.0 | albert kok | [Commons](https://commons.wikimedia.org/wiki/File%3AOctopus2.jpg) |
 | `human` | image | GFDL | Erik van Leeuwen | [Commons](https://commons.wikimedia.org/wiki/File%3AUsain_Bolt_smiling_Berlin_2009.JPG) |
+| `human` | audio | CC0 | qubodup | [Commons](https://freesound.org/s/827320/) |
 | `dolphin` | image | Public domain | NASA | [Commons](https://commons.wikimedia.org/wiki/File%3ATursiops_truncatus_01.jpg) |
+| `dolphin` | audio | CC0 | toddcircle | [Commons](https://freesound.org/s/442353/) |
 | `cow` | image | CC BY-SA 3.0 | Kim Hansen | [Commons](https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg) |
+| `cow` | audio | CC BY-NC | Audio_Dread | [Commons](https://freesound.org/s/524138/) |
 | `seal` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg) |
+| `seal` | audio | CC BY | klankbeeld | [Commons](https://freesound.org/s/192555/) |
 | `hippo` | image | CC BY-SA 4.0 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg) |
+| `hippo` | audio | CC BY-NC | Magnus_the_hippo | [Commons](https://freesound.org/s/765905/) |
 | `trex` | image | CC BY-SA 4.0 | RJPalmerArt | [Commons](https://commons.wikimedia.org/wiki/File%3ARjpalmer%20tyrannosaurusrex%20%28white%20background%29.jpg) |
 | `trex` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3A27alligator2bellow.ogg) |
 | `monkey` | image | CC BY-SA 3.0 | http://www.birdphotos.com edit by Fir0002 | [Commons](https://commons.wikimedia.org/wiki/File%3ABrownSpiderMonkey_%28edit2%29.jpg) |
+| `monkey` | audio | CC0 | sethlind | [Commons](https://freesound.org/s/332726/) |
 | `bee` | image | CC BY 4.0 | Tanner Smida | [Commons](https://commons.wikimedia.org/wiki/File%3AThe_Lone_Pollinator.jpg) |
+| `bee` | audio | CC0 | Robak1974 | [Commons](https://freesound.org/s/512663/) |
 | `parrot` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ARainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg) |
+| `parrot` | audio | CC BY | soundbytez | [Commons](https://freesound.org/s/111028/) |
 | `hornet` | image | CC BY-SA 4.0 | Mehdi Taba | [Commons](https://commons.wikimedia.org/wiki/File%3AHornet.jpg) |
+| `hornet` | audio | CC0 | Wakerone | [Commons](https://freesound.org/s/398487/) |
 | `crocodile` | image | CC BY-SA 2.0 | Dewet | [Commons](https://commons.wikimedia.org/wiki/File%3ANileCrocodile.jpg) |
+| `crocodile` | audio | CC0 | DeqstersLab | [Commons](https://freesound.org/s/734900/) |
 | `squirrel` | image | CC BY-SA 4.0 | JeffreyGammon | [Commons](https://commons.wikimedia.org/wiki/File%3AEasternGraySquirrel_GAm.jpg) |
+| `squirrel` | audio | CC BY | echobones | [Commons](https://freesound.org/s/122261/) |
 | `supercroc` | image | CC BY-SA 4.0 | Rhunevild | [Commons](https://commons.wikimedia.org/wiki/File%3ASarcosuchus%20Illustration.jpg) |
+| `supercroc` | audio | CC0 | DeqstersLab | [Commons](https://freesound.org/s/734900/) |
 | `pig` | image | CC BY-SA 4.0 | kallerna | [Commons](https://commons.wikimedia.org/wiki/File%3APig_farm_Vampula_1.jpg) |
+| `pig` | audio | CC0 | JarredGibb | [Commons](https://freesound.org/s/233177/) |
 | `chicken` | image | CC BY-SA 2.0 | Andrei Niemimäki from Turku, Finland | [Commons](https://commons.wikimedia.org/wiki/File%3AMale_and_female_chicken_sitting_together.jpg) |
 | `chicken` | audio | CC BY-SA 4.0 | Filo gèn' | [Commons](https://commons.wikimedia.org/wiki/File%3AYoung%20rooster%20crowing.ogg) |
 | `duck` | image | CC BY-SA 3.0 | Mdf | [Commons](https://commons.wikimedia.org/wiki/File%3ABucephala-albeola-010.jpg) |
+| `duck` | audio | CC0 | CrashBulb | [Commons](https://freesound.org/s/774650/) |
 | `longneck` | image | CC BY-SA 3.0 | Deavila | [Commons](https://commons.wikimedia.org/wiki/File%3ABrachiosaurus%20aliment%C3%A1ndose%20del%20follage.jpg) |
 | `longneck` | audio | CC0 | தகவலுழவன் | [Commons](https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg) |
 | `penguin` | image | CC BY 2.0 | Ian Duffy from UK | [Commons](https://commons.wikimedia.org/wiki/File%3AAptenodytes_forsteri_-Snow_Hill_Island%2C_Antarctica_-adults_and_juvenile-8.jpg) |

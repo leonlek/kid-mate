@@ -21,3 +21,7 @@ animal-race/assets/sounds/_pre_normalize/
 # Raw audio + intermediate manifest from tools/fetch_assets.py — runtime
 # uses the trimmed files only.
 tools/_raw_audio/
+
+# API credentials — never commit.
+tools/.freesound_token
+.env
