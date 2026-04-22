@@ -10,6 +10,10 @@
 # Node (not used today, but prevents accidents)
 node_modules/
 
+# Python bytecode
+__pycache__/
+*.pyc
+
 # Audio asset backups — kept locally for re-trimming only, not needed at runtime.
 animal-race/assets/sounds/_originals/
 animal-race/assets/sounds/_pre_normalize/
