@@ -191,12 +191,12 @@
   "eagle": {
     "en": "Eagle",
     "image": {
-      "license": "CC BY-SA 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Punetor_i_Rregullt5\" title=\"User:Punetor i Rregullt5\">User:Punetor i Rregullt5</a>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AEagles_together.jpg",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "author": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/66020093@N03\">Andy Morffew</a> from Itchen Abbas, Hampshire, UK",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ABald_eagle_about_to_fly_in_Alaska_%282016%29.jpg",
       "file": "animal-race/assets/images/eagle.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/60/Eagles_together.jpg"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/db/Bald_eagle_about_to_fly_in_Alaska_%282016%29.jpg"
     }
   },
   "swan": {
@@ -382,12 +382,12 @@
   "deer": {
     "en": "Deer",
     "image": {
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "author": "<p>This image is a derivative work of the following images: \n</p>\n<ul><li><a href=\"//commons.wikimedia.org/wiki/File:White-tailed_deer.jpg\" title=\"File:White-tailed deer.jpg\">File:White-tailed deer.jpg</a> (USDA photo by Scott Bauer)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:RangiferTarandus.jpg\" title=\"File:RangiferTarandus.jpg\">File:RangiferTarandus.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/w/index.php?title=User:Sydpolen&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Sydpolen (page does not exist)\">User:Sydpolen</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:Red_deer_stag_2009_denmark.jpg\" title=\"File:Red deer stag 2009 denmark.jpg\">File:Red deer stag 2009 denmark.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/wiki/User:Atomicbre\" title=\"User:Atomicbre\">User:Atomicbre</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:The_barasingha.jpg\" title=\"File:The barasingha.jpg\">File:The barasingha.jpg</a> (uploaded by <a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/aloshbennett/\">aloshbennett</a>)</li>\n<li><a href=\"//commons.wikimedia.org/wiki/File:Dama_dama_002.jpg\" class=\"mw-redirect\" title=\"File:Dama dama 002.jpg\">File:Dama dama 002.jpg</a> (uploaded by <a href=\"//commons.wikimedia.org/w/index.php?title=User:Lily_M&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Lily M (page does not exist)\">User:Lily_M</a>))</li></ul>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AFamily_Cervidae_five_species.jpg",
+      "license": "Public domain",
+      "license_url": "",
+      "author": "USDA photo by Scott Bauer",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWhite-tailed_deer.jpg",
       "file": "animal-race/assets/images/deer.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Family_Cervidae_five_species.jpg"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/b7/White-tailed_deer.jpg"
     },
     "audio": {
       "title": "File:Hirsch roehrt.ogg",
@@ -501,10 +501,10 @@
     "image": {
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:PaleoMatt&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:PaleoMatt (page does not exist)\">PaleoMatt</a>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ARhino_collage.png",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Giles_Laurent\" title=\"User:Giles Laurent\">Giles Laurent</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg",
       "file": "animal-race/assets/images/rhino.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Rhino_collage.png"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/28/109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg"
     }
   },
   "fox": {
@@ -585,12 +585,12 @@
   "squirrel": {
     "en": "Squirrel",
     "image": {
-      "license": "CC BY 3.0",
-      "license_url": "https://creativecommons.org/licenses/by/3.0",
-      "author": "<p><a href=\"//commons.wikimedia.org/w/index.php?title=User:Chicoutimi&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Chicoutimi (page does not exist)\">Chicoutimi</a> (montage)<br>\n</p>\n<figure class=\"mw-halign-right\" typeof=\"mw:File/Thumb\"><a href=\"//commons.wikimedia.org/wiki/File:Montage_9_pictures.jpg\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Montage_9_pictures.jpg/250px-Montage_9_pictures.jpg\" decoding=\"async\" width=\"150\" height=\"150\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Montage_9_pictures.jpg/330px-Montage_9_pictures.jpg 2x\" data-file-width=\"600\" data-file-height=\"600\"></a><figcaption></figcaption></figure>\n<ol><li><a href=\"//commons.wikimedia.org/wiki/User:Karakal\" title=\"User:Karakal\">Karakal</a></li>\n<li><a href=\"//commons.wikimedia.org/wiki/User:AndiW\" title=\"User:AndiW\">AndiW</a></li>\n<li>National Park Service</li>\n<li><a href=\"https://en.wikipedia.org/wiki/User:Markus_Kr%C3%B6tzsch\" class=\"extiw\" title=\"en:User:Markus Krötzsch\">en:User:Markus Krötzsch</a></li>\n<li>The Lilac Breasted Roller</li>\n<li><a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/25263277@N00\">Nico Conradie</a> from Centurion, South Africa</li>\n<li><a href=\"//commons.wikimedia.org/wiki/User:Lycaon\" title=\"User:Lycaon\">Hans Hillewaert</a></li>\n<li><a href=\"https://fr.wikipedia.org/wiki/User:Sylvouille\" class=\"extiw\" title=\"fr:User:Sylvouille\">Sylvouille</a></li>\n<li>National Park Service</li></ol>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3ASciuridae.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:JeffreyGammon&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:JeffreyGammon (page does not exist)\">JeffreyGammon</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AEasternGraySquirrel_GAm.jpg",
       "file": "animal-race/assets/images/squirrel.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/68/Sciuridae.jpg"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/15/EasternGraySquirrel_GAm.jpg"
     }
   },
   "sloth": {
@@ -758,12 +758,12 @@
   "seal": {
     "en": "Seal",
     "image": {
-      "license": "CC0",
-      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "author": "From a variety of images credited above.",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3APinnipeds_vertical_version_montage.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg",
       "file": "animal-race/assets/images/seal.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Pinnipeds_vertical_version_montage.jpg"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/4/48/Common_seal_%28Phoca_vitulina%29_2.jpg"
     }
   },
   "crab": {
@@ -880,12 +880,12 @@
   "human": {
     "en": "Human",
     "image": {
-      "license": "CC BY-SA 2.0 de",
-      "license_url": "https://creativecommons.org/licenses/by-sa/2.0/de/deed.en",
-      "author": "<a href=\"https://en.wikipedia.org/wiki/User:Weltenbummler84\" class=\"extiw\" title=\"en:User:Weltenbummler84\">Weltenbummler84</a>",
-      "source_page": "https://commons.wikimedia.org/wiki/File%3AAkha_cropped_hires.JPG",
+      "license": "GFDL",
+      "license_url": "http://www.gnu.org/copyleft/fdl.html",
+      "author": "Erik van Leeuwen",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AUsain_Bolt_smiling_Berlin_2009.JPG",
       "file": "animal-race/assets/images/human.jpg",
-      "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/68/Akha_cropped_hires.JPG"
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Usain_Bolt_smiling_Berlin_2009.JPG"
     }
   },
   "bee": {

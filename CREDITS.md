@@ -36,7 +36,7 @@ works under the same terms where ShareAlike applies.
 | `ducati` | audio | CC BY-SA 3.0 | OllemanW | [Commons](https://commons.wikimedia.org/wiki/File%3AKawasaki%20ER-5.oga) |
 | `falcon` | image | CC BY-SA 3.0 | Mykola Swarnyk | [Commons](https://commons.wikimedia.org/wiki/File%3AFalco_peregrinus_m_Humber_Bay_Park_Toronto.jpg) |
 | `falcon` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
-| `eagle` | image | CC BY-SA 4.0 | User:Punetor i Rregullt5 | [Commons](https://commons.wikimedia.org/wiki/File%3AEagles_together.jpg) |
+| `eagle` | image | CC BY 2.0 | Andy Morffew from Itchen Abbas, Hampshire, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ABald_eagle_about_to_fly_in_Alaska_%282016%29.jpg) |
 | `dragon` | image | Public domain | Friedrich-Johann-Justin-Bertuch | [Commons](https://commons.wikimedia.org/wiki/File%3AFriedrich-Johann-Justin-Bertuch_Mythical-Creature-Dragon_1806.jpg) |
 | `dragon` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
 | `cheetah` | image | CC BY-SA 4.0 | AfricanConservation | [Commons](https://commons.wikimedia.org/wiki/File%3AMale_cheetah_facing_left_in_South_Africa.jpg) |
@@ -47,7 +47,7 @@ works under the same terms where ShareAlike applies.
 | `pterodactyl` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
 | `swan` | image | CC BY-SA 4.0 | Geni | [Commons](https://commons.wikimedia.org/wiki/File%3AMute_Swan_Emsworth2.JPG) |
 | `swan` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3ACygnus%20buccinator%20-%20Trumpeter%20Swan%20XC96531.mp3) |
-| `deer` | image | CC BY-SA 3.0 | This image is a derivative work of the following images: File:White-tailed deer.jpg (USDA photo by Scott Bauer) File:RangiferTarandus.jpg (uploaded by User:Sydpolen) File:Red deer stag 2009 denmark.jpg (uploaded by User:Atomicbre) File:The barasingha.jpg (uploaded by aloshbennett) File:Dama dama 002.jpg (uploaded by User:Lily_M)) | [Commons](https://commons.wikimedia.org/wiki/File%3AFamily_Cervidae_five_species.jpg) |
+| `deer` | image | Public domain | USDA photo by Scott Bauer | [Commons](https://commons.wikimedia.org/wiki/File%3AWhite-tailed_deer.jpg) |
 | `deer` | audio | CC BY-SA 3.0 | Jugrü | [Commons](https://commons.wikimedia.org/wiki/File%3AHirsch%20roehrt.ogg) |
 | `lion` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3A020_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg) |
 | `lion` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
@@ -69,7 +69,7 @@ works under the same terms where ShareAlike applies.
 | `shark` | image | CC BY 2.0 | NOAA Photo Library | [Commons](https://commons.wikimedia.org/wiki/File%3ACorl0207_%2828225976491%29.jpg) |
 | `orca` | image | Public domain | Robert Pittman | [Commons](https://commons.wikimedia.org/wiki/File%3AKillerwhales_jumping.jpg) |
 | `orca` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3AKiller%20whale%20simple.ogg) |
-| `rhino` | image | CC BY-SA 4.0 | PaleoMatt | [Commons](https://commons.wikimedia.org/wiki/File%3ARhino_collage.png) |
+| `rhino` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3A109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg) |
 | `fox` | image | CC BY-SA 4.0 | ClaudiaTen | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg) |
 | `bear` | image | CC BY-SA 3.0 | Yathin S Krishnappa | [Commons](https://commons.wikimedia.org/wiki/File%3A2010-kodiak-bear-1.jpg) |
 | `bear` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
@@ -85,10 +85,10 @@ works under the same terms where ShareAlike applies.
 | `elephant` | audio | CC0 | தகவலுழவன் | [Commons](https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg) |
 | `polarbear` | image | CC BY-SA 3.0 | Alan Wilson | [Commons](https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg) |
 | `octopus` | image | CC BY-SA 3.0 | albert kok | [Commons](https://commons.wikimedia.org/wiki/File%3AOctopus2.jpg) |
-| `human` | image | CC BY-SA 2.0 de | Weltenbummler84 | [Commons](https://commons.wikimedia.org/wiki/File%3AAkha_cropped_hires.JPG) |
+| `human` | image | GFDL | Erik van Leeuwen | [Commons](https://commons.wikimedia.org/wiki/File%3AUsain_Bolt_smiling_Berlin_2009.JPG) |
 | `dolphin` | image | Public domain | NASA | [Commons](https://commons.wikimedia.org/wiki/File%3ATursiops_truncatus_01.jpg) |
 | `cow` | image | CC BY-SA 3.0 | Kim Hansen | [Commons](https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg) |
-| `seal` | image | CC0 | From a variety of images credited above. | [Commons](https://commons.wikimedia.org/wiki/File%3APinnipeds_vertical_version_montage.jpg) |
+| `seal` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg) |
 | `hippo` | image | CC BY-SA 4.0 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg) |
 | `trex` | image | CC BY-SA 4.0 | RJPalmerArt | [Commons](https://commons.wikimedia.org/wiki/File%3ARjpalmer%20tyrannosaurusrex%20%28white%20background%29.jpg) |
 | `trex` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3A27alligator2bellow.ogg) |
@@ -97,7 +97,7 @@ works under the same terms where ShareAlike applies.
 | `parrot` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ARainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg) |
 | `hornet` | image | CC BY-SA 4.0 | Mehdi Taba | [Commons](https://commons.wikimedia.org/wiki/File%3AHornet.jpg) |
 | `crocodile` | image | CC BY-SA 2.0 | Dewet | [Commons](https://commons.wikimedia.org/wiki/File%3ANileCrocodile.jpg) |
-| `squirrel` | image | CC BY 3.0 | Chicoutimi (montage) Karakal AndiW National Park Service en:User:Markus Krötzsch The Lilac Breasted Roller Nico Conradie from Centurion, South Africa Hans Hillewaert Sylvouille National Park Service | [Commons](https://commons.wikimedia.org/wiki/File%3ASciuridae.jpg) |
+| `squirrel` | image | CC BY-SA 4.0 | JeffreyGammon | [Commons](https://commons.wikimedia.org/wiki/File%3AEasternGraySquirrel_GAm.jpg) |
 | `supercroc` | image | CC BY-SA 4.0 | Rhunevild | [Commons](https://commons.wikimedia.org/wiki/File%3ASarcosuchus%20Illustration.jpg) |
 | `pig` | image | CC BY-SA 4.0 | kallerna | [Commons](https://commons.wikimedia.org/wiki/File%3APig_farm_Vampula_1.jpg) |
 | `chicken` | image | CC BY-SA 2.0 | Andrei Niemimäki from Turku, Finland | [Commons](https://commons.wikimedia.org/wiki/File%3AMale_and_female_chicken_sitting_together.jpg) |

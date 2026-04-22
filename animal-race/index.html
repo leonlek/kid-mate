@@ -353,10 +353,12 @@
     display: block;
     width: 68px; height: 68px;
     border-radius: 14px;
-    object-fit: cover;
+    /* contain (not cover) so the shark's head, Bolt's mid-stride, etc.
+       stay visible in the tiny race-lane thumbnail. */
+    object-fit: contain;
     border: 3px solid #fff;
     box-shadow: 0 2px 0 rgba(0,0,0,0.15);
-    background: #f5f5f5;
+    background: #fafafa;
   }
   .runner.running { animation: bob 0.3s ease-in-out infinite alternate; }
   @keyframes bob {
@@ -454,9 +456,10 @@
     display: block;
     width: 72px; height: 72px;
     border-radius: 14px;
-    object-fit: cover;
+    object-fit: contain;
     border: 3px solid #fff;
     box-shadow: 0 0 0 2px var(--card-border);
+    background: #fafafa;
   }
   .rank-details { flex: 1; }
   .rank-name {
