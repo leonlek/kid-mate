@@ -1284,5 +1284,104 @@
       "duration": 13.2543,
       "file": "animal-race/assets/sounds/hippo.ogg"
     }
+  },
+  "gtr": {
+    "en": "Nissan GT-R",
+    "image": {
+      "license": "Public domain",
+      "license_url": "",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:OSX\" title=\"User:OSX\">OSX</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3A2009-2010_Nissan_GT-R_%28R35%29_coupe_01.jpg",
+      "file": "animal-race/assets/images/gtr.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/e/ef/2009-2010_Nissan_GT-R_%28R35%29_coupe_01.jpg"
+    },
+    "audio": {
+      "title": "Freesound #481719 — R04-47-Old Car Engine.wav",
+      "source_page": "https://freesound.org/s/481719/",
+      "source_original": "https://cdn.freesound.org/previews/481/481719_2524442-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "craigsmith",
+      "query": "gt-r engine",
+      "duration": 10.9361,
+      "file": "animal-race/assets/sounds/gtr.ogg"
+    }
+  },
+  "ford": {
+    "en": "Ford pickup truck",
+    "image": {
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "author": "RL GNZLZ",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AFord_F-150_Lariat_Luxury_2022.jpg",
+      "file": "animal-race/assets/images/ford.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/3/39/Ford_F-150_Lariat_Luxury_2022.jpg"
+    },
+    "audio": {
+      "title": "Freesound #730551 — Pickup Truck",
+      "source_page": "https://freesound.org/s/730551/",
+      "source_original": "https://cdn.freesound.org/previews/730/730551_15699989-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "Dachou21",
+      "query": "pickup truck engine",
+      "duration": 14.0914,
+      "file": "animal-race/assets/sounds/ford.ogg"
+    }
+  },
+  "tena": {
+    "en": "Honda Tena",
+    "image": {
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "author": "Khaosaming",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AHonda_Wave_125_S_2007.jpg",
+      "file": "animal-race/assets/images/tena.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/0/00/Honda_Wave_125_S_2007.jpg"
+    },
+    "audio": {
+      "title": "Freesound #509522 — Scooter drive by .wav",
+      "source_page": "https://freesound.org/s/509522/",
+      "source_original": "https://cdn.freesound.org/previews/509/509522_1665834-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "nickpursehouse",
+      "query": "moped engine",
+      "duration": 12.2083,
+      "file": "animal-race/assets/sounds/tena.ogg"
+    }
+  },
+  "ostrich": {
+    "en": "Ostrich",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "<a href=\"//commons.wikimedia.org/wiki/User:Yathin_sk\" title=\"User:Yathin sk\">Yathin S Krishnappa</a>",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AStruthio_camelus_-_Etosha_2014_%283%29.jpg",
+      "file": "animal-race/assets/images/ostrich.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Struthio_camelus_-_Etosha_2014_%283%29.jpg"
+    }
+  },
+  "capybara": {
+    "en": "Capybara",
+    "image": {
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Giles Laurent",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ACapybaracropped.jpg",
+      "file": "animal-race/assets/images/capybara.jpg",
+      "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/71/Capybaracropped.jpg"
+    },
+    "audio": {
+      "title": "Freesound #849980 — capybara",
+      "source_page": "https://freesound.org/s/849980/",
+      "source_original": "https://cdn.freesound.org/previews/849/849980_18656191-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Капыбара_12345",
+      "query": "capybara",
+      "duration": 11.6971,
+      "file": "animal-race/assets/sounds/capybara.ogg"
+    }
   }
 }

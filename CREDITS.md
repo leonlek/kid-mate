@@ -32,10 +32,14 @@ works under the same terms where ShareAlike applies.
 | `lambo` | audio | CC BY-SA 3.0 | Edvvc | [Commons](https://commons.wikimedia.org/wiki/File%3ALamborghini%20Gallardo%20LP570-4%20Superleggera.ogg) |
 | `ferrari` | image | CC BY-SA 2.0 | Alexandre Prevot from Nancy, France | [Commons](https://commons.wikimedia.org/wiki/File%3ARed_2019_Ferrari_SF90_Stradale_%2848264238897%29_%28cropped%29.jpg) |
 | `ferrari` | audio | CC BY 3.0 | enginemusic | [Commons](https://commons.wikimedia.org/wiki/File%3AFerrari%20F355%20under-hood%20exhaust%20sound.ogg) |
+| `gtr` | image | Public domain | OSX | [Commons](https://commons.wikimedia.org/wiki/File%3A2009-2010_Nissan_GT-R_%28R35%29_coupe_01.jpg) |
+| `gtr` | audio | CC0 | craigsmith | [Commons](https://freesound.org/s/481719/) |
 | `ducati` | image | CC BY-SA 4.0 | Matti Blume | [Commons](https://commons.wikimedia.org/wiki/File%3ADucati_Panigale_V4_-_Tuning_World_Bodensee_2018%2C_Friedrichshafen_%28OW1A0484%29.jpg) |
 | `ducati` | audio | CC BY-SA 3.0 | OllemanW | [Commons](https://commons.wikimedia.org/wiki/File%3AKawasaki%20ER-5.oga) |
 | `falcon` | image | CC BY-SA 3.0 | Mykola Swarnyk | [Commons](https://commons.wikimedia.org/wiki/File%3AFalco_peregrinus_m_Humber_Bay_Park_Toronto.jpg) |
 | `falcon` | audio | CC BY-SA 3.0 | Jonathon Jongsma | [Commons](https://commons.wikimedia.org/wiki/File%3AAccipiter%20cooperii%20-%20Cooper%27s%20Hawk%20-%20XC74741.ogg) |
+| `ford` | image | CC BY-SA 2.0 | RL GNZLZ | [Commons](https://commons.wikimedia.org/wiki/File%3AFord_F-150_Lariat_Luxury_2022.jpg) |
+| `ford` | audio | CC BY | Dachou21 | [Commons](https://freesound.org/s/730551/) |
 | `eagle` | image | CC BY 2.0 | Andy Morffew from Itchen Abbas, Hampshire, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ABald_eagle_about_to_fly_in_Alaska_%282016%29.jpg) |
 | `eagle` | audio | CC0 | SieuAmThanh | [Commons](https://freesound.org/s/556575/) |
 | `dragon` | image | Public domain | Friedrich-Johann-Justin-Bertuch | [Commons](https://commons.wikimedia.org/wiki/File%3AFriedrich-Johann-Justin-Bertuch_Mythical-Creature-Dragon_1806.jpg) |
@@ -55,8 +59,11 @@ works under the same terms where ShareAlike applies.
 | `lion` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
 | `wolf` | image | CC BY-SA 4.0 | User:Mas3cf | [Commons](https://commons.wikimedia.org/wiki/File%3AEurasian_wolf_2.jpg) |
 | `wolf` | audio | CC BY 3.0 | Shizhao | [Commons](https://commons.wikimedia.org/wiki/File%3ABear%20growl.ogg) |
+| `tena` | image | CC BY-SA 3.0 | Khaosaming | [Commons](https://commons.wikimedia.org/wiki/File%3AHonda_Wave_125_S_2007.jpg) |
+| `tena` | audio | CC0 | nickpursehouse | [Commons](https://freesound.org/s/509522/) |
 | `horse` | image | Public domain | Amada44 | [Commons](https://commons.wikimedia.org/wiki/File%3AHorse_007.jpg) |
 | `horse` | audio | CC BY-NC | Robinhood76 | [Commons](https://freesound.org/s/759006/) |
+| `ostrich` | image | CC BY-SA 4.0 | Yathin S Krishnappa | [Commons](https://commons.wikimedia.org/wiki/File%3AStruthio_camelus_-_Etosha_2014_%283%29.jpg) |
 | `kangaroo` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3AForester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg) |
 | `kangaroo` | audio | CC BY-NC | cocoricosound | [Commons](https://freesound.org/s/164947/) |
 | `crow` | image | CC BY 2.0 | Ian Kirk from Broadstone, Dorset, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg) |
@@ -101,6 +108,8 @@ works under the same terms where ShareAlike applies.
 | `dolphin` | audio | CC0 | toddcircle | [Commons](https://freesound.org/s/442353/) |
 | `cow` | image | CC BY-SA 3.0 | Kim Hansen | [Commons](https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg) |
 | `cow` | audio | CC BY-NC | Audio_Dread | [Commons](https://freesound.org/s/524138/) |
+| `capybara` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3ACapybaracropped.jpg) |
+| `capybara` | audio | CC0 | Капыбара_12345 | [Commons](https://freesound.org/s/849980/) |
 | `seal` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg) |
 | `seal` | audio | CC BY | klankbeeld | [Commons](https://freesound.org/s/192555/) |
 | `hippo` | image | CC BY-SA 4.0 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg) |
