@@ -115,6 +115,33 @@
     scroll-padding: 0 16px;
   }
   .filter-row::-webkit-scrollbar { display: none; }
+
+  /* Toggle to bring the machine categories (vehicles + aircraft) back in.
+     Hidden by default so the first view is just animals. */
+  .machines-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 8px 16px;
+    margin-top: 14px;
+    border: 3px dashed var(--brand);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--brand-dark);
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+  }
+  .machines-toggle:active { transform: scale(0.95); }
+  .machines-toggle.on {
+    background: var(--brand);
+    color: #fff;
+    border-style: solid;
+    box-shadow: 0 3px 0 var(--brand-dark);
+  }
   .pill {
     flex-shrink: 0;
     font-family: inherit;
@@ -537,6 +564,7 @@
     <div class="hero">
       <h1>🏁 แข่งความเร็ว 🏁</h1>
       <p>เลือกอะไรก็ได้มาแข่งกัน <br/><small style="font-size:.85em;color:#888">(เลือก 2 อย่างขึ้นไป)</small></p>
+      <button id="toggleMachines" class="machines-toggle" aria-pressed="false">🚗 ✈️ ยานพาหนะ: ปิด</button>
     </div>
     <div id="filterRow" class="filter-row"></div>
     <div id="animalGrid" class="grid"></div>
@@ -655,7 +683,11 @@
   const state = {
     selected: new Set(),
     category: 'all',
+    // Start with only animals. Parents can toggle machines on if the kid
+    // specifically wants to race vehicles/aircraft too.
+    showMachines: false,
   };
+  const MACHINE_CATS = new Set(['vehicle', 'aircraft']);
 
   // ============ SCREENS ============
   const screens = {
@@ -674,9 +706,15 @@
   const filterRow = document.getElementById('filterRow');
   const startBtn = document.getElementById('startBtn');
 
+  function visibleCategories() {
+    return state.showMachines
+      ? CATEGORIES
+      : CATEGORIES.filter(c => !MACHINE_CATS.has(c.id));
+  }
+
   function renderFilters() {
     filterRow.innerHTML = '';
-    CATEGORIES.forEach(c => {
+    visibleCategories().forEach(c => {
       const btn = document.createElement('button');
       btn.className = 'pill' + (state.category === c.id ? ' active' : '');
       btn.textContent = c.label;
@@ -698,6 +736,32 @@
     });
   }
 
+  const toggleMachinesBtn = document.getElementById('toggleMachines');
+  function applyMachinesToggle() {
+    toggleMachinesBtn.classList.toggle('on', state.showMachines);
+    toggleMachinesBtn.setAttribute('aria-pressed', state.showMachines ? 'true' : 'false');
+    toggleMachinesBtn.textContent = '🚗 ✈️ ยานพาหนะ: ' + (state.showMachines ? 'เปิด' : 'ปิด');
+  }
+  toggleMachinesBtn.addEventListener('click', () => {
+    state.showMachines = !state.showMachines;
+    // If we just hid machines and a machine category was active, bounce back to 'all'.
+    if (!state.showMachines && MACHINE_CATS.has(state.category)) {
+      state.category = 'all';
+    }
+    // Also drop any selected machine racers when hiding — avoids surprising
+    // the user with invisible selections in the start-button count.
+    if (!state.showMachines) {
+      for (const id of Array.from(state.selected)) {
+        const a = ANIMALS.find(x => x.id === id);
+        if (a && MACHINE_CATS.has(a.cat)) state.selected.delete(id);
+      }
+    }
+    applyMachinesToggle();
+    renderFilters();
+    renderGrid();
+    updateStartBtn();
+  });
+
   // Render a racer's visual: real image if available, emoji otherwise.
   // `lazy` controls <img loading> — use true for the grid (64 cards), false for
   // race lanes/results where we want the image ready immediately.
@@ -711,9 +775,12 @@
 
   function renderGrid() {
     grid.innerHTML = '';
-    const list = state.category === 'all'
+    let list = state.category === 'all'
       ? ANIMALS
       : ANIMALS.filter(a => a.cat === state.category);
+    if (!state.showMachines) {
+      list = list.filter(a => !MACHINE_CATS.has(a.cat));
+    }
     list.forEach(a => {
       const isSel = state.selected.has(a.id);
       const div = document.createElement('div');
@@ -1039,6 +1106,7 @@
   });
 
   // ============ INIT ============
+  applyMachinesToggle();
   renderFilters();
   renderGrid();
   updateStartBtn();
