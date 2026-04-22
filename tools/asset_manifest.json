@@ -495,6 +495,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AForester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg",
       "file": "animal-race/assets/images/kangaroo.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/d/df/Forester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg"
+    },
+    "audio": {
+      "title": "Freesound #164947 — Cock-a-doodle-doo",
+      "source_page": "https://freesound.org/s/164947/",
+      "source_original": "https://cdn.freesound.org/previews/164/164947_2930071-hq.mp3",
+      "license": "CC BY-NC",
+      "license_url": "http://creativecommons.org/licenses/by-nc/3.0/",
+      "author": "cocoricosound",
+      "query": "kangaroo",
+      "duration": 3.41602,
+      "file": "animal-race/assets/sounds/kangaroo.ogg"
     }
   },
   "zebra": {
@@ -506,6 +517,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg",
       "file": "animal-race/assets/images/zebra.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/96/Plains_Zebra_Equus_quagga_cropped.jpg"
+    },
+    "audio": {
+      "title": "Freesound #277234 — Sweep-005.wav",
+      "source_page": "https://freesound.org/s/277234/",
+      "source_original": "https://cdn.freesound.org/previews/277/277234_967364-hq.mp3",
+      "license": "CC BY",
+      "license_url": "http://creativecommons.org/licenses/by/3.0/",
+      "author": "raaghav81",
+      "query": "zebra",
+      "duration": 2.86714,
+      "file": "animal-race/assets/sounds/zebra.ogg"
     }
   },
   "tiger": {
@@ -538,6 +560,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AGiraffe_Mikumi_National_Park.jpg",
       "file": "animal-race/assets/images/giraffe.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Giraffe_Mikumi_National_Park.jpg"
+    },
+    "audio": {
+      "title": "Freesound #416907 — Gateway Shaker.aif",
+      "source_page": "https://freesound.org/s/416907/",
+      "source_original": "https://cdn.freesound.org/previews/416/416907_2094016-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Unknown_Audio",
+      "query": "giraffe",
+      "duration": 2.80701,
+      "file": "animal-race/assets/sounds/giraffe.ogg"
     }
   },
   "rhino": {
@@ -549,6 +582,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3A109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg",
       "file": "animal-race/assets/images/rhino.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/2/28/109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg"
+    },
+    "audio": {
+      "title": "Freesound #350419 — Rhinoceros Trumpet Sudden",
+      "source_page": "https://freesound.org/s/350419/",
+      "source_original": "https://cdn.freesound.org/previews/350/350419_4557960-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "bevibeldesign",
+      "query": "rhinoceros grunt",
+      "duration": 2.77479,
+      "file": "animal-race/assets/sounds/rhino.ogg"
     }
   },
   "fox": {
@@ -624,6 +668,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg",
       "file": "animal-race/assets/images/polarbear.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/6/66/Polar_Bear_-_Alaska_%28cropped%29.jpg"
+    },
+    "audio": {
+      "title": "Freesound #660235 — Home Run Pipe Organ sound.wav",
+      "source_page": "https://freesound.org/s/660235/",
+      "source_original": "https://cdn.freesound.org/previews/660/660235_6770584-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "GameBoy",
+      "query": "polar bear",
+      "duration": 4.78896,
+      "file": "animal-race/assets/sounds/polarbear.ogg"
     }
   },
   "monkey": {
@@ -679,6 +734,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3ABicho-pregui%C3%A7a_3.jpg",
       "file": "animal-race/assets/images/sloth.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/b/be/Bicho-pregui%C3%A7a_3.jpg"
+    },
+    "audio": {
+      "title": "Freesound #739197 — Sci-Fi Mechanical Door",
+      "source_page": "https://freesound.org/s/739197/",
+      "source_original": "https://cdn.freesound.org/previews/739/739197_13230621-hq.mp3",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "CheatinSloth",
+      "query": "sloth",
+      "duration": 6.59,
+      "file": "animal-race/assets/sounds/sloth.ogg"
     }
   },
   "horse": {
@@ -712,6 +778,17 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AOryctolagus_cuniculus_Rcdo.jpg",
       "file": "animal-race/assets/images/rabbit.jpg",
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Oryctolagus_cuniculus_Rcdo.jpg"
+    },
+    "audio": {
+      "title": "Freesound #385850 — Rabbit Squeaking 1",
+      "source_page": "https://freesound.org/s/385850/",
+      "source_original": "https://cdn.freesound.org/previews/385/385850_4521595-hq.mp3",
+      "license": "CC BY",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "kessir",
+      "query": "rabbit squeak",
+      "duration": 8.241,
+      "file": "animal-race/assets/sounds/rabbit.ogg"
     }
   },
   "cat": {

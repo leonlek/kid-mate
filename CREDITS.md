@@ -58,21 +58,26 @@ works under the same terms where ShareAlike applies.
 | `horse` | image | Public domain | Amada44 | [Commons](https://commons.wikimedia.org/wiki/File%3AHorse_007.jpg) |
 | `horse` | audio | CC BY-NC | Robinhood76 | [Commons](https://freesound.org/s/759006/) |
 | `kangaroo` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3AForester_kangaroo_%28Macropus_giganteus_tasmaniensis%29_juvenile_hopping_Esk_Valley.jpg) |
+| `kangaroo` | audio | CC BY-NC | cocoricosound | [Commons](https://freesound.org/s/164947/) |
 | `crow` | image | CC BY 2.0 | Ian Kirk from Broadstone, Dorset, UK | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus_corone_-near_Canford_Cliffs%2C_Poole%2C_England-8.jpg) |
 | `crow` | audio | CC BY-SA 4.0 | Marie-Lan Taÿ Pamart | [Commons](https://commons.wikimedia.org/wiki/File%3ACorvus%20corone%20-%20Carrion%20Crow%20XC507917.mp3) |
 | `zebra` | image | GFDL 1.2 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APlains_Zebra_Equus_quagga_cropped.jpg) |
+| `zebra` | audio | CC BY | raaghav81 | [Commons](https://freesound.org/s/277234/) |
 | `tiger` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ABengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg) |
 | `tiger` | audio | CC BY 4.0 | About Zoos | [Commons](https://commons.wikimedia.org/wiki/File%3AJaguar%20saw.flac) |
 | `owl` | image | CC BY-SA 4.0 | Carlos Delgado | [Commons](https://commons.wikimedia.org/wiki/File%3ABubo_bubo_sibiricus_-_01.JPG) |
 | `owl` | audio | CC BY-SA 4.0 | Vianney Bajart | [Commons](https://commons.wikimedia.org/wiki/File%3AStrix%20aluco%20male.oga) |
 | `giraffe` | image | GFDL 1.2 | Muhammad Mahdi Karim Facebook The making of this document was supported by Wikimedia CH. (Submit your project!) For all the files concerned, please see the category Supported by Wikimedia CH. العربية ∙ বাংলা ∙ čeština ∙ Deutsch ∙ English ∙ Esperanto ∙ español ∙ français ∙ galego ∙ हिन्दी ∙ magyar ∙ italiano ∙ 日本語 ∙ македонски ∙ Nederlands ∙ português do Brasil ∙ rumantsch ∙ русский ∙ sicilianu ∙ slovenščina ∙ தமிழ் ∙ українська ∙ 中文 ∙ +/− | [Commons](https://commons.wikimedia.org/wiki/File%3AGiraffe_Mikumi_National_Park.jpg) |
+| `giraffe` | audio | CC0 | Unknown_Audio | [Commons](https://freesound.org/s/416907/) |
 | `flamingo` | image | CC BY 2.0 | Valdiney Pimenta | [Commons](https://commons.wikimedia.org/wiki/File%3AFlamingos_Laguna_Colorada.jpg) |
 | `flamingo` | audio | CC BY-SA 4.0 | Joost van Bruggen | [Commons](https://commons.wikimedia.org/wiki/File%3APhoenicopterus%20roseus%20-%20Greater%20Flamingo%20XC432217.mp3) |
 | `rabbit` | image | CC BY 3.0 | JM Ligero Loarte | [Commons](https://commons.wikimedia.org/wiki/File%3AOryctolagus_cuniculus_Rcdo.jpg) |
+| `rabbit` | audio | CC BY | kessir | [Commons](https://freesound.org/s/385850/) |
 | `shark` | image | CC BY 2.0 | NOAA Photo Library | [Commons](https://commons.wikimedia.org/wiki/File%3ACorl0207_%2828225976491%29.jpg) |
 | `orca` | image | Public domain | Robert Pittman | [Commons](https://commons.wikimedia.org/wiki/File%3AKillerwhales_jumping.jpg) |
 | `orca` | audio | Public domain | Unknown | [Commons](https://commons.wikimedia.org/wiki/File%3AKiller%20whale%20simple.ogg) |
 | `rhino` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3A109_Male_White_rhinoceros_walking_in_the_Kalahari_Desert_of_Namibia_Photo_by_Giles_Laurent.jpg) |
+| `rhino` | audio | CC0 | bevibeldesign | [Commons](https://freesound.org/s/350419/) |
 | `fox` | image | CC BY-SA 4.0 | ClaudiaTen | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg) |
 | `fox` | audio | CC BY | InspectorJ | [Commons](https://freesound.org/s/485009/) |
 | `bear` | image | CC BY-SA 3.0 | Yathin S Krishnappa | [Commons](https://commons.wikimedia.org/wiki/File%3A2010-kodiak-bear-1.jpg) |
@@ -88,6 +93,7 @@ works under the same terms where ShareAlike applies.
 | `elephant` | image | GFDL 1.2 | Muhammad Mahdi Karim Facebook The making of this document was supported by Wikimedia CH. (Submit your project!) For all the files concerned, please see the category Supported by Wikimedia CH. العربية ∙ বাংলা ∙ čeština ∙ Deutsch ∙ English ∙ Esperanto ∙ español ∙ français ∙ galego ∙ हिन्दी ∙ magyar ∙ italiano ∙ 日本語 ∙ македонски ∙ Nederlands ∙ português do Brasil ∙ rumantsch ∙ русский ∙ sicilianu ∙ slovenščina ∙ தமிழ் ∙ українська ∙ 中文 ∙ +/− | [Commons](https://commons.wikimedia.org/wiki/File%3AAfrican_Bush_Elephant.jpg) |
 | `elephant` | audio | CC0 | தகவலுழவன் | [Commons](https://commons.wikimedia.org/wiki/File%3AElephant%20voice%20-%20trumpeting.ogg) |
 | `polarbear` | image | CC BY-SA 3.0 | Alan Wilson | [Commons](https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg) |
+| `polarbear` | audio | CC BY | GameBoy | [Commons](https://freesound.org/s/660235/) |
 | `octopus` | image | CC BY-SA 3.0 | albert kok | [Commons](https://commons.wikimedia.org/wiki/File%3AOctopus2.jpg) |
 | `human` | image | GFDL | Erik van Leeuwen | [Commons](https://commons.wikimedia.org/wiki/File%3AUsain_Bolt_smiling_Berlin_2009.JPG) |
 | `human` | audio | CC0 | qubodup | [Commons](https://freesound.org/s/827320/) |
@@ -128,6 +134,7 @@ works under the same terms where ShareAlike applies.
 | `crab` | image | CC BY-SA 4.0 | Hans Hillewaert | [Commons](https://commons.wikimedia.org/wiki/File%3ACancer_pagurus.jpg) |
 | `turtle` | image | CC BY-SA 3.0 | Brocken Inaglory | [Commons](https://commons.wikimedia.org/wiki/File%3AChelonia_mydas_is_going_for_the_air_edit.jpg) |
 | `sloth` | image | CC BY-SA 4.0 | Daniella Maraschiello | [Commons](https://commons.wikimedia.org/wiki/File%3ABicho-pregui%C3%A7a_3.jpg) |
+| `sloth` | audio | CC0 | CheatinSloth | [Commons](https://freesound.org/s/739197/) |
 | `snail` | image | CC BY-SA 3.0 | Geierunited | [Commons](https://commons.wikimedia.org/wiki/File%3ASnail.jpg) |
 
 ---
