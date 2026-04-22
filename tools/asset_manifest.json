@@ -1373,14 +1373,14 @@
       "source_original": "https://upload.wikimedia.org/wikipedia/commons/7/71/Capybaracropped.jpg"
     },
     "audio": {
-      "title": "Freesound #849980 — capybara",
-      "source_page": "https://freesound.org/s/849980/",
-      "source_original": "https://cdn.freesound.org/previews/849/849980_18656191-hq.mp3",
+      "title": "Freesound #815837 — Rodents - American Guinea Pig, Squealing, Close Perspective (guinea pig — closest living relative of capybara, family Caviidae)",
+      "source_page": "https://freesound.org/s/815837/",
+      "source_original": "https://cdn.freesound.org/previews/815/815837_15895934-hq.mp3",
       "license": "CC0",
       "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
-      "author": "Капыбара_12345",
-      "query": "capybara",
-      "duration": 11.6971,
+      "author": "TheKingOfGeeks360",
+      "query": "guinea pig squeak",
+      "note": "Capybara recordings unavailable; using guinea pig (same family Caviidae) as closest authentic substitute.",
       "file": "animal-race/assets/sounds/capybara.ogg"
     }
   }

@@ -109,7 +109,7 @@ works under the same terms where ShareAlike applies.
 | `cow` | image | CC BY-SA 3.0 | Kim Hansen | [Commons](https://commons.wikimedia.org/wiki/File%3ACow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg) |
 | `cow` | audio | CC BY-NC | Audio_Dread | [Commons](https://freesound.org/s/524138/) |
 | `capybara` | image | CC BY-SA 4.0 | Giles Laurent | [Commons](https://commons.wikimedia.org/wiki/File%3ACapybaracropped.jpg) |
-| `capybara` | audio | CC0 | Капыбара_12345 | [Commons](https://freesound.org/s/849980/) |
+| `capybara` | audio | CC0 | TheKingOfGeeks360 | [Commons](https://freesound.org/s/815837/) |
 | `seal` | image | CC BY-SA 4.0 | Charles J. Sharp | [Commons](https://commons.wikimedia.org/wiki/File%3ACommon_seal_%28Phoca_vitulina%29_2.jpg) |
 | `seal` | audio | CC BY | klankbeeld | [Commons](https://freesound.org/s/192555/) |
 | `hippo` | image | CC BY-SA 4.0 | Muhammad Mahdi Karim | [Commons](https://commons.wikimedia.org/wiki/File%3APortrait_Hippopotamus_in_the_water.jpg) |
