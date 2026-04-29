@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎯 จับเร็วๆ — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมแตะให้ถูกตามกฎ ฝึกสมาธิและการคิดยืดหยุ่นสำหรับเด็ก ฟรี ไม่ต้องโหลดแอป">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="จับเร็วๆ">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="🎯 จับเร็วๆ — เกมสำหรับเด็ก">
+<meta property="og:description" content="แตะให้ถูกตามกฎ ฝึกสมาธิ ฟรี ไม่ต้องโหลดแอป">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --good: #5bc13a;
+    --good-dark: #3fa024;
+    --bad: #ff5757;
+    --bad-dark: #d83838;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  /* Game screen takes full viewport — no max-width clamp, no scroll */
+  body:has(#gameScreen.active) .app {
+    max-width: 100%;
+    padding: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Header ===== */
+  .hero {
+    text-align: center;
+    padding: 14px 10px 24px;
+  }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow:
+      3px 3px 0 #fff,
+      6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p {
+    font-size: clamp(16px, 3.4vw, 22px);
+    margin: 12px 0 0;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* ===== Speed selector (select screen) ===== */
+  .speed-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 4px;
+    flex-wrap: wrap;
+  }
+  .speed-label {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-right: 4px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .speed-pill {
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border: 3px solid #fff;
+    border-radius: 999px;
+    background: #fff;
+    color: #777;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    transition: transform .12s ease, background .15s ease, color .15s ease, box-shadow .12s ease;
+    min-width: 92px;
+  }
+  .speed-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .speed-pill.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 4px 0 var(--brand-dark);
+  }
+
+  /* ===== Challenge cards (select screen) ===== */
+  .level-tag {
+    text-align: center;
+    margin: 24px 0 12px;
+    font-family: 'Itim', cursive;
+    font-size: 26px;
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .cgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 0 0 20px;
+  }
+  .ccard {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 24px;
+    padding: 20px 14px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    position: relative;
+    overflow: hidden;
+  }
+  .ccard::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.03));
+    pointer-events: none;
+  }
+  .ccard:active {
+    transform: scale(0.96) translateY(2px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.07);
+  }
+  .ccard:hover { border-color: var(--brand); }
+  .ccard .pair {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: 64px;
+    line-height: 1.05;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
+  }
+  .ccard .pair .vs {
+    font-family: 'Itim', cursive;
+    font-size: 26px;
+    color: #aaa;
+    margin: 0 4px;
+  }
+  .ccard .ctitle {
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    color: var(--brand-dark);
+    margin-top: 10px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .ccard .csub {
+    font-size: 14px;
+    color: #777;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .ccard .stars {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Game screen ===== */
+  #gameScreen.active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    gap: 0;
+  }
+  .rule-banner {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    margin: 12px 14px 0;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.10);
+    background: #fff;
+    border: 4px solid #fff;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .rule-banner.flash {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 6px var(--gold), 0 8px 0 rgba(0,0,0,0.10);
+  }
+  .rule-side {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 96px;
+  }
+  .rule-side.go {
+    background: linear-gradient(180deg, #c8f3a0, #9ce070);
+    color: #1f5b13;
+  }
+  .rule-side.nogo {
+    background: linear-gradient(180deg, #ffc8c8, #ff9c9c);
+    color: #6b1515;
+    opacity: 0.92;
+  }
+  .rule-mark {
+    font-family: 'Itim', cursive;
+    font-size: 26px;
+    line-height: 1;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.6);
+  }
+  .rule-examples {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    line-height: 1;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.12));
+  }
+  .rule-side.nogo .rule-examples { font-size: 36px; opacity: 0.9; }
+  .rule-side.nogo .rule-examples::after { content: ''; }
+  .rule-divider {
+    width: 4px;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  /* HUD */
+  .hud {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 14px 0;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+  }
+  .hud-item {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    border-radius: 999px;
+    padding: 6px 16px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    min-width: 80px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .hud-item.combo { color: #e64a19; }
+  .hud-item.score { color: var(--brand-dark); font-size: 26px; min-width: 110px; }
+  .hud-item.time { color: #2980b9; }
+  .hud-item.combo.bump { animation: bump .35s ease; }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+
+  /* Play area */
+  .play-area {
+    flex: 1 1 auto;
+    position: relative;
+    margin: 12px 12px 12px;
+    min-height: 320px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 26px;
+    border: 3px dashed rgba(255,255,255,0.7);
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  .stimulus {
+    position: absolute;
+    width: 110px; height: 110px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 88px;
+    line-height: 1;
+    filter: drop-shadow(3px 4px 0 rgba(0,0,0,0.18));
+    cursor: pointer;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform .22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+  }
+  .stimulus.in { transform: translate(-50%, -50%) scale(1); }
+  .stimulus.bobbing {
+    animation: bob 1.2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+    50%      { transform: translate(-50%, -50%) scale(1.04) rotate(4deg); }
+  }
+  .stimulus.popped {
+    animation: poppedAway .3s ease forwards;
+  }
+  @keyframes poppedAway {
+    0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50%  { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  }
+  .stimulus.shaken {
+    animation: shaken .35s ease;
+  }
+  @keyframes shaken {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    20%      { transform: translate(calc(-50% - 10px), -50%) scale(1) rotate(-12deg); }
+    50%      { transform: translate(calc(-50% + 10px), -50%) scale(1) rotate(12deg); }
+    80%      { transform: translate(calc(-50% - 6px), -50%) scale(1) rotate(-6deg); }
+  }
+  .stimulus.fading {
+    animation: fadeOut .3s ease forwards;
+  }
+  @keyframes fadeOut {
+    from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    to   { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  }
+  .sparkle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 36px;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    animation: sparkleFloat .65s ease-out forwards;
+  }
+  @keyframes sparkleFloat {
+    0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    100% { transform: translate(-50%, -200%) scale(1.2); opacity: 0; }
+  }
+  .pop-score {
+    position: absolute;
+    pointer-events: none;
+    font-family: 'Itim', cursive;
+    font-size: 36px;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 var(--brand-dark);
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    animation: popScore .8s ease-out forwards;
+  }
+  @keyframes popScore {
+    0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+    20%  { transform: translate(-50%, -80%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -180%) scale(1); opacity: 0; }
+  }
+  .err-x {
+    position: absolute;
+    pointer-events: none;
+    font-size: 64px;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    animation: errFlash .45s ease-out forwards;
+  }
+  @keyframes errFlash {
+    0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    50%  { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+  }
+
+  /* Big banner overlay (countdown, switch, go) */
+  .overlay-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+    font-family: 'Itim', cursive;
+    color: #fff;
+    text-align: center;
+  }
+  .overlay-msg .msg {
+    background: var(--brand);
+    border: 4px solid #fff;
+    border-radius: 32px;
+    padding: 28px 48px;
+    font-size: clamp(48px, 9vw, 96px);
+    line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+  }
+  .overlay-msg .msg.go {
+    background: var(--good);
+    text-shadow: 3px 3px 0 var(--good-dark);
+  }
+  .overlay-msg .msg.switch {
+    background: var(--gold);
+    color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  /* ===== Results screen ===== */
+  #resultsScreen { text-align: center; padding-top: 20px; }
+  .trophy {
+    font-size: clamp(120px, 22vw, 180px);
+    line-height: 1;
+    filter: drop-shadow(4px 6px 0 rgba(0,0,0,0.18));
+    animation: bobBig 1.2s ease-in-out infinite;
+  }
+  @keyframes bobBig {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-12px) rotate(4deg); }
+  }
+  .winner-name {
+    font-family: 'Itim', cursive;
+    font-size: clamp(44px, 9vw, 72px);
+    color: var(--brand-dark);
+    margin: 18px 0 6px;
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+  }
+  .winner-sub {
+    font-size: clamp(18px, 4vw, 24px);
+    color: #555;
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .stars-row {
+    font-size: clamp(48px, 10vw, 72px);
+    line-height: 1;
+    margin: 8px 0 4px;
+    letter-spacing: 4px;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
+  }
+  .rating-text {
+    font-family: 'Itim', cursive;
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--brand-dark);
+    margin: 4px 0 16px;
+  }
+
+  /* Action bar (results + select start) */
+  .action-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-main {
+    font-family: 'Itim', cursive;
+    font-size: 28px;
+    padding: 16px 36px;
+    border: 4px solid #fff;
+    border-radius: 999px;
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 6px 0 var(--brand-dark);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    text-shadow: 2px 2px 0 var(--brand-dark);
+  }
+  .btn-main:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--brand-dark);
+  }
+  .btn-ghost {
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    padding: 14px 30px;
+    border: 4px solid var(--brand);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--brand-dark);
+    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-ghost:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+  }
+
+  /* Confetti (same as animal-race) */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* Home button */
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    z-index: 60;
+    transition: transform .12s ease;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  /* iPad / tablet sizes — bigger play surface */
+  @media (min-width: 768px) {
+    .stimulus {
+      width: 140px; height: 140px;
+      font-size: 110px;
+    }
+    .rule-side { min-height: 110px; padding: 18px 20px; }
+    .rule-mark { font-size: 30px; }
+    .rule-examples { font-size: 56px; gap: 8px; }
+    .rule-side.nogo .rule-examples { font-size: 46px; }
+    .hud { font-size: 26px; }
+    .hud-item { padding: 8px 22px; min-width: 110px; }
+    .hud-item.score { font-size: 30px; min-width: 140px; }
+    .play-area { margin: 16px; }
+    .cgrid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .ccard .pair { font-size: 78px; }
+    .ccard .ctitle { font-size: 28px; }
+  }
+
+  @media (min-width: 1024px) {
+    .stimulus {
+      width: 160px; height: 160px;
+      font-size: 130px;
+    }
+  }
+
+  /* Phone tweaks */
+  @media (max-width: 480px) {
+    .ccard { padding: 16px 10px 14px; border-width: 3px; border-radius: 20px; }
+    .ccard .pair { font-size: 54px; }
+    .ccard .ctitle { font-size: 22px; }
+    .stimulus { width: 96px; height: 96px; font-size: 76px; }
+    .rule-mark { font-size: 22px; }
+    .rule-examples { font-size: 38px; }
+    .rule-side.nogo .rule-examples { font-size: 30px; }
+    .hud { font-size: 18px; margin: 8px 10px 0; }
+    .hud-item { padding: 5px 12px; min-width: 70px; }
+    .hud-item.score { font-size: 22px; min-width: 90px; }
+    .play-area { margin: 8px 8px 10px; border-radius: 20px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="app">
+
+  <!-- SELECT SCREEN -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🎯 จับเร็วๆ</h1>
+      <p>แตะให้ถูกตามกฎ! ห้ามแตะอย่างอื่น<br/><small style="font-size:.85em;color:#888">เลือกแบบที่อยากเล่น</small></p>
+    </header>
+
+    <div class="speed-row" id="speedRow">
+      <div class="speed-label">ความเร็ว:</div>
+      <button class="speed-pill" data-speed="slow" type="button">🐢 ช้า</button>
+      <button class="speed-pill active" data-speed="medium" type="button">🐇 กลาง</button>
+      <button class="speed-pill" data-speed="fast" type="button">⚡ เร็ว</button>
+    </div>
+
+    <div class="level-tag">⭐ ระดับ 1 — แตะให้ถูกตัว</div>
+    <div id="grid1" class="cgrid"></div>
+
+    <div class="level-tag">⭐⭐ ระดับ 2 — แตะให้ถูกพวก</div>
+    <div id="grid2" class="cgrid"></div>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="gameScreen" class="screen">
+    <div id="ruleBanner" class="rule-banner">
+      <div class="rule-side go">
+        <div class="rule-mark">✅ แตะ</div>
+        <div id="ruleGoEx" class="rule-examples"></div>
+      </div>
+      <div class="rule-divider"></div>
+      <div class="rule-side nogo">
+        <div class="rule-mark">❌ ห้าม</div>
+        <div id="ruleNogoEx" class="rule-examples"></div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-item combo" id="comboBox">🔥 <span id="comboCount">0</span></div>
+      <div class="hud-item score"><span id="scoreCount">0</span></div>
+      <div class="hud-item time">⏱ <span id="timeLeft">60</span></div>
+    </div>
+
+    <div id="playArea" class="play-area">
+      <div id="overlayMsg" class="overlay-msg" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="resultsScreen" class="screen">
+    <div class="trophy">🏆</div>
+    <h2 id="resultScore" class="winner-name">0 คะแนน</h2>
+    <p id="resultStreak" class="winner-sub">ติดต่อกันสูงสุด: 0 ครั้ง</p>
+    <div id="resultStars" class="stars-row">⭐</div>
+    <div id="resultText" class="rating-text">ลองอีกที!</div>
+    <div class="action-bar">
+      <button id="againBtn" class="btn-ghost">🔄 เล่นอีก</button>
+      <button id="newBtn" class="btn-main">เลือกใหม่</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// DATA
+// ============================================================================
+
+// Each challenge: { id, level, title, subtitle, goLabel, nogoLabel,
+//                   goItems[], nogoItems[] }
+// Level 1 has 1 item per side; level 2 has many. Same engine handles both.
+const CHALLENGES = [
+  // ----- LEVEL 1 -----
+  {
+    id: 'lion-tiger', level: 1,
+    title: '🦁 vs 🐯', subtitle: 'สิงโต กับ เสือ',
+    goLabel: 'สิงโต', nogoLabel: 'เสือ',
+    goItems:   [{ emoji: '🦁', name: 'สิงโต' }],
+    nogoItems: [{ emoji: '🐯', name: 'เสือ' }],
+  },
+  {
+    id: 'dog-cat', level: 1,
+    title: '🐶 vs 🐱', subtitle: 'หมา กับ แมว',
+    goLabel: 'หมา', nogoLabel: 'แมว',
+    goItems:   [{ emoji: '🐶', name: 'หมา' }],
+    nogoItems: [{ emoji: '🐱', name: 'แมว' }],
+  },
+  {
+    id: 'bee-butterfly', level: 1,
+    title: '🐝 vs 🦋', subtitle: 'ผึ้ง กับ ผีเสื้อ',
+    goLabel: 'ผึ้ง', nogoLabel: 'ผีเสื้อ',
+    goItems:   [{ emoji: '🐝', name: 'ผึ้ง' }],
+    nogoItems: [{ emoji: '🦋', name: 'ผีเสื้อ' }],
+  },
+  {
+    id: 'car-bike', level: 1,
+    title: '🚗 vs 🚲', subtitle: 'รถ กับ จักรยาน',
+    goLabel: 'รถ', nogoLabel: 'จักรยาน',
+    goItems:   [{ emoji: '🚗', name: 'รถ' }],
+    nogoItems: [{ emoji: '🚲', name: 'จักรยาน' }],
+  },
+  {
+    id: 'apple-banana', level: 1,
+    title: '🍎 vs 🍌', subtitle: 'แอปเปิ้ล กับ กล้วย',
+    goLabel: 'แอปเปิ้ล', nogoLabel: 'กล้วย',
+    goItems:   [{ emoji: '🍎', name: 'แอปเปิ้ล' }],
+    nogoItems: [{ emoji: '🍌', name: 'กล้วย' }],
+  },
+  {
+    id: 'star-moon', level: 1,
+    title: '⭐ vs 🌙', subtitle: 'ดาว กับ พระจันทร์',
+    goLabel: 'ดาว', nogoLabel: 'พระจันทร์',
+    goItems:   [{ emoji: '⭐', name: 'ดาว' }],
+    nogoItems: [{ emoji: '🌙', name: 'พระจันทร์' }],
+  },
+
+  // ----- LEVEL 2 -----
+  {
+    id: 'meat-plant', level: 2,
+    title: '🍖 vs 🌿', subtitle: 'กินเนื้อ vs กินพืช',
+    goLabel: 'กินเนื้อ', nogoLabel: 'กินพืช',
+    goItems: [
+      { emoji: '🦁', name: 'สิงโต' },
+      { emoji: '🐯', name: 'เสือ' },
+      { emoji: '🐺', name: 'หมาป่า' },
+      { emoji: '🐻', name: 'หมี' },
+      { emoji: '🦊', name: 'จิ้งจอก' },
+      { emoji: '🦈', name: 'ฉลาม' },
+      { emoji: '🐊', name: 'จระเข้' },
+      { emoji: '🦅', name: 'นกอินทรี' },
+    ],
+    nogoItems: [
+      { emoji: '🐘', name: 'ช้าง' },
+      { emoji: '🦒', name: 'ยีราฟ' },
+      { emoji: '🐰', name: 'กระต่าย' },
+      { emoji: '🐑', name: 'แกะ' },
+      { emoji: '🐄', name: 'วัว' },
+      { emoji: '🐴', name: 'ม้า' },
+      { emoji: '🦌', name: 'กวาง' },
+      { emoji: '🐨', name: 'โคอาล่า' },
+    ],
+  },
+  {
+    id: 'land-water', level: 2,
+    title: '🏞️ vs 🌊', subtitle: 'อยู่บก vs อยู่น้ำ',
+    goLabel: 'อยู่บก', nogoLabel: 'อยู่น้ำ',
+    goItems: [
+      { emoji: '🦁', name: 'สิงโต' },
+      { emoji: '🐘', name: 'ช้าง' },
+      { emoji: '🐯', name: 'เสือ' },
+      { emoji: '🦒', name: 'ยีราฟ' },
+      { emoji: '🦓', name: 'ม้าลาย' },
+      { emoji: '🐰', name: 'กระต่าย' },
+      { emoji: '🐺', name: 'หมาป่า' },
+      { emoji: '🦊', name: 'จิ้งจอก' },
+    ],
+    nogoItems: [
+      { emoji: '🐠', name: 'ปลาการ์ตูน' },
+      { emoji: '🐟', name: 'ปลา' },
+      { emoji: '🦈', name: 'ฉลาม' },
+      { emoji: '🐙', name: 'หมึก' },
+      { emoji: '🦞', name: 'ล็อบสเตอร์' },
+      { emoji: '🦀', name: 'ปู' },
+      { emoji: '🐬', name: 'โลมา' },
+      { emoji: '🐳', name: 'วาฬ' },
+    ],
+  },
+  {
+    id: 'fly-walk', level: 2,
+    title: '🕊️ vs 🐾', subtitle: 'บินได้ vs เดินบนพื้น',
+    goLabel: 'บินได้', nogoLabel: 'เดินบนพื้น',
+    goItems: [
+      { emoji: '🦅', name: 'นกอินทรี' },
+      { emoji: '🦉', name: 'นกฮูก' },
+      { emoji: '🦜', name: 'นกแก้ว' },
+      { emoji: '🦢', name: 'หงส์' },
+      { emoji: '🐦', name: 'นก' },
+      { emoji: '🦋', name: 'ผีเสื้อ' },
+      { emoji: '🐝', name: 'ผึ้ง' },
+      { emoji: '🐞', name: 'เต่าทอง' },
+    ],
+    nogoItems: [
+      { emoji: '🐘', name: 'ช้าง' },
+      { emoji: '🦁', name: 'สิงโต' },
+      { emoji: '🐯', name: 'เสือ' },
+      { emoji: '🐶', name: 'หมา' },
+      { emoji: '🐱', name: 'แมว' },
+      { emoji: '🐰', name: 'กระต่าย' },
+      { emoji: '🦓', name: 'ม้าลาย' },
+      { emoji: '🐻', name: 'หมี' },
+    ],
+  },
+  {
+    id: 'sweet-savory', level: 2,
+    title: '🍰 vs 🍕', subtitle: 'ของหวาน vs ของคาว',
+    goLabel: 'ของหวาน', nogoLabel: 'ของคาว',
+    goItems: [
+      { emoji: '🍰', name: 'เค้ก' },
+      { emoji: '🍦', name: 'ไอติม' },
+      { emoji: '🍩', name: 'โดนัท' },
+      { emoji: '🍭', name: 'อมยิ้ม' },
+      { emoji: '🍪', name: 'คุกกี้' },
+      { emoji: '🧁', name: 'คัพเค้ก' },
+      { emoji: '🍫', name: 'ช็อกโกแลต' },
+      { emoji: '🍮', name: 'พุดดิ้ง' },
+    ],
+    nogoItems: [
+      { emoji: '🍕', name: 'พิซซ่า' },
+      { emoji: '🍔', name: 'แฮมเบอร์เกอร์' },
+      { emoji: '🌭', name: 'ฮอตดอก' },
+      { emoji: '🍟', name: 'มันฝรั่งทอด' },
+      { emoji: '🍣', name: 'ซูชิ' },
+      { emoji: '🍜', name: 'ราเมง' },
+      { emoji: '🥩', name: 'สเต๊ก' },
+      { emoji: '🍗', name: 'ไก่ทอด' },
+    ],
+  },
+];
+
+// ============================================================================
+// CONSTANTS — TUNING (load-bearing per CLAUDE.md)
+// ============================================================================
+const ROUND_MS         = 60000;   // 60-sec round
+const SPAWN_MIN_MS     = 600;     // hardest end of spawn cadence
+const SPAWN_MAX_MS     = 1100;    // easiest end
+const STIMULUS_LIFE_MS = 2500;    // how long a stimulus stays before auto-removing
+const STIMULUS_FADE_MS = 300;     // fade-out portion at end of life
+const NOGO_RATIO       = 0.45;    // share of spawns that are no-go (rest are go)
+const SWITCH_AFTER     = 8;       // switch rule after this many correct taps...
+const SWITCH_MIN_GAP_MS= 10000;   // ...but no more often than this
+const COMBO_BONUS_EVERY= 5;       // every N combo, score gain bumps by +1
+const SWITCH_BONUS     = 2;       // first correct after a switch gives extra
+const COLS             = 4;
+const ROWS             = 3;       // play-area cell grid (4×3 = 12 cells; max 4 visible)
+const MAX_VISIBLE_BASE = 3;       // soft cap early game
+const MAX_VISIBLE_HARD = 4;       // soft cap mid/late game
+const RULE_FREEZE_MS   = 1000;    // pause spawn this long after a switch
+
+// Speed presets — multiplies the base spawn cadence and stimulus lifetime.
+// "slow" is tuned for 3-year-olds (gentle pace, fewer things on screen, longer to react).
+const SPEED_LEVELS = {
+  slow:   { spawnMul: 1.7, lifeMul: 1.5, maxVisBase: 2, maxVisHard: 2 },
+  medium: { spawnMul: 1.0, lifeMul: 1.0, maxVisBase: 3, maxVisHard: 4 },
+  fast:   { spawnMul: 0.7, lifeMul: 0.85, maxVisBase: 3, maxVisHard: 5 },
+};
+const SPEED_KEY = 'quickTapSpeed';
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  challenge: null,
+  speed: 'medium',            // one of SPEED_LEVELS keys; persisted to localStorage
+  flipped: false,             // false = goItems are the target; true = nogoItems are target
+  score: 0,
+  combo: 0,
+  bestCombo: 0,
+  correctSinceSwitch: 0,
+  awaitingPostSwitch: false,  // next correct tap gets bonus
+  startTime: 0,
+  endTime: 0,
+  timeLeftSec: 60,
+  stimuli: new Map(),         // id -> stimulus { id, kind, item, cell, el, expireAt, life }
+  stimulusSeq: 0,
+  occupiedCells: new Set(),
+  spawnTimer: null,
+  tickTimer: null,
+  raf: 0,
+  spawnPausedUntil: 0,
+  lastSwitchAt: 0,
+  running: false,
+};
+
+// ============================================================================
+// DOM REFS
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const grid1 = $('grid1');
+const grid2 = $('grid2');
+const screens = {
+  select:  $('selectScreen'),
+  game:    $('gameScreen'),
+  results: $('resultsScreen'),
+};
+const ruleBanner = $('ruleBanner');
+const ruleGoEx   = $('ruleGoEx');
+const ruleNogoEx = $('ruleNogoEx');
+const playArea   = $('playArea');
+const overlay    = $('overlayMsg');
+const comboBox   = $('comboBox');
+const comboCount = $('comboCount');
+const scoreCount = $('scoreCount');
+const timeLeft   = $('timeLeft');
+const resultScore  = $('resultScore');
+const resultStreak = $('resultStreak');
+const resultStars  = $('resultStars');
+const resultText   = $('resultText');
+
+// ============================================================================
+// UTIL
+// ============================================================================
+function rand(min, max) { return min + Math.random() * (max - min); }
+function pick(arr)      { return arr[Math.floor(Math.random() * arr.length)]; }
+function buzz(p)        { if (navigator.vibrate) navigator.vibrate(p); }
+
+function showScreen(name) {
+  for (const k of Object.keys(screens)) {
+    screens[k].classList.toggle('active', k === name);
+  }
+}
+
+// ============================================================================
+// SELECT SCREEN — render challenge cards
+// ============================================================================
+function renderChallengeCards() {
+  grid1.innerHTML = '';
+  grid2.innerHTML = '';
+  for (const ch of CHALLENGES) {
+    const card = document.createElement('div');
+    card.className = 'ccard';
+    const stars = ch.level === 1 ? '⭐' : '⭐⭐';
+    const goEmoji = ch.goItems[0].emoji;
+    const nogoEmoji = ch.nogoItems[0].emoji;
+    card.innerHTML = `
+      <div class="stars">${stars}</div>
+      <div class="pair">${goEmoji}<span class="vs">vs</span>${nogoEmoji}</div>
+      <div class="ctitle">${ch.title}</div>
+      <div class="csub">${ch.subtitle}</div>
+    `;
+    card.addEventListener('click', () => startGame(ch));
+    (ch.level === 1 ? grid1 : grid2).appendChild(card);
+  }
+}
+
+// ============================================================================
+// GAME ENGINE
+// ============================================================================
+
+function currentGoPool()   { return state.flipped ? state.challenge.nogoItems : state.challenge.goItems; }
+function currentNogoPool() { return state.flipped ? state.challenge.goItems : state.challenge.nogoItems; }
+function currentGoLabel()  { return state.flipped ? state.challenge.nogoLabel : state.challenge.goLabel; }
+function currentNogoLabel(){ return state.flipped ? state.challenge.goLabel : state.challenge.nogoLabel; }
+
+function renderRuleBanner() {
+  const goPool = currentGoPool();
+  const nogoPool = currentNogoPool();
+  // For Level 1: show one big go emoji and one nogo. For Level 2: show 3 examples.
+  const isLevel2 = state.challenge.level === 2;
+  const nGo = isLevel2 ? 3 : 1;
+  const nNogo = isLevel2 ? 3 : 1;
+  ruleGoEx.textContent = pickN(goPool, nGo).map(it => it.emoji).join(' ');
+  ruleNogoEx.textContent = pickN(nogoPool, nNogo).map(it => it.emoji).join(' ');
+}
+
+function pickN(arr, n) {
+  if (arr.length <= n) return arr.slice();
+  const copy = arr.slice();
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const idx = Math.floor(Math.random() * copy.length);
+    out.push(copy.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+function startGame(challenge) {
+  state.challenge = challenge;
+  state.flipped = false;
+  state.score = 0;
+  state.combo = 0;
+  state.bestCombo = 0;
+  state.correctSinceSwitch = 0;
+  state.awaitingPostSwitch = false;
+  state.timeLeftSec = Math.ceil(ROUND_MS / 1000);
+  state.stimuli.clear();
+  state.occupiedCells.clear();
+  state.lastSwitchAt = 0;
+  state.spawnPausedUntil = 0;
+  state.running = false;
+  state.stimulusSeq = 0;
+  // Clear any leftover DOM
+  for (const el of playArea.querySelectorAll('.stimulus, .sparkle, .pop-score, .err-x')) el.remove();
+  scoreCount.textContent = '0';
+  comboCount.textContent = '0';
+  timeLeft.textContent = state.timeLeftSec;
+  renderRuleBanner();
+  showScreen('game');
+  // Countdown 3 → 2 → 1 → ไป!
+  runCountdown();
+}
+
+function runCountdown() {
+  const seq = ['3', '2', '1', 'ไป!'];
+  let i = 0;
+  function step() {
+    if (i >= seq.length) { beginRound(); return; }
+    const cls = seq[i] === 'ไป!' ? 'go' : '';
+    flashOverlay(seq[i], 700, cls);
+    i++;
+    setTimeout(step, 700);
+  }
+  step();
+}
+
+function beginRound() {
+  state.startTime = performance.now();
+  state.endTime = state.startTime + ROUND_MS;
+  state.running = true;
+  scheduleSpawn();
+  state.tickTimer = setInterval(tick, 200);
+}
+
+function tick() {
+  if (!state.running) return;
+  const now = performance.now();
+  const remain = Math.max(0, state.endTime - now);
+  const newSec = Math.ceil(remain / 1000);
+  if (newSec !== state.timeLeftSec) {
+    state.timeLeftSec = newSec;
+    timeLeft.textContent = newSec;
+  }
+  if (remain <= 0) endRound();
+}
+
+function elapsedMs() { return performance.now() - state.startTime; }
+
+function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
+
+function getSpawnInterval() {
+  // Linearly speed up over the round: start near MAX, end near MIN.
+  const t = Math.min(1, elapsedMs() / ROUND_MS);
+  const base = SPAWN_MAX_MS - (SPAWN_MAX_MS - SPAWN_MIN_MS) * t;
+  return (base + rand(-100, 100)) * speedPreset().spawnMul;
+}
+
+function getStimulusLife() { return STIMULUS_LIFE_MS * speedPreset().lifeMul; }
+
+function getMaxVisible() {
+  const p = speedPreset();
+  return elapsedMs() < ROUND_MS * 0.4 ? p.maxVisBase : p.maxVisHard;
+}
+
+function scheduleSpawn() {
+  if (!state.running) return;
+  const interval = getSpawnInterval();
+  state.spawnTimer = setTimeout(() => {
+    if (!state.running) return;
+    const now = performance.now();
+    if (now >= state.spawnPausedUntil && state.stimuli.size < getMaxVisible()) {
+      spawn();
+    }
+    scheduleSpawn();
+  }, Math.max(150, interval));
+}
+
+function pickFreeCell() {
+  const free = [];
+  for (let i = 0; i < COLS * ROWS; i++) {
+    if (!state.occupiedCells.has(i)) free.push(i);
+  }
+  if (!free.length) return -1;
+  return pick(free);
+}
+
+function cellToCenter(cell) {
+  const col = cell % COLS;
+  const row = Math.floor(cell / COLS);
+  const rect = playArea.getBoundingClientRect();
+  // Inset cells slightly so emojis don't clip the rounded corners
+  const padX = 0.08 * (rect.width / COLS);
+  const padY = 0.08 * (rect.height / ROWS);
+  const cellW = (rect.width - 2 * padX) / COLS;
+  const cellH = (rect.height - 2 * padY) / ROWS;
+  return {
+    x: padX + cellW * (col + 0.5),
+    y: padY + cellH * (row + 0.5),
+  };
+}
+
+function spawn() {
+  const cell = pickFreeCell();
+  if (cell < 0) return;
+  const isGo = Math.random() > NOGO_RATIO;
+  const pool = isGo ? currentGoPool() : currentNogoPool();
+  const item = pick(pool);
+  const id = ++state.stimulusSeq;
+  const { x, y } = cellToCenter(cell);
+  const el = document.createElement('div');
+  el.className = 'stimulus';
+  el.textContent = item.emoji;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  playArea.appendChild(el);
+  // Trigger entry transition next frame
+  requestAnimationFrame(() => {
+    el.classList.add('in');
+    // After entry, give it a gentle bob so kids' eyes track it
+    setTimeout(() => { if (el.isConnected) el.classList.add('bobbing'); }, 220);
+  });
+  const life = getStimulusLife();
+  const stim = {
+    id, cell, el, item,
+    kind: isGo ? 'go' : 'nogo',
+    expireAt: performance.now() + life,
+  };
+  state.stimuli.set(id, stim);
+  state.occupiedCells.add(cell);
+  // Auto-remove via timeout (not rAF — simpler, accurate enough)
+  stim.lifeTimer = setTimeout(() => expireStimulus(id), Math.max(400, life - STIMULUS_FADE_MS));
+
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    onTap(id, e);
+  }, { passive: false });
+}
+
+function expireStimulus(id) {
+  const stim = state.stimuli.get(id);
+  if (!stim) return;
+  stim.el.classList.add('fading');
+  setTimeout(() => removeStimulus(id, true), STIMULUS_FADE_MS + 20);
+}
+
+function removeStimulus(id) {
+  const stim = state.stimuli.get(id);
+  if (!stim) return;
+  if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+  if (stim.el && stim.el.isConnected) stim.el.remove();
+  state.occupiedCells.delete(stim.cell);
+  state.stimuli.delete(id);
+}
+
+function onTap(id, ev) {
+  const stim = state.stimuli.get(id);
+  if (!stim || !state.running) return;
+  // Only one tap per stimulus
+  state.stimuli.delete(id);
+
+  const correct = stim.kind === 'go';
+  const x = parseFloat(stim.el.style.left);
+  const y = parseFloat(stim.el.style.top);
+
+  if (correct) {
+    // Score
+    let gain = 1 + Math.floor(state.combo / COMBO_BONUS_EVERY);
+    if (state.awaitingPostSwitch) {
+      gain += SWITCH_BONUS;
+      state.awaitingPostSwitch = false;
+    }
+    state.score += gain;
+    state.combo += 1;
+    state.bestCombo = Math.max(state.bestCombo, state.combo);
+    state.correctSinceSwitch += 1;
+    scoreCount.textContent = state.score;
+    comboCount.textContent = state.combo;
+    bumpCombo();
+    buzz(20);
+    // Visual: pop the stimulus + sparkle + score float
+    stim.el.classList.remove('bobbing');
+    stim.el.classList.add('popped');
+    setTimeout(() => stim.el.remove(), 320);
+    spawnSparkle(x, y);
+    spawnPopScore(x, y, '+' + gain);
+    state.occupiedCells.delete(stim.cell);
+    if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+    // Maybe switch the rule
+    maybeSwitchRule();
+  } else {
+    // Wrong — combo broken, no score change
+    state.combo = 0;
+    comboCount.textContent = '0';
+    buzz([30, 60, 30]);
+    stim.el.classList.add('shaken');
+    spawnErrX(x, y);
+    // Wrong tap "uses up" the stimulus — fade it out shortly
+    setTimeout(() => {
+      stim.el.classList.add('fading');
+      setTimeout(() => {
+        if (stim.el.isConnected) stim.el.remove();
+        state.occupiedCells.delete(stim.cell);
+      }, STIMULUS_FADE_MS + 20);
+    }, 360);
+    if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+  }
+}
+
+function bumpCombo() {
+  comboBox.classList.remove('bump');
+  // Force reflow so animation restarts
+  void comboBox.offsetWidth;
+  comboBox.classList.add('bump');
+}
+
+function spawnSparkle(x, y) {
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = pick(['✨', '⭐', '💫', '🌟']);
+  s.style.left = x + 'px';
+  s.style.top  = y + 'px';
+  playArea.appendChild(s);
+  setTimeout(() => s.remove(), 700);
+}
+
+function spawnPopScore(x, y, text) {
+  const s = document.createElement('div');
+  s.className = 'pop-score';
+  s.textContent = text;
+  s.style.left = x + 'px';
+  s.style.top  = y + 'px';
+  playArea.appendChild(s);
+  setTimeout(() => s.remove(), 850);
+}
+
+function spawnErrX(x, y) {
+  const s = document.createElement('div');
+  s.className = 'err-x';
+  s.textContent = '❌';
+  s.style.left = x + 'px';
+  s.style.top  = y + 'px';
+  playArea.appendChild(s);
+  setTimeout(() => s.remove(), 500);
+}
+
+function maybeSwitchRule() {
+  if (state.correctSinceSwitch < SWITCH_AFTER) return;
+  const now = performance.now();
+  if (now - state.lastSwitchAt < SWITCH_MIN_GAP_MS) return;
+  // Don't switch in the final 5 sec — would feel unfair
+  if (state.endTime - now < 5000) return;
+  switchRule();
+}
+
+function switchRule() {
+  state.flipped = !state.flipped;
+  state.correctSinceSwitch = 0;
+  state.lastSwitchAt = performance.now();
+  state.awaitingPostSwitch = true;
+  state.spawnPausedUntil = performance.now() + RULE_FREEZE_MS;
+  // Clear stimuli currently on screen — their kind is now stale
+  for (const [id, stim] of state.stimuli) {
+    if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+    stim.el.classList.add('fading');
+    state.stimuli.delete(id);
+    state.occupiedCells.delete(stim.cell);
+    setTimeout(() => stim.el.remove(), STIMULUS_FADE_MS + 20);
+  }
+  ruleBanner.classList.add('flash');
+  setTimeout(() => ruleBanner.classList.remove('flash'), 600);
+  renderRuleBanner();
+  flashOverlay('เปลี่ยนกฎ!', 900, 'switch');
+  buzz([40, 50, 40, 50, 40]);
+}
+
+function flashOverlay(text, durationMs, extraCls) {
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `<div class="msg ${extraCls || ''}">${text}</div>`;
+  setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, durationMs);
+}
+
+function endRound() {
+  state.running = false;
+  if (state.spawnTimer) clearTimeout(state.spawnTimer);
+  if (state.tickTimer)  clearInterval(state.tickTimer);
+  // Clear all stimuli
+  for (const [id, stim] of state.stimuli) {
+    if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+    stim.el.remove();
+  }
+  state.stimuli.clear();
+  state.occupiedCells.clear();
+  showResults();
+}
+
+// ============================================================================
+// RESULTS
+// ============================================================================
+function showResults() {
+  resultScore.textContent  = state.score + ' คะแนน';
+  resultStreak.textContent = 'ติดต่อกันสูงสุด: ' + state.bestCombo + ' ครั้ง';
+  const rating = ratingFor(state.score);
+  resultStars.textContent = rating.stars;
+  resultText.textContent  = rating.text;
+  showScreen('results');
+  celebrate(rating.confettiCount);
+  buzz([60, 40, 60, 40, 100]);
+}
+
+function ratingFor(score) {
+  if (score >= 40) return { stars: '🌟🌟🌟🌟🌟', text: 'สุดยอดมาก!',  confettiCount: 140 };
+  if (score >= 25) return { stars: '⭐⭐⭐⭐',     text: 'เก่งมาก!',     confettiCount: 110 };
+  if (score >= 15) return { stars: '⭐⭐⭐',        text: 'เก่ง!',         confettiCount: 80  };
+  if (score >= 8)  return { stars: '⭐⭐',           text: 'ดีมาก!',        confettiCount: 60  };
+  return                { stars: '⭐',                text: 'ลองอีกที!',     confettiCount: 30 };
+}
+
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// EVENT BINDINGS
+// ============================================================================
+document.getElementById('againBtn').addEventListener('click', () => {
+  if (!state.challenge) { showScreen('select'); return; }
+  startGame(state.challenge);
+});
+document.getElementById('newBtn').addEventListener('click', () => {
+  state.challenge = null;
+  showScreen('select');
+});
+
+// Hide overlay if user taps it — kids do this reflexively
+overlay.addEventListener('pointerdown', () => {
+  overlay.style.display = 'none';
+});
+
+// Prevent double-tap zoom on iOS Safari without losing tap responsiveness
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// ============================================================================
+// SPEED SELECTOR
+// ============================================================================
+function setSpeed(s) {
+  if (!SPEED_LEVELS[s]) s = 'medium';
+  state.speed = s;
+  try { localStorage.setItem(SPEED_KEY, s); } catch (e) { /* private mode — ignore */ }
+  for (const btn of document.querySelectorAll('.speed-pill')) {
+    btn.classList.toggle('active', btn.dataset.speed === s);
+  }
+}
+
+document.getElementById('speedRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.speed-pill');
+  if (!btn) return;
+  setSpeed(btn.dataset.speed);
+});
+
+// ============================================================================
+// INIT
+// ============================================================================
+let savedSpeed = null;
+try { savedSpeed = localStorage.getItem(SPEED_KEY); } catch (e) { /* private mode */ }
+setSpeed(savedSpeed || 'medium');
+renderChallengeCards();
+// Note: the hub registers the service worker. Its scope covers this page too.
+</script>
+</body>
+</html>
