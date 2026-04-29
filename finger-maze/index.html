@@ -493,7 +493,8 @@
 
   /* iPad */
   @media (min-width: 768px) {
-    .lgrid { grid-template-columns: repeat(5, 1fr); gap: 16px; }
+    /* 4 cols × 3 rows for 12 levels — leaves no awkward partial row */
+    .lgrid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
     .lcard { padding: 18px 12px 16px; }
     .lcard .ltitle { font-size: 22px; }
     .lcard svg.preview { height: 90px; }
@@ -504,6 +505,7 @@
   }
   @media (min-width: 1024px) {
     .trace-emoji { font-size: 88px; }
+    .lgrid { grid-template-columns: repeat(6, 1fr); }
   }
 
   /* Phone */
@@ -546,7 +548,7 @@
     <div id="statusBanner" class="status-banner">วางนิ้วบน 🐭</div>
 
     <div class="hud">
-      <div class="hud-item level" id="levelBox">ระดับ <span id="levelNum">1</span> / 5</div>
+      <div class="hud-item level" id="levelBox">ระดับ <span id="levelNum">1</span> / <span id="levelTotal">12</span></div>
       <div class="hud-item">หลุด: <span id="failCount">0</span></div>
     </div>
 
@@ -567,7 +569,7 @@
   <section id="resultsScreen" class="screen">
     <div class="trophy">🏆</div>
     <h2 id="resultTitle" class="winner-name">เก่งมาก!</h2>
-    <p id="resultSub" class="winner-sub">ผ่านครบ 5 ระดับ</p>
+    <p id="resultSub" class="winner-sub">ผ่านครบทุกระดับ</p>
     <p id="resultFails" class="winner-sub">หลุดทั้งหมด: 0 ครั้ง</p>
     <div id="resultStars" class="stars-row">⭐</div>
     <div id="resultText" class="rating-text">เยี่ยม!</div>
@@ -591,6 +593,7 @@
 // fingers can follow without precise tracking.
 // ============================================================================
 const LEVELS = [
+  // ---- ⭐ EASY (3-4 yo) — straight + smooth curves ----
   {
     id: 1, stars: 1, name: 'เส้นตรง',
     path: 'M 100 300 L 700 300',
@@ -602,19 +605,60 @@ const LEVELS = [
     baseStroke: 80,
   },
   {
-    id: 3, stars: 2, name: 'ซิกแซก',
+    id: 3, stars: 1, name: '🌈 รุ้งกินน้ำ',
+    path: 'M 100 500 Q 400 50 700 500',
+    baseStroke: 80,
+  },
+  {
+    id: 4, stars: 1, name: '🌊 คลื่น',
+    path: 'M 100 300 Q 200 130 300 300 T 500 300 T 700 300',
+    baseStroke: 75,
+  },
+
+  // ---- ⭐⭐ MID — sharp turns + sweeping curves ----
+  {
+    id: 5, stars: 2, name: 'ซิกแซก',
     path: 'M 100 100 L 350 100 L 350 300 L 550 300 L 550 500 L 700 500',
     baseStroke: 70,
   },
   {
-    id: 4, stars: 2, name: 'หลายตวัด',
+    id: 6, stars: 2, name: '🏔️ ภูเขา',
+    path: 'M 100 500 L 220 150 L 340 500 L 460 150 L 580 500 L 700 500',
+    baseStroke: 65,
+  },
+  {
+    id: 7, stars: 2, name: '🐍 งู',
+    path: 'M 80 300 Q 200 100 320 300 Q 440 500 560 300 Q 680 100 720 300',
+    baseStroke: 65,
+  },
+  {
+    id: 8, stars: 2, name: 'หลายตวัด',
     path: 'M 100 100 L 700 100 L 700 250 L 200 250 L 200 400 L 700 400 L 700 540 L 100 540',
     baseStroke: 60,
   },
+
+  // ---- ⭐⭐⭐ HARD — long traces + crossings ----
   {
-    id: 5, stars: 3, name: 'เขาวงกต',
+    id: 9, stars: 3, name: '♾️ เลข 8',
+    path: 'M 200 300 C 200 100 400 100 400 300 C 400 500 600 500 600 300 C 600 100 400 100 400 300 C 400 500 200 500 200 300 L 80 300',
+    baseStroke: 55,
+  },
+  {
+    id: 10, stars: 3, name: '🌀 ก้นหอย',
+    path: 'M 100 100 L 700 100 L 700 500 L 100 500 L 100 220 L 580 220 L 580 380 L 240 380',
+    baseStroke: 55,
+  },
+  {
+    id: 11, stars: 3, name: 'เขาวงกต',
     path: 'M 80 80 L 720 80 L 720 220 L 200 220 L 200 360 L 720 360 L 720 540 L 80 540 L 80 460',
     baseStroke: 55,
+  },
+
+  // ---- ⭐⭐⭐⭐ FINAL BOSS ----
+  {
+    id: 12, stars: 4, name: '⭐ ดาว',
+    path: 'M 400 100 L 475 230 L 600 240 L 495 340 L 530 470 L 400 390 L 270 470 L 305 340 L 200 240 L 325 230',
+    baseStroke: 50,
   },
 ];
 
@@ -980,7 +1024,7 @@ function flashOverlay(text, durationMs, extra) {
 // RESULTS
 // ============================================================================
 function showResults() {
-  resultTitle.textContent  = 'ผ่านครบ 5 ระดับ!';
+  resultTitle.textContent  = `ผ่านครบ ${LEVELS.length} ระดับ!`;
   resultSub.textContent    = `ความกว้างเส้น: ${state.speed === 'slow' ? '🐢 กว้าง' : state.speed === 'fast' ? '⚡ แคบ' : '🐇 กลาง'}`;
   resultFails.textContent  = `หลุดทั้งหมด: ${state.totalFails} ครั้ง`;
   const r = ratingFor(state.totalFails);
@@ -992,10 +1036,11 @@ function showResults() {
 }
 
 function ratingFor(fails) {
+  // Tuned for 12 levels — expected fails scale up roughly with level count.
   if (fails === 0)  return { stars: '🌟🌟🌟🌟🌟', text: 'ไร้ที่ติ!',     confettiCount: 160 };
-  if (fails <= 2)   return { stars: '⭐⭐⭐⭐',     text: 'เก่งมาก!',     confettiCount: 120 };
-  if (fails <= 5)   return { stars: '⭐⭐⭐',        text: 'เก่ง!',        confettiCount: 90  };
-  if (fails <= 10)  return { stars: '⭐⭐',           text: 'ดี!',           confettiCount: 60  };
+  if (fails <= 5)   return { stars: '⭐⭐⭐⭐',     text: 'เก่งมาก!',     confettiCount: 120 };
+  if (fails <= 12)  return { stars: '⭐⭐⭐',        text: 'เก่ง!',        confettiCount: 90  };
+  if (fails <= 24)  return { stars: '⭐⭐',           text: 'ดี!',           confettiCount: 60  };
   return                  { stars: '⭐',                text: 'ผ่านแล้ว!',     confettiCount: 40  };
 }
 
@@ -1076,6 +1121,7 @@ let savedSpeed = null;
 try { savedSpeed = localStorage.getItem(SPEED_KEY); } catch (e) {}
 setSpeed(savedSpeed || 'medium');
 loadProgress();
+$('levelTotal').textContent = LEVELS.length;
 renderLevels();
 // Hub registers the service worker; its scope covers this page too.
 </script>
