@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎨 ระบายสี — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมระบายสีรูปภาพแบบสบายๆ ฝึกการควบคุมนิ้วและความคิดสร้างสรรค์">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ระบายสี">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --bad: #ff5757; --bad-dark: #d83838;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%; padding: 0; height: 100vh; height: 100dvh;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero { text-align: center; padding: 14px 10px 24px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p {
+    font-size: clamp(16px, 3.4vw, 22px);
+    margin: 12px 0 0; color: #555; font-weight: 500;
+  }
+
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin: 24px 0 32px;
+  }
+  .lcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 24px; padding: 16px 14px 14px; text-align: center;
+    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative; overflow: hidden;
+  }
+  .lcard:active { transform: scale(0.96) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .lcard:hover { border-color: var(--brand); }
+  .lcard svg.preview {
+    width: 100%;
+    height: 110px;
+    display: block;
+    margin: 0 auto 8px;
+  }
+  .lcard svg.preview path,
+  .lcard svg.preview circle,
+  .lcard svg.preview ellipse,
+  .lcard svg.preview polygon,
+  .lcard svg.preview rect {
+    stroke: var(--brand-dark); stroke-width: 4; fill: #fff;
+  }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive; font-size: 24px;
+    color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
+  }
+
+  /* Game */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .top-bar {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 14px 0 76px;   /* leave space for home button */
+  }
+  .picture-title {
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 4vw, 32px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .top-bar-buttons {
+    display: flex; gap: 8px;
+  }
+  .icon-btn {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, box-shadow .12s;
+    color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+
+  .canvas-area {
+    flex: 1 1 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px;
+    min-height: 0;
+  }
+  .canvas-stage {
+    background: #fff;
+    border: 4px solid #fff;
+    border-radius: 28px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.10);
+    /* Square stage to fit the 800x800 viewBox */
+    aspect-ratio: 1 / 1;
+    width: min(100%, 540px, calc(100dvh - 240px));
+    overflow: hidden;
+    touch-action: none;
+  }
+  .canvas-stage svg {
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .canvas-stage svg .region {
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  .canvas-stage svg .region:active {
+    filter: brightness(1.1);
+  }
+  .canvas-stage svg .outline {
+    fill: none;
+    stroke: #2d3436;
+    stroke-width: 6;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .palette {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px env(safe-area-inset-bottom);
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+    position: relative;
+  }
+  .swatch:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .swatch.active {
+    border-color: var(--gold);
+    transform: scale(1.12);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18), 0 0 0 4px var(--gold);
+  }
+  .swatch.eraser {
+    background:
+      linear-gradient(45deg, #fff 25%, #ddd 25%, #ddd 50%, #fff 50%, #fff 75%, #ddd 75%);
+    background-size: 14px 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+
+  /* Big banner overlay */
+  .overlay-msg {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(40px, 7.5vw, 70px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+    max-width: 90vw;
+  }
+  .overlay-msg .msg.win {
+    background: var(--gold); color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  @media (min-width: 768px) {
+    .lgrid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .swatch { width: 64px; height: 64px; }
+    .palette { gap: 14px; }
+  }
+  @media (min-width: 1024px) {
+    .lgrid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .swatch { width: 44px; height: 44px; border-width: 3px; }
+    .palette { gap: 8px; padding: 8px 10px env(safe-area-inset-bottom); }
+    .top-bar { margin: 8px 8px 0 70px; }
+    .canvas-area { padding: 8px; }
+    .lcard svg.preview { height: 90px; }
+    .lcard .ltitle { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🎨 ระบายสี</h1>
+      <p>เลือกรูปแล้วระบายตามใจ — ไม่มีถูกผิด!<br/><small style="font-size:.85em;color:#888">แตะที่ส่วนต่างๆ เพื่อเปลี่ยนสี</small></p>
+    </header>
+    <div id="levelGrid" class="lgrid"></div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="top-bar">
+      <div class="picture-title" id="pictureTitle">รูป</div>
+      <div class="top-bar-buttons">
+        <button class="icon-btn" id="resetBtn">🧽 ล้าง</button>
+        <button class="icon-btn" id="doneBtn">✓ เสร็จ</button>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-stage" id="canvasStage">
+        <svg id="paintSvg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet">
+          <g id="regionsGroup"></g>
+          <g id="outlineGroup"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// PALETTE — 9 colors + eraser
+// ============================================================================
+const COLORS = [
+  '#ff6b9d',  // pink
+  '#e74c3c',  // red
+  '#ff914d',  // orange
+  '#f1c40f',  // yellow
+  '#7ed957',  // green
+  '#5bc0eb',  // light blue
+  '#3498db',  // blue
+  '#9b59b6',  // purple
+  '#a0522d',  // brown
+  '#2c3e50',  // dark
+];
+
+// ============================================================================
+// PICTURES — each is an SVG drawing with named regions to color
+// Each region has an id; a single shared <g class="outline"> draws the borders
+// on top so the colored regions don't bleed over the lines.
+// ============================================================================
+const PICTURES = [
+  {
+    id: 'butterfly',
+    name: '🦋 ผีเสื้อ',
+    // Body in middle, two wings on each side
+    regions: [
+      { id: 'body',      shape: 'ellipse', cx: 400, cy: 400, rx: 30, ry: 130, fill: '#fff' },
+      { id: 'left-up',   shape: 'path',
+        d: 'M 380 320 C 240 220 120 240 120 360 C 120 470 250 470 380 380 Z', fill: '#fff' },
+      { id: 'right-up',  shape: 'path',
+        d: 'M 420 320 C 560 220 680 240 680 360 C 680 470 550 470 420 380 Z', fill: '#fff' },
+      { id: 'left-low',  shape: 'path',
+        d: 'M 380 410 C 280 460 200 540 240 620 C 280 680 380 620 380 510 Z', fill: '#fff' },
+      { id: 'right-low', shape: 'path',
+        d: 'M 420 410 C 520 460 600 540 560 620 C 520 680 420 620 420 510 Z', fill: '#fff' },
+      { id: 'antenna-l', shape: 'path',
+        d: 'M 388 290 Q 360 240 340 220', fill: 'none', stroke: '#2d3436', strokeWidth: 6, noFill: true, noClick: true },
+      { id: 'antenna-r', shape: 'path',
+        d: 'M 412 290 Q 440 240 460 220', fill: 'none', stroke: '#2d3436', strokeWidth: 6, noFill: true, noClick: true },
+    ],
+  },
+  {
+    id: 'fish',
+    name: '🐠 ปลา',
+    regions: [
+      { id: 'body',  shape: 'ellipse', cx: 380, cy: 420, rx: 200, ry: 130, fill: '#fff' },
+      { id: 'tail',  shape: 'path', d: 'M 580 420 L 720 320 L 720 520 Z', fill: '#fff' },
+      { id: 'fin-top', shape: 'path', d: 'M 360 290 L 320 220 L 420 270 Z', fill: '#fff' },
+      { id: 'fin-bot', shape: 'path', d: 'M 360 550 L 320 620 L 420 570 Z', fill: '#fff' },
+      { id: 'eye',   shape: 'circle', cx: 280, cy: 380, r: 26, fill: '#fff' },
+      { id: 'pupil', shape: 'circle', cx: 280, cy: 380, r: 10, fill: '#2d3436', noFill: true, noClick: true },
+      { id: 'bubble1', shape: 'circle', cx: 130, cy: 280, r: 18, fill: '#fff' },
+      { id: 'bubble2', shape: 'circle', cx: 90,  cy: 200, r: 14, fill: '#fff' },
+    ],
+  },
+  {
+    id: 'flower',
+    name: '🌸 ดอกไม้',
+    regions: [
+      { id: 'petal-1', shape: 'circle', cx: 400, cy: 250, r: 80, fill: '#fff' },
+      { id: 'petal-2', shape: 'circle', cx: 510, cy: 320, r: 80, fill: '#fff' },
+      { id: 'petal-3', shape: 'circle', cx: 510, cy: 460, r: 80, fill: '#fff' },
+      { id: 'petal-4', shape: 'circle', cx: 400, cy: 530, r: 80, fill: '#fff' },
+      { id: 'petal-5', shape: 'circle', cx: 290, cy: 460, r: 80, fill: '#fff' },
+      { id: 'petal-6', shape: 'circle', cx: 290, cy: 320, r: 80, fill: '#fff' },
+      { id: 'center',  shape: 'circle', cx: 400, cy: 390, r: 60, fill: '#fff' },
+      { id: 'stem',    shape: 'path',   d: 'M 380 450 Q 380 600 380 720 L 420 720 Q 420 600 420 450 Z', fill: '#fff' },
+      { id: 'leaf-l',  shape: 'path',   d: 'M 380 580 Q 250 560 220 660 Q 320 660 380 620 Z', fill: '#fff' },
+      { id: 'leaf-r',  shape: 'path',   d: 'M 420 600 Q 550 580 580 680 Q 480 680 420 640 Z', fill: '#fff' },
+    ],
+  },
+  {
+    id: 'house',
+    name: '🏠 บ้าน',
+    regions: [
+      { id: 'roof',  shape: 'path',   d: 'M 200 400 L 400 220 L 600 400 Z', fill: '#fff' },
+      { id: 'wall',  shape: 'path',   d: 'M 230 400 L 230 660 L 570 660 L 570 400 Z', fill: '#fff' },
+      { id: 'door',  shape: 'path',   d: 'M 360 660 L 360 520 L 440 520 L 440 660 Z', fill: '#fff' },
+      { id: 'window-l', shape: 'path', d: 'M 270 460 L 270 520 L 330 520 L 330 460 Z', fill: '#fff' },
+      { id: 'window-r', shape: 'path', d: 'M 470 460 L 470 520 L 530 520 L 530 460 Z', fill: '#fff' },
+      { id: 'sun',  shape: 'circle', cx: 660, cy: 160, r: 60, fill: '#fff' },
+      { id: 'chimney', shape: 'path', d: 'M 480 280 L 480 360 L 530 360 L 530 320 Z', fill: '#fff' },
+      { id: 'ground', shape: 'path', d: 'M 60 660 L 740 660 L 740 740 L 60 740 Z', fill: '#fff' },
+    ],
+  },
+  {
+    id: 'dino',
+    name: '🦖 ไดโนเสาร์',
+    regions: [
+      { id: 'body',  shape: 'path', d: 'M 250 460 Q 200 380 280 320 Q 360 270 440 320 Q 540 360 540 460 Q 540 560 440 580 Q 340 580 280 540 Q 240 510 250 460 Z', fill: '#fff' },
+      { id: 'head',  shape: 'path', d: 'M 380 320 Q 360 260 410 220 Q 480 200 530 240 Q 560 280 540 320 Z', fill: '#fff' },
+      { id: 'tail',  shape: 'path', d: 'M 540 480 Q 640 480 700 420 L 720 460 Q 660 540 540 540 Z', fill: '#fff' },
+      { id: 'leg-1', shape: 'path', d: 'M 320 580 L 310 700 L 360 700 L 360 580 Z', fill: '#fff' },
+      { id: 'leg-2', shape: 'path', d: 'M 460 580 L 450 700 L 500 700 L 500 580 Z', fill: '#fff' },
+      { id: 'spike-1', shape: 'path', d: 'M 320 320 L 340 280 L 360 320 Z', fill: '#fff' },
+      { id: 'spike-2', shape: 'path', d: 'M 380 310 L 400 270 L 420 310 Z', fill: '#fff' },
+      { id: 'spike-3', shape: 'path', d: 'M 440 320 L 460 280 L 480 320 Z', fill: '#fff' },
+      { id: 'eye',   shape: 'circle', cx: 490, cy: 260, r: 14, fill: '#fff' },
+      { id: 'eye-pupil', shape: 'circle', cx: 490, cy: 260, r: 6, fill: '#2d3436', noFill: true, noClick: true },
+    ],
+  },
+  {
+    id: 'car',
+    name: '🚗 รถยนต์',
+    regions: [
+      { id: 'body',  shape: 'path', d: 'M 120 480 L 180 380 L 280 360 L 520 360 L 620 380 L 680 480 L 680 560 L 120 560 Z', fill: '#fff' },
+      { id: 'window-l', shape: 'path', d: 'M 200 380 L 270 380 L 290 460 L 200 460 Z', fill: '#fff' },
+      { id: 'window-r', shape: 'path', d: 'M 600 380 L 530 380 L 510 460 L 600 460 Z', fill: '#fff' },
+      { id: 'window-c', shape: 'path', d: 'M 290 380 L 510 380 L 510 460 L 290 460 Z', fill: '#fff' },
+      { id: 'wheel-l', shape: 'circle', cx: 220, cy: 580, r: 60, fill: '#fff' },
+      { id: 'wheel-r', shape: 'circle', cx: 580, cy: 580, r: 60, fill: '#fff' },
+      { id: 'hub-l',  shape: 'circle', cx: 220, cy: 580, r: 24, fill: '#fff' },
+      { id: 'hub-r',  shape: 'circle', cx: 580, cy: 580, r: 24, fill: '#fff' },
+      { id: 'headlight', shape: 'circle', cx: 670, cy: 500, r: 14, fill: '#fff' },
+    ],
+  },
+];
+
+const PROGRESS_KEY = 'coloringProgress';
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  picture: null,
+  currentColor: COLORS[0],
+  fills: {},          // regionId -> color
+  drawing: false,
+  pointerId: null,
+  pendingTimers: [],
+};
+
+// ============================================================================
+// AUDIO — soft "tap" sound when painting
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function playPaintTone(idx) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.value = 380 + (idx % 8) * 60;
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime, d = 0.08;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.10, t + 0.005);
+  g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function playWin() {
+  [523, 659, 784].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// DOM
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const screens = {
+  select:  $('selectScreen'),
+  game:    $('gameScreen'),
+};
+const levelGrid    = $('levelGrid');
+const palette      = $('palette');
+const overlay      = $('overlayMsg');
+const regionsGroup = $('regionsGroup');
+const outlineGroup = $('outlineGroup');
+const pictureTitle = $('pictureTitle');
+
+// ============================================================================
+// UTIL
+// ============================================================================
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function showScreen(name) {
+  for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name);
+}
+function later(fn, ms) {
+  const id = setTimeout(fn, ms);
+  state.pendingTimers.push(id);
+  return id;
+}
+
+// ============================================================================
+// SELECT
+// ============================================================================
+function renderSelect() {
+  levelGrid.innerHTML = '';
+  for (const pic of PICTURES) {
+    const c = document.createElement('div');
+    c.className = 'lcard';
+    // Build a mini SVG preview that just shows the outline
+    const previewSvg = buildPreviewSvg(pic);
+    c.innerHTML = `
+      ${previewSvg}
+      <div class="ltitle">${pic.name}</div>
+    `;
+    c.addEventListener('click', () => { ensureAudio(); openPicture(pic); });
+    levelGrid.appendChild(c);
+  }
+}
+
+function buildPreviewSvg(pic) {
+  // Simplified — render all regions as outline-only
+  const parts = pic.regions.map(r => regionSvg(r, true));
+  return `<svg class="preview" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet">${parts.join('')}</svg>`;
+}
+
+function regionSvg(r, outlineOnly) {
+  const fill = outlineOnly ? 'none' : (r.fill || '#fff');
+  const stroke = outlineOnly ? '#e54b82' : '#2d3436';
+  const sw = outlineOnly ? 4 : (r.strokeWidth || 6);
+  const common = `fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"`;
+  if (r.shape === 'circle') return `<circle cx="${r.cx}" cy="${r.cy}" r="${r.r}" ${common} />`;
+  if (r.shape === 'ellipse') return `<ellipse cx="${r.cx}" cy="${r.cy}" rx="${r.rx}" ry="${r.ry}" ${common} />`;
+  if (r.shape === 'rect') return `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="${r.rx || 0}" ${common} />`;
+  if (r.shape === 'path') return `<path d="${r.d}" ${common} />`;
+  return '';
+}
+
+// ============================================================================
+// PAINT
+// ============================================================================
+function openPicture(pic) {
+  state.picture = pic;
+  state.fills = {};
+  state.drawing = false;
+  pictureTitle.textContent = pic.name;
+  buildCanvas();
+  showScreen('game');
+}
+
+function buildCanvas() {
+  regionsGroup.innerHTML = '';
+  outlineGroup.innerHTML = '';
+  for (const r of state.picture.regions) {
+    if (r.noClick) {
+      // Lines/decorations — stay on outline layer
+      const el = createSvgEl(r, false);
+      el.setAttribute('fill', r.fill || 'none');
+      el.setAttribute('stroke', r.stroke || '#2d3436');
+      el.setAttribute('stroke-width', r.strokeWidth || 6);
+      el.setAttribute('stroke-linecap', 'round');
+      el.setAttribute('stroke-linejoin', 'round');
+      outlineGroup.appendChild(el);
+      continue;
+    }
+    // Filled region (clickable)
+    const fillEl = createSvgEl(r, true);
+    fillEl.classList.add('region');
+    fillEl.dataset.regionId = r.id;
+    fillEl.setAttribute('fill', state.fills[r.id] || '#fff');
+    fillEl.addEventListener('pointerdown', (e) => onRegionPointer(e, r.id));
+    fillEl.addEventListener('pointerenter', (e) => {
+      if (state.drawing && state.pointerId === e.pointerId) paintRegion(r.id);
+    });
+    regionsGroup.appendChild(fillEl);
+    // Outline (visual only)
+    const outlineEl = createSvgEl(r, true);
+    outlineEl.classList.add('outline');
+    outlineEl.setAttribute('fill', 'none');
+    outlineEl.setAttribute('stroke', '#2d3436');
+    outlineEl.setAttribute('stroke-width', r.strokeWidth || 6);
+    outlineGroup.appendChild(outlineEl);
+  }
+}
+
+function createSvgEl(r) {
+  const ns = 'http://www.w3.org/2000/svg';
+  let el;
+  if (r.shape === 'circle') {
+    el = document.createElementNS(ns, 'circle');
+    el.setAttribute('cx', r.cx); el.setAttribute('cy', r.cy); el.setAttribute('r', r.r);
+  } else if (r.shape === 'ellipse') {
+    el = document.createElementNS(ns, 'ellipse');
+    el.setAttribute('cx', r.cx); el.setAttribute('cy', r.cy);
+    el.setAttribute('rx', r.rx); el.setAttribute('ry', r.ry);
+  } else if (r.shape === 'rect') {
+    el = document.createElementNS(ns, 'rect');
+    el.setAttribute('x', r.x); el.setAttribute('y', r.y);
+    el.setAttribute('width', r.w); el.setAttribute('height', r.h);
+    if (r.rx) el.setAttribute('rx', r.rx);
+  } else {
+    el = document.createElementNS(ns, 'path');
+    el.setAttribute('d', r.d);
+  }
+  return el;
+}
+
+function onRegionPointer(e, regionId) {
+  e.preventDefault();
+  state.drawing = true;
+  state.pointerId = e.pointerId;
+  paintRegion(regionId);
+}
+
+function paintRegion(regionId) {
+  const fill = state.currentColor === '__erase__' ? '#fff' : state.currentColor;
+  if (state.fills[regionId] === fill) return;
+  state.fills[regionId] = fill;
+  const el = regionsGroup.querySelector(`[data-region-id="${regionId}"]`);
+  if (el) el.setAttribute('fill', fill);
+  buzz(8);
+  playPaintTone(Object.keys(state.fills).length);
+}
+
+document.addEventListener('pointerup', () => {
+  state.drawing = false;
+  state.pointerId = null;
+});
+document.addEventListener('pointercancel', () => {
+  state.drawing = false;
+  state.pointerId = null;
+});
+
+// ============================================================================
+// PALETTE
+// ============================================================================
+function renderPalette() {
+  palette.innerHTML = '';
+  for (let i = 0; i < COLORS.length; i++) {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = COLORS[i];
+    sw.dataset.color = COLORS[i];
+    sw.addEventListener('click', () => selectColor(COLORS[i], sw));
+    palette.appendChild(sw);
+  }
+  // Eraser
+  const er = document.createElement('div');
+  er.className = 'swatch eraser';
+  er.textContent = '🧽';
+  er.dataset.color = '__erase__';
+  er.addEventListener('click', () => selectColor('__erase__', er));
+  palette.appendChild(er);
+}
+
+function selectColor(color, el) {
+  state.currentColor = color;
+  for (const s of palette.querySelectorAll('.swatch')) s.classList.remove('active');
+  el.classList.add('active');
+}
+
+// ============================================================================
+// BUTTONS
+// ============================================================================
+$('resetBtn').addEventListener('click', () => {
+  state.fills = {};
+  for (const el of regionsGroup.querySelectorAll('.region')) el.setAttribute('fill', '#fff');
+  buzz(20);
+});
+
+$('doneBtn').addEventListener('click', () => {
+  // Save thumbnail to localStorage maybe later. For now, celebrate.
+  const filledCount = Object.values(state.fills).filter(c => c && c !== '#fff').length;
+  const total = state.picture.regions.filter(r => !r.noClick).length;
+  let msg, cls;
+  if (filledCount === 0) {
+    msg = 'ลองระบายเลย!'; cls = '';
+  } else if (filledCount < total) {
+    msg = 'สวยจังเลย! 🎨'; cls = 'win';
+  } else {
+    msg = 'ครบแล้ว! เก่งมาก! 🌟'; cls = 'win';
+  }
+  flashOverlay(msg, 1400, cls);
+  if (filledCount > 0) {
+    playWin();
+    celebrate(filledCount === total ? 140 : 70);
+    saveProgress();
+  }
+});
+
+function flashOverlay(text, ms, extra) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// PERSISTENCE — track which pictures kid has finished
+// ============================================================================
+function saveProgress() {
+  if (!state.picture) return;
+  let progress = {};
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (raw) progress = JSON.parse(raw);
+  } catch (e) {}
+  progress[state.picture.id] = (progress[state.picture.id] || 0) + 1;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch (e) {}
+}
+
+// ============================================================================
+// EVENTS
+// ============================================================================
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+renderPalette();
+renderSelect();
+</script>
+</body>
+</html>
