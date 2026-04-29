@@ -267,17 +267,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
-    min-height: 320px;
+    padding: 12px;
+    min-height: 0;       /* allow flex item to shrink below content size */
+    overflow: hidden;
   }
+  /* Pad grid is sized by both width (with sane max) and viewport height.
+     The viewport-height constraint stops a 2x2 grid from being a 600px tall
+     square on iPad landscape, where only ~500px of vertical space exists. */
   .pads-grid {
     display: grid;
     gap: 14px;
-    width: 100%;
-    max-width: 640px;
+    container-type: size;   /* enable cqmin for pad font sizing */
   }
-  .pads-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .pads-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .pads-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+    aspect-ratio: 1 / 1;
+    width: min(100%, 540px, calc(100dvh - 230px));
+  }
+  .pads-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+    aspect-ratio: 3 / 2;
+    width: min(100%, 780px, calc((100dvh - 230px) * 1.5));
+  }
   .pads-grid.watching .pad {
     cursor: default;
     filter: brightness(0.78) saturate(0.85);
@@ -294,7 +305,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(70px, 14vw, 130px);
+    font-size: 38cqmin;     /* scales with grid size, never overflows pad */
     line-height: 1;
     cursor: pointer;
     transition: transform .12s, filter .15s, box-shadow .15s;
@@ -478,8 +489,8 @@
 
   /* iPad / tablet */
   @media (min-width: 768px) {
-    .pads-grid { gap: 18px; max-width: 720px; }
-    .pad { font-size: 130px; border-radius: 36px; }
+    .pads-grid { gap: 18px; }
+    .pad { border-radius: 36px; }
     .status-banner { padding: 18px 24px; }
     .hud { font-size: 26px; }
     .hud-item { padding: 8px 22px; min-width: 110px; }
@@ -490,29 +501,23 @@
     .lcard.l-hard .preview { grid-template-columns: repeat(3, 56px); }
     .lcard .ltitle { font-size: 32px; }
   }
-  @media (min-width: 1024px) {
-    .pad { font-size: 150px; }
-    .pads-grid { max-width: 820px; }
-  }
 
   /* Phone */
   @media (max-width: 480px) {
     .lcard { padding: 18px 12px 16px; border-width: 3px; border-radius: 20px; }
     .lcard .ltitle { font-size: 22px; }
     .pads-grid { gap: 10px; }
-    .pad { font-size: 70px; border-radius: 22px; border-width: 4px; }
+    .pad { border-radius: 22px; border-width: 4px; }
     .status-banner { padding: 10px 14px; margin: 8px 8px 0; }
     .hud { font-size: 18px; margin: 8px 10px 0; }
     .hud-item { padding: 5px 12px; min-width: 70px; }
     .hud-item.round { font-size: 22px; min-width: 90px; }
-    .pads-area { padding: 10px; min-height: 240px; }
+    .pads-area { padding: 10px; }
   }
 
   /* Landscape phone */
   @media (max-height: 500px) and (orientation: landscape) {
-    .pads-area { padding: 6px; min-height: 200px; }
-    .pads-grid { max-width: min(90vw, 560px); }
-    .pad { font-size: 56px; }
+    .pads-area { padding: 6px; }
     .status-banner { font-size: 22px; padding: 6px 12px; }
   }
 </style>
