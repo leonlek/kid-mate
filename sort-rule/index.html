@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎴 เรียงตามกฎ — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมเรียงการ์ดตามกฎ ฝึกการคิดยืดหยุ่นและสมาธิสำหรับเด็ก ฟรี ไม่ต้องโหลดแอป">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เรียงตามกฎ">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="🎴 เรียงตามกฎ — เกมสำหรับเด็ก">
+<meta property="og:description" content="เรียงการ์ดตามกฎ ฝึกการคิดยืดหยุ่นและสมาธิ">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --good: #5bc13a;
+    --good-dark: #3fa024;
+    --bad: #ff5757;
+    --bad-dark: #d83838;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%;
+    padding: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Header ===== */
+  .hero { text-align: center; padding: 14px 10px 24px; }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p {
+    font-size: clamp(16px, 3.4vw, 22px);
+    margin: 12px 0 0;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* ===== Speed selector (shared style with quick-tap) ===== */
+  .speed-row {
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; margin: 8px 0 18px; flex-wrap: wrap;
+  }
+  .speed-label {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-right: 4px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .speed-pill {
+    font-family: inherit;
+    font-size: 18px; font-weight: 600;
+    padding: 10px 22px;
+    border: 3px solid #fff;
+    border-radius: 999px;
+    background: #fff;
+    color: #777;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, background .15s, color .15s, box-shadow .12s;
+    min-width: 92px;
+  }
+  .speed-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .speed-pill.active {
+    background: var(--brand); color: #fff; border-color: #fff;
+    box-shadow: 0 4px 0 var(--brand-dark);
+  }
+
+  /* ===== Level cards ===== */
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 10px 0 32px;
+  }
+  .lcard {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 24px;
+    padding: 20px 14px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    position: relative;
+    overflow: hidden;
+  }
+  .lcard::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.03));
+    pointer-events: none;
+  }
+  .lcard:active { transform: scale(0.96) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .lcard:hover { border-color: var(--brand); }
+  .lcard .preview {
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; min-height: 80px;
+    font-size: 64px; line-height: 1;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
+  }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    color: var(--brand-dark);
+    margin-top: 12px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .lcard .lsub { font-size: 14px; color: #777; font-weight: 500; margin-top: 2px; }
+  .lcard .stars {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Game screen ===== */
+  #gameScreen.active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+
+  /* Rule banner */
+  .rule-banner {
+    flex: 0 0 auto;
+    margin: 12px 14px 0;
+    border-radius: 22px;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, #fff8c8, #ffe88a);
+    border: 4px solid #fff;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.10);
+    text-align: center;
+    font-family: 'Itim', cursive;
+    font-size: clamp(28px, 5.5vw, 42px);
+    color: #6b4f00;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.7);
+    transition: transform .25s, box-shadow .25s;
+    line-height: 1.1;
+  }
+  .rule-banner.flash {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 6px var(--gold), 0 8px 0 rgba(0,0,0,0.10);
+  }
+
+  /* HUD */
+  .hud {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 14px 0;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+  }
+  .hud-item {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    border-radius: 999px;
+    padding: 6px 16px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    min-width: 80px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .hud-item.combo { color: #e64a19; }
+  .hud-item.score { color: var(--brand-dark); font-size: 26px; min-width: 110px; }
+  .hud-item.time { color: #2980b9; }
+  .hud-item.combo.bump { animation: bump .35s ease; }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+
+  /* Card area — where current card sits */
+  .card-area {
+    flex: 1 1 auto;
+    position: relative;
+    margin: 12px 12px 0;
+    background: rgba(255,255,255,0.32);
+    border-radius: 26px;
+    border: 3px dashed rgba(255,255,255,0.7);
+    overflow: visible;       /* allow card to drag past edges */
+    min-height: 240px;
+  }
+
+  /* The card itself */
+  .card-current {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 180px; height: 180px;
+    background: #fff;
+    border: 5px solid #ddd;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    touch-action: none;
+    z-index: 10;
+    will-change: transform;
+  }
+  .card-current.dragging {
+    cursor: grabbing;
+    z-index: 50;
+    box-shadow: 0 14px 0 rgba(0,0,0,0.22);
+    transition: none !important;
+  }
+  .card-current.entering {
+    animation: cardDrop .42s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes cardDrop {
+    0%   { transform: translate(-50%, -260%) scale(0.6) rotate(-8deg); opacity: 0; }
+    100% { transform: translate(-50%, -50%)  scale(1)   rotate(0deg);  opacity: 1; }
+  }
+  .card-current .glyph {
+    font-size: 130px;
+    line-height: 1;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.18));
+  }
+
+  /* Bins row */
+  .bins-row {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px env(safe-area-inset-bottom);
+    margin-top: 12px;
+    min-height: 180px;
+  }
+  .bin {
+    flex: 1;
+    background: #fff;
+    border: 5px solid #ddd;
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    transition: transform .15s, border-color .15s, box-shadow .15s, opacity .25s;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    min-width: 80px;
+    overflow: hidden;
+  }
+  .bin.hover {
+    border-color: var(--gold);
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 9px 0 rgba(0,0,0,0.10), 0 0 0 6px rgba(255, 217, 61, 0.35);
+  }
+  .bin.fading-out {
+    opacity: 0; transform: scale(0.92);
+  }
+  .bin.fading-in {
+    animation: binFadeIn .3s ease;
+  }
+  @keyframes binFadeIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .bin.correct-flash {
+    animation: binPop .42s ease;
+    border-color: var(--good);
+  }
+  @keyframes binPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.12); border-color: var(--good); }
+    100% { transform: scale(1); }
+  }
+  .bin.wrong-flash {
+    animation: binShake .35s ease;
+    border-color: var(--bad);
+  }
+  @keyframes binShake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-10px); }
+    50%      { transform: translateX(10px); }
+    75%      { transform: translateX(-6px); }
+  }
+  .bin-color {
+    width: 80%;
+    height: 90px;
+    border-radius: 18px;
+    border: 3px solid rgba(0,0,0,0.1);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+  }
+  .bin-shape {
+    font-size: 90px;
+    line-height: 1;
+    color: #888;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.12));
+  }
+  .bin-name {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: #555;
+    margin-top: 8px;
+    line-height: 1;
+  }
+
+  /* Big banner overlay */
+  .overlay-msg {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 100;
+    font-family: 'Itim', cursive;
+    color: #fff;
+    text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand);
+    border: 4px solid #fff;
+    border-radius: 32px;
+    padding: 28px 48px;
+    font-size: clamp(44px, 8vw, 80px);
+    line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+    max-width: 90vw;
+  }
+  .overlay-msg .msg.go { background: var(--good); text-shadow: 3px 3px 0 var(--good-dark); }
+  .overlay-msg .msg.switch {
+    background: var(--gold); color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .sparkle {
+    position: fixed;
+    pointer-events: none;
+    font-size: 36px;
+    transform: translate(-50%, -50%);
+    z-index: 80;
+    animation: sparkleFloat .65s ease-out forwards;
+  }
+  @keyframes sparkleFloat {
+    0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    100% { transform: translate(-50%, -200%) scale(1.2); opacity: 0; }
+  }
+  .pop-score {
+    position: fixed;
+    pointer-events: none;
+    font-family: 'Itim', cursive;
+    font-size: 36px;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 var(--brand-dark);
+    transform: translate(-50%, -50%);
+    z-index: 81;
+    animation: popScore .8s ease-out forwards;
+  }
+  @keyframes popScore {
+    0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+    20%  { transform: translate(-50%, -90%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -200%) scale(1); opacity: 0; }
+  }
+
+  /* ===== Results ===== */
+  #resultsScreen { text-align: center; padding-top: 20px; }
+  .trophy {
+    font-size: clamp(120px, 22vw, 180px);
+    line-height: 1;
+    filter: drop-shadow(4px 6px 0 rgba(0,0,0,0.18));
+    animation: bobBig 1.2s ease-in-out infinite;
+  }
+  @keyframes bobBig {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-12px) rotate(4deg); }
+  }
+  .winner-name {
+    font-family: 'Itim', cursive;
+    font-size: clamp(44px, 9vw, 72px);
+    color: var(--brand-dark);
+    margin: 18px 0 6px;
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+  }
+  .winner-sub {
+    font-size: clamp(18px, 4vw, 24px);
+    color: #555; margin: 0 0 6px; font-weight: 500;
+  }
+  .switch-stat {
+    font-family: 'Itim', cursive;
+    font-size: clamp(20px, 4vw, 26px);
+    color: #2980b9;
+    margin: 4px 0 12px;
+  }
+  .stars-row {
+    font-size: clamp(48px, 10vw, 72px);
+    line-height: 1; margin: 8px 0 4px;
+    letter-spacing: 4px;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
+  }
+  .rating-text {
+    font-family: 'Itim', cursive;
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--brand-dark);
+    margin: 4px 0 16px;
+  }
+  .action-bar {
+    display: flex; gap: 12px; justify-content: center; align-items: center;
+    margin-top: 12px; flex-wrap: wrap;
+  }
+  .btn-main {
+    font-family: 'Itim', cursive;
+    font-size: 28px; padding: 16px 36px;
+    border: 4px solid #fff; border-radius: 999px;
+    background: var(--brand); color: #fff;
+    box-shadow: 0 6px 0 var(--brand-dark);
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+    text-shadow: 2px 2px 0 var(--brand-dark);
+  }
+  .btn-main:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .btn-ghost {
+    font-family: 'Itim', cursive;
+    font-size: 24px; padding: 14px 30px;
+    border: 4px solid var(--brand); border-radius: 999px;
+    background: #fff; color: var(--brand-dark);
+    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-ghost:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* Home button */
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  /* iPad / tablet */
+  @media (min-width: 768px) {
+    .card-current { width: 220px; height: 220px; border-radius: 32px; }
+    .card-current .glyph { font-size: 170px; }
+    .bins-row { min-height: 220px; gap: 16px; padding: 16px; }
+    .bin { border-radius: 32px; padding: 14px; }
+    .bin-color { height: 110px; }
+    .bin-shape { font-size: 110px; }
+    .bin-name { font-size: 26px; }
+    .rule-banner { padding: 18px 24px; }
+    .hud { font-size: 26px; }
+    .hud-item { padding: 8px 22px; min-width: 110px; }
+    .hud-item.score { font-size: 30px; min-width: 140px; }
+    .lgrid { grid-template-columns: repeat(4, 1fr); }
+    .lcard .preview { font-size: 78px; min-height: 100px; }
+    .lcard .ltitle { font-size: 28px; }
+  }
+
+  @media (min-width: 1024px) {
+    .card-current { width: 240px; height: 240px; }
+    .card-current .glyph { font-size: 190px; }
+    .bin-shape { font-size: 130px; }
+    .bin-color { height: 130px; }
+  }
+
+  /* Phone */
+  @media (max-width: 480px) {
+    .lcard { padding: 16px 10px 14px; border-width: 3px; border-radius: 20px; }
+    .lcard .preview { font-size: 50px; min-height: 60px; }
+    .lcard .ltitle { font-size: 20px; }
+    .card-current { width: 130px; height: 130px; border-radius: 22px; border-width: 4px; }
+    .card-current .glyph { font-size: 96px; }
+    .bins-row { min-height: 140px; padding: 8px; gap: 8px; }
+    .bin { border-radius: 22px; padding: 8px; border-width: 4px; }
+    .bin-color { height: 60px; }
+    .bin-shape { font-size: 64px; }
+    .bin-name { font-size: 16px; }
+    .rule-banner { padding: 10px 14px; margin: 8px 8px 0; }
+    .hud { font-size: 18px; margin: 8px 10px 0; }
+    .hud-item { padding: 5px 12px; min-width: 70px; }
+    .hud-item.score { font-size: 22px; min-width: 90px; }
+    .card-area { margin: 8px 8px 0; min-height: 180px; }
+  }
+
+  /* Landscape phone — bins get tighter */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .card-current { width: 110px; height: 110px; }
+    .card-current .glyph { font-size: 80px; }
+    .bins-row { min-height: 120px; }
+    .bin-color { height: 50px; }
+    .bin-shape { font-size: 56px; }
+    .bin-name { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="app">
+
+  <!-- SELECT SCREEN -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🎴 เรียงตามกฎ</h1>
+      <p>ลากการ์ดเข้าถังตามกฎ! กฎจะสลับกลางทาง<br/><small style="font-size:.85em;color:#888">เลือกระดับที่อยากเล่น</small></p>
+    </header>
+
+    <div class="speed-row" id="speedRow">
+      <div class="speed-label">ความเร็ว:</div>
+      <button class="speed-pill" data-speed="slow" type="button">🐢 ช้า</button>
+      <button class="speed-pill active" data-speed="medium" type="button">🐇 กลาง</button>
+      <button class="speed-pill" data-speed="fast" type="button">⚡ เร็ว</button>
+    </div>
+
+    <div id="levelGrid" class="lgrid"></div>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="gameScreen" class="screen">
+    <div id="ruleBanner" class="rule-banner">แยกตาม สี</div>
+
+    <div class="hud">
+      <div class="hud-item combo" id="comboBox">🔥 <span id="comboCount">0</span></div>
+      <div class="hud-item score"><span id="scoreCount">0</span></div>
+      <div class="hud-item time">⏱ <span id="timeLeft">60</span></div>
+    </div>
+
+    <div id="cardArea" class="card-area"></div>
+
+    <div id="binsRow" class="bins-row"></div>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="resultsScreen" class="screen">
+    <div class="trophy">🏆</div>
+    <h2 id="resultScore" class="winner-name">0 คะแนน</h2>
+    <p id="resultStreak" class="winner-sub">ติดต่อกันสูงสุด: 0 ครั้ง</p>
+    <p id="resultSwitch" class="switch-stat">เปลี่ยนกฎสำเร็จ: 0 ครั้ง</p>
+    <div id="resultStars" class="stars-row">⭐</div>
+    <div id="resultText" class="rating-text">ลองอีกที!</div>
+    <div class="action-bar">
+      <button id="againBtn" class="btn-ghost">🔄 เล่นอีก</button>
+      <button id="newBtn" class="btn-main">เลือกใหม่</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- Fixed-position overlay (lives outside .app so it always covers viewport) -->
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// DATA — sortable card dimensions
+// ============================================================================
+const COLORS = [
+  { id: 'red',    hex: '#e74c3c', name: 'แดง'    },
+  { id: 'blue',   hex: '#3498db', name: 'ฟ้า'    },
+  { id: 'yellow', hex: '#f1c40f', name: 'เหลือง' },
+];
+const SHAPES = [
+  { id: 'circle',   glyph: '●', name: 'วงกลม'      },
+  { id: 'square',   glyph: '■', name: 'สี่เหลี่ยม' },
+  { id: 'triangle', glyph: '▲', name: 'สามเหลี่ยม' },
+];
+const SIZES = [
+  { id: 'small',  scale: 0.55, name: 'เล็ก'  },
+  { id: 'big',    scale: 1.0,  name: 'ใหญ่' },
+];
+const COLORS_BY_ID = Object.fromEntries(COLORS.map(c => [c.id, c]));
+const SHAPES_BY_ID = Object.fromEntries(SHAPES.map(s => [s.id, s]));
+const SIZES_BY_ID  = Object.fromEntries(SIZES.map(s  => [s.id, s]));
+
+// ============================================================================
+// LEVELS — 4 difficulty steps
+// ============================================================================
+const LEVELS = [
+  {
+    id: 'l1', stars: 1,
+    title: 'ระดับ 1',
+    subtitle: '2 สี × 2 รูป',
+    colors: ['red', 'blue'],
+    shapes: ['circle', 'square'],
+    sizes: null,
+    dims: ['color', 'shape'],
+    previewEmojis: ['🔴', '🟦'],
+  },
+  {
+    id: 'l2', stars: 1,
+    title: 'ระดับ 2',
+    subtitle: '3 สี × 2 รูป',
+    colors: ['red', 'blue', 'yellow'],
+    shapes: ['circle', 'square'],
+    sizes: null,
+    dims: ['color', 'shape'],
+    previewEmojis: ['🔴', '🟦', '🟨'],
+  },
+  {
+    id: 'l3', stars: 2,
+    title: 'ระดับ 3',
+    subtitle: '3 สี × 3 รูป',
+    colors: ['red', 'blue', 'yellow'],
+    shapes: ['circle', 'square', 'triangle'],
+    sizes: null,
+    dims: ['color', 'shape'],
+    previewEmojis: ['🔴', '🟦', '🔺'],
+  },
+  {
+    id: 'l4', stars: 2,
+    title: 'ระดับ 4',
+    subtitle: '3 มิติ: สี + รูป + ขนาด',
+    colors: ['red', 'blue', 'yellow'],
+    shapes: ['circle', 'square', 'triangle'],
+    sizes: ['small', 'big'],
+    dims: ['color', 'shape', 'size'],
+    previewEmojis: ['🔴', '🟦', '🔺'],
+  },
+];
+
+// ============================================================================
+// CONSTANTS — TUNING (load-bearing per CLAUDE.md)
+// ============================================================================
+const ROUND_MS          = 60000;
+const SWITCH_AFTER      = 7;       // switch rule after this many corrects
+const SWITCH_MIN_GAP_MS = 8000;    // ...but no more often than this
+const COMBO_BONUS_EVERY = 5;
+const SWITCH_BONUS      = 2;
+const SPAWN_DELAY_MS    = 350;     // delay between drops (after correct)
+const SNAP_BACK_MS      = 250;
+const RULE_FREEZE_MS    = 1200;    // pause spawning this long after switch
+
+// Speed presets (also stored in localStorage)
+const SPEED_LEVELS = {
+  slow:   { spawnDelayMul: 1.6, freezeMul: 1.5 },
+  medium: { spawnDelayMul: 1.0, freezeMul: 1.0 },
+  fast:   { spawnDelayMul: 0.7, freezeMul: 0.85 },
+};
+const SPEED_KEY = 'sortRuleSpeed';
+
+const DIM_LABELS = {
+  color: { th: 'แยกตาม สี',     icon: '🎨' },
+  shape: { th: 'แยกตาม รูปร่าง', icon: '⬛' },
+  size:  { th: 'แยกตาม ขนาด',    icon: '📏' },
+};
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  level: null,
+  speed: 'medium',
+  score: 0,
+  combo: 0,
+  bestCombo: 0,
+  switchSuccesses: 0,           // metric for results
+  correctSinceSwitch: 0,
+  awaitingPostSwitch: false,
+  lastSwitchAt: 0,
+  currentRule: null,            // 'color' | 'shape' | 'size'
+  card: null,                   // { color, shape, size? }
+  cardEl: null,
+  binEls: [],
+  startTime: 0,
+  endTime: 0,
+  timeLeftSec: 60,
+  running: false,
+  dragging: false,
+  spawnPausedUntil: 0,
+  tickTimer: null,
+  pendingSpawn: null,
+};
+
+// ============================================================================
+// DOM
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const screens = {
+  select:  $('selectScreen'),
+  game:    $('gameScreen'),
+  results: $('resultsScreen'),
+};
+const levelGrid  = $('levelGrid');
+const ruleBanner = $('ruleBanner');
+const cardArea   = $('cardArea');
+const binsRow    = $('binsRow');
+const overlay    = $('overlayMsg');
+const comboBox   = $('comboBox');
+const comboCount = $('comboCount');
+const scoreCount = $('scoreCount');
+const timeLeft   = $('timeLeft');
+const resultScore  = $('resultScore');
+const resultStreak = $('resultStreak');
+const resultSwitch = $('resultSwitch');
+const resultStars  = $('resultStars');
+const resultText   = $('resultText');
+
+// ============================================================================
+// UTIL
+// ============================================================================
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function buzz(p)   { if (navigator.vibrate) navigator.vibrate(p); }
+function showScreen(name) {
+  for (const k of Object.keys(screens)) {
+    screens[k].classList.toggle('active', k === name);
+  }
+}
+function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function renderLevels() {
+  levelGrid.innerHTML = '';
+  for (const lvl of LEVELS) {
+    const card = document.createElement('div');
+    card.className = 'lcard';
+    const stars = '⭐'.repeat(lvl.stars);
+    card.innerHTML = `
+      <div class="stars">${stars}</div>
+      <div class="preview">${lvl.previewEmojis.join(' ')}</div>
+      <div class="ltitle">${lvl.title}</div>
+      <div class="lsub">${lvl.subtitle}</div>
+    `;
+    card.addEventListener('click', () => startGame(lvl));
+    levelGrid.appendChild(card);
+  }
+}
+
+// ============================================================================
+// GAME LIFECYCLE
+// ============================================================================
+function startGame(level) {
+  state.level = level;
+  state.score = 0;
+  state.combo = 0;
+  state.bestCombo = 0;
+  state.switchSuccesses = 0;
+  state.correctSinceSwitch = 0;
+  state.awaitingPostSwitch = false;
+  state.lastSwitchAt = 0;
+  state.timeLeftSec = Math.ceil(ROUND_MS / 1000);
+  state.running = false;
+  state.dragging = false;
+  state.spawnPausedUntil = 0;
+  state.card = null;
+  state.cardEl = null;
+  // Pick first rule randomly from this level's dims
+  state.currentRule = pick(level.dims);
+  // Reset DOM
+  cardArea.querySelectorAll('.card-current, .sparkle, .pop-score').forEach(n => n.remove());
+  binsRow.innerHTML = '';
+  state.binEls = [];
+  scoreCount.textContent = '0';
+  comboCount.textContent = '0';
+  timeLeft.textContent = state.timeLeftSec;
+  updateRuleBanner();
+  renderBins();
+  showScreen('game');
+  runCountdown();
+}
+
+function runCountdown() {
+  const seq = ['3', '2', '1', 'ไป!'];
+  let i = 0;
+  function step() {
+    if (i >= seq.length) { beginRound(); return; }
+    flashOverlay(seq[i], 700, seq[i] === 'ไป!' ? 'go' : '');
+    i++;
+    setTimeout(step, 700);
+  }
+  step();
+}
+
+function beginRound() {
+  state.startTime = performance.now();
+  state.endTime = state.startTime + ROUND_MS;
+  state.running = true;
+  state.tickTimer = setInterval(tick, 200);
+  spawnCard();
+}
+
+function tick() {
+  if (!state.running) return;
+  const remain = Math.max(0, state.endTime - performance.now());
+  const newSec = Math.ceil(remain / 1000);
+  if (newSec !== state.timeLeftSec) {
+    state.timeLeftSec = newSec;
+    timeLeft.textContent = newSec;
+  }
+  if (remain <= 0) endRound();
+}
+
+function endRound() {
+  state.running = false;
+  if (state.tickTimer) clearInterval(state.tickTimer);
+  if (state.pendingSpawn) clearTimeout(state.pendingSpawn);
+  // Cancel any in-flight card
+  if (state.cardEl) {
+    state.cardEl.remove();
+    state.cardEl = null;
+    state.card = null;
+  }
+  showResults();
+}
+
+// ============================================================================
+// RULE BANNER + BINS
+// ============================================================================
+function updateRuleBanner() {
+  const dim = state.currentRule;
+  const lbl = DIM_LABELS[dim];
+  ruleBanner.textContent = `${lbl.icon} ${lbl.th}`;
+}
+
+function renderBins() {
+  binsRow.innerHTML = '';
+  state.binEls = [];
+  const lvl = state.level;
+  const dim = state.currentRule;
+  let keys;
+  if (dim === 'color')      keys = lvl.colors;
+  else if (dim === 'shape') keys = lvl.shapes;
+  else                       keys = lvl.sizes;
+  for (const key of keys) {
+    const bin = document.createElement('div');
+    bin.className = 'bin fading-in';
+    bin.dataset.key = key;
+    bin.dataset.dim = dim;
+    if (dim === 'color') {
+      const c = COLORS_BY_ID[key];
+      bin.innerHTML = `<div class="bin-color" style="background:${c.hex}"></div><div class="bin-name">${c.name}</div>`;
+    } else if (dim === 'shape') {
+      const s = SHAPES_BY_ID[key];
+      bin.innerHTML = `<div class="bin-shape">${s.glyph}</div><div class="bin-name">${s.name}</div>`;
+    } else {
+      // size — use circle as the demo glyph at the right scale
+      const sz = SIZES_BY_ID[key];
+      const fontPx = Math.round(110 * sz.scale);
+      bin.innerHTML = `<div class="bin-shape" style="font-size:${fontPx}px;">●</div><div class="bin-name">${sz.name}</div>`;
+    }
+    binsRow.appendChild(bin);
+    state.binEls.push(bin);
+  }
+}
+
+// ============================================================================
+// CARD SPAWN + DRAG
+// ============================================================================
+function pickRandomCard() {
+  const lvl = state.level;
+  const card = {
+    color: pick(lvl.colors),
+    shape: pick(lvl.shapes),
+  };
+  if (lvl.sizes) card.size = pick(lvl.sizes);
+  return card;
+}
+
+function spawnCard() {
+  if (!state.running) return;
+  const card = pickRandomCard();
+  state.card = card;
+  const el = document.createElement('div');
+  el.className = 'card-current entering';
+  const colorHex = COLORS_BY_ID[card.color].hex;
+  const glyph    = SHAPES_BY_ID[card.shape].glyph;
+  const sizeScale = card.size ? SIZES_BY_ID[card.size].scale : 1.0;
+  // Use em so font-size scales the glyph relative to a base size
+  const baseFontPx = window.innerWidth >= 1024 ? 190 : window.innerWidth >= 768 ? 170 : 130;
+  const fontPx = Math.round(baseFontPx * sizeScale);
+  el.innerHTML = `<div class="glyph" style="color:${colorHex}; font-size:${fontPx}px;">${glyph}</div>`;
+  cardArea.appendChild(el);
+  state.cardEl = el;
+  attachDrag(el);
+}
+
+function attachDrag(el) {
+  let pid = null;
+  let pStartX = 0, pStartY = 0;
+
+  el.addEventListener('pointerdown', (e) => {
+    if (!state.running || state.dragging) return;
+    e.preventDefault();
+    state.dragging = true;
+    pid = e.pointerId;
+    pStartX = e.clientX;
+    pStartY = e.clientY;
+    try { el.setPointerCapture(pid); } catch (_) {}
+    el.classList.add('dragging');
+    el.classList.remove('entering');
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!state.dragging || e.pointerId !== pid) return;
+    const dx = e.clientX - pStartX;
+    const dy = e.clientY - pStartY;
+    el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    updateBinHover(e.clientX, e.clientY);
+  });
+
+  function endDrag(e, isCancel) {
+    if (!state.dragging || e.pointerId !== pid) return;
+    state.dragging = false;
+    try { el.releasePointerCapture(pid); } catch (_) {}
+    el.classList.remove('dragging');
+    clearBinHover();
+    pid = null;
+    if (isCancel) { snapBack(); return; }
+    const bin = findBinAt(e.clientX, e.clientY);
+    if (bin) handleDrop(bin);
+    else     snapBack();
+  }
+  el.addEventListener('pointerup',     (e) => endDrag(e, false));
+  el.addEventListener('pointercancel', (e) => endDrag(e, true));
+}
+
+function findBinAt(x, y) {
+  for (const bin of state.binEls) {
+    const r = bin.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return bin;
+  }
+  return null;
+}
+
+function updateBinHover(x, y) {
+  const target = findBinAt(x, y);
+  for (const bin of state.binEls) {
+    bin.classList.toggle('hover', bin === target);
+  }
+}
+
+function clearBinHover() {
+  for (const bin of state.binEls) bin.classList.remove('hover');
+}
+
+function snapBack() {
+  if (!state.cardEl) return;
+  const el = state.cardEl;
+  el.style.transition = `transform ${SNAP_BACK_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1)`;
+  el.style.transform = 'translate(-50%, -50%)';
+  setTimeout(() => { if (el === state.cardEl) el.style.transition = ''; }, SNAP_BACK_MS + 30);
+}
+
+// ============================================================================
+// DROP HANDLING
+// ============================================================================
+function matchesRule(card, binKey) {
+  const dim = state.currentRule;
+  return card[dim] === binKey;
+}
+
+function handleDrop(bin) {
+  const correct = matchesRule(state.card, bin.dataset.key);
+  if (correct) onCorrect(bin);
+  else         onWrong(bin);
+}
+
+function onCorrect(bin) {
+  // Score
+  let gain = 1 + Math.floor(state.combo / COMBO_BONUS_EVERY);
+  if (state.awaitingPostSwitch) {
+    gain += SWITCH_BONUS;
+    state.switchSuccesses += 1;
+    state.awaitingPostSwitch = false;
+  }
+  state.score += gain;
+  state.combo += 1;
+  state.bestCombo = Math.max(state.bestCombo, state.combo);
+  state.correctSinceSwitch += 1;
+  scoreCount.textContent = state.score;
+  comboCount.textContent = state.combo;
+  bumpCombo();
+  buzz(20);
+  bin.classList.add('correct-flash');
+  setTimeout(() => bin.classList.remove('correct-flash'), 420);
+  // Fly card into bin
+  flyCardToBin(state.cardEl, bin, () => {
+    // Floating score + sparkle from bin center
+    const r = bin.getBoundingClientRect();
+    spawnSparkle(r.left + r.width / 2, r.top + r.height / 2);
+    spawnPopScore(r.left + r.width / 2, r.top + r.height / 2 - 20, '+' + gain);
+  });
+  state.cardEl = null;
+  state.card = null;
+  // Maybe switch rule, then spawn next card
+  const willSwitch = shouldSwitchRule();
+  const delay = SPAWN_DELAY_MS * speedPreset().spawnDelayMul;
+  if (willSwitch) {
+    setTimeout(() => {
+      switchRule();
+      const freeze = RULE_FREEZE_MS * speedPreset().freezeMul;
+      state.pendingSpawn = setTimeout(() => { if (state.running) spawnCard(); }, freeze);
+    }, 380);
+  } else {
+    state.pendingSpawn = setTimeout(() => { if (state.running) spawnCard(); }, delay);
+  }
+}
+
+function onWrong(bin) {
+  state.combo = 0;
+  comboCount.textContent = '0';
+  buzz([30, 60, 30]);
+  bin.classList.add('wrong-flash');
+  setTimeout(() => bin.classList.remove('wrong-flash'), 380);
+  // Card stays — snap back to center for retry
+  snapBack();
+}
+
+function flyCardToBin(cardEl, bin, onArrive) {
+  const cardRect = cardEl.getBoundingClientRect();
+  const binRect  = bin.getBoundingClientRect();
+  const dx = (binRect.left + binRect.width  / 2) - (cardRect.left + cardRect.width  / 2);
+  const dy = (binRect.top  + binRect.height / 2) - (cardRect.top  + cardRect.height / 2);
+  cardEl.style.transition = 'transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.34s ease';
+  cardEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.45) rotate(8deg)`;
+  cardEl.style.opacity = '0';
+  setTimeout(() => {
+    if (cardEl.isConnected) cardEl.remove();
+    if (onArrive) onArrive();
+  }, 360);
+}
+
+function bumpCombo() {
+  comboBox.classList.remove('bump');
+  void comboBox.offsetWidth;
+  comboBox.classList.add('bump');
+}
+
+function spawnSparkle(x, y) {
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = pick(['✨', '⭐', '💫', '🌟']);
+  s.style.left = x + 'px';
+  s.style.top  = y + 'px';
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 700);
+}
+
+function spawnPopScore(x, y, text) {
+  const s = document.createElement('div');
+  s.className = 'pop-score';
+  s.textContent = text;
+  s.style.left = x + 'px';
+  s.style.top  = y + 'px';
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 850);
+}
+
+// ============================================================================
+// RULE SWITCHING
+// ============================================================================
+function shouldSwitchRule() {
+  if (state.correctSinceSwitch < SWITCH_AFTER) return false;
+  const now = performance.now();
+  if (now - state.lastSwitchAt < SWITCH_MIN_GAP_MS && state.lastSwitchAt > 0) return false;
+  if (state.endTime - now < 5000) return false;  // don't switch in final 5s
+  return true;
+}
+
+function switchRule() {
+  const choices = state.level.dims.filter(d => d !== state.currentRule);
+  state.currentRule = pick(choices);
+  state.correctSinceSwitch = 0;
+  state.lastSwitchAt = performance.now();
+  state.awaitingPostSwitch = true;
+  // Fade bins out, swap, fade in
+  for (const b of state.binEls) b.classList.add('fading-out');
+  setTimeout(() => {
+    renderBins();
+    updateRuleBanner();
+    ruleBanner.classList.add('flash');
+    setTimeout(() => ruleBanner.classList.remove('flash'), 600);
+  }, 280);
+  flashOverlay('เปลี่ยนกฎ!', 1000, 'switch');
+  buzz([40, 50, 40, 50, 40]);
+}
+
+function flashOverlay(text, durationMs, extraCls) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extraCls || ''}">${text}</div>`;
+  setTimeout(() => {
+    overlay.classList.remove('shown');
+    overlay.innerHTML = '';
+  }, durationMs);
+}
+
+// ============================================================================
+// RESULTS
+// ============================================================================
+function showResults() {
+  resultScore.textContent  = state.score + ' คะแนน';
+  resultStreak.textContent = 'ติดต่อกันสูงสุด: ' + state.bestCombo + ' ครั้ง';
+  resultSwitch.textContent = '🔄 เปลี่ยนกฎสำเร็จ: ' + state.switchSuccesses + ' ครั้ง';
+  const rating = ratingFor(state.score, state.switchSuccesses);
+  resultStars.textContent = rating.stars;
+  resultText.textContent  = rating.text;
+  showScreen('results');
+  celebrate(rating.confettiCount);
+  buzz([60, 40, 60, 40, 100]);
+}
+
+function ratingFor(score, switches) {
+  // Reward switching success: each successful switch = bonus 3 score-equivalent
+  const eff = score + switches * 3;
+  if (eff >= 45) return { stars: '🌟🌟🌟🌟🌟', text: 'สุดยอดมาก!',  confettiCount: 140 };
+  if (eff >= 30) return { stars: '⭐⭐⭐⭐',     text: 'เก่งมาก!',     confettiCount: 110 };
+  if (eff >= 18) return { stars: '⭐⭐⭐',        text: 'เก่ง!',         confettiCount: 80  };
+  if (eff >= 8)  return { stars: '⭐⭐',           text: 'ดีมาก!',        confettiCount: 60  };
+  return                { stars: '⭐',                text: 'ลองอีกที!',     confettiCount: 30 };
+}
+
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// EVENT BINDINGS
+// ============================================================================
+$('againBtn').addEventListener('click', () => {
+  if (!state.level) { showScreen('select'); return; }
+  startGame(state.level);
+});
+$('newBtn').addEventListener('click', () => {
+  state.level = null;
+  showScreen('select');
+});
+
+// Prevent double-tap zoom on iOS Safari
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// ============================================================================
+// SPEED SELECTOR (shared pattern with quick-tap)
+// ============================================================================
+function setSpeed(s) {
+  if (!SPEED_LEVELS[s]) s = 'medium';
+  state.speed = s;
+  try { localStorage.setItem(SPEED_KEY, s); } catch (e) { /* private mode */ }
+  for (const btn of document.querySelectorAll('.speed-pill')) {
+    btn.classList.toggle('active', btn.dataset.speed === s);
+  }
+}
+$('speedRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.speed-pill');
+  if (!btn) return;
+  setSpeed(btn.dataset.speed);
+});
+
+// ============================================================================
+// INIT
+// ============================================================================
+let savedSpeed = null;
+try { savedSpeed = localStorage.getItem(SPEED_KEY); } catch (e) { /* private mode */ }
+setSpeed(savedSpeed || 'medium');
+renderLevels();
+// Hub registers the service worker; its scope covers this page too.
+</script>
+</body>
+</html>
