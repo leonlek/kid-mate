@@ -125,7 +125,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    margin: 12px 14px 0 76px;   /* leave space for home button */
+    margin: 12px 76px 0 76px;   /* leave space for home + back buttons */
   }
   .picture-title {
     font-family: 'Itim', cursive;
@@ -252,19 +252,33 @@
   }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
-  .home-btn {
+  .home-btn, .back-btn {
     position: fixed;
     top: calc(12px + env(safe-area-inset-top));
-    left: 12px;
     width: 52px; height: 52px;
     border-radius: 50%;
     background: #fff; border: 3px solid var(--brand);
     box-shadow: 0 3px 0 var(--brand-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; text-decoration: none; z-index: 60;
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60;
     transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
   }
-  .home-btn:active { transform: scale(0.92); }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 8px auto 14px;
+    max-width: 360px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
 
   @media (min-width: 768px) {
     .lgrid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -277,7 +291,7 @@
   @media (max-width: 480px) {
     .swatch { width: 44px; height: 44px; border-width: 3px; }
     .palette { gap: 8px; padding: 8px 10px env(safe-area-inset-bottom); }
-    .top-bar { margin: 8px 8px 0 70px; }
+    .top-bar { margin: 8px 70px 0 70px; }
     .canvas-area { padding: 8px; }
     .lcard svg.preview { height: 90px; }
     .lcard .ltitle { font-size: 20px; }
@@ -286,12 +300,17 @@
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกรูปใหม่">📋</button>
 <div class="app">
 
   <section id="selectScreen" class="screen active">
     <header class="hero">
       <h1>🎨 ระบายสี</h1>
-      <p>เลือกรูปแล้วระบายตามใจ — ไม่มีถูกผิด!<br/><small style="font-size:.85em;color:#888">แตะที่ส่วนต่างๆ เพื่อเปลี่ยนสี</small></p>
+      <ul class="howto">
+        <li><span class="howto-icon">🖼️</span> เลือกรูปที่อยากระบาย</li>
+        <li><span class="howto-icon">🎨</span> แตะสีจากจานด้านล่าง</li>
+        <li><span class="howto-icon">👆</span> แตะบนรูปเพื่อระบาย</li>
+      </ul>
     </header>
     <div id="levelGrid" class="lgrid"></div>
   </section>
@@ -513,6 +532,7 @@ const pictureTitle = $('pictureTitle');
 function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function showScreen(name) {
   for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name);
+  document.getElementById('backBtn').classList.toggle('show', name === 'game');
 }
 function later(fn, ms) {
   const id = setTimeout(fn, ms);
@@ -683,6 +703,12 @@ function selectColor(color, el) {
 // ============================================================================
 // BUTTONS
 // ============================================================================
+$('backBtn').addEventListener('click', () => {
+  if (overlay) { overlay.classList.remove('shown'); overlay.innerHTML = ''; }
+  renderSelect();
+  showScreen('select');
+});
+
 $('resetBtn').addEventListener('click', () => {
   state.fills = {};
   for (const el of regionsGroup.querySelectorAll('.region')) el.setAttribute('fill', '#fff');

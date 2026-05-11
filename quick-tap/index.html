@@ -548,23 +548,47 @@
     to { transform: translateY(110vh) rotate(720deg); }
   }
 
-  /* Home button */
-  .home-btn {
+  /* Home + back-to-select buttons */
+  .home-btn, .back-btn {
     position: fixed;
     top: calc(12px + env(safe-area-inset-top));
-    left: 12px;
     width: 52px; height: 52px;
     border-radius: 50%;
     background: #fff;
     border: 3px solid var(--brand);
     box-shadow: 0 3px 0 var(--brand-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
+    align-items: center; justify-content: center;
+    font-size: 24px;
     text-decoration: none;
+    color: var(--ink);
     z-index: 60;
     transition: transform .12s ease;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
   }
-  .home-btn:active { transform: scale(0.92); }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  /* How-to-play */
+  .howto {
+    list-style: none;
+    padding: 12px 18px;
+    margin: 8px auto 14px;
+    max-width: 360px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
 
   /* iPad / tablet sizes — bigger play surface */
   @media (min-width: 768px) {
@@ -610,13 +634,18 @@
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
 <div class="app">
 
   <!-- SELECT SCREEN -->
   <section id="selectScreen" class="screen active">
     <header class="hero">
       <h1>🎯 จับเร็วๆ</h1>
-      <p>แตะให้ถูกตามกฎ! ห้ามแตะอย่างอื่น<br/><small style="font-size:.85em;color:#888">เลือกแบบที่อยากเล่น</small></p>
+      <ul class="howto">
+        <li><span class="howto-icon">👀</span> ดูกฎ — ฝั่งไหน "ใช่" ฝั่งไหน "ไม่ใช่"</li>
+        <li><span class="howto-icon">👆</span> แตะให้เร็วเฉพาะที่ใช่</li>
+        <li><span class="howto-icon">⛔</span> แตะผิด = หักคะแนน</li>
+      </ul>
     </header>
 
     <div class="speed-row" id="speedRow">
@@ -921,6 +950,18 @@ function showScreen(name) {
   for (const k of Object.keys(screens)) {
     screens[k].classList.toggle('active', k === name);
   }
+  document.getElementById('backBtn').classList.toggle('show', name === 'game');
+}
+function abortGame() {
+  state.running = false;
+  if (state.spawnTimer) clearTimeout(state.spawnTimer);
+  if (state.tickTimer)  clearInterval(state.tickTimer);
+  for (const [, stim] of state.stimuli) {
+    if (stim.lifeTimer) clearTimeout(stim.lifeTimer);
+    stim.el.remove();
+  }
+  state.stimuli.clear();
+  state.occupiedCells.clear();
 }
 
 // ============================================================================
@@ -1329,6 +1370,11 @@ function celebrate(n) {
 document.getElementById('againBtn').addEventListener('click', () => {
   if (!state.challenge) { showScreen('select'); return; }
   startGame(state.challenge);
+});
+document.getElementById('backBtn').addEventListener('click', () => {
+  abortGame();
+  renderChallengeCards();
+  showScreen('select');
 });
 document.getElementById('newBtn').addEventListener('click', () => {
   state.challenge = null;

@@ -512,23 +512,47 @@
     to { transform: translateY(110vh) rotate(720deg); }
   }
 
-  /* Home button */
-  .home-btn {
+  /* Home + back-to-select buttons */
+  .home-btn, .back-btn {
     position: fixed;
     top: calc(12px + env(safe-area-inset-top));
-    left: 12px;
     width: 52px; height: 52px;
     border-radius: 50%;
     background: #fff;
     border: 3px solid var(--brand);
     box-shadow: 0 3px 0 var(--brand-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
+    align-items: center; justify-content: center;
+    font-size: 24px;
     text-decoration: none;
+    color: var(--ink);
     z-index: 60;
     transition: transform .12s;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
   }
-  .home-btn:active { transform: scale(0.92); }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  /* How-to-play */
+  .howto {
+    list-style: none;
+    padding: 12px 18px;
+    margin: 8px auto 14px;
+    max-width: 360px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
 
   /* iPad / tablet */
   @media (min-width: 768px) {
@@ -587,13 +611,18 @@
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
 <div class="app">
 
   <!-- SELECT SCREEN -->
   <section id="selectScreen" class="screen active">
     <header class="hero">
       <h1>🎴 เรียงตามกฎ</h1>
-      <p>ลากการ์ดเข้าถังตามกฎ! กฎจะสลับกลางทาง<br/><small style="font-size:.85em;color:#888">เลือกระดับที่อยากเล่น</small></p>
+      <ul class="howto">
+        <li><span class="howto-icon">👀</span> ดูป้ายกฎด้านบน (รูปทรงหรือสี)</li>
+        <li><span class="howto-icon">👇</span> ลากการ์ดลงถังที่ตรงกฎ</li>
+        <li><span class="howto-icon">🔁</span> ระวัง! กฎเปลี่ยนกลางทาง</li>
+      </ul>
     </header>
 
     <div class="speed-row" id="speedRow">
@@ -796,6 +825,17 @@ function showScreen(name) {
   for (const k of Object.keys(screens)) {
     screens[k].classList.toggle('active', k === name);
   }
+  document.getElementById('backBtn').classList.toggle('show', name === 'game');
+}
+function abortGame() {
+  state.running = false;
+  state.dragging = false;
+  if (state.tickTimer) clearInterval(state.tickTimer);
+  if (state.pendingSpawn) clearTimeout(state.pendingSpawn);
+  state.tickTimer = null;
+  state.pendingSpawn = null;
+  cardArea.querySelectorAll('.card-current, .sparkle, .pop-score').forEach(n => n.remove());
+  if (overlay) { overlay.classList.remove('shown'); overlay.innerHTML = ''; }
 }
 function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
 
@@ -1224,6 +1264,11 @@ function celebrate(n) {
 $('againBtn').addEventListener('click', () => {
   if (!state.level) { showScreen('select'); return; }
   startGame(state.level);
+});
+$('backBtn').addEventListener('click', () => {
+  abortGame();
+  renderLevels();
+  showScreen('select');
 });
 $('newBtn').addEventListener('click', () => {
   state.level = null;

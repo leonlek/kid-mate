@@ -364,19 +364,33 @@
   }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
-  .home-btn {
+  .home-btn, .back-btn {
     position: fixed;
     top: calc(12px + env(safe-area-inset-top));
-    left: 12px;
     width: 52px; height: 52px;
     border-radius: 50%;
     background: #fff; border: 3px solid var(--brand);
     box-shadow: 0 3px 0 var(--brand-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; text-decoration: none; z-index: 60;
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60;
     transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
   }
-  .home-btn:active { transform: scale(0.92); }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 8px auto 14px;
+    max-width: 360px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
 
   @media (min-width: 768px) {
     .basket { width: 160px; height: 90px; }
@@ -404,12 +418,17 @@
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
 <div class="app">
 
   <section id="selectScreen" class="screen active">
     <header class="hero">
       <h1>🌟 จับดาว</h1>
-      <p>ลากตะกร้ารับ ⭐ และ 🌙 — หลบ ☄️!<br/><small style="font-size:.85em;color:#888">รับดาวร้าย 3 ครั้ง = จบ</small></p>
+      <ul class="howto">
+        <li><span class="howto-icon">👇</span> ลากตะกร้าไปทางซ้าย/ขวา</li>
+        <li><span class="howto-icon">⭐</span> รับดาวทอง 🌙 ดวงจันทร์</li>
+        <li><span class="howto-icon">☄️</span> หลบดาวร้าย — โดน 3 ครั้งจบ!</li>
+      </ul>
     </header>
 
     <div class="speed-row" id="speedRow">
@@ -558,7 +577,21 @@ const timeLeftEl   = $('timeLeft');
 // UTIL
 // ============================================================================
 function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
-function showScreen(name) { for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name); }
+function showScreen(name) {
+  for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name);
+  document.getElementById('backBtn').classList.toggle('show', name === 'game');
+}
+function abortGame() {
+  state.running = false;
+  state.basketDragging = false;
+  if (state.spawnTimer)  clearTimeout(state.spawnTimer);
+  if (state.tickTimer)   clearInterval(state.tickTimer);
+  if (state.tickTimer2)  clearInterval(state.tickTimer2);
+  clearTimers();
+  for (const [, it] of state.items) { if (it.el) it.el.remove(); }
+  state.items.clear();
+  if (overlay) { overlay.classList.remove('shown'); overlay.innerHTML = ''; }
+}
 function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
 function later(fn, ms) {
   const id = setTimeout(fn, ms);
@@ -859,6 +892,11 @@ function celebrate(n) {
 // ============================================================================
 // EVENTS
 // ============================================================================
+$('backBtn').addEventListener('click', () => {
+  abortGame();
+  renderLevels();
+  showScreen('select');
+});
 $('againBtn').addEventListener('click', () => {
   if (!state.level) { showScreen('select'); return; }
   ensureAudio();

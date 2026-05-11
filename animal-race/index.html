@@ -536,34 +536,53 @@
     .countdown { font-size: 160px; }
   }
 
-  /* ===== Home button (back to hub) ===== */
-  .home-btn {
+  /* ===== Home + back-to-select buttons ===== */
+  .home-btn, .back-btn {
     position: fixed;
     top: calc(12px + env(safe-area-inset-top));
-    left: 12px;
     width: 52px; height: 52px;
     border-radius: 50%;
     background: #fff;
     border: 3px solid var(--brand);
     box-shadow: 0 3px 0 var(--brand-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
+    align-items: center; justify-content: center;
+    font-size: 24px;
     text-decoration: none;
+    color: var(--ink);
     z-index: 60;
     transition: transform .12s ease;
+    font-family: inherit; padding: 0; cursor: pointer;
   }
-  .home-btn:active { transform: scale(0.92); }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 8px auto 14px;
+    max-width: 360px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
 </style>
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกใหม่">📋</button>
 <div class="app">
 
   <!-- SELECT SCREEN -->
   <section id="selectScreen" class="screen active">
     <div class="hero">
       <h1>🏁 แข่งความเร็ว 🏁</h1>
-      <p>เลือกอะไรก็ได้มาแข่งกัน <br/><small style="font-size:.85em;color:#888">(เลือก 2 อย่างขึ้นไป)</small></p>
+      <ul class="howto">
+        <li><span class="howto-icon">👆</span> แตะเลือก 2 อย่างขึ้นไป</li>
+        <li><span class="howto-icon">🚀</span> กดปุ่ม "แข่งเลย!"</li>
+        <li><span class="howto-icon">🏆</span> ลุ้นใครเข้าเส้นชัยก่อน</li>
+      </ul>
       <button id="toggleMachines" class="machines-toggle" aria-pressed="false">🚗 ✈️ ยานพาหนะ: ปิด</button>
     </div>
     <div id="filterRow" class="filter-row"></div>
@@ -698,7 +717,15 @@
   function showScreen(name) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
     screens[name].classList.add('active');
+    document.getElementById('backBtn').classList.toggle('show', name === 'race');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function abortRace() {
+    state.raceAborted = true;
+    stopAllSfx();
+    // Remove any lingering countdown overlays
+    document.querySelectorAll('body > .countdown').forEach(n => n.remove());
+    trackWrap.innerHTML = '';
   }
 
   // ============ SELECT SCREEN ============
@@ -901,6 +928,7 @@
   const raceMsg = document.getElementById('raceMsg');
 
   async function startRace(animals) {
+    state.raceAborted = false;
     showScreen('race');
     raceMsg.textContent = 'เตรียมตัว...';
 
@@ -939,7 +967,9 @@
 
     // race loop
     const results = await runRace(racers);
+    if (state.raceAborted) return;
     await sleep(600);
+    if (state.raceAborted) return;
     showResults(results);
   }
 
@@ -980,6 +1010,7 @@
       const hardCap = 15000;
 
       function tick(now) {
+        if (state.raceAborted) { resolve([]); return; }
         const elapsed = now - start;
         let allDone = true;
 
@@ -1089,6 +1120,11 @@
       setTimeout(() => c.remove(), 5000);
     }
   }
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    abortRace();
+    showScreen('select');
+  });
 
   // ============ RESULT BUTTONS ============
   document.getElementById('againBtn').addEventListener('click', () => {
