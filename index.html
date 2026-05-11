@@ -82,7 +82,7 @@
 
   .games {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 18px;
     margin-top: 10px;
   }
@@ -169,9 +169,12 @@
   .credits-footer a { color: var(--brand-dark); }
 
   @media (max-width: 480px) {
-    .hub { padding: 30px 16px 60px; }
-    .game-emoji { font-size: 80px; }
-    .game-title { font-size: 28px; }
+    .hub { padding: 30px 10px 60px; }
+    .games { gap: 10px; }
+    .game-card { padding: 14px 6px 12px; border-width: 3px; border-radius: 20px; }
+    .game-emoji { font-size: 52px; }
+    .game-title { font-size: 18px; margin-top: 4px; }
+    .game-desc { display: none; }
   }
 </style>
 </head>
