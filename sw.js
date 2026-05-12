@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v31';
+const CACHE = 'kid-games-v32';
 const SHELL = [
   './',
   './index.html',
@@ -29,6 +29,14 @@ const SHELL = [
   './catch-stars/index.html',
   './coloring/',
   './coloring/index.html',
+  './memory-match/',
+  './memory-match/index.html',
+  './shadow-match/',
+  './shadow-match/index.html',
+  './jigsaw/',
+  './jigsaw/index.html',
+  './alphabet-pop/',
+  './alphabet-pop/index.html',
 ];
 
 self.addEventListener('install', (event) => {

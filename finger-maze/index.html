@@ -251,6 +251,18 @@
     color: var(--ink);
   }
   .hud-item.level { color: var(--brand-dark); }
+  .hud-item.time  { color: #2980b9; }
+  .medal-row {
+    font-size: clamp(40px, 8vw, 60px); line-height: 1;
+    margin: 4px 0; letter-spacing: 6px;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
+  }
+  .lcard .best {
+    position: absolute; top: 10px; left: 10px;
+    font-family: 'Itim', cursive; font-size: 13px;
+    color: #777; background: #fff7cf; padding: 2px 10px;
+    border-radius: 999px; border: 1px solid #eecf6e;
+  }
 
   /* Stage — holds the SVG path and emojis */
   .stage-area {
@@ -588,6 +600,7 @@
     <div class="hud">
       <div class="hud-item level" id="levelBox">ระดับ <span id="levelNum">1</span> / <span id="levelTotal">12</span></div>
       <div class="hud-item">หลุด: <span id="failCount">0</span></div>
+      <div class="hud-item time" id="timeBox">⏱ <span id="timeText">0:00</span></div>
     </div>
 
     <div class="stage-area">
@@ -812,6 +825,7 @@ const PROGRESS_KEY = 'fingerMazeProgress';
 const state = {
   speed: 'medium',
   levelIdx: 0,
+  firstLevelIdx: 0,
   status: 'idle',          // idle | tracing | failing | won
   fails: 0,                // total fails across the session
   totalFails: 0,
@@ -820,6 +834,9 @@ const state = {
   startSvg: null,          // {x,y} in SVG coords
   endSvg:   null,
   bestProgress: {},        // { lvl1: bool, ... } from localStorage
+  bestTimes: {},           // { sessionStart-N: bestMs }
+  sessionStartMs: 0,
+  timeTimer: null,
 };
 
 // ============================================================================
@@ -903,6 +920,7 @@ function abortGame() {
   state.pointerId = null;
   state.status = 'idle';
   mazeStage.classList.remove('fail', 'win');
+  if (state.timeTimer) { clearInterval(state.timeTimer); state.timeTimer = null; }
 }
 function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
 
@@ -917,7 +935,10 @@ function renderLevels() {
     card.className = 'lcard';
     if (state.bestProgress['l' + lvl.id]) card.classList.add('completed');
     const stars = '⭐'.repeat(lvl.stars);
+    const best = state.bestTimes[bestTimeKey(i)];
+    const bestStr = best ? `<div class="best">⏱ ${formatTime(best)}</div>` : '';
     card.innerHTML = `
+      ${bestStr}
       <div class="stars">${stars}</div>
       <svg class="preview" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
         <path d="${lvl.path}" />
@@ -937,9 +958,26 @@ function renderLevels() {
 // ============================================================================
 function startSession(startIdx) {
   state.levelIdx = startIdx;
+  state.firstLevelIdx = startIdx;
   state.totalFails = 0;
+  state.sessionStartMs = performance.now();
+  $('timeText').textContent = '0:00';
+  if (state.timeTimer) clearInterval(state.timeTimer);
+  state.timeTimer = setInterval(tickTime, 250);
   loadLevel();
   showScreen('game');
+}
+
+function tickTime() {
+  const ms = performance.now() - state.sessionStartMs;
+  $('timeText').textContent = formatTime(ms);
+}
+
+function formatTime(ms) {
+  const s = Math.floor(ms / 1000);
+  const mm = Math.floor(s / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  return mm + ':' + ss;
 }
 
 function loadLevel() {
@@ -1152,19 +1190,44 @@ function flashOverlay(text, durationMs, extra) {
 // RESULTS
 // ============================================================================
 function showResults() {
-  resultTitle.textContent  = `ผ่านครบ ${LEVELS.length} ระดับ!`;
-  resultSub.textContent    = `ความกว้างเส้น: ${state.speed === 'slow' ? '🐢 กว้าง' : state.speed === 'fast' ? '⚡ แคบ' : '🐇 กลาง'}`;
-  resultFails.textContent  = `หลุดทั้งหมด: ${state.totalFails} ครั้ง`;
+  if (state.timeTimer) { clearInterval(state.timeTimer); state.timeTimer = null; }
+  const totalMs = performance.now() - state.sessionStartMs;
+  const levelsPlayed = LEVELS.length - state.firstLevelIdx;
+  const prevBest = bestTimeKey(state.firstLevelIdx) in state.bestTimes ? state.bestTimes[bestTimeKey(state.firstLevelIdx)] : null;
+  const isNewBest = prevBest === null || totalMs < prevBest;
+  if (isNewBest) {
+    state.bestTimes[bestTimeKey(state.firstLevelIdx)] = Math.round(totalMs);
+    saveProgress();
+  }
+
+  resultTitle.textContent  = `ผ่านครบ ${levelsPlayed} ระดับ!`;
+  const speedLabel = state.speed === 'slow' ? '🐢 กว้าง' : state.speed === 'fast' ? '⚡ แคบ' : '🐇 กลาง';
+  let sub = `เวลา ${formatTime(totalMs)} · เส้น ${speedLabel}`;
+  if (prevBest && !isNewBest) sub += ` · ดีสุด ${formatTime(prevBest)}`;
+  resultSub.textContent = sub;
+  resultFails.textContent = `หลุดทั้งหมด: ${state.totalFails} ครั้ง${isNewBest && prevBest !== null ? '  🏅 เร็วกว่าเดิม!' : ''}`;
+
+  const medal = medalFor(totalMs, levelsPlayed);
   const r = ratingFor(state.totalFails);
-  resultStars.textContent = r.stars;
-  resultText.textContent  = r.text;
+  // Stars row shows medal + star rating combined
+  resultStars.innerHTML = `<span class="medal-row">${medal.emoji}</span><br>${r.stars}`;
+  resultText.textContent  = medal.text + ' · ' + r.text;
   showScreen('results');
-  celebrate(r.confettiCount);
+  celebrate(r.confettiCount + (medal.tier === 'gold' ? 80 : medal.tier === 'silver' ? 40 : 0));
   buzz([60, 40, 60, 40, 100]);
 }
 
+function bestTimeKey(startIdx) { return 'from' + startIdx + '_' + state.speed; }
+
+function medalFor(totalMs, levelsPlayed) {
+  // Per-level pace thresholds (medium speed baseline).
+  const perLevel = totalMs / Math.max(1, levelsPlayed);
+  if (perLevel <= 12000) return { tier: 'gold',   emoji: '🥇', text: 'เหรียญทอง!' };
+  if (perLevel <= 22000) return { tier: 'silver', emoji: '🥈', text: 'เหรียญเงิน!' };
+  return                          { tier: 'bronze', emoji: '🥉', text: 'เหรียญทองแดง!' };
+}
+
 function ratingFor(fails) {
-  // Tuned for 12 levels — expected fails scale up roughly with level count.
   if (fails === 0)  return { stars: '🌟🌟🌟🌟🌟', text: 'ไร้ที่ติ!',     confettiCount: 160 };
   if (fails <= 5)   return { stars: '⭐⭐⭐⭐',     text: 'เก่งมาก!',     confettiCount: 120 };
   if (fails <= 12)  return { stars: '⭐⭐⭐',        text: 'เก่ง!',        confettiCount: 90  };
@@ -1198,10 +1261,17 @@ function loadProgress() {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') state.bestProgress = parsed;
     }
+    const rawT = localStorage.getItem(PROGRESS_KEY + '_times');
+    if (rawT) {
+      const parsed = JSON.parse(rawT);
+      if (parsed && typeof parsed === 'object') state.bestTimes = parsed;
+    }
   } catch (e) {}
 }
 function saveProgress() {
   try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(state.bestProgress)); }
+  catch (e) {}
+  try { localStorage.setItem(PROGRESS_KEY + '_times', JSON.stringify(state.bestTimes)); }
   catch (e) {}
 }
 

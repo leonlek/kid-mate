@@ -146,6 +146,53 @@
     margin: 12px 14px 0;
     font-family: 'Itim', cursive; font-size: 22px;
   }
+  .powerups {
+    flex: 0 0 auto; display: flex; justify-content: center; gap: 8px;
+    margin: 6px 14px 0;
+    font-family: 'Itim', cursive;
+    min-height: 36px;
+  }
+  .pu-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.92);
+    border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 4px 12px;
+    font-size: 18px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+    color: var(--brand-dark);
+    animation: puIn .35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .pu-badge.shield { color: #2980b9; border-color: #b8e0ff; }
+  .pu-badge.x2     { color: var(--good-dark); border-color: #cdf3bb; }
+  .pu-badge.magnet { color: #c0392b; border-color: #ffd3cc; }
+  .pu-emoji { font-size: 22px; line-height: 1; }
+  @keyframes puIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .basket.shielded::after {
+    content: '';
+    position: absolute; inset: -14px -14px -4px -14px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(91, 192, 235, 0.30) 0%, rgba(91, 192, 235, 0.12) 60%, transparent 75%);
+    border: 3px solid rgba(91, 192, 235, 0.7);
+    box-shadow: 0 0 16px rgba(91, 192, 235, 0.6), inset 0 0 16px rgba(255,255,255,0.5);
+    pointer-events: none;
+    animation: shieldPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes shieldPulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%      { opacity: 1;     transform: scale(1.05); }
+  }
+  .falling.powerup {
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.9)) drop-shadow(0 0 18px rgba(255,217,61,0.7));
+    animation: puSpin 1.6s linear infinite;
+  }
+  @keyframes puSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
   .hud-item {
     background: #fff; border: 3px solid var(--card-border);
     border-radius: 999px; padding: 6px 16px;
@@ -428,6 +475,7 @@
         <li><span class="howto-icon">👇</span> ลากตะกร้าไปทางซ้าย/ขวา</li>
         <li><span class="howto-icon">⭐</span> รับดาวทอง 🌙 ดวงจันทร์</li>
         <li><span class="howto-icon">☄️</span> หลบดาวร้าย — โดน 3 ครั้งจบ!</li>
+        <li><span class="howto-icon">🎁</span> รับของพิเศษ: 🧲 ดูดดาว · 💎 คูณ 2 · 🛡 โล่กันดาวร้าย</li>
       </ul>
     </header>
 
@@ -447,6 +495,7 @@
       <div class="hud-item miss">❤️ <span id="lives">3</span></div>
       <div class="hud-item time">⏱ <span id="timeLeft">60</span></div>
     </div>
+    <div class="powerups" id="powerupsBar"></div>
     <div class="play-area" id="playArea">
       <div id="basket" class="basket"><div class="basket-shape"></div></div>
     </div>
@@ -502,6 +551,15 @@ const STAR_TYPES = [
   { emoji: '🍀', value: 3, weight: 1 },  // rare jackpot
 ];
 
+const POWERUPS = [
+  { kind: 'magnet', emoji: '🧲', label: 'แม่เหล็ก', durationMs: 5500 },
+  { kind: 'x2',     emoji: '💎', label: 'คะแนน×2', durationMs: 6500 },
+  { kind: 'shield', emoji: '🛡',  label: 'โล่',      durationMs: 12000 }, // until hit
+];
+const POWERUP_SPAWN_RATE = 0.06;  // 6% chance per spawn slot
+const MAGNET_RADIUS_FACTOR = 0.55; // proportion of playArea width
+const MAGNET_PULL = 0.18;          // 0..1 lerp per tick toward basket
+
 // ============================================================================
 // STATE
 // ============================================================================
@@ -523,6 +581,8 @@ const state = {
   pointerId: null,
   pointerOffsetX: 0,
   pendingTimers: [],
+  // Power-ups: end timestamps (performance.now() ms). 0 = inactive.
+  powerups: { magnet: 0, x2: 0, shield: 0 },
 };
 
 // ============================================================================
@@ -554,6 +614,13 @@ function playCatch(value) {
 function playBomb() {
   tone(220, 80, 'sawtooth', 0.18);
   setTimeout(() => tone(110, 200, 'sawtooth', 0.18), 80);
+}
+function playPowerup() {
+  [523, 659, 880].forEach((f, i) => setTimeout(()=>tone(f, 120, 'triangle', 0.18), i * 70));
+}
+function playShieldHit() {
+  tone(180, 60, 'square', 0.16);
+  setTimeout(() => tone(440, 100, 'triangle', 0.12), 50);
 }
 
 // ============================================================================
@@ -590,6 +657,9 @@ function abortGame() {
   clearTimers();
   for (const [, it] of state.items) { if (it.el) it.el.remove(); }
   state.items.clear();
+  state.powerups = { magnet: 0, x2: 0, shield: 0 };
+  basket.classList.remove('shielded');
+  renderPowerupBar();
   if (overlay) { overlay.classList.remove('shown'); overlay.innerHTML = ''; }
 }
 function speedPreset() { return SPEED_LEVELS[state.speed] || SPEED_LEVELS.medium; }
@@ -632,6 +702,9 @@ function startGame(level) {
   state.timeLeftSec = Math.ceil(ROUND_MS / 1000);
   state.items.clear();
   state.itemSeq = 0;
+  state.powerups = { magnet: 0, x2: 0, shield: 0 };
+  renderPowerupBar();
+  basket.classList.remove('shielded');
   scoreCount.textContent = '0';
   livesEl.textContent = '3';
   timeLeftEl.textContent = state.timeLeftSec;
@@ -662,6 +735,8 @@ function tick() {
     state.timeLeftSec = newSec;
     timeLeftEl.textContent = newSec;
   }
+  // Refresh power-up countdowns
+  renderPowerupBar();
   if (remain <= 0) endRound();
 }
 
@@ -688,35 +763,35 @@ function pickStarType() {
 function spawn() {
   if (!state.running) return;
   const id = ++state.itemSeq;
-  const isBomb = state.level.hasBombs && Math.random() < state.level.bombRate;
-  let kind, emoji, value;
-  if (isBomb) {
-    kind = 'bomb'; emoji = '☄️'; value = 0;
+  // Roll: power-up first, then bomb, then star
+  let kind, emoji, value = 0, puKind = null;
+  if (Math.random() < POWERUP_SPAWN_RATE) {
+    const pu = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+    kind = 'powerup'; emoji = pu.emoji; puKind = pu.kind;
+  } else if (state.level.hasBombs && Math.random() < state.level.bombRate) {
+    kind = 'bomb'; emoji = '☄️';
   } else {
     const t = pickStarType();
     kind = 'star'; emoji = t.emoji; value = t.value;
   }
   const r = playArea.getBoundingClientRect();
-  // Spawn at random horizontal, top of stage (y = 0)
   const sizeGuess = window.innerWidth >= 1024 ? 80 : window.innerWidth >= 768 ? 70 : (window.innerWidth >= 480 ? 56 : 44);
   const x = sizeGuess/2 + Math.random() * Math.max(100, r.width - sizeGuess);
   const el = document.createElement('div');
-  el.className = 'falling' + (isBomb ? ' bomb' : '');
+  el.className = 'falling' + (kind === 'bomb' ? ' bomb' : kind === 'powerup' ? ' powerup' : '');
   el.textContent = emoji;
   el.style.left = x + 'px';
   el.style.top  = '0px';
   playArea.appendChild(el);
-  // Animate falling
   const fallMs = FALL_BASE_MS * speedPreset().fallMul * (0.85 + Math.random() * 0.3);
   const totalY = r.height + 80;
   const anim = el.animate([
     { transform: 'translate(-50%, -50%)' },
     { transform: `translate(-50%, ${totalY}px)` },
   ], { duration: fallMs, easing: 'linear', fill: 'forwards' });
-  const item = { id, el, kind, value, x, fallMs, startedAt: performance.now(), anim };
+  const item = { id, el, kind, value, puKind, x, fallMs, startedAt: performance.now(), anim };
   anim.onfinish = () => {
     if (state.items.has(id)) {
-      // Reached bottom without being caught
       el.remove();
       state.items.delete(id);
     }
@@ -726,22 +801,69 @@ function spawn() {
 
 function checkCatches() {
   if (!state.running) return;
+  const now = performance.now();
+  // Expire stale powerups
+  const expired = [];
+  for (const k of Object.keys(state.powerups)) {
+    if (state.powerups[k] && now >= state.powerups[k]) { state.powerups[k] = 0; expired.push(k); }
+  }
+  if (expired.length) {
+    if (expired.includes('shield')) basket.classList.remove('shielded');
+    renderPowerupBar();
+  } else if (now % 1 < 0.1) {
+    // Cheap throttled redraw so countdown stays current
+  }
+
   const playRect = playArea.getBoundingClientRect();
   const basketRect = basket.getBoundingClientRect();
-  // Convert basket to playArea coords
   const bLeft = basketRect.left - playRect.left;
   const bTop  = basketRect.top - playRect.top;
   const bRight = bLeft + basketRect.width;
-  const bMidY = bTop + basketRect.height * 0.4;  // upper area of basket counts as catch zone
+  const bCenterX = bLeft + basketRect.width / 2;
+  const bMidY = bTop + basketRect.height * 0.4;
+
+  // Magnet: pull items horizontally toward basket
+  const magnetActive = state.powerups.magnet > now;
+  const radius = magnetActive ? playRect.width * MAGNET_RADIUS_FACTOR : 0;
+
   for (const [id, item] of state.items) {
     const r = item.el.getBoundingClientRect();
     const cy = r.top + r.height/2 - playRect.top;
     const cx = r.left + r.width/2 - playRect.left;
-    if (cy >= bMidY && cy <= bMidY + basketRect.height * 0.5) {
-      if (cx >= bLeft && cx <= bRight) {
+
+    if (magnetActive && (item.kind === 'star' || item.kind === 'powerup')) {
+      const dx = bCenterX - cx;
+      if (Math.abs(dx) < radius && cy > 0) {
+        const next = item.x + dx * MAGNET_PULL;
+        item.x = next;
+        item.el.style.left = next + 'px';
+      }
+    }
+
+    if (cy >= bMidY && cy <= bMidY + basketRect.height * 0.6) {
+      const curLeft = parseFloat(item.el.style.left) || cx;
+      if (curLeft >= bLeft && curLeft <= bRight) {
         catchItem(item);
       }
     }
+  }
+}
+
+function renderPowerupBar() {
+  const bar = $('powerupsBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  const now = performance.now();
+  const order = ['shield', 'x2', 'magnet'];
+  for (const kind of order) {
+    const end = state.powerups[kind];
+    if (!end || end <= now) continue;
+    const pu = POWERUPS.find((p) => p.kind === kind);
+    const remain = Math.ceil((end - now) / 1000);
+    const badge = document.createElement('div');
+    badge.className = 'pu-badge ' + kind;
+    badge.innerHTML = `<span class="pu-emoji">${pu.emoji}</span>${kind === 'shield' ? 'พร้อม' : remain + 'ว'}`;
+    bar.appendChild(badge);
   }
 }
 
@@ -754,28 +876,55 @@ function catchItem(item) {
   const x = r.left + r.width/2 - playRect.left;
   const y = r.top + r.height/2 - playRect.top;
   item.el.remove();
+  const now = performance.now();
 
   if (item.kind === 'bomb') {
-    state.lives -= 1;
-    livesEl.textContent = state.lives;
-    spawnBurst(x, y, '💥');
-    basket.classList.remove('shake');
-    void basket.offsetWidth;
-    basket.classList.add('shake');
-    playBomb();
-    buzz([60, 40, 80]);
-    if (state.lives <= 0) endRound();
-  } else {
-    state.score += item.value;
-    scoreCount.textContent = state.score;
+    if (state.powerups.shield > now) {
+      // Shield absorbs the bomb
+      state.powerups.shield = 0;
+      basket.classList.remove('shielded');
+      renderPowerupBar();
+      spawnBurst(x, y, '🛡');
+      playShieldHit();
+      buzz([30, 30, 30]);
+    } else {
+      state.lives -= 1;
+      livesEl.textContent = state.lives;
+      spawnBurst(x, y, '💥');
+      basket.classList.remove('shake');
+      void basket.offsetWidth;
+      basket.classList.add('shake');
+      playBomb();
+      buzz([60, 40, 80]);
+      if (state.lives <= 0) endRound();
+    }
+  } else if (item.kind === 'powerup') {
+    activatePowerup(item.puKind);
     spawnBurst(x, y, '✨');
-    spawnPopScore(x, y, '+' + item.value);
+    spawnPopScore(x, y, POWERUPS.find((p) => p.kind === item.puKind).emoji);
+    playPowerup();
+    buzz([30, 20, 30, 20, 30]);
+  } else {
+    const mult = state.powerups.x2 > now ? 2 : 1;
+    const gain = item.value * mult;
+    state.score += gain;
+    scoreCount.textContent = state.score;
+    spawnBurst(x, y, mult > 1 ? '💫' : '✨');
+    spawnPopScore(x, y, '+' + gain + (mult > 1 ? ' ×2' : ''));
     basket.classList.remove('flash');
     void basket.offsetWidth;
     basket.classList.add('flash');
     playCatch(item.value);
     buzz(15);
   }
+}
+
+function activatePowerup(kind) {
+  const pu = POWERUPS.find((p) => p.kind === kind);
+  if (!pu) return;
+  state.powerups[kind] = performance.now() + pu.durationMs;
+  if (kind === 'shield') basket.classList.add('shielded');
+  renderPowerupBar();
 }
 
 function spawnBurst(x, y, glyph) {

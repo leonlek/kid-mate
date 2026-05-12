@@ -578,6 +578,7 @@
 
     <div class="hud">
       <div class="hud-item round" id="roundBox">รอบ <span id="roundCount">1</span></div>
+      <div class="hud-item" id="livesBox" style="color:#e74c3c;">❤️ <span id="livesCount">3</span></div>
       <div class="hud-item best">🏆 <span id="bestCount">0</span></div>
     </div>
 
@@ -624,24 +625,26 @@ const PADS_6 = [
   { id: 'purple', color: '#9b59b6', emoji: '🦁', freq: 523.25 }, // C5
   { id: 'pink',   color: '#ff6b9d', emoji: '🦊', freq: 587.33 }, // D5
 ];
+const PADS_8 = [
+  ...PADS_6,
+  { id: 'orange', color: '#e67e22', emoji: '🐯', freq: 659.25 }, // E5
+  { id: 'cyan',   color: '#1abc9c', emoji: '🐧', freq: 783.99 }, // G5
+];
 
+// Difficulty levels:
+//  - pads: how many distinct pads on the board
+//  - cols: grid columns
+//  - lives: wrong-taps allowed (replay sequence after each mistake until 0 left)
+//  - startLen: sequence length at round 1 (1 = classic Simon)
 const LEVELS = [
-  {
-    id: 'easy',  stars: 1,
-    title: '4 ปุ่ม',
-    subtitle: 'สำหรับ 3-5 ขวบ',
-    pads: PADS_4,
-    cols: 2,
-    bestKey: 'easy',
-  },
-  {
-    id: 'hard',  stars: 2,
-    title: '6 ปุ่ม',
-    subtitle: 'สำหรับ 5-8 ขวบ',
-    pads: PADS_6,
-    cols: 3,
-    bestKey: 'hard',
-  },
+  { id: 'starter', stars: 1, title: '3 ปุ่ม',  subtitle: 'ฝึกแรกๆ · 3 ❤️',
+    pads: PADS_4.slice(0, 3), cols: 3, lives: 3, startLen: 1, bestKey: 'starter' },
+  { id: 'easy',    stars: 1, title: '4 ปุ่ม',  subtitle: '3-5 ขวบ · 2 ❤️',
+    pads: PADS_4, cols: 2, lives: 2, startLen: 1, bestKey: 'easy' },
+  { id: 'medium',  stars: 2, title: '6 ปุ่ม',  subtitle: '5-7 ขวบ · 1 ❤️',
+    pads: PADS_6, cols: 3, lives: 1, startLen: 1, bestKey: 'medium' },
+  { id: 'hard',    stars: 3, title: '8 ปุ่ม',  subtitle: '7+ · ดูเที่ยวเดียว!',
+    pads: PADS_8, cols: 4, lives: 0, startLen: 1, bestKey: 'hard' },
 ];
 
 // ============================================================================
@@ -673,7 +676,9 @@ const state = {
   sequence: [],
   playerStep: 0,
   round: 0,
-  best: { easy: 0, hard: 0 },
+  lives: 0,
+  maxLives: 0,
+  best: { starter: 0, easy: 0, medium: 0, hard: 0 },
   phase: 'idle',           // idle | watching | playing | transition | gameover
   isNewBest: false,
   finalScore: 0,
@@ -836,19 +841,37 @@ function startGame(level) {
   state.level = level;
   state.pads = level.pads;
   state.sequence = [];
+  // Pre-seed the sequence so round 1 starts at startLen length.
+  for (let i = 0; i < (level.startLen || 1) - 1; i++) {
+    state.sequence.push(pickIndex(level.pads.length));
+  }
   state.playerStep = 0;
   state.round = 0;
+  state.lives = level.lives || 0;
+  state.maxLives = level.lives || 0;
   state.phase = 'idle';
   state.isNewBest = false;
   state.finalScore = 0;
   clearTimers();
 
   renderPads();
+  updateLivesHud();
   setStatus('เริ่ม!', '');
   roundCount.textContent = '1';
   bestCount.textContent = state.best[level.bestKey] || 0;
   showScreen('game');
   later(nextRound, START_DELAY_MS);
+}
+
+function updateLivesHud() {
+  const box = document.getElementById('livesBox');
+  if (!box) return;
+  if (state.maxLives <= 0) {
+    box.style.display = 'none';
+  } else {
+    box.style.display = '';
+    document.getElementById('livesCount').textContent = state.lives;
+  }
 }
 
 function renderPads() {
@@ -935,13 +958,33 @@ function onPadPress(idx) {
     }
   } else {
     // WRONG
-    state.phase = 'gameover';
     state.padEls[idx].classList.add('wrong');
     playBuzzer();
     buzz([60, 60, 60, 60, 120]);
-    setStatus('โธ่...', '');
-    padsGrid.classList.add('watching');
-    later(endGame, GAMEOVER_DELAY_MS);
+    if (state.lives > 0) {
+      // Use a life: replay the same sequence and let player retry from start
+      state.lives -= 1;
+      updateLivesHud();
+      state.phase = 'retry';
+      padsGrid.classList.add('watching');
+      setStatus(`เหลือ ❤️ ${state.lives} · ลองอีก`, '');
+      later(() => {
+        state.padEls[idx].classList.remove('wrong');
+        state.playerStep = 0;
+        state.phase = 'watching';
+        setStatus('ดู!', '');
+        later(() => playSequence(() => {
+          state.phase = 'playing';
+          padsGrid.classList.remove('watching');
+          setStatus('ถึงตาเรา!', 'player');
+        }), 350);
+      }, 900);
+    } else {
+      state.phase = 'gameover';
+      setStatus('โธ่...', '');
+      padsGrid.classList.add('watching');
+      later(endGame, GAMEOVER_DELAY_MS);
+    }
   }
 }
 
