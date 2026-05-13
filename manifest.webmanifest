@@ -97,6 +97,12 @@
       "short_name": "ป๊อปตัวอักษร",
       "description": "เกมป๊อปลูกโป่งตามลำดับ ก-ฮ และ A-Z",
       "url": "./alphabet-pop/"
+    },
+    {
+      "name": "ผสมสี",
+      "short_name": "ผสมสี",
+      "description": "เกมหยดสีลงในขวด เรียนรู้สูตรผสมสี",
+      "url": "./color-mix/"
     }
   ]
 }
