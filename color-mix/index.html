@@ -111,6 +111,7 @@
     border-radius: 999px; margin-bottom: 6px;
   }
   .lcard .mode-tag.free   { background: #2980b9; }
+  .lcard .mode-tag.lab    { background: #8e44ad; }
   .lcard .mode-tag.target { background: var(--good-dark); }
   .lcard .mode-tag.quiz   { background: #c0392b; }
 
@@ -289,6 +290,31 @@
   }
   .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
   .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+  /* Saved colors row (lab mode) */
+  .saved-colors {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center;
+    padding: 6px 10px;
+    min-height: 50px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .saved-colors:empty::before {
+    content: 'กดปุ่ม "เก็บสี" เพื่อเก็บสีที่ชอบ';
+    color: #888; font-style: italic; font-size: 13px; align-self: center;
+  }
+  .swatch-saved {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+    cursor: pointer;
+    background: var(--c, #ccc);
+    padding: 0;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .swatch-saved:active { transform: translateY(2px) scale(0.94); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
 
   /* Recipe checklist (free mode) */
   .recipes {
@@ -511,6 +537,27 @@
     </div>
   </section>
 
+  <!-- LAB MODE — many colors, accumulating mix, save creations -->
+  <section id="labScreen" class="screen game-screen">
+    <div class="hud">
+      <div class="hud-item" style="color:#8e44ad;">🌈 ห้องทดลอง</div>
+      <div class="hud-item" style="color:var(--good-dark);">💧 <span id="labDropCount">0</span> หยด</div>
+      <div class="hud-item" style="color:#c0392b;">💾 <span id="labSavedCount">0</span>/12</div>
+    </div>
+    <div class="stage">
+      <div class="beaker-cell">
+        <div class="beaker" id="labBeaker"><div class="liquid" id="labLiquid"></div></div>
+        <div class="name-tag empty" id="labNameTag">ขวดเปล่า — แตะสีเลย!</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="labSaveBtn">💾 เก็บสี</button>
+        <button class="icon-btn" id="labClearBtn">🧽 เทออก</button>
+      </div>
+      <div class="palette" id="labPalette"></div>
+      <div class="saved-colors" id="labSavedRow"></div>
+    </div>
+  </section>
+
   <!-- TARGET MODE -->
   <section id="targetScreen" class="screen game-screen">
     <div class="hud">
@@ -581,6 +628,11 @@ const COLORS = {
   purple: { hex: '#9b59b6', name: 'ม่วง'  },
   pink:   { hex: '#ff6b9d', name: 'ชมพู'  },
   gray:   { hex: '#95a5a6', name: 'เทา'   },
+  // Lab-mode extras
+  brown:   { hex: '#8b5a3a', name: 'น้ำตาล'   },
+  sky:     { hex: '#7dd3f0', name: 'ฟ้าอ่อน'  },
+  lime:    { hex: '#b8e986', name: 'เขียวอ่อน' },
+  magenta: { hex: '#d63384', name: 'บานเย็น'  },
 };
 
 // Recipes are unordered pairs (a,b) → result
@@ -592,16 +644,33 @@ const RECIPES = [
   { a: 'black',  b: 'white',  result: 'gray'   },
 ];
 
+// Extra recipes only used in lab mode (involve derived colors)
+const LAB_EXTRA_RECIPES = [
+  { a: 'orange', b: 'black',  result: 'brown'   },
+  { a: 'blue',   b: 'white',  result: 'sky'     },
+  { a: 'yellow', b: 'green',  result: 'lime'    },
+  { a: 'red',    b: 'pink',   result: 'magenta' },
+];
+const LAB_RECIPES = [...RECIPES, ...LAB_EXTRA_RECIPES];
+
 function recipeFor(a, b) {
   return RECIPES.find(r => (r.a === a && r.b === b) || (r.a === b && r.b === a));
 }
+function labRecipeFor(a, b) {
+  return LAB_RECIPES.find(r => (r.a === a && r.b === b) || (r.a === b && r.b === a));
+}
 
-// LEVELS — three modes
+// LEVELS — four modes
 const LEVELS = [
   // Free
   { id: 'free', mode: 'free', stars: 1, tag: 'free',
     title: 'เล่นอิสระ', sub: 'ลองทุกสูตร · ไม่มีจับเวลา', preview: '🧪',
     palette: ['red','yellow','blue','white','black'] },
+
+  // Lab — many colors, accumulating drops, save your creations
+  { id: 'lab', mode: 'lab', stars: 1, tag: 'lab',
+    title: 'ห้องทดลอง', sub: '14 สี · ผสมตามใจ · เก็บสีได้', preview: '🌈',
+    palette: ['red','yellow','blue','white','black','orange','green','purple','pink','gray','brown','sky','lime','magenta'] },
 
   // Target — 3 difficulty levels
   { id: 'target1', mode: 'target', stars: 1, tag: 'target',
@@ -651,6 +720,10 @@ const state = {
   freeFill: [],     // up to 2 color ids
   discovered: new Set(), // recipe ids "a+b"
 
+  // Lab mode
+  labDrops: [],     // accumulating color ids
+  labSaved: [],     // saved hex strings
+
   // Target mode
   tRound: 0, tMisses: 0, tFill: [],
 
@@ -694,6 +767,7 @@ const $ = (id) => document.getElementById(id);
 const screens = {
   select:  $('selectScreen'),
   free:    $('freeScreen'),
+  lab:     $('labScreen'),
   target:  $('targetScreen'),
   quiz:    $('quizScreen'),
   results: $('resultsScreen'),
@@ -706,7 +780,7 @@ const levelGrid = $('levelGrid');
 function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function showScreen(name) {
   for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name);
-  $('backBtn').classList.toggle('show', name === 'free' || name === 'target' || name === 'quiz');
+  $('backBtn').classList.toggle('show', name === 'free' || name === 'lab' || name === 'target' || name === 'quiz');
 }
 function later(fn, ms) { const id = setTimeout(fn, ms); state.pendingTimers.push(id); return id; }
 function clearTimers() { for (const id of state.pendingTimers) clearTimeout(id); state.pendingTimers = []; }
@@ -720,7 +794,7 @@ function renderLevels() {
   for (const lvl of LEVELS) {
     const c = document.createElement('div');
     c.className = 'lcard';
-    const tagLabel = lvl.tag === 'free' ? 'อิสระ' : lvl.tag === 'target' ? 'เป้าหมาย' : 'ทายสูตร';
+    const tagLabel = lvl.tag === 'free' ? 'อิสระ' : lvl.tag === 'lab' ? 'ห้องแล็บ' : lvl.tag === 'target' ? 'เป้าหมาย' : 'ทายสูตร';
     c.innerHTML = `
       <div class="stars">${'⭐'.repeat(lvl.stars)}</div>
       <div class="preview">${lvl.preview}</div>
@@ -738,6 +812,7 @@ function startLevel(lvl) {
   state.mode = lvl.mode;
   clearTimers();
   if (lvl.mode === 'free') startFree();
+  else if (lvl.mode === 'lab') startLab();
   else if (lvl.mode === 'target') startTarget();
   else if (lvl.mode === 'quiz') startQuiz();
 }
@@ -925,6 +1000,174 @@ $('freeClearBtn').addEventListener('click', () => {
   $('freeNameTag').classList.add('empty');
   buzz(20);
 });
+
+// ============================================================================
+// LAB MODE — many colors, accumulating drops, save creations
+// ============================================================================
+const LAB_SAVED_KEY = 'colorMixLabSaved';
+const LAB_MAX_DROPS = 10;
+const LAB_MAX_SAVED = 12;
+
+function startLab() {
+  state.labDrops = [];
+  state.labSaved = loadLabSaved();
+  resetLabBeaker();
+  renderLabPalette();
+  renderLabSaved();
+  showScreen('lab');
+}
+
+function resetLabBeaker() {
+  state.labDrops = [];
+  const beaker = $('labBeaker'), liquid = $('labLiquid');
+  beaker.classList.remove('pop', 'muddy', 'shake');
+  liquid.classList.remove('fill1','fill2');
+  liquid.style.background = 'transparent';
+  $('labDropCount').textContent = '0';
+  $('labNameTag').textContent = 'ขวดเปล่า — แตะสีเลย!';
+  $('labNameTag').classList.add('empty');
+}
+
+function renderLabPalette() {
+  const palette = $('labPalette');
+  palette.innerHTML = '';
+  for (const id of state.level.palette) {
+    const sw = document.createElement('button');
+    sw.type = 'button';
+    sw.className = 'swatch';
+    sw.style.setProperty('--c', COLORS[id].hex);
+    sw.setAttribute('aria-label', COLORS[id].name);
+    sw.addEventListener('click', () => labDrop(id));
+    palette.appendChild(sw);
+  }
+}
+
+function labDrop(id) {
+  if (state.labDrops.length >= LAB_MAX_DROPS) {
+    // Soft cap: shake the beaker to nudge "เทออก"
+    const beaker = $('labBeaker');
+    beaker.classList.remove('shake'); void beaker.offsetWidth; beaker.classList.add('shake');
+    buzz([30, 60, 30]);
+    return;
+  }
+  state.labDrops.push(id);
+  const beaker = $('labBeaker'), liquid = $('labLiquid');
+  const drop = document.createElement('div');
+  drop.className = 'drop-anim';
+  drop.style.setProperty('--dropC', COLORS[id].hex);
+  drop.innerHTML = '<div class="drop-shape"></div>';
+  beaker.appendChild(drop);
+  playDrop();
+  buzz(15);
+  setTimeout(() => drop.remove(), 600);
+  later(() => updateLabLiquid(), 380);
+}
+
+function updateLabLiquid() {
+  const beaker = $('labBeaker'), liquid = $('labLiquid');
+  const blend = blendLabDrops(state.labDrops);
+  liquid.classList.remove('fill1','fill2');
+  liquid.classList.add(state.labDrops.length === 1 ? 'fill1' : 'fill2');
+  liquid.style.background = blend.hex;
+  $('labDropCount').textContent = state.labDrops.length;
+  $('labNameTag').classList.remove('empty');
+  if (blend.named) {
+    $('labNameTag').textContent = '✨ ' + blend.name;
+    beaker.classList.remove('muddy');
+  } else {
+    $('labNameTag').textContent = state.labDrops.length + ' หยด · สีของเรา';
+    beaker.classList.add('muddy');
+  }
+  beaker.classList.remove('pop'); void beaker.offsetWidth; beaker.classList.add('pop');
+  playMix();
+}
+
+function blendLabDrops(drops) {
+  if (drops.length === 0) return { hex: 'transparent', named: false };
+  if (drops.length === 1) {
+    const c = COLORS[drops[0]];
+    return { hex: c.hex, named: true, name: c.name };
+  }
+  if (drops.length === 2) {
+    if (drops[0] === drops[1]) {
+      const c = COLORS[drops[0]];
+      return { hex: c.hex, named: true, name: c.name };
+    }
+    const rec = labRecipeFor(drops[0], drops[1]);
+    if (rec) {
+      const r = COLORS[rec.result];
+      return { hex: r.hex, named: true, name: r.name };
+    }
+  }
+  // 3+ drops or unknown pair: weighted RGB average (slight darken so it feels mixed)
+  let r=0, g=0, b=0;
+  for (const id of drops) {
+    const ch = hexToRgb(COLORS[id].hex);
+    r += ch.r; g += ch.g; b += ch.b;
+  }
+  const n = drops.length;
+  r = Math.round(r/n * 0.92); g = Math.round(g/n * 0.92); b = Math.round(b/n * 0.92);
+  return { hex: rgbToHex(r, g, b), named: false };
+}
+
+function renderLabSaved() {
+  const row = $('labSavedRow');
+  row.innerHTML = '';
+  for (let i = 0; i < state.labSaved.length; i++) {
+    const hex = state.labSaved[i];
+    const sw = document.createElement('button');
+    sw.type = 'button';
+    sw.className = 'swatch-saved';
+    sw.style.setProperty('--c', hex);
+    sw.setAttribute('aria-label', 'แตะเพื่อลบสีนี้');
+    sw.title = 'แตะเพื่อลบ';
+    sw.addEventListener('click', () => removeLabSaved(i));
+    row.appendChild(sw);
+  }
+  $('labSavedCount').textContent = state.labSaved.length;
+}
+
+function saveLabColor() {
+  if (state.labDrops.length === 0) return;
+  if (state.labSaved.length >= LAB_MAX_SAVED) {
+    const beaker = $('labBeaker');
+    beaker.classList.remove('shake'); void beaker.offsetWidth; beaker.classList.add('shake');
+    return;
+  }
+  const blend = blendLabDrops(state.labDrops);
+  if (blend.hex === 'transparent') return;
+  if (state.labSaved.includes(blend.hex)) {
+    // Already saved — small nudge, no duplicate
+    buzz(20);
+    return;
+  }
+  state.labSaved.push(blend.hex);
+  persistLabSaved();
+  renderLabSaved();
+  buzz([20, 40, 80]);
+  celebrate(28);
+}
+
+function removeLabSaved(i) {
+  state.labSaved.splice(i, 1);
+  persistLabSaved();
+  renderLabSaved();
+  buzz(20);
+}
+
+function persistLabSaved() {
+  try { localStorage.setItem(LAB_SAVED_KEY, JSON.stringify(state.labSaved)); } catch(e){}
+}
+function loadLabSaved() {
+  try {
+    const raw = localStorage.getItem(LAB_SAVED_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return [];
+}
+
+$('labClearBtn').addEventListener('click', resetLabBeaker);
+$('labSaveBtn').addEventListener('click', saveLabColor);
 
 // ============================================================================
 // TARGET MODE

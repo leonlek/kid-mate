@@ -225,7 +225,6 @@
     box-shadow: 0 8px 16px rgba(0,0,0,0.25);
     transform: scale(1.05);
     z-index: 1000;
-    pointer-events: none;
   }
   .piece.shake { animation: shake .35s ease; }
   @keyframes shake {
@@ -236,6 +235,62 @@
   @media (max-width: 480px) {
     .piece { width: 52px; height: 52px; font-size: 30px; border-width: 2px; }
     .tray { padding: 6px; gap: 6px; }
+  }
+
+  /* === Real jigsaw piece (SVG) === */
+  .board.jboard {
+    background: #fffbf2;
+    border: 4px dashed var(--brand);
+    padding: 0; gap: 0;
+    aspect-ratio: auto;
+    position: relative;
+    width: auto;        /* set inline */
+    height: auto;       /* set inline */
+    display: block;
+    overflow: visible;  /* tab outlines may peek slightly */
+  }
+  .jslot {
+    position: absolute;
+    pointer-events: none;
+  }
+  .jslot path.outline {
+    fill: rgba(255, 230, 240, 0.55);
+    stroke: rgba(229, 75, 130, 0.45);
+    stroke-width: 2;
+    stroke-dasharray: 5 4;
+  }
+  .jslot.filled { display: none; }
+  .piece.jpiece {
+    display: block;
+    width: auto; height: auto;
+    background: transparent;
+    border: none; border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    overflow: visible;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.22));
+  }
+  .piece.jpiece path.outline {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .tray.jtray {
+    background: rgba(255,255,255,0.5);
+    border: 3px dashed var(--card-border);
+    border-radius: 22px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+    gap: 6px;
+    width: max-content;
+    max-width: 96vw;
   }
 
   /* Results */
@@ -385,24 +440,381 @@
 <script>
 'use strict';
 
-// SCENES — each is a grid of emoji cells; placed in order row-by-row
-const SCENES = {
-  puppy:    { cols: 2, rows: 2, cells: ['🌳','☀️','🐶','🦴'] },
-  fruit:    { cols: 2, rows: 2, cells: ['🍎','🍌','🍇','🍓'] },
-  farm:     { cols: 3, rows: 3, cells: ['☀️','☁️','🌳','🐮','🐔','🐷','🌾','🌾','🐸'] },
-  ocean:    { cols: 3, rows: 3, cells: ['☁️','🌤','☁️','🐬','🐠','🐡','🌊','🦀','🐚'] },
-  city:     { cols: 4, rows: 3, cells: ['☀️','☁️','✈️','☁️','🏢','🏠','🏬','🌳','🚗','🚕','🚌','🚲'] },
-  space:    { cols: 4, rows: 3, cells: ['🌟','🌙','⭐','🌟','🚀','🛸','👽','🪐','🌎','☄️','🌠','✨'] },
+// JIGSAW SCENES — inline SVG illustrations, cut into interlocking pieces at runtime.
+// Each viewBox aspect = cols : rows (so pieces map cleanly to integer cell sizes).
+const PUPPY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" preserveAspectRatio="none">
+<rect width="200" height="120" fill="#bce8ff"/>
+<rect y="120" width="200" height="80" fill="#7ed957"/>
+<path d="M0,118 Q15,112 30,118 Q45,111 60,118 Q75,113 90,118 Q105,112 120,118 Q135,114 150,118 Q165,111 180,118 Q190,114 200,118 L200,124 L0,124 Z" fill="#5fb83f"/>
+<circle cx="158" cy="38" r="18" fill="#ffd93d"/>
+<g stroke="#ffd93d" stroke-width="3.5" stroke-linecap="round">
+<line x1="158" y1="10" x2="158" y2="17"/><line x1="158" y1="58" x2="158" y2="65"/>
+<line x1="130" y1="38" x2="137" y2="38"/><line x1="179" y1="38" x2="186" y2="38"/>
+<line x1="139" y1="19" x2="143" y2="23"/><line x1="173" y1="53" x2="177" y2="57"/>
+<line x1="139" y1="57" x2="143" y2="53"/><line x1="173" y1="23" x2="177" y2="19"/>
+</g>
+<g fill="#fff" stroke="#d0d8e0" stroke-width="2">
+<ellipse cx="36" cy="44" rx="11" ry="9"/><ellipse cx="50" cy="38" rx="13" ry="10"/><ellipse cx="65" cy="44" rx="10" ry="8"/>
+</g>
+<path d="M108,138 Q123,128 124,136 Q125,142 116,142" stroke="#c89262" stroke-width="6" stroke-linecap="round" fill="none"/>
+<ellipse cx="85" cy="156" rx="29" ry="17" fill="#d4a373"/>
+<rect x="67" y="163" width="8" height="14" fill="#c89262" rx="2"/>
+<rect x="97" y="163" width="8" height="14" fill="#c89262" rx="2"/>
+<circle cx="60" cy="143" r="18" fill="#d4a373"/>
+<ellipse cx="52" cy="131" rx="6" ry="11" fill="#8b6f47" transform="rotate(-22 52 131)"/>
+<ellipse cx="71" cy="131" rx="6" ry="11" fill="#8b6f47" transform="rotate(22 71 131)"/>
+<ellipse cx="49" cy="149" rx="10" ry="7" fill="#e8c094"/>
+<circle cx="59" cy="141" r="2.5" fill="#2d3436"/><circle cx="59.5" cy="140" r="1" fill="#fff"/>
+<ellipse cx="42" cy="147" rx="3" ry="2.5" fill="#2d3436"/>
+<path d="M42,151 Q46,155 51,153" stroke="#2d3436" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<g transform="translate(155 162) rotate(-15)" fill="#fff" stroke="#aaa" stroke-width="1.5" stroke-linejoin="round">
+<rect x="-10" y="-4" width="20" height="8"/>
+<circle cx="-10" cy="-5" r="5"/><circle cx="-10" cy="5" r="5"/>
+<circle cx="10" cy="-5" r="5"/><circle cx="10" cy="5" r="5"/>
+<line x1="-10" y1="-4" x2="10" y2="-4" stroke="#fff" stroke-width="2.5"/>
+<line x1="-10" y1="4" x2="10" y2="4" stroke="#fff" stroke-width="2.5"/>
+</g>
+</svg>`;
+
+const FRUIT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" preserveAspectRatio="none">
+<rect width="200" height="200" fill="#ffeed1"/>
+<rect x="0" y="0" width="200" height="100" fill="#fff5db"/>
+<circle cx="50" cy="65" r="34" fill="#e74c3c"/>
+<ellipse cx="40" cy="55" rx="6" ry="9" fill="#fff" opacity="0.5"/>
+<path d="M50,30 Q53,18 60,18" stroke="#7d5a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<ellipse cx="63" cy="22" rx="7" ry="3" fill="#27ae60" transform="rotate(20 63 22)"/>
+<path d="M130,38 Q150,28 175,40 Q172,60 165,80 Q142,90 125,72 Q120,55 130,38Z" fill="#f7c91f" stroke="#c89911" stroke-width="2.5"/>
+<path d="M138,42 Q150,38 165,46" stroke="#8a6e0a" stroke-width="1.5" fill="none"/>
+<g fill="#8e44ad" stroke="#5e2876" stroke-width="1.5">
+<circle cx="35" cy="130" r="11"/><circle cx="52" cy="130" r="11"/><circle cx="69" cy="130" r="11"/>
+<circle cx="44" cy="148" r="11"/><circle cx="61" cy="148" r="11"/><circle cx="52" cy="166" r="11"/>
+</g>
+<path d="M52,116 Q52,108 47,103" stroke="#3a7d28" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M50,108 L40,103 L46,113Z" fill="#3a7d28"/>
+<path d="M150,118 Q175,118 168,160 Q150,180 132,160 Q125,118 150,118Z" fill="#ff4757" stroke="#c0392b" stroke-width="2"/>
+<path d="M128,118 L140,113 L150,117 L160,113 L172,118 L165,108 L150,112 L135,108 Z" fill="#27ae60"/>
+<g fill="#fff">
+<circle cx="140" cy="135" r="1.5"/><circle cx="156" cy="135" r="1.5"/>
+<circle cx="148" cy="145" r="1.5"/><circle cx="138" cy="158" r="1.5"/>
+<circle cx="158" cy="158" r="1.5"/><circle cx="148" cy="168" r="1.5"/>
+</g>
+</svg>`;
+
+const FARM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" preserveAspectRatio="none">
+<rect width="300" height="180" fill="#bce8ff"/>
+<rect y="180" width="300" height="120" fill="#7ed957"/>
+<circle cx="50" cy="55" r="28" fill="#ffd93d"/>
+<g stroke="#ffd93d" stroke-width="4" stroke-linecap="round">
+<line x1="50" y1="15" x2="50" y2="25"/><line x1="50" y1="85" x2="50" y2="95"/>
+<line x1="10" y1="55" x2="20" y2="55"/><line x1="80" y1="55" x2="90" y2="55"/>
+<line x1="22" y1="27" x2="28" y2="33"/><line x1="72" y1="77" x2="78" y2="83"/>
+<line x1="22" y1="83" x2="28" y2="77"/><line x1="72" y1="33" x2="78" y2="27"/>
+</g>
+<g fill="#fff" stroke="#cccfd6" stroke-width="2">
+<ellipse cx="135" cy="60" rx="16" ry="13"/><ellipse cx="158" cy="50" rx="20" ry="15"/><ellipse cx="180" cy="60" rx="15" ry="11"/>
+</g>
+<rect x="240" y="120" width="14" height="55" fill="#6b4423"/>
+<circle cx="247" cy="105" r="32" fill="#2d8a3e"/>
+<circle cx="232" cy="95" r="22" fill="#369b48"/>
+<circle cx="262" cy="95" r="22" fill="#369b48"/>
+<circle cx="247" cy="85" r="22" fill="#41ae54"/>
+<ellipse cx="75" cy="225" rx="42" ry="28" fill="#fff"/>
+<g fill="#2d3436">
+<ellipse cx="62" cy="216" rx="6" ry="9"/><ellipse cx="88" cy="219" rx="8" ry="11"/>
+<ellipse cx="55" cy="240" rx="7" ry="5"/><ellipse cx="93" cy="240" rx="9" ry="6"/>
+</g>
+<rect x="58" y="245" width="6" height="14" fill="#2d3436"/><rect x="86" y="245" width="6" height="14" fill="#2d3436"/>
+<ellipse cx="58" cy="207" rx="14" ry="10" fill="#fff"/>
+<circle cx="51" cy="204" r="1.8" fill="#2d3436"/><circle cx="62" cy="204" r="1.8" fill="#2d3436"/>
+<ellipse cx="55" cy="211" rx="4" ry="3" fill="#ff9999"/>
+<ellipse cx="160" cy="232" rx="20" ry="20" fill="#fff5bf"/>
+<circle cx="160" cy="218" r="14" fill="#fff5bf"/>
+<polygon points="160,206 156,196 164,196" fill="#ff5757"/>
+<polygon points="148,222 144,217 148,212" fill="#ffb142"/>
+<polygon points="172,222 176,217 172,212" fill="#ffb142"/>
+<circle cx="156" cy="216" r="1.8" fill="#2d3436"/>
+<rect x="156" y="252" width="3" height="6" fill="#ffb142"/><rect x="161" y="252" width="3" height="6" fill="#ffb142"/>
+<ellipse cx="240" cy="235" rx="32" ry="22" fill="#ff9ec1"/>
+<circle cx="218" cy="225" r="13" fill="#ffaecc"/>
+<ellipse cx="214" cy="222" rx="3" ry="2" fill="#2d3436"/>
+<circle cx="248" cy="218" r="1.5" fill="#2d3436"/>
+<rect x="225" y="252" width="6" height="8" fill="#e088a0"/><rect x="252" y="252" width="6" height="8" fill="#e088a0"/>
+<path d="M268,232 Q278,234 274,238 Q272,242 268,238" fill="#e088a0"/>
+<g stroke="#d4a017" stroke-width="3" fill="none" stroke-linecap="round">
+<line x1="20" y1="290" x2="20" y2="270"/><line x1="14" y1="278" x2="20" y2="270"/><line x1="26" y1="278" x2="20" y2="270"/>
+<line x1="40" y1="295" x2="40" y2="272"/><line x1="34" y1="280" x2="40" y2="272"/><line x1="46" y1="280" x2="40" y2="272"/>
+<line x1="120" y1="290" x2="120" y2="272"/><line x1="114" y1="280" x2="120" y2="272"/><line x1="126" y1="280" x2="120" y2="272"/>
+</g>
+<ellipse cx="245" cy="285" rx="20" ry="14" fill="#5fb83f"/>
+<circle cx="234" cy="280" r="6" fill="#5fb83f"/><circle cx="257" cy="280" r="6" fill="#5fb83f"/>
+<circle cx="232" cy="277" r="3" fill="#fff"/><circle cx="259" cy="277" r="3" fill="#fff"/>
+<circle cx="232" cy="277" r="1.5" fill="#2d3436"/><circle cx="259" cy="277" r="1.5" fill="#2d3436"/>
+</svg>`;
+
+const OCEAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" preserveAspectRatio="none">
+<rect width="300" height="100" fill="#bce8ff"/>
+<rect y="100" width="300" height="160" fill="#4fb8d8"/>
+<rect y="260" width="300" height="40" fill="#f4d8a0"/>
+<g fill="#fff" stroke="#cccfd6" stroke-width="2">
+<ellipse cx="50" cy="40" rx="14" ry="11"/><ellipse cx="70" cy="30" rx="18" ry="13"/><ellipse cx="90" cy="40" rx="13" ry="10"/>
+<ellipse cx="200" cy="45" rx="13" ry="10"/><ellipse cx="220" cy="35" rx="17" ry="12"/><ellipse cx="240" cy="45" rx="12" ry="9"/>
+</g>
+<circle cx="265" cy="35" r="14" fill="#ffd93d"/>
+<path d="M0,100 Q30,95 60,100 T120,100 T180,100 T240,100 T300,100 L300,108 L0,108 Z" fill="#3aa6c4"/>
+<path d="M0,108 Q40,114 80,108 T160,108 T240,108 T300,108 L300,115 L0,115 Z" fill="#3aa6c4" opacity="0.7"/>
+<path d="M120,95 Q140,60 160,80 Q150,95 145,105 Q135,110 125,108 Q118,100 120,95Z" fill="#7fb8d8" stroke="#3a7088" stroke-width="2"/>
+<circle cx="135" cy="80" r="2" fill="#2d3436"/>
+<path d="M135,90 Q140,95 142,90" stroke="#2d3436" stroke-width="1" fill="none"/>
+<ellipse cx="85" cy="170" rx="22" ry="14" fill="#ffa547" stroke="#cc7a1f" stroke-width="2"/>
+<polygon points="63,170 50,160 50,180" fill="#ffa547" stroke="#cc7a1f" stroke-width="2"/>
+<circle cx="95" cy="168" r="2" fill="#2d3436"/>
+<line x1="78" y1="170" x2="92" y2="170" stroke="#cc7a1f" stroke-width="1.5"/>
+<circle cx="210" cy="190" r="20" fill="#ffd93d" stroke="#c89911" stroke-width="2"/>
+<g fill="#c89911">
+<circle cx="200" cy="183" r="2"/><circle cx="219" cy="183" r="2"/><circle cx="205" cy="195" r="2"/>
+<circle cx="216" cy="200" r="2"/><circle cx="195" cy="195" r="2"/>
+</g>
+<circle cx="205" cy="186" r="2" fill="#2d3436"/>
+<polygon points="190,190 178,180 178,200" fill="#ffd93d" stroke="#c89911" stroke-width="2"/>
+<g stroke="#27ae60" stroke-width="6" fill="none" stroke-linecap="round">
+<path d="M30,295 Q26,275 32,255 Q40,240 32,225 Q24,215 30,200"/>
+<path d="M275,295 Q280,275 274,260 Q266,245 274,228"/>
+</g>
+<g fill="#e74c3c">
+<path d="M230,270 Q255,265 265,278 Q260,290 240,288 Q225,283 230,270Z"/>
+<rect x="248" y="265" width="3" height="4"/><rect x="252" y="265" width="3" height="4"/>
+<circle cx="261" cy="276" r="1.5" fill="#2d3436"/>
+</g>
+<g transform="translate(140 280)">
+<path d="M-12,-8 Q-12,-16 0,-16 Q12,-16 12,-8 Q12,0 0,-2 Q-12,0 -12,-8Z" fill="#f5c2c7" stroke="#a06677" stroke-width="2"/>
+<path d="M-10,-8 Q-5,-12 0,-12 M0,-12 Q5,-12 10,-8 M-5,-5 Q0,-2 5,-5" stroke="#a06677" stroke-width="1" fill="none"/>
+</g>
+<g fill="#f4d8a0" stroke="#c4a868" stroke-width="1">
+<circle cx="60" cy="280" r="3"/><circle cx="170" cy="285" r="2"/><circle cx="200" cy="278" r="3"/>
+</g>
+</svg>`;
+
+const CITY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="none">
+<rect width="400" height="170" fill="#bce8ff"/>
+<rect y="170" width="400" height="80" fill="#c7d4dc"/>
+<rect y="250" width="400" height="50" fill="#5a5a5a"/>
+<circle cx="60" cy="50" r="26" fill="#ffd93d"/>
+<g stroke="#ffd93d" stroke-width="4" stroke-linecap="round">
+<line x1="60" y1="12" x2="60" y2="22"/><line x1="60" y1="78" x2="60" y2="88"/>
+<line x1="20" y1="50" x2="30" y2="50"/><line x1="90" y1="50" x2="100" y2="50"/>
+</g>
+<g fill="#fff" stroke="#cccfd6" stroke-width="2">
+<ellipse cx="280" cy="50" rx="20" ry="14"/><ellipse cx="305" cy="42" rx="22" ry="16"/><ellipse cx="330" cy="52" rx="18" ry="12"/>
+</g>
+<g transform="translate(150 60)" fill="#5b9bd5" stroke="#3a6d94" stroke-width="2">
+<path d="M-20,5 L0,-5 L20,5 L-20,5Z"/>
+<rect x="-20" y="5" width="40" height="8" rx="2"/>
+<rect x="-30" y="2" width="60" height="3"/>
+<rect x="-3" y="13" width="6" height="6" fill="#3a6d94"/>
+</g>
+<rect x="130" y="80" width="50" height="100" fill="#8b95a3" stroke="#5d6772" stroke-width="2"/>
+<g fill="#ffd93d">
+<rect x="138" y="90" width="8" height="10"/><rect x="155" y="90" width="8" height="10"/><rect x="170" y="90" width="8" height="10"/>
+<rect x="138" y="108" width="8" height="10"/><rect x="155" y="108" width="8" height="10"/><rect x="170" y="108" width="8" height="10"/>
+<rect x="138" y="126" width="8" height="10"/><rect x="155" y="126" width="8" height="10"/><rect x="170" y="126" width="8" height="10"/>
+<rect x="138" y="144" width="8" height="10"/><rect x="155" y="144" width="8" height="10"/><rect x="170" y="144" width="8" height="10"/>
+<rect x="138" y="162" width="8" height="10"/><rect x="155" y="162" width="8" height="10"/><rect x="170" y="162" width="8" height="10"/>
+</g>
+<polygon points="200,110 230,90 260,110 200,110" fill="#a0522d"/>
+<rect x="205" y="110" width="50" height="70" fill="#fff5db" stroke="#a0522d" stroke-width="2"/>
+<rect x="220" y="135" width="20" height="45" fill="#7d5a3a"/>
+<rect x="212" y="120" width="12" height="12" fill="#5b9bd5" stroke="#7d5a3a" stroke-width="1.5"/>
+<rect x="238" y="120" width="12" height="12" fill="#5b9bd5" stroke="#7d5a3a" stroke-width="1.5"/>
+<rect x="278" y="100" width="60" height="80" fill="#e88a4a" stroke="#a85a1f" stroke-width="2"/>
+<g fill="#ffd93d">
+<rect x="285" y="110" width="10" height="12"/><rect x="305" y="110" width="10" height="12"/><rect x="325" y="110" width="10" height="12"/>
+<rect x="285" y="130" width="10" height="12"/><rect x="305" y="130" width="10" height="12"/><rect x="325" y="130" width="10" height="12"/>
+<rect x="285" y="150" width="10" height="12"/><rect x="305" y="150" width="10" height="12"/><rect x="325" y="150" width="10" height="12"/>
+</g>
+<rect x="350" y="180" width="14" height="60" fill="#6b4423"/>
+<circle cx="357" cy="170" r="22" fill="#2d8a3e"/>
+<circle cx="344" cy="160" r="15" fill="#369b48"/><circle cx="370" cy="160" r="15" fill="#369b48"/>
+<g transform="translate(60 270)">
+<rect x="-22" y="-12" width="44" height="14" rx="3" fill="#e74c3c"/>
+<rect x="-16" y="-22" width="32" height="12" rx="3" fill="#e74c3c"/>
+<rect x="-12" y="-20" width="9" height="8" fill="#a8c8e8"/><rect x="3" y="-20" width="9" height="8" fill="#a8c8e8"/>
+<circle cx="-14" cy="3" r="6" fill="#2d3436"/><circle cx="14" cy="3" r="6" fill="#2d3436"/>
+<circle cx="-14" cy="3" r="2" fill="#fff"/><circle cx="14" cy="3" r="2" fill="#fff"/>
+</g>
+<g transform="translate(170 270)">
+<rect x="-22" y="-12" width="44" height="14" rx="3" fill="#ffd93d"/>
+<rect x="-16" y="-22" width="32" height="12" rx="3" fill="#ffd93d"/>
+<rect x="-12" y="-20" width="9" height="8" fill="#a8c8e8"/><rect x="3" y="-20" width="9" height="8" fill="#a8c8e8"/>
+<rect x="-22" y="-4" width="6" height="3" fill="#000"/>
+<circle cx="-14" cy="3" r="6" fill="#2d3436"/><circle cx="14" cy="3" r="6" fill="#2d3436"/>
+</g>
+<g transform="translate(290 270)">
+<rect x="-30" y="-22" width="60" height="22" rx="3" fill="#5b9bd5"/>
+<rect x="-26" y="-18" width="14" height="10" fill="#cce4f5"/>
+<rect x="-9" y="-18" width="14" height="10" fill="#cce4f5"/>
+<rect x="8" y="-18" width="14" height="10" fill="#cce4f5"/>
+<circle cx="-20" cy="3" r="6" fill="#2d3436"/><circle cx="20" cy="3" r="6" fill="#2d3436"/>
+</g>
+<rect x="0" y="270" width="400" height="2" fill="#ffd93d"/>
+</svg>`;
+
+const SPACE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="none">
+<defs>
+<radialGradient id="sp-bg" cx="50%" cy="40%">
+<stop offset="0%" stop-color="#3b2e6e"/>
+<stop offset="100%" stop-color="#0d0a3a"/>
+</radialGradient>
+</defs>
+<rect width="400" height="300" fill="url(#sp-bg)"/>
+<g fill="#fff">
+<circle cx="30" cy="40" r="1.5"/><circle cx="60" cy="80" r="1"/><circle cx="100" cy="30" r="2"/>
+<circle cx="150" cy="60" r="1"/><circle cx="180" cy="20" r="1.5"/><circle cx="240" cy="55" r="1"/>
+<circle cx="270" cy="30" r="2"/><circle cx="310" cy="70" r="1"/><circle cx="350" cy="40" r="1.5"/>
+<circle cx="380" cy="90" r="1"/><circle cx="50" cy="160" r="1"/><circle cx="120" cy="200" r="1.5"/>
+<circle cx="200" cy="170" r="1"/><circle cx="290" cy="220" r="1"/><circle cx="340" cy="190" r="1.5"/>
+<circle cx="380" cy="250" r="1"/><circle cx="20" cy="240" r="1"/><circle cx="90" cy="270" r="1.5"/>
+<circle cx="160" cy="280" r="1"/><circle cx="220" cy="260" r="1"/><circle cx="320" cy="280" r="1"/>
+</g>
+<g fill="#ffd93d" opacity="0.9">
+<polygon points="80,55 84,67 96,67 86,75 90,87 80,80 70,87 74,75 64,67 76,67"/>
+<polygon points="350,160 353,170 363,170 355,176 358,186 350,180 342,186 345,176 337,170 347,170"/>
+</g>
+<g fill="#fff" opacity="0.85">
+<polygon points="180,220 183,228 191,228 184,233 187,241 180,236 173,241 176,233 169,228 177,228"/>
+</g>
+<g transform="translate(60 200)">
+<ellipse cx="0" cy="0" rx="38" ry="18" fill="#9aa9c4"/>
+<ellipse cx="0" cy="-4" rx="20" ry="10" fill="#bcc8de"/>
+<rect x="-10" y="-12" width="20" height="8" rx="2" fill="#4fb8d8" opacity="0.85"/>
+<g fill="#ffd93d">
+<circle cx="-20" cy="3" r="2"/><circle cx="-8" cy="6" r="2"/><circle cx="8" cy="6" r="2"/><circle cx="20" cy="3" r="2"/>
+</g>
+</g>
+<g transform="translate(330 100)">
+<ellipse cx="0" cy="0" rx="32" ry="32" fill="#e0a050"/>
+<ellipse cx="0" cy="0" rx="48" ry="10" fill="none" stroke="#ffd093" stroke-width="3"/>
+<ellipse cx="-12" cy="-8" rx="6" ry="4" fill="#c4884a"/>
+<ellipse cx="10" cy="6" rx="8" ry="4" fill="#c4884a"/>
+</g>
+<g transform="translate(200 130)">
+<polygon points="-12,30 -16,16 -22,30" fill="#ff6b9d"/>
+<polygon points="12,30 16,16 22,30" fill="#ff6b9d"/>
+<path d="M-12,30 Q-12,-20 0,-35 Q12,-20 12,30Z" fill="#e0e8f0" stroke="#7080a0" stroke-width="2"/>
+<circle cx="0" cy="-5" r="8" fill="#5b9bd5" stroke="#2c5d8e" stroke-width="2"/>
+<circle cx="0" cy="-5" r="3" fill="#cce4f5"/>
+<rect x="-3" y="20" width="6" height="10" fill="#ffd93d"/>
+<polygon points="-3,30 0,40 3,30" fill="#ff6b3a"/>
+</g>
+<g transform="translate(120 90)">
+<circle cx="0" cy="0" r="16" fill="#5fb83f"/>
+<ellipse cx="0" cy="2" rx="13" ry="9" fill="#7ed957"/>
+<circle cx="-5" cy="-2" r="2" fill="#2d3436"/><circle cx="5" cy="-2" r="2" fill="#2d3436"/>
+<circle cx="-5" cy="-2" r="1" fill="#fff"/><circle cx="5" cy="-2" r="1" fill="#fff"/>
+<path d="M-5,5 Q0,8 5,5" stroke="#2d3436" stroke-width="1.5" fill="none"/>
+<line x1="-8" y1="-15" x2="-10" y2="-22" stroke="#5fb83f" stroke-width="2"/>
+<line x1="8" y1="-15" x2="10" y2="-22" stroke="#5fb83f" stroke-width="2"/>
+<circle cx="-10" cy="-23" r="2" fill="#5fb83f"/><circle cx="10" cy="-23" r="2" fill="#5fb83f"/>
+</g>
+<g transform="translate(280 235)">
+<path d="M0,0 L30,-12 L25,0 L40,-3" stroke="#ffd93d" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="0" cy="0" r="6" fill="#ffd93d"/>
+<circle cx="0" cy="0" r="3" fill="#fff"/>
+</g>
+</svg>`;
+
+const SCENES_SVG = {
+  fruit: { svg: FRUIT_SVG, cols: 2, rows: 2 },
+  puppy: { svg: PUPPY_SVG, cols: 2, rows: 2 },
+  farm:  { svg: FARM_SVG,  cols: 3, rows: 3 },
+  ocean: { svg: OCEAN_SVG, cols: 3, rows: 3 },
+  city:  { svg: CITY_SVG,  cols: 4, rows: 3 },
+  space: { svg: SPACE_SVG, cols: 4, rows: 3 },
 };
 
 const LEVELS = [
-  { id: 1, stars: 1, name: 'ง่ายมาก',  subtitle: '4 ชิ้น',  preview: '🍎', scene: 'fruit', parMisses: 1 },
-  { id: 2, stars: 1, name: 'ง่าย',      subtitle: '4 ชิ้น',  preview: '🐶', scene: 'puppy', parMisses: 2 },
-  { id: 3, stars: 2, name: 'ปานกลาง',  subtitle: '9 ชิ้น',  preview: '🐮', scene: 'farm',  parMisses: 3 },
-  { id: 4, stars: 2, name: 'ทะเล',      subtitle: '9 ชิ้น',  preview: '🐬', scene: 'ocean', parMisses: 3 },
-  { id: 5, stars: 3, name: 'ในเมือง',   subtitle: '12 ชิ้น', preview: '🏠', scene: 'city',  parMisses: 5 },
-  { id: 6, stars: 3, name: 'อวกาศ',     subtitle: '12 ชิ้น', preview: '🚀', scene: 'space', parMisses: 5 },
+  { id: 1, stars: 1, name: 'ผลไม้',     subtitle: '4 ชิ้น',  preview: '🍎', scene: 'fruit', parMisses: 1 },
+  { id: 2, stars: 1, name: 'ลูกหมา',     subtitle: '4 ชิ้น',  preview: '🐶', scene: 'puppy', parMisses: 2 },
+  { id: 3, stars: 2, name: 'ในฟาร์ม',    subtitle: '9 ชิ้น',  preview: '🐮', scene: 'farm',  parMisses: 3 },
+  { id: 4, stars: 2, name: 'ทะเล',       subtitle: '9 ชิ้น',  preview: '🐬', scene: 'ocean', parMisses: 3 },
+  { id: 5, stars: 3, name: 'ในเมือง',    subtitle: '12 ชิ้น', preview: '🏠', scene: 'city',  parMisses: 5 },
+  { id: 6, stars: 3, name: 'อวกาศ',      subtitle: '12 ชิ้น', preview: '🚀', scene: 'space', parMisses: 5 },
 ];
+
+const TAB_DEPTH_FRAC = 0.18; // tab depth as fraction of cell size
+
+// === Jigsaw shape generator ===
+// edges[r][c] = { top, right, bottom, left }; each ∈ {-1, 0, 1}
+// 0 = flat (board border), 1 = tab (bumps outward), -1 = blank (bumps inward)
+// Neighbors must be complementary: piece below's top = -(piece's bottom).
+function makeEdges(cols, rows) {
+  const e = [];
+  for (let r = 0; r < rows; r++) {
+    e[r] = [];
+    for (let c = 0; c < cols; c++) {
+      const cell = {};
+      cell.top    = (r === 0)        ? 0 : -e[r-1][c].bottom;
+      cell.left   = (c === 0)        ? 0 : -e[r][c-1].right;
+      cell.right  = (c === cols - 1) ? 0 : (Math.random() < 0.5 ? 1 : -1);
+      cell.bottom = (r === rows - 1) ? 0 : (Math.random() < 0.5 ? 1 : -1);
+      e[r][c] = cell;
+    }
+  }
+  return e;
+}
+
+// Build SVG path d="..." for one piece. Traverses clockwise: top → right → bottom → left.
+// Piece outer box is (S+2T) × (S+2T); cell area is (T,T) to (T+S, T+S).
+function piecePath(edges, S, T) {
+  const segs = [`M ${T} ${T}`];
+  segs.push(edgeSeg(edges.top,    S, T, 0));
+  segs.push(edgeSeg(edges.right,  S, T, 1));
+  segs.push(edgeSeg(edges.bottom, S, T, 2));
+  segs.push(edgeSeg(edges.left,   S, T, 3));
+  segs.push('Z');
+  return segs.join(' ');
+}
+
+// One edge segment, traveling in `dir`: 0=right (+x), 1=down (+y), 2=left (-x), 3=up (-y).
+// d: 0 flat, 1 tab (bumps outward), -1 blank (bumps inward).
+function edgeSeg(d, S, T, dir) {
+  function rot(x, y) {
+    // Rotate reference frame (dir=0: right) by 90° clockwise per dir step.
+    switch (dir) {
+      case 0: return [x, y];
+      case 1: return [-y, x];
+      case 2: return [-x, -y];
+      case 3: return [y, -x];
+    }
+  }
+  if (d === 0) {
+    const [dx, dy] = rot(S, 0);
+    return `l ${dx.toFixed(2)} ${dy.toFixed(2)}`;
+  }
+  // Reference (dir=0, top edge going right): tab bumps to -y (outward = up for top edge).
+  // d=+1 → s=-1 (y bump negative); d=-1 → s=+1 (y bump positive, blank goes into cell).
+  const s = -d;
+  // Smooth knob: line 35% → cubic to peak (50%, sT) → cubic to (65%, 0) → line 35%.
+  // Control points chosen so tangents at junctions are horizontal (no kinks).
+  const cmds = [
+    ['l', 0.35*S, 0],
+    ['c', 0.05*S, 0,       0.10*S, s*T,     0.15*S, s*T],
+    ['c', 0.05*S, 0,       0.10*S, -s*T,    0.15*S, -s*T],
+    ['l', 0.35*S, 0],
+  ];
+  const out = [];
+  for (const c of cmds) {
+    if (c[0] === 'l') {
+      const [rx, ry] = rot(c[1], c[2]);
+      out.push(`l ${rx.toFixed(2)} ${ry.toFixed(2)}`);
+    } else {
+      const [r1x, r1y] = rot(c[1], c[2]);
+      const [r2x, r2y] = rot(c[3], c[4]);
+      const [rex, rey] = rot(c[5], c[6]);
+      out.push(`c ${r1x.toFixed(2)} ${r1y.toFixed(2)} ${r2x.toFixed(2)} ${r2y.toFixed(2)} ${rex.toFixed(2)} ${rey.toFixed(2)}`);
+    }
+  }
+  return out.join(' ');
+}
 
 // STATE
 const state = {
@@ -415,6 +827,8 @@ const state = {
   startTime: 0,
   endTime: 0,
   tickTimer: null,
+  cellSize: 0,
+  tabDepth: 0,
 };
 
 // AUDIO
@@ -477,60 +891,139 @@ function renderLevels() {
   }
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
 // GAME
 function startGame(level) {
-  const scene = SCENES[level.scene];
+  if (state.tickTimer) clearInterval(state.tickTimer);
   state.level = level;
-  state.scene = scene;
-  state.total = scene.cols * scene.rows;
   state.placed = 0;
   state.misses = 0;
   state.drag = null;
+  board.innerHTML = '';
+  tray.innerHTML = '';
 
-  if (state.tickTimer) clearInterval(state.tickTimer);
+  const def = SCENES_SVG[level.scene];
+  const { svg, cols, rows } = def;
+  state.scene = def;
+  state.total = cols * rows;
+
+  // Cell size from viewport
+  const target = Math.min(window.innerWidth * 0.84, window.innerWidth >= 768 ? 380 : 320);
+  const S = Math.floor(target / cols);
+  const T = Math.round(S * TAB_DEPTH_FRAC);
+  state.cellSize = S;
+  state.tabDepth = T;
+
+  const boardW = S * cols, boardH = S * rows;
+  state.edges = makeEdges(cols, rows);
+  state.sceneDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+
   $('placedCount').textContent = '0';
   $('placedTotal').textContent = state.total;
   $('timeText').textContent = '0:00';
 
-  // Mini preview
+  // Mini preview = just the SVG image
   const mini = $('miniPreview');
-  mini.style.gridTemplateColumns = `repeat(${scene.cols}, 1fr)`;
-  mini.style.gridTemplateRows    = `repeat(${scene.rows}, 1fr)`;
-  mini.innerHTML = '';
-  scene.cells.forEach((emoji) => {
-    const c = document.createElement('div');
-    c.className = 'mp-cell';
-    c.textContent = emoji;
-    mini.appendChild(c);
-  });
+  mini.style.gridTemplateColumns = '';
+  mini.style.gridTemplateRows = '';
+  mini.innerHTML = `<img alt="" src="${state.sceneDataUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
 
   // Board
-  board.style.gridTemplateColumns = `repeat(${scene.cols}, 1fr)`;
-  board.style.gridTemplateRows    = `repeat(${scene.rows}, 1fr)`;
+  board.className = 'board jboard';
+  board.style.width = boardW + 'px';
+  board.style.height = boardH + 'px';
   board.innerHTML = '';
-  scene.cells.forEach((emoji, idx) => {
-    const slot = document.createElement('div');
-    slot.className = 'slot';
-    slot.dataset.idx = idx;
-    slot.dataset.emoji = emoji;
-    board.appendChild(slot);
-  });
+
+  const piecesInfo = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      const path = piecePath(state.edges[r][c], S, T);
+      const pieceW = S + 2 * T;
+      const pieceX = c * S - T;
+      const pieceY = r * S - T;
+
+      // Slot outline (ghost)
+      const slot = document.createElementNS(SVG_NS, 'svg');
+      slot.setAttribute('class', 'jslot');
+      slot.setAttribute('viewBox', `0 0 ${pieceW} ${pieceW}`);
+      slot.setAttribute('width', pieceW);
+      slot.setAttribute('height', pieceW);
+      slot.dataset.idx = idx;
+      slot.style.left = pieceX + 'px';
+      slot.style.top  = pieceY + 'px';
+      slot.style.width  = pieceW + 'px';
+      slot.style.height = pieceW + 'px';
+      const slotPath = document.createElementNS(SVG_NS, 'path');
+      slotPath.setAttribute('class', 'outline');
+      slotPath.setAttribute('d', path);
+      slot.appendChild(slotPath);
+      board.appendChild(slot);
+
+      piecesInfo.push({ idx, r, c, path, pieceW, pieceX, pieceY });
+    }
+  }
 
   // Tray
+  tray.className = 'tray jtray';
   tray.innerHTML = '';
-  const order = shuffle(scene.cells.map((_, i) => i));
-  order.forEach((idx) => {
-    const p = document.createElement('div');
-    p.className = 'piece';
-    p.dataset.idx = idx;
-    p.textContent = scene.cells[idx];
-    p.addEventListener('pointerdown', (e) => startDrag(e, p));
-    tray.appendChild(p);
-  });
+
+  for (const info of shuffle(piecesInfo)) {
+    const piece = makeJigsawPiece(info, boardW, boardH);
+    piece.addEventListener('pointerdown', (e) => startDrag(e, piece));
+    tray.appendChild(piece);
+  }
 
   showScreen('game');
   state.startTime = performance.now();
   state.tickTimer = setInterval(tickTime, 250);
+}
+
+function makeJigsawPiece(info, boardW, boardH) {
+  const { idx, r, c, path, pieceW } = info;
+  const S = state.cellSize, T = state.tabDepth;
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'piece jpiece');
+  svg.setAttribute('viewBox', `0 0 ${pieceW} ${pieceW}`);
+  svg.setAttribute('width', pieceW);
+  svg.setAttribute('height', pieceW);
+  svg.dataset.idx = idx;
+  svg.dataset.row = r;
+  svg.dataset.col = c;
+  svg.style.touchAction = 'none';
+  svg.style.cursor = 'grab';
+
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  const pat  = document.createElementNS(SVG_NS, 'pattern');
+  const patId = `pat-${idx}-${Math.random().toString(36).slice(2,7)}`;
+  pat.setAttribute('id', patId);
+  pat.setAttribute('patternUnits', 'userSpaceOnUse');
+  pat.setAttribute('x', String(T - c * S));
+  pat.setAttribute('y', String(T - r * S));
+  pat.setAttribute('width',  String(boardW));
+  pat.setAttribute('height', String(boardH));
+  const img = document.createElementNS(SVG_NS, 'image');
+  img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', state.sceneDataUrl);
+  img.setAttribute('href', state.sceneDataUrl);
+  img.setAttribute('width', String(boardW));
+  img.setAttribute('height', String(boardH));
+  img.setAttribute('preserveAspectRatio', 'none');
+  pat.appendChild(img);
+  defs.appendChild(pat);
+  svg.appendChild(defs);
+
+  const fill = document.createElementNS(SVG_NS, 'path');
+  fill.setAttribute('d', path);
+  fill.setAttribute('fill', `url(#${patId})`);
+  svg.appendChild(fill);
+
+  const stroke = document.createElementNS(SVG_NS, 'path');
+  stroke.setAttribute('class', 'outline');
+  stroke.setAttribute('d', path);
+  svg.appendChild(stroke);
+
+  return svg;
 }
 
 function tickTime() {
@@ -545,21 +1038,19 @@ function startDrag(e, piece) {
   if (state.drag) return;
   e.preventDefault();
   const rect = piece.getBoundingClientRect();
-  piece.setPointerCapture(e.pointerId);
   piece.classList.add('dragging');
 
-  // Lock size & lift to body via fixed positioning
-  piece.style.width  = rect.width + 'px';
-  piece.style.height = rect.height + 'px';
+  // SVG viewBox keeps the visual size; just lift to body via fixed positioning.
   piece.style.position = 'fixed';
   piece.style.left = rect.left + 'px';
   piece.style.top  = rect.top + 'px';
   document.body.appendChild(piece);
+  try { piece.setPointerCapture(e.pointerId); } catch(_) {}
 
   const offsetX = e.clientX - rect.left;
   const offsetY = e.clientY - rect.top;
 
-  state.drag = { piece, offsetX, offsetY, pointerId: e.pointerId, lastSlot: null };
+  state.drag = { piece, offsetX, offsetY, pointerId: e.pointerId };
 
   piece.onpointermove = onDragMove;
   piece.onpointerup = piece.onpointercancel = onDragEnd;
@@ -568,18 +1059,8 @@ function startDrag(e, piece) {
 function onDragMove(e) {
   const d = state.drag;
   if (!d) return;
-  const p = d.piece;
-  p.style.left = (e.clientX - d.offsetX) + 'px';
-  p.style.top  = (e.clientY - d.offsetY) + 'px';
-
-  // Hover indication
-  p.style.pointerEvents = 'none';
-  const el = document.elementFromPoint(e.clientX, e.clientY);
-  p.style.pointerEvents = '';
-  const slot = el && el.closest && el.closest('.slot');
-  if (d.lastSlot && d.lastSlot !== slot) d.lastSlot.classList.remove('hover');
-  if (slot && !slot.classList.contains('filled')) slot.classList.add('hover');
-  d.lastSlot = slot;
+  d.piece.style.left = (e.clientX - d.offsetX) + 'px';
+  d.piece.style.top  = (e.clientY - d.offsetY) + 'px';
 }
 
 function onDragEnd(e) {
@@ -588,42 +1069,43 @@ function onDragEnd(e) {
   const p = d.piece;
   try { p.releasePointerCapture(d.pointerId); } catch(_) {}
   p.onpointermove = p.onpointerup = p.onpointercancel = null;
-  if (d.lastSlot) d.lastSlot.classList.remove('hover');
-
-  // What's under?
-  p.style.pointerEvents = 'none';
-  const el = document.elementFromPoint(e.clientX, e.clientY);
-  p.style.pointerEvents = '';
-  const slot = el && el.closest && el.closest('.slot');
   state.drag = null;
 
-  if (slot && !slot.classList.contains('filled') && slot.dataset.idx === p.dataset.idx) {
-    // Correct
-    placePiece(p, slot);
-  } else if (slot && !slot.classList.contains('filled')) {
-    // Wrong slot → shake, return to tray
-    slot.classList.add('hover');
-    setTimeout(() => slot.classList.remove('hover'), 300);
+  // Snap if piece center is within threshold of the correct slot's center.
+  const r = p.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top  + r.height / 2;
+  const slot = board.querySelector(`.jslot[data-idx="${p.dataset.idx}"]`);
+  if (slot && !slot.classList.contains('filled')) {
+    const sr = slot.getBoundingClientRect();
+    const sx = sr.left + sr.width / 2;
+    const sy = sr.top  + sr.height / 2;
+    if (Math.hypot(cx - sx, cy - sy) <= state.cellSize * 0.5) {
+      snapPiece(p, slot);
+      return;
+    }
+  }
+
+  // Wrong / not close enough — count as a miss only if dropped over the board area.
+  const boardRect = board.getBoundingClientRect();
+  const overBoard = cx >= boardRect.left && cx <= boardRect.right && cy >= boardRect.top && cy <= boardRect.bottom;
+  if (overBoard) {
     state.misses += 1;
     playMiss();
     buzz([30, 80, 30]);
     returnPiece(p, true);
   } else {
-    // Dropped not on slot — just return
     returnPiece(p, false);
   }
 }
 
-function placePiece(piece, slot) {
-  // Snap piece into slot, then convert slot to filled
+function snapPiece(piece, slot) {
   piece.classList.remove('dragging');
-  piece.style.position = '';
-  piece.style.left = piece.style.top = '';
-  piece.style.width = piece.style.height = '';
+  piece.style.position = 'absolute';
+  piece.style.left = slot.style.left;
+  piece.style.top  = slot.style.top;
   piece.style.pointerEvents = 'none';
-  // Remove piece from body (cleanup) and mark slot
-  piece.remove();
-  slot.textContent = slot.dataset.emoji;
+  board.appendChild(piece);
   slot.classList.add('filled');
   state.placed += 1;
   $('placedCount').textContent = state.placed;
@@ -635,11 +1117,9 @@ function placePiece(piece, slot) {
 }
 
 function returnPiece(piece, shake) {
-  // Put piece back in tray; reset styling
   piece.classList.remove('dragging');
   piece.style.position = '';
   piece.style.left = piece.style.top = '';
-  piece.style.width = piece.style.height = '';
   tray.appendChild(piece);
   if (shake) {
     piece.classList.add('shake');

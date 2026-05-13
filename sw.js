@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v33';
+const CACHE = 'kid-games-v35';
 const SHELL = [
   './',
   './index.html',
@@ -35,6 +35,8 @@ const SHELL = [
   './shadow-match/index.html',
   './jigsaw/',
   './jigsaw/index.html',
+  './arrange-pic/',
+  './arrange-pic/index.html',
   './alphabet-pop/',
   './alphabet-pop/index.html',
   './color-mix/',
