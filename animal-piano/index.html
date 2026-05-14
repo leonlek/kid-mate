@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎹 เปียโนสัตว์ — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมเปียโนสัตว์ แตะแล้วเสียงร้องเป็นโน้ตดนตรี สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เปียโนสัตว์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --ink: #2d3436;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 65%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '🎵   🎶    🎵     🎶';
+    position: fixed; top: 18px; left: 0; right: 0;
+    text-align: center; font-size: 32px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 50px;
+    animation: drift 30s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to   { transform: translateX(10%); }
+  }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 70px 14px 18px;
+    display: flex; flex-direction: column;
+    min-height: 100vh; min-height: 100dvh;
+    position: relative; z-index: 1;
+  }
+
+  .title {
+    font-family: 'Itim', cursive;
+    font-size: 38px;
+    text-align: center;
+    margin: 0 0 12px;
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+  }
+
+  .keys {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    min-height: 0;
+  }
+  .key {
+    border: 4px solid #fff;
+    border-radius: 22px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
+    cursor: pointer;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 58px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .08s, box-shadow .08s, filter .12s;
+    position: relative;
+    overflow: hidden;
+    min-height: 64px;
+  }
+  .key:active, .key.pressed {
+    transform: translateY(4px) scale(0.97);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+    filter: brightness(1.15);
+  }
+  .key.pressed .face { animation: jiggle .3s ease; }
+  @keyframes jiggle {
+    0%, 100% { transform: scale(1) rotate(0); }
+    25%      { transform: scale(1.18) rotate(-8deg); }
+    75%      { transform: scale(1.12) rotate(8deg); }
+  }
+  .key .face {
+    display: inline-block;
+    line-height: 1;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,0.18));
+  }
+  .key .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+    transform: scale(0);
+    animation: ripple .6s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes ripple {
+    to { transform: scale(3); opacity: 0; }
+  }
+
+  /* Per-key colors */
+  .k0 { background: #ff8c8c; } /* red-pink */
+  .k1 { background: #ffb86c; } /* orange */
+  .k2 { background: #ffe66d; } /* yellow */
+  .k3 { background: #95e1a3; } /* green */
+  .k4 { background: #8ed1f5; } /* sky */
+  .k5 { background: #a3a4f5; } /* indigo */
+  .k6 { background: #d4a3f5; } /* purple */
+  .k7 { background: #ffa3d3; } /* pink */
+
+  .songs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
+  }
+  .song-btn {
+    border: 3px solid var(--brand);
+    background: #fff;
+    color: var(--brand-dark);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-family: 'Itim', cursive;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform .12s, background .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .song-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brand-dark); }
+  .song-btn.playing { background: var(--brand); color: #fff; }
+  .song-btn.playing .ico { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .song-btn[disabled] { opacity: 0.45; pointer-events: none; }
+
+  .note-sparkle {
+    position: fixed;
+    font-size: 30px;
+    pointer-events: none;
+    z-index: 80;
+    animation: noteUp 1.1s ease-out forwards;
+  }
+  @keyframes noteUp {
+    0%   { transform: translate(0,0) scale(.4) rotate(0); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translate(var(--nx, 20px), -120px) scale(1.2) rotate(20deg); opacity: 0; }
+  }
+
+  @media (min-width: 600px) {
+    .title { font-size: 48px; }
+    .key { font-size: 72px; }
+    .song-btn { font-size: 22px; }
+  }
+  @media (max-height: 600px) {
+    .title { font-size: 28px; margin-bottom: 6px; }
+    .key { font-size: 44px; min-height: 50px; }
+    .song-btn { font-size: 18px; padding: 6px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <h1 class="title">🎹 เปียโนสัตว์</h1>
+
+  <div class="keys" id="keys"></div>
+
+  <div class="songs">
+    <button class="song-btn" data-song="elephant" type="button"><span class="ico">🐘</span>ช้าง</button>
+    <button class="song-btn" data-song="twinkle" type="button"><span class="ico">⭐</span>ดาว</button>
+    <button class="song-btn" data-song="row" type="button"><span class="ico">🚣</span>พายเรือ</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// 8 animal keys, low-to-high pitch
+const KEYS = [
+  { emoji: '🐘', freq: 261.63 }, // C4
+  { emoji: '🐮', freq: 293.66 }, // D4
+  { emoji: '🐷', freq: 329.63 }, // E4
+  { emoji: '🐶', freq: 349.23 }, // F4
+  { emoji: '🐱', freq: 392.00 }, // G4
+  { emoji: '🦆', freq: 440.00 }, // A4
+  { emoji: '🐸', freq: 493.88 }, // B4
+  { emoji: '🐔', freq: 523.25 }  // C5
+];
+
+// Songs are arrays of [keyIdx, durationMs]
+// 8 = rest
+const SONGS = {
+  // ช้าง ช้าง ช้าง  (Thai children's song)
+  // ช้าง ช้าง ช้าง  น้อง เคย เห็น ช้าง รึ เปล่า
+  //  G    G   G    E    F    F   F    C    D    D    B(low) C
+  // Approximation in C major (8-key scale): G=4, E=2, F=3, D=1, C=0, B=6(of lower oct? clamp to upper)
+  elephant: [
+    [4, 400], [4, 400], [4, 800],   // ช้าง ช้าง ช้าง
+    [4, 400], [2, 400], [4, 400], [2, 400],  // น้อง เคย เห็น ช้าง
+    [2, 400], [1, 400], [0, 800],   // หรือ เปล่า
+    [2, 400], [2, 400], [2, 800],
+    [2, 400], [3, 400], [2, 400], [1, 400],
+    [1, 400], [0, 400], [0, 800]
+  ],
+  // Twinkle Twinkle Little Star
+  twinkle: [
+    [0, 500], [0, 500], [4, 500], [4, 500],
+    [5, 500], [5, 500], [4, 1000],
+    [3, 500], [3, 500], [2, 500], [2, 500],
+    [1, 500], [1, 500], [0, 1000]
+  ],
+  // Row Row Row Your Boat
+  row: [
+    [0, 500], [0, 500], [0, 350], [1, 250], [2, 500],
+    [2, 350], [1, 250], [2, 350], [3, 250], [4, 1000],
+    [7, 250], [7, 250], [7, 250], [4, 250], [4, 250], [4, 250], [2, 250], [2, 250], [2, 250], [0, 250], [0, 250], [0, 250],
+    [4, 350], [3, 250], [2, 350], [1, 250], [0, 1000]
+  ]
+};
+
+// ===== AUDIO =====
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { audioCtx = null; }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playNote(freq, durationMs) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const dur = durationMs / 1000;
+  // Layer triangle + sine for richer tone
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  osc1.type = 'triangle';
+  osc2.type = 'sine';
+  osc1.frequency.setValueAtTime(freq, t);
+  osc2.frequency.setValueAtTime(freq * 2, t);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.28, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  const g2 = ctx.createGain();
+  g2.gain.setValueAtTime(0.08, t);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.7);
+  osc1.connect(g).connect(ctx.destination);
+  osc2.connect(g2).connect(ctx.destination);
+  osc1.start(t); osc2.start(t);
+  osc1.stop(t + dur + 0.05);
+  osc2.stop(t + dur + 0.05);
+}
+
+function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+// ===== KEYS =====
+const keysEl = document.getElementById('keys');
+const keyEls = [];
+KEYS.forEach((k, i) => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'key k' + i;
+  btn.dataset.i = i;
+  btn.setAttribute('aria-label', 'เสียง ' + k.emoji);
+  btn.innerHTML = '<span class="face">' + k.emoji + '</span>';
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    onKeyPress(i, btn, e);
+  });
+  keyEls.push(btn);
+  keysEl.appendChild(btn);
+});
+
+function pressKey(i, durMs) {
+  const btn = keyEls[i];
+  btn.classList.remove('pressed');
+  void btn.offsetWidth;
+  btn.classList.add('pressed');
+  playNote(KEYS[i].freq, durMs || 600);
+  setTimeout(() => btn.classList.remove('pressed'), 320);
+
+  // Floating note sparkle
+  const rect = btn.getBoundingClientRect();
+  const s = document.createElement('div');
+  s.className = 'note-sparkle';
+  s.textContent = ['♪','♫','🎵','🎶'][Math.floor(Math.random()*4)];
+  s.style.left = (rect.left + rect.width/2 - 12) + 'px';
+  s.style.top  = (rect.top + 8) + 'px';
+  s.style.setProperty('--nx', (Math.random()*60 - 30) + 'px');
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 1200);
+}
+
+function onKeyPress(i, btn, ev) {
+  vibrate(10);
+  // Ripple where finger landed
+  const rect = btn.getBoundingClientRect();
+  const x = (ev.clientX || rect.left + rect.width/2) - rect.left;
+  const y = (ev.clientY || rect.top + rect.height/2) - rect.top;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const size = Math.max(rect.width, rect.height);
+  r.style.width = size + 'px';
+  r.style.height = size + 'px';
+  r.style.left = (x - size/2) + 'px';
+  r.style.top  = (y - size/2) + 'px';
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+  pressKey(i, 600);
+}
+
+// ===== SONGS =====
+let songTimer = null;
+const songBtns = document.querySelectorAll('.song-btn');
+
+function stopSong() {
+  if (songTimer) { clearTimeout(songTimer); songTimer = null; }
+  songBtns.forEach(b => { b.classList.remove('playing'); b.disabled = false; });
+}
+
+function playSong(name, btnEl) {
+  ensureAudio();
+  stopSong();
+  const song = SONGS[name];
+  if (!song) return;
+  songBtns.forEach(b => { if (b !== btnEl) b.disabled = true; });
+  btnEl.classList.add('playing');
+
+  let idx = 0;
+  function step() {
+    if (idx >= song.length) {
+      stopSong();
+      return;
+    }
+    const [k, dur] = song[idx++];
+    if (k >= 0 && k < KEYS.length) {
+      pressKey(k, dur);
+    }
+    songTimer = setTimeout(step, dur);
+  }
+  step();
+}
+
+songBtns.forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.classList.contains('playing')) {
+      stopSong();
+    } else {
+      playSong(b.dataset.song, b);
+    }
+  });
+});
+
+// Stop song when clicking a key manually
+keyEls.forEach(k => {
+  k.addEventListener('pointerdown', stopSong);
+});
+
+// Unlock audio on first touch anywhere
+document.addEventListener('pointerdown', ensureAudio, { once: true });
+</script>
+</body>
+</html>

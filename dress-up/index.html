@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>👗 แต่งตัวตุ๊กตา — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมแต่งตัวตุ๊กตา เลือกเสื้อผ้าทรงผมหมวกได้อิสระ สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แต่งตัวตุ๊กตา">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #ffd6e4 0%, #fff2c0 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  .home-btn, .photo-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; }
+  .photo-btn { right: 12px; background: var(--brand); color: #fff; }
+  .home-btn:active, .photo-btn:active { transform: scale(0.92); }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 76px 12px 16px;
+    display: flex; flex-direction: column;
+    min-height: 100vh; min-height: 100dvh;
+  }
+
+  /* DOLL STAGE */
+  .stage {
+    position: relative;
+    background: linear-gradient(180deg, #fff7d6 0%, #ffe9b3 100%);
+    border: 4px solid #fff;
+    border-radius: 28px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    max-height: 52vh;
+    margin: 0 auto 12px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .stage.flash::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: #fff;
+    animation: flash .5s ease-out forwards;
+    pointer-events: none;
+    z-index: 30;
+  }
+  @keyframes flash {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .bg-deco {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    font-size: 28px;
+    line-height: 1;
+    opacity: 0.95;
+  }
+  .bg-deco span { position: absolute; }
+
+  /* Backgrounds */
+  .bg-garden  { background: linear-gradient(180deg, #cdf2ff 0%, #d9f3c9 50%, #7ed957 100%); }
+  .bg-beach   { background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 55%, #ffe7a8 100%); }
+  .bg-party   { background: linear-gradient(180deg, #f3c6ff 0%, #ffd6e4 60%, #ffeb98 100%); }
+  .bg-night   { background: linear-gradient(180deg, #1e2a5e 0%, #4a3e7a 70%, #6e4d8a 100%); }
+
+  /* Doll wrapper centered */
+  .doll-wrap {
+    position: absolute;
+    left: 50%; bottom: 4%;
+    transform: translateX(-50%);
+    height: 92%;
+    aspect-ratio: 1 / 2;
+    z-index: 5;
+    filter: drop-shadow(0 4px 0 rgba(0,0,0,0.1));
+  }
+  .doll-wrap svg { width: 100%; height: 100%; display: block; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 0 4px;
+    margin-bottom: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1 0 auto;
+    min-width: 54px;
+    padding: 8px 4px;
+    border: 3px solid var(--card-border);
+    border-radius: 18px;
+    background: #fff;
+    font-size: 26px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform .12s, border-color .15s, background .15s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+  }
+  .tab:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.06); }
+  .tab.active { border-color: var(--brand); background: #fff5f8; }
+
+  /* PALETTE */
+  .palette {
+    background: #fff;
+    border: 4px solid var(--card-border);
+    border-radius: 22px;
+    padding: 10px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.06);
+    min-height: 130px;
+  }
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 8px;
+  }
+  .item-btn {
+    background: #fff8fb;
+    border: 3px solid var(--card-border);
+    border-radius: 14px;
+    padding: 4px;
+    cursor: pointer;
+    transition: transform .12s, border-color .12s, background .15s;
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .item-btn svg { width: 100%; height: 100%; }
+  .item-btn:active { transform: scale(0.94); }
+  .item-btn.selected {
+    border-color: var(--brand);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(255,107,157,0.2);
+  }
+  .item-btn.bg-pick {
+    aspect-ratio: 1 / 1;
+    font-size: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+  .item-btn.bg-pick.preview-garden { background: linear-gradient(180deg, #cdf2ff 0%, #7ed957 100%); }
+  .item-btn.bg-pick.preview-beach  { background: linear-gradient(180deg, #87ceeb 0%, #ffe7a8 100%); }
+  .item-btn.bg-pick.preview-party  { background: linear-gradient(180deg, #f3c6ff 0%, #ffeb98 100%); }
+  .item-btn.bg-pick.preview-night  { background: linear-gradient(180deg, #1e2a5e 0%, #6e4d8a 100%); }
+
+  /* CONFETTI */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    font-size: 24px;
+    pointer-events: none;
+    z-index: 100;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    background: #fff;
+    border: 4px solid var(--brand);
+    box-shadow: 0 6px 0 var(--brand-dark);
+    border-radius: 22px;
+    padding: 18px 28px;
+    font-family: 'Itim', cursive;
+    font-size: 28px;
+    color: var(--brand-dark);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  @media (min-width: 600px) {
+    .stage { max-width: 380px; max-height: 56vh; }
+    .tab { font-size: 30px; min-width: 64px; }
+    .palette-grid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
+  }
+  @media (max-height: 700px) {
+    .stage { max-height: 46vh; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="photo-btn" id="photoBtn" type="button" aria-label="ถ่ายรูป">📷</button>
+
+<div class="app">
+  <div class="stage bg-garden" id="stage">
+    <div class="bg-deco" id="bgDeco"></div>
+    <div class="doll-wrap">
+      <svg id="doll" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+        <g id="slot-back"></g>
+        <g id="doll-base">
+          <!-- Legs -->
+          <rect x="80" y="248" width="18" height="115" rx="9" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <rect x="102" y="248" width="18" height="115" rx="9" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Feet -->
+          <ellipse cx="89" cy="365" rx="14" ry="6" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <ellipse cx="111" cy="365" rx="14" ry="6" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Body -->
+          <path d="M70 152 Q60 232 78 252 L122 252 Q140 232 130 152 Z" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Arms -->
+          <rect x="50" y="150" width="18" height="98" rx="9" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <rect x="132" y="150" width="18" height="98" rx="9" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Neck -->
+          <rect x="88" y="125" width="24" height="22" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Head -->
+          <circle cx="100" cy="80" r="55" fill="#ffd6b3" stroke="#e8b896" stroke-width="2"/>
+          <!-- Default underwear -->
+          <g id="undie">
+            <path d="M78 240 Q78 262 100 262 Q122 262 122 240 Z" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+          </g>
+        </g>
+        <g id="slot-bottom"></g>
+        <g id="slot-top"></g>
+        <g id="slot-shoes"></g>
+        <g id="face">
+          <!-- Cheeks -->
+          <ellipse cx="74" cy="92" rx="9" ry="6" fill="#ffabab" opacity=".75"/>
+          <ellipse cx="126" cy="92" rx="9" ry="6" fill="#ffabab" opacity=".75"/>
+          <!-- Eyes -->
+          <ellipse cx="85" cy="80" rx="5.5" ry="7.5" fill="#2d3436"/>
+          <ellipse cx="115" cy="80" rx="5.5" ry="7.5" fill="#2d3436"/>
+          <circle cx="86.5" cy="76" r="2" fill="#fff"/>
+          <circle cx="116.5" cy="76" r="2" fill="#fff"/>
+          <!-- Mouth -->
+          <path d="M90 105 Q100 114 110 105" fill="none" stroke="#c0392b" stroke-width="2.6" stroke-linecap="round"/>
+        </g>
+        <g id="slot-hair"></g>
+        <g id="slot-hat"></g>
+        <g id="slot-accessory"></g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-cat="hair" aria-label="ทรงผม">💇</button>
+    <button class="tab" data-cat="top" aria-label="เสื้อ">👕</button>
+    <button class="tab" data-cat="bottom" aria-label="กระโปรง">👖</button>
+    <button class="tab" data-cat="shoes" aria-label="รองเท้า">👟</button>
+    <button class="tab" data-cat="hat" aria-label="หมวก">👒</button>
+    <button class="tab" data-cat="accessory" aria-label="แว่นและปีก">👓</button>
+    <button class="tab" data-cat="bg" aria-label="ฉากหลัง">🏞️</button>
+  </div>
+
+  <div class="palette">
+    <div class="palette-grid" id="paletteGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">บันทึกแล้ว! 📸</div>
+
+<script>
+'use strict';
+
+// ===== ITEMS =====
+// Each item: { id, svg (full SVG markup for the slot) }
+// Hair items also have backSvg (drawn behind doll body for long hair).
+
+const ITEMS = {
+  hair: [
+    { id: 'h1', // short black bob
+      svg: '<path d="M50 78 Q50 25 100 22 Q150 25 150 78 Q150 96 144 105 L132 90 Q130 55 100 55 Q70 55 68 90 L56 105 Q50 96 50 78 Z" fill="#2d2d2d"/><path d="M48 78 Q47 110 56 132 L60 95 Q56 90 50 100 Z" fill="#2d2d2d"/><path d="M152 78 Q153 110 144 132 L140 95 Q144 90 150 100 Z" fill="#2d2d2d"/><path d="M68 50 Q90 35 130 48 Q120 42 100 42 Q80 42 68 50 Z" fill="#3d3d3d"/>'
+    },
+    { id: 'h2', // long brown pigtails
+      svg: '<path d="M52 78 Q52 22 100 20 Q148 22 148 78 Q148 92 144 100 L130 88 Q128 52 100 52 Q72 52 70 88 L56 100 Q52 92 52 78 Z" fill="#7a4a2b"/><path d="M50 75 Q35 130 40 220 Q48 230 56 220 Q55 140 60 95 Z" fill="#7a4a2b"/><path d="M150 75 Q165 130 160 220 Q152 230 144 220 Q145 140 140 95 Z" fill="#7a4a2b"/><path d="M40 220 Q44 232 52 232 Q60 230 56 218 Z" fill="#ff6b9d"/><path d="M160 220 Q156 232 148 232 Q140 230 144 218 Z" fill="#ff6b9d"/>',
+      backSvg: '<path d="M58 100 Q45 180 50 250 L70 250 Q68 180 72 100 Z" fill="#7a4a2b" opacity="0.85"/><path d="M142 100 Q155 180 150 250 L130 250 Q132 180 128 100 Z" fill="#7a4a2b" opacity="0.85"/>'
+    },
+    { id: 'h3', // long blonde
+      svg: '<path d="M52 76 Q52 20 100 18 Q148 20 148 76 Q148 94 144 102 L132 88 Q130 50 100 50 Q70 50 70 88 L56 102 Q52 94 52 76 Z" fill="#f1c40f"/><path d="M70 56 Q90 38 130 50 Q110 44 100 44 Q86 44 70 56 Z" fill="#f4d03f"/>',
+      backSvg: '<path d="M52 80 Q35 200 50 290 L78 290 Q70 200 68 100 Z" fill="#f1c40f" opacity="0.9"/><path d="M148 80 Q165 200 150 290 L122 290 Q130 200 132 100 Z" fill="#f1c40f" opacity="0.9"/>'
+    },
+    { id: 'h4', // curly red
+      svg: '<circle cx="60" cy="62" r="22" fill="#d35400"/><circle cx="80" cy="42" r="22" fill="#d35400"/><circle cx="100" cy="34" r="22" fill="#d35400"/><circle cx="120" cy="42" r="22" fill="#d35400"/><circle cx="140" cy="62" r="22" fill="#d35400"/><circle cx="50" cy="90" r="18" fill="#d35400"/><circle cx="150" cy="90" r="18" fill="#d35400"/><circle cx="55" cy="115" r="14" fill="#d35400"/><circle cx="145" cy="115" r="14" fill="#d35400"/><path d="M55 110 Q60 130 75 130 L125 130 Q140 130 145 110 L130 90 Q100 95 70 90 Z" fill="#d35400"/>'
+    },
+    { id: 'h5', // twin buns purple
+      svg: '<path d="M55 80 Q55 30 100 28 Q145 30 145 80 Q145 95 140 102 L130 92 Q128 56 100 56 Q72 56 70 92 L60 102 Q55 95 55 80 Z" fill="#8e44ad"/><circle cx="42" cy="38" r="20" fill="#8e44ad"/><circle cx="158" cy="38" r="20" fill="#8e44ad"/><circle cx="42" cy="38" r="14" fill="#9b59b6"/><circle cx="158" cy="38" r="14" fill="#9b59b6"/><path d="M65 50 Q90 38 135 50 Q125 42 100 42 Q75 42 65 50 Z" fill="#9b59b6"/>'
+    },
+    { id: 'h6', // pink twintails
+      svg: '<path d="M52 80 Q52 24 100 22 Q148 24 148 80 Q148 94 144 102 L132 90 Q130 54 100 54 Q70 54 70 90 L56 102 Q52 94 52 80 Z" fill="#ff6b9d"/><path d="M50 80 Q30 130 28 195 Q34 205 44 200 Q56 140 60 100 Z" fill="#ff6b9d"/><path d="M150 80 Q170 130 172 195 Q166 205 156 200 Q144 140 140 100 Z" fill="#ff6b9d"/><path d="M28 195 Q32 210 44 208 Q52 204 46 192 Z" fill="#fff"/><path d="M172 195 Q168 210 156 208 Q148 204 154 192 Z" fill="#fff"/>'
+    }
+  ],
+
+  top: [
+    { id: 't1', // pink t-shirt
+      svg: '<path d="M44 148 L70 142 Q60 235 78 252 L122 252 Q140 235 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 220 L66 220 L66 172 Q62 175 58 184 L38 178 Z" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/><circle cx="100" cy="170" r="4" fill="#fff"/>'
+    },
+    { id: 't2', // yellow long dress
+      svg: '<path d="M44 148 L70 142 Q66 195 60 280 Q80 290 100 288 Q120 290 140 280 Q134 195 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 200 L66 200 L66 172 Q62 175 58 184 L38 178 Z" fill="#ffd93d" stroke="#d4a900" stroke-width="2"/><circle cx="85" cy="200" r="3" fill="#fff"/><circle cx="115" cy="230" r="3" fill="#fff"/><circle cx="95" cy="260" r="3" fill="#fff"/>'
+    },
+    { id: 't3', // striped rainbow
+      svg: '<defs><clipPath id="topShape3"><path d="M44 148 L70 142 Q60 235 78 252 L122 252 Q140 235 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 220 L66 220 L66 172 Q62 175 58 184 L38 178 Z"/></clipPath></defs><g clip-path="url(#topShape3)"><rect x="30" y="140" width="140" height="16" fill="#e74c3c"/><rect x="30" y="156" width="140" height="16" fill="#f39c12"/><rect x="30" y="172" width="140" height="16" fill="#f1c40f"/><rect x="30" y="188" width="140" height="16" fill="#2ecc71"/><rect x="30" y="204" width="140" height="16" fill="#3498db"/><rect x="30" y="220" width="140" height="16" fill="#9b59b6"/></g><path d="M44 148 L70 142 Q60 235 78 252 L122 252 Q140 235 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 220 L66 220 L66 172 Q62 175 58 184 L38 178 Z" fill="none" stroke="#5d3a8e" stroke-width="2"/>'
+    },
+    { id: 't4', // heart sweater
+      svg: '<path d="M44 148 L70 142 Q60 235 78 252 L122 252 Q140 235 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 220 L66 220 L66 172 Q62 175 58 184 L38 178 Z" fill="#aee1ff" stroke="#3498db" stroke-width="2"/><path d="M100 215 L80 195 Q75 184 84 180 Q92 180 100 190 Q108 180 116 180 Q125 184 120 195 Z" fill="#e74c3c"/>'
+    },
+    { id: 't5', // polka dot mint
+      svg: '<path d="M44 148 L70 142 Q60 235 78 252 L122 252 Q140 235 130 142 L156 148 L162 178 L142 184 Q138 175 134 172 L134 220 L66 220 L66 172 Q62 175 58 184 L38 178 Z" fill="#7ed9c4" stroke="#3aa890" stroke-width="2"/><circle cx="80" cy="170" r="4" fill="#fff"/><circle cx="115" cy="180" r="4" fill="#fff"/><circle cx="95" cy="200" r="4" fill="#fff"/><circle cx="125" cy="210" r="4" fill="#fff"/><circle cx="75" cy="215" r="4" fill="#fff"/>'
+    },
+    { id: 't6', // strawberry overalls (top portion)
+      svg: '<path d="M70 148 Q66 218 78 252 L122 252 Q134 218 130 148 L130 220 L70 220 Z" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><rect x="76" y="148" width="10" height="40" rx="3" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><rect x="114" y="148" width="10" height="40" rx="3" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><circle cx="81" cy="195" r="3" fill="#ffd93d"/><circle cx="119" cy="195" r="3" fill="#ffd93d"/><circle cx="90" cy="200" r="2.5" fill="#fff"/><circle cx="110" cy="210" r="2.5" fill="#fff"/><circle cx="100" cy="195" r="2.5" fill="#fff"/>'
+    }
+  ],
+
+  bottom: [
+    { id: 'b1', // pink skirt
+      svg: '<path d="M68 235 L132 235 L150 295 Q100 305 50 295 Z" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/>'
+    },
+    { id: 'b2', // blue jeans
+      svg: '<path d="M70 235 Q66 280 76 360 L96 360 Q100 300 100 250 Q100 300 104 360 L124 360 Q134 280 130 235 Z" fill="#3a6ea5" stroke="#1d4374" stroke-width="2"/><line x1="100" y1="240" x2="100" y2="350" stroke="#1d4374" stroke-width="1.5"/>'
+    },
+    { id: 'b3', // red shorts
+      svg: '<path d="M70 235 Q66 270 76 295 L96 295 Q100 270 100 250 Q100 270 104 295 L124 295 Q134 270 130 235 Z" fill="#e74c3c" stroke="#a02828" stroke-width="2"/>'
+    },
+    { id: 'b4', // purple tutu
+      svg: '<path d="M60 235 L140 235 L162 280 Q100 296 38 280 Z" fill="#a569bd" stroke="#6c3483" stroke-width="2"/><path d="M55 250 L145 250 L168 285 Q100 304 32 285 Z" fill="#bb8fce" opacity="0.75"/><path d="M50 268 L150 268 L172 295 Q100 314 28 295 Z" fill="#d2b4de" opacity="0.7"/>'
+    },
+    { id: 'b5', // green pants
+      svg: '<path d="M70 235 Q66 285 76 360 L96 360 Q100 305 100 250 Q100 305 104 360 L124 360 Q134 285 130 235 Z" fill="#2ecc71" stroke="#1e8449" stroke-width="2"/>'
+    },
+    { id: 'b6', // rainbow skirt
+      svg: '<defs><clipPath id="skirtClip6"><path d="M68 235 L132 235 L152 298 Q100 310 48 298 Z"/></clipPath></defs><g clip-path="url(#skirtClip6)"><rect x="40" y="230" width="120" height="14" fill="#e74c3c"/><rect x="40" y="244" width="120" height="14" fill="#f39c12"/><rect x="40" y="258" width="120" height="14" fill="#f1c40f"/><rect x="40" y="272" width="120" height="14" fill="#2ecc71"/><rect x="40" y="286" width="120" height="14" fill="#3498db"/></g><path d="M68 235 L132 235 L152 298 Q100 310 48 298 Z" fill="none" stroke="#5d3a8e" stroke-width="2"/>'
+    }
+  ],
+
+  shoes: [
+    { id: 's1', // pink sneakers
+      svg: '<ellipse cx="89" cy="367" rx="16" ry="8" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/><ellipse cx="111" cy="367" rx="16" ry="8" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/><line x1="80" y1="365" x2="98" y2="365" stroke="#fff" stroke-width="1.5"/><line x1="102" y1="365" x2="120" y2="365" stroke="#fff" stroke-width="1.5"/>'
+    },
+    { id: 's2', // black boots
+      svg: '<path d="M76 340 L104 340 L102 370 Q90 374 76 370 Z" fill="#2d2d2d" stroke="#000" stroke-width="2"/><path d="M98 340 L126 340 L124 370 Q110 374 98 370 Z" fill="#2d2d2d" stroke="#000" stroke-width="2"/>'
+    },
+    { id: 's3', // white sandals
+      svg: '<ellipse cx="89" cy="367" rx="15" ry="6" fill="#fff" stroke="#aaa" stroke-width="2"/><ellipse cx="111" cy="367" rx="15" ry="6" fill="#fff" stroke="#aaa" stroke-width="2"/><line x1="82" y1="362" x2="96" y2="362" stroke="#aaa" stroke-width="2"/><line x1="104" y1="362" x2="118" y2="362" stroke="#aaa" stroke-width="2"/>'
+    },
+    { id: 's4', // glittery red
+      svg: '<ellipse cx="89" cy="367" rx="16" ry="8" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><ellipse cx="111" cy="367" rx="16" ry="8" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><text x="84" y="370" font-size="10" fill="#ffd93d">✦</text><text x="106" y="370" font-size="10" fill="#ffd93d">✦</text>'
+    },
+    { id: 's5', // rainbow shoes
+      svg: '<ellipse cx="89" cy="367" rx="16" ry="8" fill="#9b59b6" stroke="#5d3a8e" stroke-width="2"/><ellipse cx="111" cy="367" rx="16" ry="8" fill="#2ecc71" stroke="#1e8449" stroke-width="2"/><circle cx="84" cy="365" r="2" fill="#ffd93d"/><circle cx="116" cy="365" r="2" fill="#e74c3c"/>'
+    },
+    { id: 's6', // gold heels
+      svg: '<path d="M76 358 L104 358 L100 374 Q88 376 76 370 Z" fill="#ffd93d" stroke="#a87f00" stroke-width="2"/><path d="M98 358 L126 358 L124 370 Q112 376 100 374 Z" fill="#ffd93d" stroke="#a87f00" stroke-width="2"/>'
+    }
+  ],
+
+  hat: [
+    { id: 'a1', // gold crown
+      svg: '<path d="M62 38 L74 18 L86 36 L100 14 L114 36 L126 18 L138 38 L138 50 L62 50 Z" fill="#ffd93d" stroke="#a87f00" stroke-width="2"/><circle cx="74" cy="22" r="4" fill="#e74c3c"/><circle cx="100" cy="20" r="4" fill="#3498db"/><circle cx="126" cy="22" r="4" fill="#2ecc71"/>'
+    },
+    { id: 'a2', // pink bow
+      svg: '<path d="M70 35 L100 22 L100 50 Z" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/><path d="M130 35 L100 22 L100 50 Z" fill="#ff6b9d" stroke="#c83a6e" stroke-width="2"/><circle cx="100" cy="34" r="7" fill="#e54b82" stroke="#c83a6e" stroke-width="1.5"/>'
+    },
+    { id: 'a3', // cat ears
+      svg: '<path d="M58 50 L70 18 L86 42 Z" fill="#2d2d2d"/><path d="M114 42 L130 18 L142 50 Z" fill="#2d2d2d"/><path d="M64 44 L72 28 L82 42 Z" fill="#ff6b9d"/><path d="M118 42 L128 28 L136 44 Z" fill="#ff6b9d"/>'
+    },
+    { id: 'a4', // sun hat
+      svg: '<ellipse cx="100" cy="44" rx="60" ry="14" fill="#ffd93d" stroke="#a87f00" stroke-width="2"/><path d="M68 42 Q100 12 132 42 Z" fill="#ffd93d" stroke="#a87f00" stroke-width="2"/><path d="M80 36 L120 36" stroke="#ff6b9d" stroke-width="4"/>'
+    },
+    { id: 'a5', // tiara
+      svg: '<path d="M68 42 Q100 26 132 42 L128 50 Q100 38 72 50 Z" fill="#f5d1ff" stroke="#a569bd" stroke-width="2"/><circle cx="100" cy="32" r="5" fill="#ff6b9d" stroke="#c83a6e" stroke-width="1.5"/><circle cx="84" cy="38" r="3" fill="#3498db"/><circle cx="116" cy="38" r="3" fill="#3498db"/>'
+    },
+    { id: 'a6', // strawberry hat
+      svg: '<path d="M64 50 Q66 18 100 14 Q134 18 136 50 Z" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><path d="M86 14 L92 8 L98 16 L106 6 L112 18 L116 12 L98 22 Z" fill="#2ecc71" stroke="#1e8449" stroke-width="1.5"/><circle cx="78" cy="34" r="2" fill="#ffd93d"/><circle cx="92" cy="44" r="2" fill="#ffd93d"/><circle cx="110" cy="36" r="2" fill="#ffd93d"/><circle cx="122" cy="44" r="2" fill="#ffd93d"/>'
+    }
+  ],
+
+  accessory: [
+    { id: 'g1', // round pink glasses
+      svg: '<circle cx="84" cy="82" r="11" fill="none" stroke="#ff6b9d" stroke-width="3"/><circle cx="116" cy="82" r="11" fill="none" stroke="#ff6b9d" stroke-width="3"/><line x1="95" y1="82" x2="105" y2="82" stroke="#ff6b9d" stroke-width="3"/>'
+    },
+    { id: 'g2', // heart sunglasses
+      svg: '<path d="M84 75 Q72 75 72 84 Q72 95 84 95 Q96 95 96 84 Q96 78 90 75 Q84 72 84 80 Z" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><path d="M116 75 Q104 75 104 84 Q104 95 116 95 Q128 95 128 84 Q128 78 122 75 Q116 72 116 80 Z" fill="#e74c3c" stroke="#a02828" stroke-width="2"/><line x1="96" y1="84" x2="104" y2="84" stroke="#a02828" stroke-width="2"/>'
+    },
+    { id: 'g3', // pearl necklace
+      svg: '<g><circle cx="80" cy="145" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="88" cy="148" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="96" cy="150" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="104" cy="150" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="112" cy="148" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="120" cy="145" r="3.5" fill="#fff" stroke="#aaa" stroke-width="1"/><circle cx="100" cy="155" r="5" fill="#ff6b9d" stroke="#c83a6e" stroke-width="1.5"/></g>'
+    },
+    { id: 'g4', // fairy wings
+      svg: '',
+      backSvg: '<path d="M68 160 Q20 130 30 200 Q40 250 75 220 Z" fill="#f5d1ff" opacity="0.85" stroke="#d8b3e8" stroke-width="2"/><path d="M132 160 Q180 130 170 200 Q160 250 125 220 Z" fill="#f5d1ff" opacity="0.85" stroke="#d8b3e8" stroke-width="2"/><circle cx="50" cy="170" r="3" fill="#ffd93d"/><circle cx="150" cy="170" r="3" fill="#ffd93d"/>'
+    },
+    { id: 'g5', // butterfly on shoulder
+      svg: '<g transform="translate(54 145)"><ellipse cx="0" cy="-3" rx="6" ry="5" fill="#ff6b9d"/><ellipse cx="0" cy="4" rx="5" ry="4" fill="#ff6b9d"/><ellipse cx="2" cy="-3" rx="3" ry="2" fill="#ffd6e4"/><line x1="0" y1="-5" x2="0" y2="6" stroke="#2d2d2d" stroke-width="1"/></g>'
+    },
+    { id: 'g6', // mustache for fun
+      svg: '<path d="M85 112 Q88 118 95 116 Q100 114 105 116 Q112 118 115 112 Q108 120 100 118 Q92 120 85 112 Z" fill="#5d3a1a"/>'
+    }
+  ],
+
+  bg: [
+    { id: 'bg1', className: 'bg-garden',
+      deco: [
+        { e: '🌸', x: 10, y: 12 }, { e: '🌼', x: 88, y: 18 },
+        { e: '🌷', x: 5, y: 85 }, { e: '🌻', x: 90, y: 80 },
+        { e: '🦋', x: 22, y: 40 }, { e: '🌿', x: 78, y: 55 }
+      ]
+    },
+    { id: 'bg2', className: 'bg-beach',
+      deco: [
+        { e: '☀️', x: 78, y: 8 }, { e: '🌴', x: 6, y: 30 },
+        { e: '🐚', x: 12, y: 92 }, { e: '🌊', x: 85, y: 60 },
+        { e: '⛵', x: 60, y: 22 }
+      ]
+    },
+    { id: 'bg3', className: 'bg-party',
+      deco: [
+        { e: '🎈', x: 8, y: 14 }, { e: '🎈', x: 88, y: 10 },
+        { e: '🎉', x: 12, y: 80 }, { e: '🎊', x: 82, y: 78 },
+        { e: '🍰', x: 50, y: 88 }, { e: '⭐', x: 30, y: 20 }, { e: '⭐', x: 70, y: 22 }
+      ]
+    },
+    { id: 'bg4', className: 'bg-night',
+      deco: [
+        { e: '🌙', x: 80, y: 12 }, { e: '⭐', x: 15, y: 18 },
+        { e: '✨', x: 60, y: 30 }, { e: '✨', x: 25, y: 50 },
+        { e: '⭐', x: 88, y: 50 }, { e: '✨', x: 10, y: 80 }
+      ]
+    }
+  ]
+};
+
+// ===== STATE =====
+const state = {
+  hair: null, top: null, bottom: null, shoes: null, hat: null, accessory: null,
+  bg: 'bg1',
+  cat: 'hair'
+};
+
+// ===== ELEMENTS =====
+const stage = document.getElementById('stage');
+const bgDeco = document.getElementById('bgDeco');
+const paletteGrid = document.getElementById('paletteGrid');
+const tabsEl = document.getElementById('tabs');
+const slotBack = document.getElementById('slot-back');
+const undie = document.getElementById('undie');
+const photoBtn = document.getElementById('photoBtn');
+const toast = document.getElementById('toast');
+
+// ===== HELPERS =====
+function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+function applyBg() {
+  const def = ITEMS.bg.find(b => b.id === state.bg);
+  if (!def) return;
+  stage.className = 'stage ' + def.className;
+  bgDeco.innerHTML = def.deco.map(d =>
+    `<span style="left:${d.x}%;top:${d.y}%;">${d.e}</span>`
+  ).join('');
+}
+
+function setItem(cat, id) {
+  if (cat === 'bg') {
+    state.bg = id;
+    applyBg();
+    vibrate(8);
+    renderPalette();
+    return;
+  }
+  // Toggle off if same
+  if (state[cat] === id) {
+    state[cat] = null;
+  } else {
+    state[cat] = id;
+  }
+  renderDoll();
+  renderPalette();
+  vibrate(10);
+}
+
+function renderDoll() {
+  // Clear all slot groups except face/base
+  ['slot-bottom', 'slot-top', 'slot-shoes', 'slot-hair', 'slot-hat', 'slot-accessory']
+    .forEach(s => document.getElementById(s).innerHTML = '');
+  slotBack.innerHTML = '';
+
+  let backHtml = '';
+  for (const cat of ['hair', 'top', 'bottom', 'shoes', 'hat', 'accessory']) {
+    const id = state[cat];
+    if (!id) continue;
+    const item = ITEMS[cat].find(x => x.id === id);
+    if (!item) continue;
+    if (item.backSvg) backHtml += item.backSvg;
+    if (item.svg) {
+      document.getElementById('slot-' + cat).innerHTML = item.svg;
+    }
+  }
+  slotBack.innerHTML = backHtml;
+
+  // Hide underwear if bottom or long-dress top selected
+  const dressTops = ['t2']; // dresses cover legs
+  const hasBottomCover = state.bottom || dressTops.includes(state.top);
+  undie.style.display = hasBottomCover ? 'none' : '';
+}
+
+function makePreviewSvg(cat, item) {
+  // Render a small doll silhouette + the item so kid sees how it looks
+  const silhouette = `
+    <circle cx="100" cy="80" r="55" fill="#ffe5d0"/>
+    <rect x="88" y="125" width="24" height="22" fill="#ffe5d0"/>
+    <path d="M70 152 Q60 232 78 252 L122 252 Q140 232 130 152 Z" fill="#ffe5d0"/>
+    <rect x="50" y="150" width="18" height="98" rx="9" fill="#ffe5d0"/>
+    <rect x="132" y="150" width="18" height="98" rx="9" fill="#ffe5d0"/>
+    <rect x="80" y="248" width="18" height="115" rx="9" fill="#ffe5d0"/>
+    <rect x="102" y="248" width="18" height="115" rx="9" fill="#ffe5d0"/>
+    <ellipse cx="89" cy="365" rx="14" ry="6" fill="#ffe5d0"/>
+    <ellipse cx="111" cy="365" rx="14" ry="6" fill="#ffe5d0"/>
+  `;
+  const back = item.backSvg || '';
+  const front = item.svg || '';
+  return `<svg viewBox="0 0 200 400">${back}${silhouette}${front}</svg>`;
+}
+
+function renderPalette() {
+  paletteGrid.innerHTML = '';
+  if (state.cat === 'bg') {
+    ITEMS.bg.forEach(b => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'item-btn bg-pick preview-' + b.className.replace('bg-', '');
+      btn.dataset.id = b.id;
+      if (state.bg === b.id) btn.classList.add('selected');
+      btn.innerHTML = `<span>${b.deco[0].e}</span>`;
+      btn.addEventListener('click', () => setItem('bg', b.id));
+      paletteGrid.appendChild(btn);
+    });
+    return;
+  }
+  const list = ITEMS[state.cat] || [];
+  list.forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'item-btn';
+    btn.dataset.id = item.id;
+    if (state[state.cat] === item.id) btn.classList.add('selected');
+    btn.innerHTML = makePreviewSvg(state.cat, item);
+    btn.addEventListener('click', () => setItem(state.cat, item.id));
+    paletteGrid.appendChild(btn);
+  });
+}
+
+// ===== TABS =====
+tabsEl.addEventListener('click', (e) => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  state.cat = t.dataset.cat;
+  tabsEl.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  renderPalette();
+  vibrate(6);
+});
+
+// ===== PHOTO =====
+const CONFETTI_EMOJI = ['🌟','💖','✨','🎀','💕','⭐','🌸','💫'];
+function confettiBurst() {
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = CONFETTI_EMOJI[Math.floor(Math.random()*CONFETTI_EMOJI.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+photoBtn.addEventListener('click', () => {
+  vibrate([20, 30, 60]);
+  stage.classList.remove('flash');
+  void stage.offsetWidth;
+  stage.classList.add('flash');
+  confettiBurst();
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1600);
+});
+
+// ===== INIT =====
+applyBg();
+// Default outfit so doll isn't naked on first open
+state.hair = 'h2';
+state.top = 't1';
+state.bottom = 'b1';
+state.shoes = 's1';
+renderDoll();
+renderPalette();
+</script>
+</body>
+</html>

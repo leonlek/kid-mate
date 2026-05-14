@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🌸 สวนดอกไม้ — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมปลูกดอกไม้ รดน้ำ ดูดอกไม้บาน สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="สวนดอกไม้">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --ink: #2d3436;
+    --soil: #8b5a2b;
+    --soil-dark: #5a3a18;
+    --grass: #7ed957;
+    --grass-dark: #4ea63c;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 100%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .counter {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top));
+    right: 14px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    z-index: 60;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .counter .count-num { min-width: 32px; text-align: center; display: inline-block; }
+  .counter.bump { animation: counterBump .4s ease; }
+  @keyframes counterBump {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.18); }
+  }
+
+  .scene {
+    position: relative;
+    width: 100vw;
+    height: 100vh; height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Sky */
+  .sky {
+    position: absolute; inset: 0 0 42% 0;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 70%, #cdf2ff 100%);
+  }
+  .sun {
+    position: absolute;
+    top: 6%; right: 12%;
+    font-size: 64px;
+    animation: spin 30s linear infinite;
+    filter: drop-shadow(0 0 14px rgba(255,217,61,0.5));
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .cloud {
+    position: absolute;
+    font-size: 56px;
+    opacity: 0.85;
+    pointer-events: none;
+    animation: drift 30s linear infinite;
+  }
+  .cloud-1 { top: 14%; left: -10%; animation-duration: 45s; }
+  .cloud-2 { top: 22%; left: 60%; animation-duration: 60s; }
+  @keyframes drift {
+    from { transform: translateX(-30px); }
+    to   { transform: translateX(calc(100vw + 80px)); }
+  }
+
+  /* Butterfly emoji wanderers */
+  .bfly {
+    position: absolute;
+    font-size: 32px;
+    pointer-events: none;
+    animation: wander 16s ease-in-out infinite alternate;
+  }
+  .bfly-1 { top: 30%; left: 12%; animation-duration: 14s; }
+  .bfly-2 { top: 45%; left: 70%; animation-duration: 18s; animation-delay: -4s; }
+  @keyframes wander {
+    0%   { transform: translate(0,0) rotate(-10deg); }
+    25%  { transform: translate(40vw, -10vh) rotate(15deg); }
+    50%  { transform: translate(60vw, 8vh) rotate(-10deg); }
+    75%  { transform: translate(20vw, 20vh) rotate(12deg); }
+    100% { transform: translate(0, 0) rotate(-8deg); }
+  }
+
+  /* Grass strip */
+  .grass-strip {
+    position: absolute;
+    left: 0; right: 0; top: 56%;
+    height: 6%;
+    background: linear-gradient(180deg, var(--grass) 0%, var(--grass-dark) 100%);
+  }
+  .grass-strip::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 0; right: 0; height: 12px;
+    background-image:
+      radial-gradient(circle at 10% 100%, var(--grass) 4px, transparent 5px),
+      radial-gradient(circle at 30% 100%, var(--grass) 5px, transparent 6px),
+      radial-gradient(circle at 50% 100%, var(--grass) 4px, transparent 5px),
+      radial-gradient(circle at 70% 100%, var(--grass) 6px, transparent 7px),
+      radial-gradient(circle at 90% 100%, var(--grass) 4px, transparent 5px);
+    background-size: 60px 14px;
+    background-repeat: repeat-x;
+  }
+
+  /* Soil bed */
+  .soil {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 42%;
+    background: linear-gradient(180deg, #a06c3a 0%, #6b4422 100%);
+  }
+  .soil::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 12% 30%, rgba(0,0,0,0.15) 3px, transparent 4px),
+      radial-gradient(circle at 30% 60%, rgba(0,0,0,0.15) 2px, transparent 3px),
+      radial-gradient(circle at 55% 25%, rgba(0,0,0,0.12) 2px, transparent 3px),
+      radial-gradient(circle at 75% 70%, rgba(0,0,0,0.18) 3px, transparent 4px),
+      radial-gradient(circle at 88% 40%, rgba(0,0,0,0.14) 2px, transparent 3px);
+    pointer-events: none;
+  }
+
+  .plots {
+    position: absolute;
+    inset: 8% 4% 6% 4%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .plot {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+  }
+  .plot::before {
+    /* mound shape (soil hole highlight) */
+    content: '';
+    position: absolute;
+    left: 50%; bottom: 10%;
+    width: 80%;
+    aspect-ratio: 2 / 1;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, #5a3a18 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .plot:active { transform: scale(0.96); }
+  .plot:active .plant { transform: scale(1.08); }
+
+  .plant {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.6;
+    max-height: 100%;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+  }
+  .plant svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .plant.shake { animation: shake .35s ease; }
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-6deg); }
+    75% { transform: rotate(6deg); }
+  }
+  .plant.bloom-pop { animation: bloomPop .55s cubic-bezier(.34,1.56,.64,1) backwards; }
+  @keyframes bloomPop {
+    0%   { transform: scale(0.2) translateY(20px); opacity: 0; }
+    60%  { transform: scale(1.2) translateY(-4px); }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .plant.gentle { animation: gentle 2.4s ease-in-out infinite; }
+  @keyframes gentle {
+    0%, 100% { transform: rotate(-1.5deg); }
+    50%      { transform: rotate(1.5deg); }
+  }
+
+  /* Flying flower (when picked → butterfly) */
+  .fly {
+    position: fixed;
+    font-size: 44px;
+    pointer-events: none;
+    z-index: 70;
+    animation: flyAway 1.6s ease-in forwards;
+  }
+  @keyframes flyAway {
+    0%   { transform: translate(0,0) scale(1) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--dx, 30vw), -110vh) scale(0.6) rotate(40deg); opacity: 0.4; }
+  }
+
+  /* Sparkles */
+  .spark {
+    position: fixed;
+    font-size: 22px;
+    pointer-events: none;
+    z-index: 65;
+    animation: sparkOut .9s ease-out forwards;
+  }
+  @keyframes sparkOut {
+    0%   { transform: translate(0,0) scale(0); opacity: 1; }
+    60%  { transform: translate(var(--sx),var(--sy)) scale(1.2); opacity: 1; }
+    100% { transform: translate(var(--sx),var(--sy)) scale(0.4); opacity: 0; }
+  }
+
+  /* Hint glow on empty plot */
+  .plot.hint::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: 12%;
+    width: 60%; aspect-ratio: 1 / 1;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    border: 3px dashed rgba(255,255,255,0.7);
+    animation: hintPulse 1.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.3; transform: translateX(-50%) scale(1.12); }
+  }
+
+  @media (orientation: landscape) and (max-height: 480px) {
+    .sky { inset: 0 0 38% 0; }
+    .grass-strip { top: 58%; }
+    .soil { height: 38%; }
+    .sun { font-size: 50px; }
+    .counter { font-size: 18px; }
+  }
+  @media (min-width: 700px) {
+    .plots { grid-template-columns: repeat(4, 1fr); inset: 8% 8% 8% 8%; }
+    .sun { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="counter" id="counter">🌸 <span class="count-num" id="countNum">0</span></div>
+
+<div class="scene">
+  <div class="sky">
+    <div class="sun">☀️</div>
+    <div class="cloud cloud-1">☁️</div>
+    <div class="cloud cloud-2">☁️</div>
+    <div class="bfly bfly-1">🦋</div>
+    <div class="bfly bfly-2">🦋</div>
+  </div>
+  <div class="grass-strip"></div>
+  <div class="soil">
+    <div class="plots" id="plots"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// Plant stages: 0=empty, 1=sprout, 2=leafy, 3=bud, 4=bloom
+// Tap empty -> 1. Tap non-empty growing -> +1 grow. Auto-tick adds +1 grow every 2s.
+// Each stage costs 2 grow points. Tap bloom -> pluck (counter+1, fly away).
+
+const FLOWERS = [
+  // each is svg fragment for bloom (centered around cx=50, cy=22, total viewBox handled by parent)
+  { name: 'tulip-pink',
+    svg: '<path d="M50 14 Q40 8 40 22 Q40 34 50 36 Q60 34 60 22 Q60 8 50 14 Z" fill="#ff6b9d" stroke="#c83a6e" stroke-width="1.5"/><path d="M40 22 Q50 28 60 22" fill="none" stroke="#c83a6e" stroke-width="1.5"/>' },
+  { name: 'daisy',
+    svg: '<circle cx="50" cy="34" r="6" fill="#ffd93d"/><ellipse cx="50" cy="22" rx="5" ry="9" fill="#fff" stroke="#ddd" stroke-width="1"/><ellipse cx="50" cy="46" rx="5" ry="9" fill="#fff" stroke="#ddd" stroke-width="1"/><ellipse cx="38" cy="34" rx="9" ry="5" fill="#fff" stroke="#ddd" stroke-width="1"/><ellipse cx="62" cy="34" rx="9" ry="5" fill="#fff" stroke="#ddd" stroke-width="1"/><ellipse cx="41" cy="25" rx="5" ry="8" fill="#fff" stroke="#ddd" stroke-width="1" transform="rotate(-45 41 25)"/><ellipse cx="59" cy="25" rx="5" ry="8" fill="#fff" stroke="#ddd" stroke-width="1" transform="rotate(45 59 25)"/><ellipse cx="41" cy="43" rx="5" ry="8" fill="#fff" stroke="#ddd" stroke-width="1" transform="rotate(45 41 43)"/><ellipse cx="59" cy="43" rx="5" ry="8" fill="#fff" stroke="#ddd" stroke-width="1" transform="rotate(-45 59 43)"/><circle cx="50" cy="34" r="5" fill="#ffd93d"/>' },
+  { name: 'sunflower',
+    svg: '<g><circle cx="50" cy="22" r="6" fill="#f39c12"/><ellipse cx="50" cy="10" rx="5" ry="8" fill="#f1c40f"/><ellipse cx="50" cy="34" rx="5" ry="8" fill="#f1c40f"/><ellipse cx="38" cy="22" rx="8" ry="5" fill="#f1c40f"/><ellipse cx="62" cy="22" rx="8" ry="5" fill="#f1c40f"/><ellipse cx="41" cy="13" rx="5" ry="7" fill="#f1c40f" transform="rotate(-45 41 13)"/><ellipse cx="59" cy="13" rx="5" ry="7" fill="#f1c40f" transform="rotate(45 59 13)"/><ellipse cx="41" cy="31" rx="5" ry="7" fill="#f1c40f" transform="rotate(45 41 31)"/><ellipse cx="59" cy="31" rx="5" ry="7" fill="#f1c40f" transform="rotate(-45 59 31)"/><circle cx="50" cy="22" r="6" fill="#8b4513"/></g>' },
+  { name: 'rose',
+    svg: '<circle cx="50" cy="22" r="12" fill="#e74c3c" stroke="#a02828" stroke-width="1.5"/><circle cx="50" cy="22" r="8" fill="#ff6b9d"/><circle cx="50" cy="22" r="4" fill="#c0392b"/>' },
+  { name: 'cherry-blossom',
+    svg: '<g><circle cx="50" cy="14" r="6" fill="#ffd1e0" stroke="#ffabc6" stroke-width="1"/><circle cx="60" cy="22" r="6" fill="#ffd1e0" stroke="#ffabc6" stroke-width="1"/><circle cx="56" cy="32" r="6" fill="#ffd1e0" stroke="#ffabc6" stroke-width="1"/><circle cx="44" cy="32" r="6" fill="#ffd1e0" stroke="#ffabc6" stroke-width="1"/><circle cx="40" cy="22" r="6" fill="#ffd1e0" stroke="#ffabc6" stroke-width="1"/><circle cx="50" cy="24" r="3" fill="#ffd93d"/></g>' },
+  { name: 'lavender',
+    svg: '<g><ellipse cx="50" cy="12" rx="3.5" ry="4" fill="#9b59b6"/><ellipse cx="46" cy="18" rx="3.5" ry="4" fill="#a569bd"/><ellipse cx="54" cy="18" rx="3.5" ry="4" fill="#a569bd"/><ellipse cx="48" cy="25" rx="3.5" ry="4" fill="#bb8fce"/><ellipse cx="52" cy="25" rx="3.5" ry="4" fill="#bb8fce"/><ellipse cx="50" cy="32" rx="3" ry="3.5" fill="#d2b4de"/></g>' },
+  { name: 'red-tulip',
+    svg: '<path d="M50 14 Q40 8 40 22 Q40 34 50 36 Q60 34 60 22 Q60 8 50 14 Z" fill="#e74c3c" stroke="#a02828" stroke-width="1.5"/><path d="M40 22 Q50 28 60 22" fill="none" stroke="#a02828" stroke-width="1.5"/>' }
+];
+
+function plantSvg(stage, flowerIdx) {
+  // Common stem from bottom to flower position
+  // viewBox 0 0 100 100, plant grows upward from y=92
+  const stem = '<path d="M50 92 L50 60" stroke="#2ecc71" stroke-width="3" stroke-linecap="round"/>';
+  const stemTall = '<path d="M50 92 L50 40" stroke="#2ecc71" stroke-width="3" stroke-linecap="round"/>';
+  const leaves = '<path d="M50 70 Q35 62 32 76 Q44 78 50 70 Z" fill="#2ecc71"/><path d="M50 80 Q65 72 68 86 Q56 88 50 80 Z" fill="#2ecc71"/>';
+  if (stage === 0) return '';
+  if (stage === 1) {
+    return `<svg viewBox="0 0 100 100"><path d="M50 92 L50 84" stroke="#2ecc71" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="82" r="4" fill="#7ed957"/></svg>`;
+  }
+  if (stage === 2) {
+    return `<svg viewBox="0 0 100 100">${stem}<path d="M50 72 Q40 68 38 78 Q46 80 50 74 Z" fill="#2ecc71"/><circle cx="50" cy="60" r="5" fill="#7ed957"/></svg>`;
+  }
+  if (stage === 3) {
+    const flower = FLOWERS[flowerIdx];
+    const budColor = flower.name.includes('pink') ? '#ff6b9d' :
+                     flower.name.includes('rose') ? '#e74c3c' :
+                     flower.name.includes('sun') ? '#f1c40f' :
+                     flower.name.includes('cherry') ? '#ffd1e0' :
+                     flower.name.includes('lavender') ? '#a569bd' :
+                     flower.name.includes('red') ? '#e74c3c' : '#ffd93d';
+    return `<svg viewBox="0 0 100 100">${stemTall}${leaves}<ellipse cx="50" cy="40" rx="8" ry="11" fill="${budColor}" stroke="#a02828" stroke-width="1.5"/><path d="M44 36 Q50 32 56 36" fill="none" stroke="#7ed957" stroke-width="2"/></svg>`;
+  }
+  // Stage 4 — full bloom
+  const flower = FLOWERS[flowerIdx];
+  return `<svg viewBox="0 0 100 100"><path d="M50 92 L50 36" stroke="#2ecc71" stroke-width="3" stroke-linecap="round"/>${leaves}${flower.svg}</svg>`;
+}
+
+const plotsEl = document.getElementById('plots');
+const countEl = document.getElementById('countNum');
+const counterEl = document.getElementById('counter');
+
+const NUM_PLOTS = 8;
+const plots = [];
+
+function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+function makePlot(i) {
+  const btn = document.createElement('button');
+  btn.className = 'plot hint';
+  btn.dataset.i = i;
+  btn.type = 'button';
+  btn.innerHTML = '<span class="plant"></span>';
+  btn.addEventListener('click', () => onPlotTap(i));
+  plotsEl.appendChild(btn);
+  return {
+    el: btn,
+    plantEl: btn.querySelector('.plant'),
+    stage: 0,
+    grow: 0,
+    flower: 0
+  };
+}
+
+function render(i) {
+  const p = plots[i];
+  p.plantEl.innerHTML = plantSvg(p.stage, p.flower);
+  p.el.classList.toggle('hint', p.stage === 0);
+  p.plantEl.classList.toggle('gentle', p.stage === 4);
+}
+
+function popAnim(el, cls, dur) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), dur);
+}
+
+function onPlotTap(i) {
+  const p = plots[i];
+  vibrate(8);
+  if (p.stage === 0) {
+    // plant a seed
+    p.stage = 1;
+    p.grow = 0;
+    p.flower = Math.floor(Math.random() * FLOWERS.length);
+    render(i);
+    popAnim(p.plantEl, 'bloom-pop', 600);
+  } else if (p.stage < 4) {
+    // accelerate growth
+    p.grow++;
+    popAnim(p.plantEl, 'shake', 400);
+    if (p.grow >= 2) {
+      p.grow = 0;
+      p.stage++;
+      render(i);
+      if (p.stage === 4) {
+        popAnim(p.plantEl, 'bloom-pop', 600);
+        vibrate([10, 30, 20]);
+      }
+    }
+  } else if (p.stage === 4) {
+    // pluck — fly away, count up
+    pluck(i);
+  }
+}
+
+function pluck(i) {
+  const p = plots[i];
+  const rect = p.plantEl.getBoundingClientRect();
+  const flower = FLOWERS[p.flower];
+
+  // Spawn flying butterfly emoji from this position
+  const fly = document.createElement('div');
+  fly.className = 'fly';
+  fly.textContent = '🦋';
+  fly.style.left = (rect.left + rect.width / 2 - 22) + 'px';
+  fly.style.top = (rect.top + rect.height / 2 - 22) + 'px';
+  const dx = (Math.random() * 60 - 30) + 'vw';
+  fly.style.setProperty('--dx', dx);
+  document.body.appendChild(fly);
+  setTimeout(() => fly.remove(), 1700);
+
+  // Sparkles
+  for (let k = 0; k < 6; k++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.textContent = ['✨','💖','⭐'][k % 3];
+    s.style.left = (rect.left + rect.width/2) + 'px';
+    s.style.top  = (rect.top + rect.height/2) + 'px';
+    s.style.setProperty('--sx', (Math.random()*80 - 40) + 'px');
+    s.style.setProperty('--sy', (-30 - Math.random()*40) + 'px');
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1000);
+  }
+
+  vibrate([20, 40, 60]);
+  p.stage = 0;
+  p.grow = 0;
+  render(i);
+
+  count++;
+  countEl.textContent = count;
+  counterEl.classList.remove('bump');
+  void counterEl.offsetWidth;
+  counterEl.classList.add('bump');
+}
+
+// Auto-grow tick
+function tick() {
+  for (let i = 0; i < NUM_PLOTS; i++) {
+    const p = plots[i];
+    if (p.stage >= 1 && p.stage < 4) {
+      p.grow++;
+      if (p.grow >= 2) {
+        p.grow = 0;
+        p.stage++;
+        render(i);
+        if (p.stage === 4) popAnim(p.plantEl, 'bloom-pop', 600);
+      }
+    }
+  }
+}
+
+// ===== INIT =====
+let count = 0;
+for (let i = 0; i < NUM_PLOTS; i++) plots.push(makePlot(i));
+plots.forEach((_, i) => render(i));
+setInterval(tick, 2000);
+</script>
+</body>
+</html>
