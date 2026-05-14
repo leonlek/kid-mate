@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🍳 ครัวของหนู — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมทำอาหาร 5 อย่าง ตอกไข่ ปอกกล้วย ทำแพนเค้ก ทำคุกกี้ ทำซูชิ สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ครัวของหนู">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, #ffe8d6 0%, #ffd6e4 65%, #ffc8a8 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  .home-btn, .back-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .app {
+    max-width: 720px; margin: 0 auto; padding: 16px;
+    position: relative; z-index: 1;
+    min-height: 100vh; min-height: 100dvh;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== SELECT SCREEN ========== */
+  .hero { text-align: center; padding: 56px 10px 16px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(40px, 9vw, 64px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+  }
+  .hero p {
+    font-size: 18px; color: #666; margin: 6px 0 0;
+  }
+
+  .stations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    padding: 10px 0 32px;
+  }
+  .station {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 24px;
+    padding: 22px 12px 18px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    font-family: inherit;
+  }
+  .station:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.08);
+  }
+  .station:hover { border-color: var(--brand); }
+  .station .emo {
+    font-size: 64px; line-height: 1;
+    display: block;
+    filter: drop-shadow(2px 4px 0 rgba(0,0,0,0.12));
+    animation: float 3s ease-in-out infinite;
+  }
+  .station:nth-child(2) .emo { animation-delay: -1s; }
+  .station:nth-child(3) .emo { animation-delay: -2s; }
+  .station:nth-child(4) .emo { animation-delay: -1.5s; }
+  .station:nth-child(5) .emo { animation-delay: -0.5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-6px) rotate(4deg); }
+  }
+  .station .title {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-top: 6px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+
+  /* ========== STATION SCREENS ========== */
+  .station-screen { padding: 60px 0 20px; }
+  .station-title {
+    font-family: 'Itim', cursive;
+    font-size: 32px;
+    text-align: center;
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    margin: 0 0 12px;
+  }
+  .stage {
+    background: linear-gradient(180deg, #fff7e8 0%, #fff0d6 100%);
+    border: 4px solid #fff;
+    border-radius: 28px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+    padding: 18px;
+    min-height: 320px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .stage svg { display: block; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .tool-btn {
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    color: var(--brand-dark);
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform .12s, opacity .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    min-height: 50px;
+  }
+  .tool-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brand-dark); }
+  .tool-btn[disabled] {
+    opacity: 0.35; pointer-events: none;
+    background: #eee; border-color: #ccc; color: #999;
+    box-shadow: 0 3px 0 #999;
+  }
+  .tool-btn.primary {
+    background: var(--good); color: #fff;
+    border-color: var(--good-dark); box-shadow: 0 3px 0 var(--good-dark);
+  }
+  .tool-btn.glow {
+    animation: glow 1.2s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 3px 0 var(--brand-dark), 0 0 0 0 rgba(255,107,157,0.5); }
+    50%      { box-shadow: 0 3px 0 var(--brand-dark), 0 0 0 10px rgba(255,107,157,0); }
+  }
+
+  .hint {
+    text-align: center;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin: 4px 0;
+    min-height: 28px;
+  }
+  .hint.pop { animation: hintPop .4s ease; }
+  @keyframes hintPop {
+    0%   { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ========== STATION 1: EGG ========== */
+  .egg-stage { display: flex; flex-direction: column; align-items: center; }
+  .pan-area {
+    width: 240px; height: 130px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .pan-area svg { width: 100%; height: 100%; }
+  .egg-holder {
+    width: 160px; height: 200px;
+    position: relative;
+    cursor: pointer;
+  }
+  .egg-holder svg { width: 100%; height: 100%; overflow: visible; }
+  .egg-holder.shake { animation: shake .25s ease; }
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+  .cook-egg {
+    width: 240px; height: 130px;
+    position: relative;
+  }
+  .cook-egg svg { width: 100%; height: 100%; overflow: visible; }
+  .seasoning {
+    position: absolute;
+    pointer-events: none;
+    font-size: 16px;
+    animation: fallDown 1.4s ease-out forwards;
+  }
+  @keyframes fallDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    20%  { opacity: 1; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ========== STATION 2: BANANA ========== */
+  .banana-stage { display: flex; flex-direction: column; align-items: center; }
+  .banana-area {
+    width: 280px; height: 320px;
+    position: relative;
+  }
+  .banana-area svg { width: 100%; height: 100%; }
+  .peel-piece {
+    cursor: pointer;
+    transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .4s;
+    transform-origin: 50% 95%;
+  }
+  .peel-piece.off-1 { transform: rotate(-50deg) translate(-30px,30px); opacity: 0.85; }
+  .peel-piece.off-2 { transform: rotate(50deg) translate(30px,30px); opacity: 0.85; }
+  .peel-piece.off-3 { transform: rotate(-30deg) translate(-40px,50px); opacity: 0.85; }
+  .peel-piece.off-4 { transform: rotate(30deg) translate(40px,50px); opacity: 0.85; }
+  .banana-slice {
+    position: absolute;
+    font-size: 38px;
+    pointer-events: none;
+    animation: dropIn .6s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+  @keyframes dropIn {
+    0% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  /* ========== STATION 3: PANCAKE ========== */
+  .pancake-stage { display: flex; flex-direction: column; align-items: center; }
+  .pancake-area {
+    width: 290px; height: 340px;
+    position: relative;
+  }
+  .pancake-area svg { width: 100%; height: 100%; overflow: visible; }
+  .pancake-area .pancake {
+    cursor: pointer;
+    transform-origin: 145px 230px;
+    transition: opacity .4s;
+  }
+  .pancake-area .pancake.flipping {
+    animation: flip .6s ease;
+  }
+  @keyframes flip {
+    0%   { transform: scaleY(1); }
+    50%  { transform: scaleY(0.2) translateY(-30px); }
+    100% { transform: scaleY(1); }
+  }
+  .topping {
+    position: absolute;
+    font-size: 28px;
+    pointer-events: none;
+    animation: dropIn .6s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+  .pour-stream {
+    position: absolute;
+    left: 50%; top: 60px;
+    transform: translateX(-50%);
+    width: 14px; height: 80px;
+    background: linear-gradient(180deg, #f1c40f 0%, #e0a800 100%);
+    border-radius: 8px;
+    pointer-events: none;
+    animation: pourStream 1s ease forwards;
+  }
+  @keyframes pourStream {
+    0%   { transform: translate(-50%, -40px) scaleY(0); }
+    30%  { transform: translate(-50%, 0) scaleY(1); }
+    70%  { transform: translate(-50%, 0) scaleY(1); }
+    100% { transform: translate(-50%, 40px) scaleY(0.2); opacity: 0; }
+  }
+
+  /* ========== STATION 4: COOKIE ========== */
+  .cookie-stage { display: flex; flex-direction: column; align-items: center; }
+  .cookie-area {
+    width: 290px; height: 280px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .cookie-area svg { overflow: visible; }
+  .knead-dough {
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .cutter-picker {
+    display: flex; gap: 14px; justify-content: center; margin: 8px 0;
+  }
+  .cutter-btn {
+    width: 70px; height: 70px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    border-radius: 18px;
+    box-shadow: 0 3px 0 var(--brand-dark);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 36px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .12s;
+  }
+  .cutter-btn:active { transform: scale(0.94); }
+  .chip {
+    position: absolute;
+    font-size: 18px;
+    pointer-events: none;
+    animation: dropIn .4s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+
+  /* ========== STATION 5: SUSHI ========== */
+  .sushi-stage { display: flex; flex-direction: column; align-items: center; }
+  .sushi-area {
+    width: 300px; height: 220px;
+    position: relative;
+  }
+  .sushi-area svg { width: 100%; height: 100%; overflow: visible; }
+  .topping-palette {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin: 8px 0;
+  }
+  .topping-btn {
+    width: 64px; height: 64px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    border-radius: 16px;
+    box-shadow: 0 3px 0 var(--brand-dark);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 32px;
+    transition: transform .12s;
+  }
+  .topping-btn:active { transform: scale(0.94); }
+  .topping-btn[disabled] { opacity: 0.4; pointer-events: none; }
+  .sushi-piece-fly {
+    position: absolute;
+    font-size: 40px;
+    pointer-events: none;
+    animation: dropIn .55s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+
+  /* ========== CELEBRATION ========== */
+  .done-overlay {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 70;
+    pointer-events: none;
+  }
+  .done-overlay.show { display: flex; }
+  .done-card {
+    background: #fff;
+    border: 4px solid var(--brand);
+    box-shadow: 0 8px 0 var(--brand-dark);
+    border-radius: 28px;
+    padding: 28px 36px;
+    text-align: center;
+    pointer-events: auto;
+    max-width: 320px;
+    animation: doneCard .45s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes doneCard {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .done-card .big {
+    font-size: 90px; line-height: 1;
+    filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15));
+  }
+  .done-card .label {
+    font-family: 'Itim', cursive;
+    font-size: 30px;
+    color: var(--brand-dark);
+    margin: 8px 0 14px;
+  }
+  .done-card .actions {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .done-card .tool-btn { width: 100%; justify-content: center; }
+
+  .confetti {
+    position: fixed;
+    top: -20px;
+    font-size: 24px;
+    pointer-events: none;
+    z-index: 65;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  @media (max-width: 380px) {
+    .station .emo { font-size: 52px; }
+    .station .title { font-size: 18px; }
+    .pan-area, .cook-egg { width: 200px; height: 110px; }
+    .egg-holder { width: 130px; height: 170px; }
+    .banana-area { width: 240px; height: 280px; }
+    .pancake-area { width: 250px; height: 300px; }
+    .cookie-area { width: 250px; height: 240px; }
+    .sushi-area { width: 270px; height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกสถานี">📋</button>
+
+<div class="app">
+
+  <!-- ===== SELECT SCREEN ===== -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🍳 ครัวของหนู</h1>
+      <p>เลือกอยากทำอะไร</p>
+    </header>
+    <div class="stations">
+      <button class="station" data-station="egg" type="button">
+        <span class="emo">🥚</span>
+        <div class="title">ตอกไข่ดาว</div>
+      </button>
+      <button class="station" data-station="banana" type="button">
+        <span class="emo">🍌</span>
+        <div class="title">ปอกกล้วย</div>
+      </button>
+      <button class="station" data-station="pancake" type="button">
+        <span class="emo">🥞</span>
+        <div class="title">ทำแพนเค้ก</div>
+      </button>
+      <button class="station" data-station="cookie" type="button">
+        <span class="emo">🍪</span>
+        <div class="title">ทำคุกกี้</div>
+      </button>
+      <button class="station" data-station="sushi" type="button">
+        <span class="emo">🍣</span>
+        <div class="title">ทำซูชิ</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== STATION 1: EGG ===== -->
+  <section id="eggScreen" class="screen station-screen">
+    <h2 class="station-title">🍳 ตอกไข่ดาว</h2>
+    <div class="stage egg-stage">
+      <div class="pan-area" id="eggPanArea">
+        <svg viewBox="0 0 240 130">
+          <!-- Handle -->
+          <rect x="180" y="58" width="60" height="14" rx="6" fill="#2d2d2d" stroke="#000" stroke-width="2"/>
+          <!-- Pan -->
+          <ellipse cx="100" cy="68" rx="100" ry="32" fill="#2d2d2d" stroke="#000" stroke-width="2"/>
+          <ellipse cx="100" cy="65" rx="92" ry="26" fill="#5a4631"/>
+          <!-- Cooked egg group (added by JS) -->
+          <g id="eggInPan"></g>
+        </svg>
+      </div>
+      <div class="hint" id="eggHint">👆 แตะไข่ 3 ครั้ง</div>
+      <div class="egg-holder" id="eggHolder">
+        <svg viewBox="0 0 160 200">
+          <ellipse cx="80" cy="110" rx="62" ry="80" fill="#fff8dc" stroke="#d4c79a" stroke-width="3"/>
+          <!-- Highlight -->
+          <ellipse cx="62" cy="80" rx="14" ry="20" fill="#fff" opacity="0.6"/>
+          <!-- Cracks -->
+          <g id="eggCracks" stroke="#8b6914" stroke-width="2.5" fill="none" stroke-linecap="round"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="tool-btn" id="eggPepperBtn" type="button" disabled>🧂 โรยพริกไทย</button>
+      <button class="tool-btn primary" id="eggResetBtn" type="button">↺ ทำใหม่</button>
+    </div>
+  </section>
+
+  <!-- ===== STATION 2: BANANA ===== -->
+  <section id="bananaScreen" class="screen station-screen">
+    <h2 class="station-title">🍌 ปอกกล้วย</h2>
+    <div class="stage banana-stage">
+      <div class="banana-area" id="bananaArea">
+        <svg viewBox="0 0 280 320">
+          <!-- Banana inner (visible after peeled) -->
+          <path d="M80 60 Q70 180 110 250 Q160 290 220 240 Q190 220 175 200 Q180 100 140 70 Q105 50 80 60 Z"
+                fill="#fff5b3" stroke="#e0c460" stroke-width="2"/>
+          <!-- Peel pieces (clickable) -->
+          <g class="peel-piece" id="peel0" data-i="0">
+            <path d="M75 55 Q60 90 70 160 Q72 130 85 100 Q90 70 100 60 Q88 52 75 55 Z"
+                  fill="#f1c40f" stroke="#a87f00" stroke-width="2.5"/>
+          </g>
+          <g class="peel-piece" id="peel1" data-i="1">
+            <path d="M100 55 Q108 90 100 160 Q98 130 112 100 Q118 75 130 65 Q115 50 100 55 Z"
+                  fill="#f4d03f" stroke="#a87f00" stroke-width="2.5"/>
+          </g>
+          <g class="peel-piece" id="peel2" data-i="2">
+            <path d="M60 50 Q40 80 35 30 Q60 30 80 45 Q90 38 80 35 Z"
+                  fill="#e8c200" stroke="#a87f00" stroke-width="2.5"/>
+            <path d="M50 30 Q55 18 70 22 L72 32 Q60 30 50 30 Z"
+                  fill="#5a3a18" stroke="#3a2a08" stroke-width="2"/>
+          </g>
+          <g class="peel-piece" id="peel3" data-i="3">
+            <path d="M195 230 Q230 240 245 220 Q235 250 215 260 Q200 250 195 230 Z"
+                  fill="#d4a800" stroke="#a87f00" stroke-width="2.5"/>
+          </g>
+        </svg>
+        <div id="sliceLayer"></div>
+      </div>
+      <div class="hint" id="bananaHint">👆 แตะเปลือกออกทีละชิ้น</div>
+    </div>
+    <div class="toolbar">
+      <button class="tool-btn" id="bananaCutBtn" type="button" disabled>🔪 หั่น</button>
+      <button class="tool-btn primary" id="bananaResetBtn" type="button">↺ ทำใหม่</button>
+    </div>
+  </section>
+
+  <!-- ===== STATION 3: PANCAKE ===== -->
+  <section id="pancakeScreen" class="screen station-screen">
+    <h2 class="station-title">🥞 ทำแพนเค้ก</h2>
+    <div class="stage pancake-stage">
+      <div class="pancake-area" id="pancakeArea">
+        <svg viewBox="0 0 290 340">
+          <!-- Batter bowl (top) -->
+          <g id="batterBowl" style="cursor: pointer;">
+            <ellipse cx="145" cy="56" rx="44" ry="14" fill="#5a4631"/>
+            <path d="M101 50 Q105 100 145 100 Q185 100 189 50 Z" fill="#fff" stroke="#888" stroke-width="2"/>
+            <ellipse cx="145" cy="50" rx="38" ry="10" fill="#f9e7a0" stroke="#d4a800" stroke-width="2"/>
+          </g>
+          <text x="145" y="34" text-anchor="middle" font-family="Itim" font-size="18" fill="#e54b82" id="batterLabel">แตะถ้วย</text>
+          <!-- Pan -->
+          <g>
+            <rect x="240" y="230" width="50" height="12" rx="6" fill="#2d2d2d" stroke="#000" stroke-width="2"/>
+            <ellipse cx="145" cy="240" rx="120" ry="36" fill="#2d2d2d" stroke="#000" stroke-width="2"/>
+            <ellipse cx="145" cy="235" rx="108" ry="28" fill="#5a4631"/>
+          </g>
+          <!-- Pancake on pan -->
+          <g id="pancakeGroup" class="pancake" style="display:none;">
+            <ellipse cx="145" cy="232" rx="78" ry="22" fill="#d49b3e" stroke="#a06820" stroke-width="2" id="pancakeOuter"/>
+            <ellipse cx="145" cy="228" rx="70" ry="18" fill="#e8b35e" id="pancakeTop"/>
+            <g id="pancakeBubbles" style="display:none;">
+              <circle cx="120" cy="228" r="3" fill="#fff" opacity="0.7"/>
+              <circle cx="150" cy="224" r="2.5" fill="#fff" opacity="0.7"/>
+              <circle cx="170" cy="230" r="3" fill="#fff" opacity="0.7"/>
+              <circle cx="135" cy="232" r="2" fill="#fff" opacity="0.7"/>
+            </g>
+          </g>
+        </svg>
+        <div id="toppingLayer"></div>
+      </div>
+      <div class="hint" id="pancakeHint">👆 แตะถ้วยแป้ง</div>
+    </div>
+    <div class="toolbar" id="pancakeToolbar">
+      <button class="tool-btn" id="pancakeFlipBtn" type="button" disabled>↩ พลิก</button>
+      <button class="tool-btn primary" id="pancakeResetBtn" type="button">↺ ทำใหม่</button>
+    </div>
+    <div class="toolbar" id="pancakeToppingBar" style="display:none;">
+      <button class="tool-btn topping-add" data-emo="🍓" type="button">🍓</button>
+      <button class="tool-btn topping-add" data-emo="🫐" type="button">🫐</button>
+      <button class="tool-btn topping-add" data-emo="🍯" type="button">🍯</button>
+      <button class="tool-btn topping-add" data-emo="🍌" type="button">🍌</button>
+      <button class="tool-btn topping-add" data-emo="🧈" type="button">🧈</button>
+    </div>
+  </section>
+
+  <!-- ===== STATION 4: COOKIE ===== -->
+  <section id="cookieScreen" class="screen station-screen">
+    <h2 class="station-title">🍪 ทำคุกกี้</h2>
+    <div class="stage cookie-stage">
+      <div class="cookie-area" id="cookieArea">
+        <svg viewBox="0 0 290 260" id="cookieSvg">
+          <!-- Counter top -->
+          <rect x="0" y="200" width="290" height="60" fill="#d4a777" opacity="0.4"/>
+          <!-- Dough/cookie group -->
+          <g id="doughGroup" class="knead-dough">
+            <ellipse cx="145" cy="170" rx="60" ry="40" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+            <ellipse cx="125" cy="155" rx="10" ry="6" fill="#ffe9c4"/>
+            <ellipse cx="160" cy="180" rx="8" ry="5" fill="#ffe9c4"/>
+          </g>
+          <g id="chipsLayer"></g>
+        </svg>
+      </div>
+      <div class="hint" id="cookieHint">👆 แตะแป้ง 5 ครั้ง</div>
+      <div class="cutter-picker" id="cookieCutters" style="display:none;">
+        <button class="cutter-btn" data-shape="heart" type="button">❤️</button>
+        <button class="cutter-btn" data-shape="star" type="button">⭐</button>
+        <button class="cutter-btn" data-shape="flower" type="button">🌸</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="tool-btn" id="cookieChipBtn" type="button" disabled>🍫 ใส่ช็อก</button>
+      <button class="tool-btn" id="cookieBakeBtn" type="button" disabled>🔥 อบ</button>
+      <button class="tool-btn primary" id="cookieResetBtn" type="button">↺ ทำใหม่</button>
+    </div>
+  </section>
+
+  <!-- ===== STATION 5: SUSHI ===== -->
+  <section id="sushiScreen" class="screen station-screen">
+    <h2 class="station-title">🍣 ทำซูชิ</h2>
+    <div class="stage sushi-stage">
+      <div class="sushi-area" id="sushiArea">
+        <svg viewBox="0 0 300 220" id="sushiSvg">
+          <!-- Bamboo mat -->
+          <g id="sushiMat">
+            <rect x="20" y="100" width="260" height="80" rx="6" fill="#c4a060" stroke="#8b6914" stroke-width="2"/>
+            <line x1="20" y1="115" x2="280" y2="115" stroke="#a07c30" stroke-width="1.5"/>
+            <line x1="20" y1="130" x2="280" y2="130" stroke="#a07c30" stroke-width="1.5"/>
+            <line x1="20" y1="145" x2="280" y2="145" stroke="#a07c30" stroke-width="1.5"/>
+            <line x1="20" y1="160" x2="280" y2="160" stroke="#a07c30" stroke-width="1.5"/>
+            <line x1="20" y1="175" x2="280" y2="175" stroke="#a07c30" stroke-width="1.5"/>
+          </g>
+          <!-- Seaweed -->
+          <g id="sushiSeaweed">
+            <rect x="40" y="110" width="220" height="60" fill="#1e4a2a" stroke="#0a2814" stroke-width="2"/>
+          </g>
+          <!-- Rice (added by JS) -->
+          <g id="sushiRice"></g>
+          <!-- Toppings (added by JS) -->
+          <g id="sushiToppings"></g>
+          <!-- Roll (shown after roll) -->
+          <g id="sushiRoll" style="display:none;">
+            <ellipse cx="150" cy="140" rx="100" ry="22" fill="#1e4a2a" stroke="#0a2814" stroke-width="2"/>
+            <ellipse cx="150" cy="135" rx="92" ry="16" fill="#fff5e0"/>
+            <ellipse cx="150" cy="138" rx="14" ry="8" fill="#ff8c70"/>
+          </g>
+        </svg>
+        <div id="sushiPieces"></div>
+      </div>
+      <div class="hint" id="sushiHint">👆 แตะข้าวเพื่อตักลงสาหร่าย</div>
+      <div class="topping-palette" id="sushiPalette">
+        <button class="topping-btn" id="riceBtn" type="button">🍚</button>
+        <button class="topping-btn topping-pick" data-emo="🐟" disabled type="button">🐟</button>
+        <button class="topping-btn topping-pick" data-emo="🥒" disabled type="button">🥒</button>
+        <button class="topping-btn topping-pick" data-emo="🥚" disabled type="button">🥚</button>
+        <button class="topping-btn topping-pick" data-emo="🥑" disabled type="button">🥑</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="tool-btn" id="sushiRollBtn" type="button" disabled>🌯 ม้วน</button>
+      <button class="tool-btn" id="sushiCutBtn" type="button" disabled>🔪 ตัด</button>
+      <button class="tool-btn primary" id="sushiResetBtn" type="button">↺ ทำใหม่</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- DONE OVERLAY -->
+<div class="done-overlay" id="doneOverlay">
+  <div class="done-card">
+    <div class="big" id="doneEmoji">🎉</div>
+    <div class="label" id="doneLabel">เสร็จแล้ว!</div>
+    <div class="actions">
+      <button class="tool-btn primary" id="doneAgain" type="button">↺ ทำอีก</button>
+      <button class="tool-btn" id="doneMenu" type="button">📋 เมนู</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ===== HELPERS =====
+function $(id) { return document.getElementById(id); }
+function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+function setHint(el, text) {
+  el.textContent = text;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+}
+
+const CONFETTI_EMOJI = ['🌟','💖','✨','🎀','💕','⭐','🌸','💫','🎉'];
+function confettiBurst(count) {
+  count = count || 24;
+  for (let i = 0; i < count; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = CONFETTI_EMOJI[Math.floor(Math.random()*CONFETTI_EMOJI.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
+    c.style.animationDelay = (Math.random() * 0.3) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+// ===== SCREEN ROUTING =====
+const screens = {
+  select: $('selectScreen'),
+  egg: $('eggScreen'),
+  banana: $('bananaScreen'),
+  pancake: $('pancakeScreen'),
+  cookie: $('cookieScreen'),
+  sushi: $('sushiScreen')
+};
+const backBtn = $('backBtn');
+let currentScreen = 'select';
+
+function show(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  currentScreen = name;
+  backBtn.classList.toggle('show', name !== 'select');
+  hideDone();
+  if (name === 'egg') resetEgg();
+  else if (name === 'banana') resetBanana();
+  else if (name === 'pancake') resetPancake();
+  else if (name === 'cookie') resetCookie();
+  else if (name === 'sushi') resetSushi();
+}
+
+document.querySelectorAll('.station').forEach(b => {
+  b.addEventListener('click', () => { vibrate(8); show(b.dataset.station); });
+});
+backBtn.addEventListener('click', () => { vibrate(6); show('select'); });
+
+// ===== DONE OVERLAY =====
+const doneOverlay = $('doneOverlay');
+const doneEmoji = $('doneEmoji');
+const doneLabel = $('doneLabel');
+let doneAgainHandler = null;
+
+function showDone(emoji, label, againFn) {
+  doneEmoji.textContent = emoji;
+  doneLabel.textContent = label;
+  doneAgainHandler = againFn;
+  doneOverlay.classList.add('show');
+  confettiBurst(28);
+  vibrate([20, 40, 60]);
+}
+function hideDone() { doneOverlay.classList.remove('show'); }
+
+$('doneAgain').addEventListener('click', () => {
+  hideDone();
+  if (doneAgainHandler) doneAgainHandler();
+});
+$('doneMenu').addEventListener('click', () => { show('select'); });
+
+// =================================================
+// STATION 1: EGG (ตอกไข่ดาว)
+// =================================================
+const eggHolder = $('eggHolder');
+const eggCracks = $('eggCracks');
+const eggInPan = $('eggInPan');
+const eggHint = $('eggHint');
+const eggPepperBtn = $('eggPepperBtn');
+const eggResetBtn = $('eggResetBtn');
+const eggPanArea = $('eggPanArea');
+
+const CRACK_PATHS = [
+  'M50 80 L70 95 L60 105 L80 115',
+  'M110 70 L95 85 L115 95 L100 110',
+  'M80 60 L75 80 L90 90 L85 105'
+];
+
+let eggState = 0; // 0=intact, 1-2=cracked, 3=broken, 4=raw-in-pan, 5=cooking, 6=cooked, 7=peppered
+let eggClickGuard = false;
+
+function resetEgg() {
+  eggState = 0;
+  eggClickGuard = false;
+  eggHolder.style.display = '';
+  eggHolder.style.opacity = '1';
+  eggHolder.style.transform = '';
+  eggCracks.innerHTML = '';
+  eggInPan.innerHTML = '';
+  setHint(eggHint, '👆 แตะไข่ 3 ครั้ง');
+  eggPepperBtn.disabled = true;
+  eggPepperBtn.classList.remove('glow');
+}
+
+function addCrack(idx) {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', CRACK_PATHS[idx]);
+  eggCracks.appendChild(p);
+}
+
+eggHolder.addEventListener('click', () => {
+  if (eggClickGuard || eggState >= 3) return;
+  vibrate(10);
+  eggHolder.classList.remove('shake');
+  void eggHolder.offsetWidth;
+  eggHolder.classList.add('shake');
+  addCrack(eggState);
+  eggState++;
+  if (eggState === 3) {
+    eggClickGuard = true;
+    setHint(eggHint, '✨ ไข่แตกแล้ว!');
+    // Drop into pan
+    eggHolder.style.transition = 'transform .7s ease, opacity .5s';
+    eggHolder.style.transform = 'translateY(70px) scale(0.4) rotate(20deg)';
+    eggHolder.style.opacity = '0';
+    setTimeout(() => {
+      eggHolder.style.display = 'none';
+      eggHolder.style.transition = '';
+      drawRawEgg();
+    }, 700);
+  } else {
+    setHint(eggHint, '👆 ตอกอีก! (' + eggState + '/3)');
+  }
+});
+
+function drawRawEgg() {
+  eggState = 4;
+  setHint(eggHint, '🔥 กำลังทอด...');
+  // Raw: small white spread + yolk in middle
+  eggInPan.innerHTML = `
+    <ellipse cx="100" cy="65" rx="40" ry="14" fill="#fff7e0" opacity="0.7" id="eggWhite"/>
+    <circle cx="100" cy="65" r="12" fill="#ffd93d" stroke="#d4a800" stroke-width="2" id="eggYolk"/>
+    <circle cx="96" cy="61" r="3" fill="#fff7d0"/>
+  `;
+  setTimeout(() => cookEgg(), 1400);
+}
+
+function cookEgg() {
+  eggState = 5;
+  setHint(eggHint, '🍳 เกือบสุกแล้ว!');
+  // Grow white, deepen yolk
+  const w = document.getElementById('eggWhite');
+  const y = document.getElementById('eggYolk');
+  if (w) {
+    w.setAttribute('rx', '52');
+    w.setAttribute('ry', '20');
+    w.setAttribute('fill', '#ffffff');
+    w.setAttribute('opacity', '1');
+    w.setAttribute('stroke', '#e0d6a8');
+    w.setAttribute('stroke-width', '1.5');
+  }
+  if (y) {
+    y.setAttribute('r', '14');
+    y.setAttribute('fill', '#ffb800');
+  }
+  setTimeout(() => finishCookEgg(), 1400);
+}
+
+function finishCookEgg() {
+  eggState = 6;
+  setHint(eggHint, '👌 พร้อมโรยพริกไทย!');
+  eggPepperBtn.disabled = false;
+  eggPepperBtn.classList.add('glow');
+}
+
+eggPepperBtn.addEventListener('click', () => {
+  if (eggState !== 6) return;
+  vibrate(15);
+  eggPepperBtn.classList.remove('glow');
+  // Sprinkle pepper
+  const panRect = eggPanArea.getBoundingClientRect();
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'seasoning';
+    dot.textContent = ['⚫','·','•'][i % 3];
+    dot.style.left = (panRect.left + 50 + Math.random() * panRect.width * 0.55) + 'px';
+    dot.style.top  = (panRect.top + 30 + Math.random() * 30) + 'px';
+    document.body.appendChild(dot);
+    setTimeout(() => dot.remove(), 1500);
+  }
+  eggState = 7;
+  setTimeout(() => showDone('🍳', 'ไข่ดาวเสร็จแล้ว!', resetEgg), 600);
+});
+
+eggResetBtn.addEventListener('click', () => { vibrate(6); resetEgg(); });
+
+// =================================================
+// STATION 2: BANANA (ปอกกล้วย)
+// =================================================
+const bananaHint = $('bananaHint');
+const bananaCutBtn = $('bananaCutBtn');
+const bananaResetBtn = $('bananaResetBtn');
+const sliceLayer = $('sliceLayer');
+const peelStates = [false, false, false, false];
+
+function resetBanana() {
+  for (let i = 0; i < 4; i++) {
+    peelStates[i] = false;
+    const el = $('peel' + i);
+    el.classList.remove('off-1','off-2','off-3','off-4');
+    el.style.display = '';
+    el.style.pointerEvents = '';
+  }
+  bananaCutBtn.disabled = true;
+  bananaCutBtn.classList.remove('glow');
+  sliceLayer.innerHTML = '';
+  setHint(bananaHint, '👆 แตะเปลือกออกทีละชิ้น');
+}
+
+for (let i = 0; i < 4; i++) {
+  const el = $('peel' + i);
+  el.addEventListener('click', () => {
+    if (peelStates[i]) return;
+    peelStates[i] = true;
+    vibrate(10);
+    el.classList.add('off-' + (i+1));
+    el.style.pointerEvents = 'none';
+    setTimeout(() => { el.style.display = 'none'; }, 600);
+    const peeled = peelStates.filter(x => x).length;
+    if (peeled === 4) {
+      setHint(bananaHint, '🔪 แตะ "หั่น" ได้แล้ว!');
+      bananaCutBtn.disabled = false;
+      bananaCutBtn.classList.add('glow');
+    } else {
+      setHint(bananaHint, '👆 ปอกอีก ' + (4 - peeled) + ' ชิ้น');
+    }
+  });
+}
+
+bananaCutBtn.addEventListener('click', () => {
+  if (bananaCutBtn.disabled) return;
+  vibrate(20);
+  bananaCutBtn.disabled = true;
+  bananaCutBtn.classList.remove('glow');
+  setHint(bananaHint, '🍌 หั่นเสร็จแล้ว!');
+  // Show 4 banana slices
+  const positions = [
+    { x: 50, y: 200 },
+    { x: 105, y: 215 },
+    { x: 160, y: 215 },
+    { x: 215, y: 205 }
+  ];
+  positions.forEach((p, idx) => {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'banana-slice';
+      s.textContent = '🍌';
+      s.style.left = (p.x * 280/280) + 'px';
+      s.style.top = (p.y * 320/320) + 'px';
+      s.style.fontSize = '34px';
+      s.style.transform = 'rotate(' + (Math.random() * 30 - 15) + 'deg)';
+      sliceLayer.appendChild(s);
+    }, idx * 150);
+  });
+  setTimeout(() => showDone('🍌', 'กล้วยพร้อมทานแล้ว!', resetBanana), 800);
+});
+
+bananaResetBtn.addEventListener('click', () => { vibrate(6); resetBanana(); });
+
+// =================================================
+// STATION 3: PANCAKE (ทำแพนเค้ก)
+// =================================================
+const pancakeHint = $('pancakeHint');
+const pancakeFlipBtn = $('pancakeFlipBtn');
+const pancakeResetBtn = $('pancakeResetBtn');
+const pancakeArea = $('pancakeArea');
+const pancakeGroup = $('pancakeGroup');
+const pancakeOuter = $('pancakeOuter');
+const pancakeTop = $('pancakeTop');
+const pancakeBubbles = $('pancakeBubbles');
+const batterBowl = $('batterBowl');
+const batterLabel = $('batterLabel');
+const pancakeToppingBar = $('pancakeToppingBar');
+const toppingLayer = $('toppingLayer');
+
+let pancakeState = 0; // 0=empty, 1=poured, 2=ready-to-flip, 3=flipped, 4=cooking-other-side, 5=done
+
+function resetPancake() {
+  pancakeState = 0;
+  pancakeGroup.style.display = 'none';
+  pancakeBubbles.style.display = 'none';
+  pancakeOuter.setAttribute('fill', '#d49b3e');
+  pancakeTop.setAttribute('fill', '#e8b35e');
+  batterBowl.style.display = '';
+  batterBowl.style.pointerEvents = '';
+  batterLabel.style.display = '';
+  setHint(pancakeHint, '👆 แตะถ้วยแป้ง');
+  pancakeFlipBtn.disabled = true;
+  pancakeFlipBtn.classList.remove('glow');
+  pancakeToppingBar.style.display = 'none';
+  toppingLayer.innerHTML = '';
+  document.querySelectorAll('.pour-stream').forEach(s => s.remove());
+}
+
+batterBowl.addEventListener('click', () => {
+  if (pancakeState !== 0) return;
+  vibrate(10);
+  pancakeState = 1;
+  batterBowl.style.pointerEvents = 'none';
+  batterLabel.style.display = 'none';
+  setHint(pancakeHint, '⏳ กำลังเทแป้ง...');
+  // Pour animation
+  const stream = document.createElement('div');
+  stream.className = 'pour-stream';
+  pancakeArea.appendChild(stream);
+  setTimeout(() => stream.remove(), 1000);
+  setTimeout(() => {
+    pancakeGroup.style.display = '';
+    pancakeOuter.setAttribute('fill', '#f5d68f');
+    pancakeTop.setAttribute('fill', '#fae7a8');
+    batterBowl.style.display = 'none';
+    setHint(pancakeHint, '🔥 กำลังสุก...');
+    setTimeout(() => bubbles(), 1500);
+  }, 1000);
+});
+
+function bubbles() {
+  pancakeBubbles.style.display = '';
+  pancakeOuter.setAttribute('fill', '#e8b35e');
+  pancakeTop.setAttribute('fill', '#f0c878');
+  setTimeout(() => readyToFlip(), 1500);
+}
+
+function readyToFlip() {
+  pancakeState = 2;
+  setHint(pancakeHint, '↩ แตะ "พลิก"!');
+  pancakeFlipBtn.disabled = false;
+  pancakeFlipBtn.classList.add('glow');
+}
+
+pancakeFlipBtn.addEventListener('click', () => {
+  if (pancakeState !== 2) return;
+  vibrate(15);
+  pancakeFlipBtn.disabled = true;
+  pancakeFlipBtn.classList.remove('glow');
+  pancakeBubbles.style.display = 'none';
+  pancakeGroup.classList.remove('flipping');
+  void pancakeGroup.offsetWidth;
+  pancakeGroup.classList.add('flipping');
+  setHint(pancakeHint, '✨ พลิกแล้ว!');
+  setTimeout(() => {
+    pancakeOuter.setAttribute('fill', '#a87125');
+    pancakeTop.setAttribute('fill', '#c4863a');
+    pancakeState = 3;
+    setTimeout(() => finishPancake(), 1000);
+  }, 600);
+});
+
+function finishPancake() {
+  pancakeState = 5;
+  setHint(pancakeHint, '🍓 ใส่หน้าตามชอบ');
+  pancakeToppingBar.style.display = '';
+}
+
+document.querySelectorAll('.topping-add').forEach(b => {
+  b.addEventListener('click', () => {
+    if (pancakeState !== 5) return;
+    vibrate(8);
+    const emo = b.dataset.emo;
+    const t = document.createElement('div');
+    t.className = 'topping';
+    t.textContent = emo;
+    // Random position on pancake
+    const rect = pancakeArea.getBoundingClientRect();
+    // pancake center ~ (145/290 * width, 230/340 * height)
+    const cx = pancakeArea.clientWidth * 145 / 290;
+    const cy = pancakeArea.clientHeight * 230 / 340;
+    const ang = Math.random() * Math.PI * 2;
+    const r = Math.random() * pancakeArea.clientWidth * 0.18;
+    t.style.left = (cx + Math.cos(ang) * r - 14) + 'px';
+    t.style.top  = (cy + Math.sin(ang) * r * 0.4 - 14) + 'px';
+    toppingLayer.appendChild(t);
+    // After 3 toppings, mark done
+    if (toppingLayer.children.length === 3) {
+      setTimeout(() => showDone('🥞', 'แพนเค้กพร้อมเสิร์ฟ!', resetPancake), 600);
+    }
+  });
+});
+
+pancakeResetBtn.addEventListener('click', () => { vibrate(6); resetPancake(); });
+
+// =================================================
+// STATION 4: COOKIE (ทำคุกกี้)
+// =================================================
+const cookieHint = $('cookieHint');
+const cookieArea = $('cookieArea');
+const cookieSvg = $('cookieSvg');
+const doughGroup = $('doughGroup');
+const chipsLayer = $('chipsLayer');
+const cookieCutters = $('cookieCutters');
+const cookieChipBtn = $('cookieChipBtn');
+const cookieBakeBtn = $('cookieBakeBtn');
+const cookieResetBtn = $('cookieResetBtn');
+
+let cookieState = 0; // 0=dough ball, 1-4=kneading, 5=ready to cut, 6=shaped, 7=chipped, 8=baking, 9=done
+let kneadCount = 0;
+let chipMode = false;
+let chipsPlaced = 0;
+let cookieShape = null;
+
+function resetCookie() {
+  cookieState = 0;
+  kneadCount = 0;
+  chipMode = false;
+  chipsPlaced = 0;
+  cookieShape = null;
+  doughGroup.innerHTML = `
+    <ellipse cx="145" cy="170" rx="60" ry="40" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+    <ellipse cx="125" cy="155" rx="10" ry="6" fill="#ffe9c4"/>
+    <ellipse cx="160" cy="180" rx="8" ry="5" fill="#ffe9c4"/>
+  `;
+  doughGroup.style.transform = '';
+  chipsLayer.innerHTML = '';
+  cookieCutters.style.display = 'none';
+  cookieChipBtn.disabled = true;
+  cookieChipBtn.classList.remove('glow');
+  cookieBakeBtn.disabled = true;
+  cookieBakeBtn.classList.remove('glow');
+  setHint(cookieHint, '👆 แตะแป้ง 5 ครั้ง');
+  cookieArea.style.cursor = 'pointer';
+}
+
+cookieArea.addEventListener('click', (e) => {
+  if (cookieState === 0 && kneadCount < 5) {
+    // Knead
+    kneadCount++;
+    vibrate(10);
+    doughGroup.style.transform = `scale(${1 - kneadCount * 0.06}, ${1 + kneadCount * 0.04})`;
+    if (kneadCount < 5) {
+      setHint(cookieHint, '👆 นวดอีก! (' + kneadCount + '/5)');
+    } else {
+      cookieState = 5;
+      setHint(cookieHint, '🍪 เลือกรูปทรง');
+      doughGroup.innerHTML = `
+        <ellipse cx="145" cy="175" rx="80" ry="32" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <ellipse cx="125" cy="165" rx="12" ry="5" fill="#ffe9c4"/>
+        <ellipse cx="160" cy="185" rx="10" ry="4" fill="#ffe9c4"/>
+      `;
+      doughGroup.style.transform = '';
+      cookieCutters.style.display = '';
+      cookieArea.style.cursor = '';
+    }
+  } else if (cookieState === 6 && chipMode) {
+    // Add chip at click position
+    if (chipsPlaced >= 5) return;
+    const rect = cookieArea.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = '🍫';
+    chip.style.left = (x - 10) + 'px';
+    chip.style.top = (y - 10) + 'px';
+    chipsLayer.appendChild(chip);
+    chipsPlaced++;
+    vibrate(8);
+    if (chipsPlaced >= 5) {
+      chipMode = false;
+      cookieChipBtn.disabled = true;
+      cookieBakeBtn.disabled = false;
+      cookieBakeBtn.classList.add('glow');
+      setHint(cookieHint, '🔥 แตะ "อบ" ได้แล้ว');
+    }
+  }
+});
+
+document.querySelectorAll('.cutter-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (cookieState !== 5) return;
+    vibrate(15);
+    cookieShape = b.dataset.shape;
+    cookieState = 6;
+    cookieCutters.style.display = 'none';
+    // Replace dough with shaped cookie
+    let shapeHtml = '';
+    if (cookieShape === 'heart') {
+      shapeHtml = `<path d="M145 200 Q100 165 100 145 Q100 125 120 125 Q140 125 145 145 Q150 125 170 125 Q190 125 190 145 Q190 165 145 200 Z"
+                    fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>`;
+    } else if (cookieShape === 'star') {
+      shapeHtml = `<polygon points="145,120 156,150 188,150 162,170 172,200 145,182 118,200 128,170 102,150 134,150"
+                    fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>`;
+    } else if (cookieShape === 'flower') {
+      shapeHtml = `<g>
+        <circle cx="145" cy="130" r="22" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <circle cx="170" cy="155" r="22" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <circle cx="165" cy="185" r="22" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <circle cx="125" cy="185" r="22" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <circle cx="120" cy="155" r="22" fill="#f5e1b3" stroke="#c4a060" stroke-width="3"/>
+        <circle cx="145" cy="160" r="18" fill="#fae3aa"/>
+      </g>`;
+    }
+    doughGroup.innerHTML = shapeHtml;
+    setHint(cookieHint, '🍫 แตะ "ใส่ช็อก"');
+    cookieChipBtn.disabled = false;
+    cookieChipBtn.classList.add('glow');
+  });
+});
+
+cookieChipBtn.addEventListener('click', () => {
+  if (cookieState !== 6 || chipMode) return;
+  vibrate(10);
+  chipMode = true;
+  cookieChipBtn.classList.remove('glow');
+  cookieChipBtn.disabled = true;
+  setHint(cookieHint, '👆 แตะบนคุกกี้ใส่ช็อก');
+  cookieArea.style.cursor = 'crosshair';
+});
+
+cookieBakeBtn.addEventListener('click', () => {
+  if (cookieState !== 6) return;
+  vibrate([15, 30, 60]);
+  cookieState = 8;
+  cookieBakeBtn.classList.remove('glow');
+  cookieBakeBtn.disabled = true;
+  cookieArea.style.cursor = '';
+  setHint(cookieHint, '🔥 กำลังอบ...');
+  // Darken the cookie
+  setTimeout(() => {
+    doughGroup.querySelectorAll('path,polygon,circle').forEach(el => {
+      const f = el.getAttribute('fill');
+      if (f && f.startsWith('#f')) {
+        if (f === '#f5e1b3') el.setAttribute('fill', '#c89860');
+        else if (f === '#fae3aa') el.setAttribute('fill', '#d4a060');
+      }
+    });
+  }, 1000);
+  setTimeout(() => {
+    setHint(cookieHint, '✨ อบเสร็จแล้ว!');
+    showDone('🍪', 'คุกกี้เสร็จแล้ว!', resetCookie);
+  }, 2000);
+});
+
+cookieResetBtn.addEventListener('click', () => { vibrate(6); resetCookie(); });
+
+// =================================================
+// STATION 5: SUSHI (ทำซูชิ)
+// =================================================
+const sushiHint = $('sushiHint');
+const sushiArea = $('sushiArea');
+const sushiSeaweed = $('sushiSeaweed');
+const sushiRice = $('sushiRice');
+const sushiToppings = $('sushiToppings');
+const sushiRoll = $('sushiRoll');
+const sushiPieces = $('sushiPieces');
+const riceBtn = $('riceBtn');
+const sushiRollBtn = $('sushiRollBtn');
+const sushiCutBtn = $('sushiCutBtn');
+const sushiResetBtn = $('sushiResetBtn');
+
+let sushiState = 0; // 0=empty, 1=rice on, 2=ready to roll, 3=rolled, 4=cut/done
+let sushiToppingCount = 0;
+
+function resetSushi() {
+  sushiState = 0;
+  sushiToppingCount = 0;
+  sushiSeaweed.style.display = '';
+  sushiRice.innerHTML = '';
+  sushiToppings.innerHTML = '';
+  sushiRoll.style.display = 'none';
+  sushiPieces.innerHTML = '';
+  riceBtn.disabled = false;
+  riceBtn.classList.add('glow');
+  document.querySelectorAll('.topping-pick').forEach(b => { b.disabled = true; });
+  sushiRollBtn.disabled = true;
+  sushiRollBtn.classList.remove('glow');
+  sushiCutBtn.disabled = true;
+  sushiCutBtn.classList.remove('glow');
+  setHint(sushiHint, '👆 แตะข้าวเพื่อตักลงสาหร่าย');
+}
+
+riceBtn.addEventListener('click', () => {
+  if (sushiState !== 0) return;
+  vibrate(12);
+  sushiState = 1;
+  riceBtn.disabled = true;
+  riceBtn.classList.remove('glow');
+  // Add rice with multiple little white blobs
+  sushiRice.innerHTML = `
+    <rect x="50" y="115" width="200" height="50" fill="#fff5e0" stroke="#d4c8a0" stroke-width="2" rx="3"/>
+    <circle cx="80" cy="125" r="4" fill="#fff"/>
+    <circle cx="110" cy="130" r="4" fill="#fff"/>
+    <circle cx="140" cy="125" r="4" fill="#fff"/>
+    <circle cx="170" cy="130" r="4" fill="#fff"/>
+    <circle cx="200" cy="125" r="4" fill="#fff"/>
+    <circle cx="230" cy="130" r="4" fill="#fff"/>
+    <circle cx="95" cy="148" r="4" fill="#fff"/>
+    <circle cx="125" cy="152" r="4" fill="#fff"/>
+    <circle cx="155" cy="148" r="4" fill="#fff"/>
+    <circle cx="185" cy="152" r="4" fill="#fff"/>
+    <circle cx="215" cy="148" r="4" fill="#fff"/>
+  `;
+  setHint(sushiHint, '🐟 เลือกหน้าเติม (อย่างน้อย 1)');
+  document.querySelectorAll('.topping-pick').forEach(b => {
+    b.disabled = false;
+    b.classList.add('glow');
+  });
+  sushiRollBtn.disabled = false;
+  sushiRollBtn.classList.add('glow');
+});
+
+document.querySelectorAll('.topping-pick').forEach(b => {
+  b.addEventListener('click', () => {
+    if (sushiState !== 1 || sushiToppingCount >= 4) return;
+    vibrate(8);
+    const emo = b.dataset.emo;
+    // Add SVG text element with emoji at random x in rice area
+    const x = 60 + sushiToppingCount * 50 + Math.random() * 10;
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', String(x));
+    t.setAttribute('y', '145');
+    t.setAttribute('font-size', '30');
+    t.setAttribute('text-anchor', 'middle');
+    t.textContent = emo;
+    sushiToppings.appendChild(t);
+    sushiToppingCount++;
+    b.classList.remove('glow');
+    if (sushiToppingCount >= 4) {
+      document.querySelectorAll('.topping-pick').forEach(x => { x.disabled = true; });
+    }
+  });
+});
+
+sushiRollBtn.addEventListener('click', () => {
+  if (sushiState !== 1 || sushiToppingCount < 1) {
+    if (sushiToppingCount < 1) setHint(sushiHint, '⚠️ ใส่หน้าก่อนนะ!');
+    return;
+  }
+  vibrate(20);
+  sushiState = 3;
+  sushiRollBtn.disabled = true;
+  sushiRollBtn.classList.remove('glow');
+  document.querySelectorAll('.topping-pick').forEach(b => { b.disabled = true; b.classList.remove('glow'); });
+  setHint(sushiHint, '🌯 กำลังม้วน...');
+  // Hide seaweed/rice/toppings, show roll
+  sushiSeaweed.style.display = 'none';
+  sushiRice.style.display = 'none';
+  sushiToppings.style.display = 'none';
+  sushiRoll.style.display = '';
+  setTimeout(() => {
+    sushiCutBtn.disabled = false;
+    sushiCutBtn.classList.add('glow');
+    setHint(sushiHint, '🔪 แตะ "ตัด"');
+  }, 700);
+});
+
+sushiCutBtn.addEventListener('click', () => {
+  if (sushiState !== 3) return;
+  vibrate([15, 30, 60]);
+  sushiState = 4;
+  sushiCutBtn.disabled = true;
+  sushiCutBtn.classList.remove('glow');
+  sushiRoll.style.display = 'none';
+  setHint(sushiHint, '✨ ตัดเป็นชิ้นแล้ว!');
+  // Show 5 sushi pieces emerging
+  const positions = [40, 100, 160, 220, 270];
+  positions.forEach((x, idx) => {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'sushi-piece-fly';
+      p.textContent = '🍣';
+      const leftPct = (x / 300) * 100;
+      p.style.left = leftPct + '%';
+      p.style.top = '40%';
+      p.style.transform = 'translateX(-50%)';
+      sushiPieces.appendChild(p);
+    }, idx * 120);
+  });
+  setTimeout(() => showDone('🍣', 'ซูชิเสร็จแล้ว!', resetSushi), 1100);
+});
+
+sushiResetBtn.addEventListener('click', () => { vibrate(6); resetSushi(); });
+
+// Initial setup (in case any station shown via deep link)
+resetEgg();
+resetBanana();
+resetPancake();
+resetCookie();
+resetSushi();
+</script>
+</body>
+</html>
