@@ -258,7 +258,64 @@ const SONGS = {
 };
 
 // ===== AUDIO =====
+// iOS Safari routes WebAudio to the ringer channel by default, so the silent
+// switch / Control Center mute silences it. Looping a silent HTMLAudioElement
+// switches the page's audio session to the media category, which ignores
+// ringer mute.
 let audioCtx = null;
+let silentAudio = null;
+let audioUnlocked = false;
+
+function buildSilentWavDataURL() {
+  const sampleRate = 22050;
+  const numSamples = sampleRate >> 1;
+  const buf = new ArrayBuffer(44 + numSamples);
+  const v = new DataView(buf);
+  const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF'); v.setUint32(4, 36 + numSamples, true);
+  writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate, true);
+  v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  writeStr(36, 'data'); v.setUint32(40, numSamples, true);
+  for (let i = 0; i < numSamples; i++) v.setUint8(44 + i, 128);
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+
+function unlockAudio() {
+  if (audioUnlocked) {
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return;
+  }
+  audioUnlocked = true;
+  try {
+    silentAudio = new Audio();
+    silentAudio.setAttribute('playsinline', '');
+    silentAudio.setAttribute('webkit-playsinline', '');
+    silentAudio.loop = true;
+    silentAudio.volume = 0.01;
+    silentAudio.src = buildSilentWavDataURL();
+    silentAudio.play().catch(() => {});
+  } catch (_) { /* ignore */ }
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { audioCtx = null; }
+  }
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    try {
+      const b = audioCtx.createBuffer(1, 1, 22050);
+      const s = audioCtx.createBufferSource();
+      s.buffer = b;
+      s.connect(audioCtx.destination);
+      s.start(0);
+    } catch (_) { /* ignore */ }
+  }
+}
+
 function ensureAudio() {
   if (!audioCtx) {
     try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -268,12 +325,11 @@ function ensureAudio() {
   return audioCtx;
 }
 
-function playNote(freq, durationMs) {
-  const ctx = ensureAudio();
-  if (!ctx) return;
+function scheduleNote(ctx, freq, durationMs) {
+  // Read currentTime *after* any resume so the envelope isn't scheduled in
+  // the past — that's what made the first note inaudible on iOS.
   const t = ctx.currentTime;
   const dur = durationMs / 1000;
-  // Layer triangle + sine for richer tone
   const osc1 = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
   osc1.type = 'triangle';
@@ -292,6 +348,16 @@ function playNote(freq, durationMs) {
   osc1.start(t); osc2.start(t);
   osc1.stop(t + dur + 0.05);
   osc2.stop(t + dur + 0.05);
+}
+
+function playNote(freq, durationMs) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => scheduleNote(ctx, freq, durationMs)).catch(() => {});
+  } else {
+    scheduleNote(ctx, freq, durationMs);
+  }
 }
 
 function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
@@ -399,8 +465,10 @@ keyEls.forEach(k => {
   k.addEventListener('pointerdown', stopSong);
 });
 
-// Unlock audio on first touch anywhere
-document.addEventListener('pointerdown', ensureAudio, { once: true });
+// Unlock audio on first user gesture (must run inside the gesture itself)
+document.addEventListener('pointerdown', unlockAudio, { once: true, capture: true });
+document.addEventListener('touchstart',  unlockAudio, { once: true, capture: true });
+document.addEventListener('click',       unlockAudio, { once: true, capture: true });
 </script>
 </body>
 </html>
