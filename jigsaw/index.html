@@ -148,21 +148,36 @@
   }
 
   .mini-preview {
-    width: 70px; height: 70px;
+    width: 140px; height: 140px;
     background: #fff;
     border: 3px solid var(--card-border);
-    border-radius: 14px;
+    border-radius: 16px;
     box-shadow: 0 3px 0 rgba(0,0,0,0.08);
     display: grid;
     overflow: hidden;
     flex-shrink: 0;
   }
+  .mini-preview img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .mini-preview .mp-cell {
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
+    font-size: 32px;
     line-height: 1;
   }
   .preview-row { display: flex; align-items: center; gap: 14px; }
+  @media (max-width: 480px) {
+    .mini-preview { width: 116px; height: 116px; border-width: 2px; }
+    .mini-preview .mp-cell { font-size: 26px; }
+    .preview-row { gap: 10px; }
+    .preview-tag { font-size: 18px; }
+  }
+  @media (min-width: 768px) {
+    .mini-preview { width: 170px; height: 170px; }
+    .mini-preview .mp-cell { font-size: 40px; }
+  }
 
   .board {
     background: #fffbf2;
@@ -249,17 +264,30 @@
     display: block;
     overflow: visible;  /* tab outlines may peek slightly */
   }
+  /* Ghost overlay — full scene image at low opacity behind every slot */
+  .jboard .ghost {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    opacity: 0.22;
+    pointer-events: none;
+    z-index: 0;
+  }
   .jslot {
     position: absolute;
     pointer-events: none;
+    z-index: 1;
   }
   .jslot path.outline {
-    fill: rgba(255, 230, 240, 0.55);
-    stroke: rgba(229, 75, 130, 0.45);
+    fill: rgba(255, 255, 255, 0.18);
+    stroke: rgba(229, 75, 130, 0.6);
     stroke-width: 2;
     stroke-dasharray: 5 4;
   }
   .jslot.filled { display: none; }
+  .piece.jpiece { z-index: 2; }
   .piece.jpiece {
     display: block;
     width: auto; height: auto;
@@ -934,6 +962,13 @@ function startGame(level) {
   board.style.width = boardW + 'px';
   board.style.height = boardH + 'px';
   board.innerHTML = '';
+
+  // Ghost overlay — full scene image behind slots, so kids see where each piece goes
+  const ghost = document.createElement('img');
+  ghost.className = 'ghost';
+  ghost.alt = '';
+  ghost.src = state.sceneDataUrl;
+  board.appendChild(ghost);
 
   const piecesInfo = [];
   for (let r = 0; r < rows; r++) {
