@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🌀 เขาวงกต — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมเขาวงกต พาตัวละครหาทางออก ฝึกการแก้ปัญหาและความอดทนสำหรับเด็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เขาวงกต">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="🌀 เขาวงกต — เกมสำหรับเด็ก">
+<meta property="og:description" content="พาตัวละครหาทางออกจากเขาวงกต ฝึกการแก้ปัญหา">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --good: #5bc13a;
+    --good-dark: #3fa024;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+
+    --wall: #6b5641;
+    --wall-dark: #4d3e2c;
+    --wall-hi: #8c7256;
+    --floor: #fff5e1;
+    --floor-trail: #ffe2c2;
+    --start: #b8f0a4;
+    --end: #ffeaa0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app { max-width: 100%; padding: 0; }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p.hint {
+    font-family: 'Itim', cursive;
+    font-size: clamp(20px, 4vw, 28px);
+    margin: 8px 0 0;
+    color: var(--brand-dark);
+  }
+
+  .home-btn, .back-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .howto {
+    list-style: none;
+    padding: 12px 18px;
+    margin: 8px auto 14px;
+    max-width: 380px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* Level grid */
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .lcard {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 22px;
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative;
+  }
+  .lcard:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .lcard.cleared { border-color: var(--good); }
+  .lcard.cleared::before {
+    content: '⭐';
+    position: absolute;
+    top: -10px; right: -8px;
+    font-size: 32px;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+  }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-bottom: 4px;
+  }
+  .lcard .lsize {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .lcard .lmascots {
+    font-size: 38px;
+    line-height: 1;
+    margin: 4px 0;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.1));
+  }
+
+  @media (min-width: 480px) { .lgrid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 720px) { .lgrid { grid-template-columns: repeat(5, 1fr); } }
+
+  /* Game screen */
+  #gameScreen {
+    height: 100vh;
+    height: 100dvh;
+    display: none;
+    flex-direction: column;
+    padding: calc(12px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom));
+  }
+  #gameScreen.active { display: flex; }
+
+  .hud {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 60px 0 8px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+  }
+  .hud-item {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 6px 18px;
+    min-width: 90px;
+    text-align: center;
+    color: var(--brand-dark);
+  }
+  .hud-item span { color: var(--ink); font-weight: 700; }
+
+  .stage-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    min-height: 0;
+  }
+
+  .board {
+    position: relative;
+    background: #fff;
+    border: 4px solid var(--card-border);
+    border-radius: 18px;
+    padding: 8px;
+    display: grid;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+    touch-action: none;
+  }
+  .cell {
+    width: var(--cs);
+    height: var(--cs);
+    background: var(--floor);
+    position: relative;
+  }
+  .cell.wall {
+    background: var(--wall);
+    background-image:
+      linear-gradient(135deg, var(--wall-hi) 0%, transparent 30%),
+      linear-gradient(45deg, transparent 60%, var(--wall-dark) 100%);
+  }
+  .cell.trail {
+    background: var(--floor-trail);
+  }
+  .cell.trail::after {
+    content: '';
+    position: absolute;
+    inset: 35%;
+    background: rgba(255, 107, 157, 0.35);
+    border-radius: 50%;
+  }
+  .cell.start {
+    background: var(--start);
+  }
+  .cell.start::after {
+    content: '🏠';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cs) * 0.55);
+    opacity: 0.7;
+  }
+  .cell.end {
+    background: var(--end);
+    background-image: radial-gradient(circle at 50% 50%, #fff7c2 0%, var(--end) 70%);
+    animation: pulseEnd 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseEnd {
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(255,193,30,0); }
+    50%      { box-shadow: inset 0 0 0 4px rgba(255,193,30,0.5); }
+  }
+
+  .actor {
+    position: absolute;
+    width: var(--cs);
+    height: var(--cs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: transform .14s ease-out;
+    left: 8px;
+    top: 8px;
+    z-index: 5;
+  }
+  .actor.player .face {
+    font-size: calc(var(--cs) * 0.78);
+    line-height: 1;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.12));
+  }
+  .actor.goal {
+    z-index: 4;
+  }
+  .actor.goal .face {
+    font-size: calc(var(--cs) * 0.7);
+    line-height: 1;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+    animation: wiggle 1.8s ease-in-out infinite;
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+  }
+  .actor.bump .face { animation: bump .2s; }
+  @keyframes bump {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(var(--bx, 0), var(--by, 0)); }
+  }
+
+  /* Controls */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 0;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(3, 64px);
+    gap: 4px;
+  }
+  .dpad .ctrl-btn[data-dir="up"]    { grid-row: 1; grid-column: 2; }
+  .dpad .ctrl-btn[data-dir="left"]  { grid-row: 2; grid-column: 1; }
+  .dpad .ctrl-btn[data-dir="right"] { grid-row: 2; grid-column: 3; }
+  .dpad .ctrl-btn[data-dir="down"]  { grid-row: 3; grid-column: 2; }
+  .ctrl-btn {
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 18px;
+    width: 64px;
+    height: 64px;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform .08s;
+    padding: 0;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ctrl-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brand-dark); }
+  .ctrl-btn.aux { border-color: #aaa; box-shadow: 0 3px 0 #888; }
+  .controls .left-aux { justify-self: end; }
+  .controls .right-aux { justify-self: start; }
+
+  /* Win overlay */
+  .win-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn .35s;
+  }
+  .win-overlay.show { display: flex; }
+  .win-card {
+    background: #fff;
+    border: 5px solid var(--gold);
+    border-radius: 28px;
+    padding: 28px 28px 24px;
+    text-align: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    max-width: 320px;
+    width: 86%;
+    animation: pop-in .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .win-card h2 {
+    font-family: 'Itim', cursive;
+    color: var(--brand-dark);
+    font-size: 44px;
+    margin: 0 0 4px;
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.08);
+  }
+  .win-card .moves-result {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 18px;
+  }
+  .win-card .moves-result b { color: var(--brand-dark); font-size: 22px; }
+  .win-card .big-btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    color: #fff;
+    background: var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .win-card .big-btn.secondary {
+    background: #fff;
+    color: var(--brand-dark);
+    border: 3px solid var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+  }
+  .win-card .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    width: 14px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  @media (max-width: 480px) {
+    .ctrl-btn { width: 56px; height: 56px; font-size: 24px; border-radius: 16px; }
+    .dpad { grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); }
+    .controls { padding: 4px 8px 0; }
+    .hud { font-size: 18px; margin-top: 56px; }
+    .hud-item { padding: 4px 14px; min-width: 80px; }
+    .lcard { padding: 10px 6px 8px; border-width: 3px; border-radius: 18px; }
+    .lcard .ltitle { font-size: 18px; }
+    .lcard .lsize { font-size: 11px; }
+    .lcard .lmascots { font-size: 30px; }
+  }
+
+  @media (min-width: 768px) {
+    .ctrl-btn { width: 72px; height: 72px; font-size: 34px; }
+    .dpad { grid-template-columns: repeat(3, 72px); grid-template-rows: repeat(3, 72px); }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
+
+<div class="app">
+  <!-- SELECT -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🌀 เขาวงกต</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🦖</span> พาตัวละครไปหาเพื่อน</li>
+        <li><span class="howto-icon">👆</span> ปัดนิ้วบนกระดาน หรือกดปุ่มลูกศร</li>
+        <li><span class="howto-icon">🔄</span> เริ่มใหม่ได้ตลอด ทุกครั้งเขาวงกตเปลี่ยน</li>
+      </ul>
+      <p class="hint">เลือกด่าน</p>
+    </header>
+    <div class="lgrid" id="levelGrid"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="hud">
+      <div class="hud-item">ด่าน <span id="levelNum">1</span></div>
+      <div class="hud-item">เดิน <span id="moveCount">0</span></div>
+    </div>
+    <div class="stage-area">
+      <div class="board" id="board"></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn aux left-aux" id="resetBtn" aria-label="เริ่มใหม่">🔄</button>
+      <div class="dpad">
+        <button class="ctrl-btn" data-dir="up" aria-label="ขึ้น">⬆️</button>
+        <button class="ctrl-btn" data-dir="left" aria-label="ซ้าย">⬅️</button>
+        <button class="ctrl-btn" data-dir="right" aria-label="ขวา">➡️</button>
+        <button class="ctrl-btn" data-dir="down" aria-label="ลง">⬇️</button>
+      </div>
+      <button class="ctrl-btn aux right-aux" id="newBtn" aria-label="สุ่มเขาวงกตใหม่">🎲</button>
+    </div>
+  </section>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <h2>เก่งมาก! 🎉</h2>
+    <div class="moves-result">เดินทั้งหมด <b id="winMoves">0</b> ก้าว</div>
+    <button class="big-btn" id="nextBtn">ด่านต่อไป ➡️</button>
+    <button class="big-btn secondary" id="selectBtn">เลือกด่านอื่น</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ---------- Level config ----------
+// w, h are full odd dims (including borders). Each (2i+1, 2j+1) is a cell, walls between.
+const LEVELS = [
+  { w: 7,  h: 7,  label: 'หัดเดิน' },
+  { w: 9,  h: 9,  label: 'เล็กน้อย' },
+  { w: 11, h: 9,  label: 'สบายๆ' },
+  { w: 11, h: 11, label: 'เริ่มยาก' },
+  { w: 13, h: 11, label: 'ปานกลาง' },
+  { w: 13, h: 13, label: 'ลึกขึ้น' },
+  { w: 15, h: 13, label: 'ใหญ่' },
+  { w: 17, h: 13, label: 'ท้าทาย' },
+  { w: 19, h: 15, label: 'แทบหลง' },
+  { w: 21, h: 15, label: 'นักผจญภัย' },
+];
+
+const THEMES = [
+  { p: '🦖', g: '🥚', name: 'ไดโนเสาร์หาไข่' },
+  { p: '🐰', g: '🥕', name: 'กระต่ายหาแครอท' },
+  { p: '🐻', g: '🍯', name: 'หมีหาน้ำผึ้ง' },
+  { p: '🐢', g: '🌿', name: 'เต่าหาใบไม้' },
+  { p: '🚗', g: '🏁', name: 'รถซิ่งหาเส้นชัย' },
+  { p: '🐭', g: '🧀', name: 'หนูหาชีส' },
+  { p: '🦊', g: '🍇', name: 'จิ้งจอกหาองุ่น' },
+  { p: '🐱', g: '🐟', name: 'แมวหาปลา' },
+  { p: '🤖', g: '🔋', name: 'หุ่นหาแบตเตอรี่' },
+  { p: '🚀', g: '🌟', name: 'จรวดหาดาว' },
+];
+
+// ---------- State ----------
+const state = {
+  levelIdx: 0,
+  grid: [],       // 2D char: '#' wall, '.' floor
+  width: 0,
+  height: 0,
+  player: { x: 1, y: 1 },
+  start: { x: 1, y: 1 },
+  end: { x: 1, y: 1 },
+  moves: 0,
+  won: false,
+  cellSize: 32,
+  playerEl: null,
+  goalEl: null,
+  cellEls: [],    // 2D refs for trail updates
+  cleared: new Set(),
+  theme: THEMES[0],
+};
+
+const STORAGE_KEY = 'maze-cleared-v1';
+
+function loadCleared() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state.cleared = new Set(JSON.parse(raw));
+  } catch (_) { /* ignore */ }
+}
+function saveCleared() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.cleared])); } catch (_) { /* ignore */ }
+}
+
+// ---------- Maze generation (recursive backtracker) ----------
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function genMaze(w, h) {
+  // w, h are odd, including outer walls
+  const g = Array.from({ length: h }, () => new Array(w).fill('#'));
+
+  function carve(x, y) {
+    g[y][x] = '.';
+    const dirs = shuffle([[0, -2], [0, 2], [-2, 0], [2, 0]]);
+    for (const [dx, dy] of dirs) {
+      const nx = x + dx, ny = y + dy;
+      if (nx > 0 && nx < w - 1 && ny > 0 && ny < h - 1 && g[ny][nx] === '#') {
+        g[y + dy / 2][x + dx / 2] = '.';
+        carve(nx, ny);
+      }
+    }
+  }
+
+  carve(1, 1);
+  return g;
+}
+
+// ---------- Level select ----------
+function renderLevelSelect() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const theme = THEMES[i % THEMES.length];
+    const card = document.createElement('div');
+    card.className = 'lcard' + (state.cleared.has(i) ? ' cleared' : '');
+    card.innerHTML = `
+      <div class="ltitle">ด่าน ${i + 1}</div>
+      <div class="lsize">${lv.label}</div>
+      <div class="lmascots">${theme.p}<span style="opacity:.4">→</span>${theme.g}</div>
+    `;
+    card.addEventListener('click', () => startLevel(i));
+    grid.appendChild(card);
+  });
+}
+
+// ---------- Start level ----------
+function startLevel(idx) {
+  state.levelIdx = idx;
+  state.moves = 0;
+  state.won = false;
+  state.theme = THEMES[idx % THEMES.length];
+
+  const lv = LEVELS[idx];
+  state.width = lv.w;
+  state.height = lv.h;
+  state.grid = genMaze(lv.w, lv.h);
+
+  state.start = { x: 1, y: 1 };
+  state.end = { x: lv.w - 2, y: lv.h - 2 };
+  state.player = { x: 1, y: 1 };
+
+  document.getElementById('levelNum').textContent = idx + 1;
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('winOverlay').classList.remove('show');
+
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('backBtn').classList.add('show');
+
+  renderBoard();
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function computeCellSize() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const horiz = Math.min(vw - 24, 700);
+  const reservedTop = 130;
+  const reservedBottom = vw < 480 ? 200 : 230;
+  const vert = vh - reservedTop - reservedBottom - 24;
+  const cellW = Math.floor(horiz / state.width);
+  const cellH = Math.floor(vert / state.height);
+  return Math.max(18, Math.min(cellW, cellH, 56));
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  const cs = computeCellSize();
+  state.cellSize = cs;
+  board.style.setProperty('--cs', cs + 'px');
+  board.style.gridTemplateColumns = `repeat(${state.width}, ${cs}px)`;
+  board.style.gridTemplateRows = `repeat(${state.height}, ${cs}px)`;
+  board.style.width = (cs * state.width + 16) + 'px';
+  board.style.height = (cs * state.height + 16) + 'px';
+
+  state.cellEls = Array.from({ length: state.height }, () => new Array(state.width).fill(null));
+
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (state.grid[y][x] === '#') {
+        cell.classList.add('wall');
+      } else if (x === state.start.x && y === state.start.y) {
+        cell.classList.add('start');
+      } else if (x === state.end.x && y === state.end.y) {
+        cell.classList.add('end');
+      }
+      board.appendChild(cell);
+      state.cellEls[y][x] = cell;
+    }
+  }
+
+  // Goal mascot
+  const g = document.createElement('div');
+  g.className = 'actor goal';
+  g.style.transform = `translate(${state.end.x * cs}px, ${state.end.y * cs}px)`;
+  const gFace = document.createElement('div');
+  gFace.className = 'face';
+  gFace.textContent = state.theme.g;
+  g.appendChild(gFace);
+  board.appendChild(g);
+  state.goalEl = g;
+
+  // Player
+  const p = document.createElement('div');
+  p.className = 'actor player';
+  p.style.transform = `translate(${state.player.x * cs}px, ${state.player.y * cs}px)`;
+  const pFace = document.createElement('div');
+  pFace.className = 'face';
+  pFace.textContent = state.theme.p;
+  p.appendChild(pFace);
+  board.appendChild(p);
+  state.playerEl = p;
+}
+
+// ---------- Movement ----------
+const DIRS = {
+  up:    { dx:  0, dy: -1 },
+  down:  { dx:  0, dy:  1 },
+  left:  { dx: -1, dy:  0 },
+  right: { dx:  1, dy:  0 },
+};
+
+function isWall(x, y) {
+  if (y < 0 || y >= state.height || x < 0 || x >= state.width) return true;
+  return state.grid[y][x] === '#';
+}
+
+function move(dir) {
+  if (state.won) return;
+  const { dx, dy } = DIRS[dir];
+  const nx = state.player.x + dx;
+  const ny = state.player.y + dy;
+
+  if (isWall(nx, ny)) {
+    bumpPlayer(dir);
+    return;
+  }
+
+  // Mark trail on previous cell (if not start/end)
+  const prev = state.player;
+  if (!(prev.x === state.start.x && prev.y === state.start.y) &&
+      !(prev.x === state.end.x && prev.y === state.end.y)) {
+    const el = state.cellEls[prev.y][prev.x];
+    if (el) el.classList.add('trail');
+  }
+
+  state.player = { x: nx, y: ny };
+  state.playerEl.style.transform = `translate(${nx * state.cellSize}px, ${ny * state.cellSize}px)`;
+  state.moves++;
+  document.getElementById('moveCount').textContent = state.moves;
+  if (navigator.vibrate) navigator.vibrate(5);
+
+  if (nx === state.end.x && ny === state.end.y) onWin();
+}
+
+function bumpPlayer(dir) {
+  const { dx, dy } = DIRS[dir];
+  const face = state.playerEl.querySelector('.face');
+  face.style.setProperty('--bx', (dx * 6) + 'px');
+  face.style.setProperty('--by', (dy * 6) + 'px');
+  state.playerEl.classList.remove('bump');
+  void state.playerEl.offsetWidth;
+  state.playerEl.classList.add('bump');
+  if (navigator.vibrate) navigator.vibrate(10);
+}
+
+function resetLevel() {
+  // Same maze, player back to start
+  state.moves = 0;
+  state.won = false;
+  state.player = { x: state.start.x, y: state.start.y };
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('winOverlay').classList.remove('show');
+  // Clear trails
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const el = state.cellEls[y][x];
+      if (el) el.classList.remove('trail');
+    }
+  }
+  state.playerEl.style.transform = `translate(${state.start.x * state.cellSize}px, ${state.start.y * state.cellSize}px)`;
+}
+
+function newMaze() {
+  startLevel(state.levelIdx); // regenerates maze
+}
+
+function onWin() {
+  state.won = true;
+  state.cleared.add(state.levelIdx);
+  saveCleared();
+  document.getElementById('winMoves').textContent = state.moves;
+  // Hug animation: player jumps to goal cell visually (already there)
+  setTimeout(() => {
+    document.getElementById('winOverlay').classList.add('show');
+    confetti();
+  }, 350);
+  if (navigator.vibrate) navigator.vibrate([20, 50, 20, 50, 20]);
+}
+
+function nextLevel() {
+  const next = state.levelIdx + 1;
+  if (next < LEVELS.length) startLevel(next);
+  else backToSelect();
+}
+
+function backToSelect() {
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('selectScreen').classList.add('active');
+  document.getElementById('backBtn').classList.remove('show');
+  document.getElementById('winOverlay').classList.remove('show');
+  renderLevelSelect();
+}
+
+// ---------- Confetti ----------
+function confetti() {
+  const colors = ['#ff6b9d', '#ffd93d', '#5bc13a', '#74b9ff', '#fd79a8', '#fdcb6e'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+  }
+}
+
+// ---------- Input ----------
+document.querySelectorAll('.dpad .ctrl-btn').forEach(btn => {
+  btn.addEventListener('click', () => move(btn.dataset.dir));
+});
+document.getElementById('resetBtn').addEventListener('click', resetLevel);
+document.getElementById('newBtn').addEventListener('click', newMaze);
+document.getElementById('backBtn').addEventListener('click', backToSelect);
+document.getElementById('nextBtn').addEventListener('click', nextLevel);
+document.getElementById('selectBtn').addEventListener('click', backToSelect);
+
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('gameScreen').classList.contains('active')) return;
+  const map = {
+    'ArrowUp': 'up', 'ArrowDown': 'down', 'ArrowLeft': 'left', 'ArrowRight': 'right',
+    'w': 'up', 's': 'down', 'a': 'left', 'd': 'right',
+    'W': 'up', 'S': 'down', 'A': 'left', 'D': 'right',
+  };
+  if (map[e.key]) { e.preventDefault(); move(map[e.key]); return; }
+  if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetLevel(); }
+});
+
+// Swipe on board (continuous: each swipe = one step in direction)
+(() => {
+  const board = document.getElementById('board');
+  let sx = 0, sy = 0, active = false;
+  board.addEventListener('pointerdown', (e) => {
+    sx = e.clientX; sy = e.clientY; active = true;
+  });
+  board.addEventListener('pointerup', (e) => {
+    if (!active) return;
+    active = false;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    const ax = Math.abs(dx), ay = Math.abs(dy);
+    const threshold = 16;
+    if (ax < threshold && ay < threshold) return;
+    if (ax > ay) move(dx > 0 ? 'right' : 'left');
+    else move(dy > 0 ? 'down' : 'up');
+  });
+  board.addEventListener('pointercancel', () => { active = false; });
+})();
+
+// Resize
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!document.getElementById('gameScreen').classList.contains('active')) return;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // Re-render board with same maze, preserve trail state
+    const oldTrails = [];
+    for (let y = 0; y < state.height; y++) {
+      for (let x = 0; x < state.width; x++) {
+        if (state.cellEls[y][x] && state.cellEls[y][x].classList.contains('trail')) {
+          oldTrails.push([x, y]);
+        }
+      }
+    }
+    renderBoard();
+    for (const [x, y] of oldTrails) {
+      if (state.cellEls[y][x]) state.cellEls[y][x].classList.add('trail');
+    }
+  }, 150);
+});
+
+// ---------- Init ----------
+loadCleared();
+renderLevelSelect();
+</script>
+</body>
+</html>
