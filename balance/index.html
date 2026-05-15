@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>⚖️ ตาชั่งสมดุล — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมตาชั่งสมดุล ลากผลไม้ไปวางให้สองข้างเท่ากัน ฝึกการเปรียบเทียบน้ำหนัก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ตาชั่งสมดุล">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="⚖️ ตาชั่งสมดุล — เกมสำหรับเด็ก">
+<meta property="og:description" content="ลากผลไม้ให้ตาชั่งสองข้างเท่ากัน">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --good: #5bc13a;
+    --good-dark: #3fa024;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+
+    --wood: #c89a6a;
+    --wood-dark: #8b6b4a;
+    --metal: #d8d8d8;
+    --metal-dark: #a8a8a8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%;
+    padding: 0;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p.hint {
+    font-family: 'Itim', cursive;
+    font-size: clamp(20px, 4vw, 28px);
+    margin: 8px 0 0;
+    color: var(--brand-dark);
+  }
+
+  /* Home + back buttons */
+  .home-btn, .back-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  /* How-to */
+  .howto {
+    list-style: none;
+    padding: 12px 18px;
+    margin: 8px auto 14px;
+    max-width: 380px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+  }
+  .howto li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 0;
+    line-height: 1.3;
+  }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* Weight legend on select screen */
+  .legend {
+    max-width: 380px;
+    margin: 0 auto 14px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    text-align: center;
+  }
+  .legend-item { display: flex; flex-direction: column; align-items: center; font-family: 'Itim', cursive; }
+  .legend-emoji { font-size: 28px; line-height: 1; }
+  .legend-weight { font-size: 16px; color: var(--brand-dark); margin-top: 2px; }
+
+  /* Level grid */
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .lcard {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 22px;
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative;
+  }
+  .lcard:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .lcard.cleared { border-color: var(--good); }
+  .lcard.cleared::before {
+    content: '⭐';
+    position: absolute;
+    top: -10px; right: -8px;
+    font-size: 32px;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+  }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-bottom: 6px;
+  }
+  .lcard .lpreview {
+    font-size: 22px;
+    line-height: 1.1;
+    color: #444;
+    min-height: 28px;
+  }
+  .lcard .lpool {
+    font-size: 16px;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  @media (min-width: 480px) {
+    .lgrid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 720px) {
+    .lgrid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* Game screen */
+  #gameScreen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: none;
+    flex-direction: column;
+    padding: calc(12px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom));
+  }
+  #gameScreen.active { display: flex; }
+
+  .hud {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 60px 0 8px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+  }
+  .hud-item {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 6px 18px;
+    min-width: 90px;
+    text-align: center;
+    color: var(--brand-dark);
+  }
+  .hud-item span { color: var(--ink); font-weight: 700; }
+
+  /* Stage = scale + pool stacked */
+  .stage-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 4px;
+    min-height: 0;
+    gap: 8px;
+  }
+
+  /* The scale itself */
+  .scale-wrap {
+    width: 100%;
+    max-width: 520px;
+    height: clamp(260px, 42vh, 360px);
+    position: relative;
+    margin-top: 4px;
+  }
+
+  /* Stand: vertical post + wide base */
+  .scale-stand {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 60%;
+    background: linear-gradient(90deg, var(--wood-dark) 0%, var(--wood) 50%, var(--wood-dark) 100%);
+    border-radius: 4px;
+    z-index: 1;
+  }
+  .scale-base {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 18px;
+    background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+    border-radius: 9px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    z-index: 2;
+  }
+  .pivot {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    z-index: 5;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,0.2));
+  }
+
+  /* Beam pivots at its center, sits where pivot is */
+  .beam-wrap {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 0;
+    z-index: 4;
+  }
+  .beam {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    background: linear-gradient(180deg, var(--metal) 0%, var(--metal-dark) 100%);
+    border-radius: 7px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    transform-origin: 50% 50%;
+    transition: transform 0.42s cubic-bezier(.34,1.2,.64,1);
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  /* Pans hang off ends of the beam */
+  .pan {
+    position: absolute;
+    top: 100%;
+    width: 38%;
+    /* counter-rotate so pan hangs straight (set via JS) */
+  }
+  .pan.left { left: -2%; }
+  .pan.right { right: -2%; }
+  .pan-rope {
+    width: 3px;
+    height: 38px;
+    background: var(--wood-dark);
+    margin: 0 auto;
+  }
+  .pan-bowl {
+    background: linear-gradient(180deg, #ffe9c4 0%, #f0c98a 100%);
+    border: 3px solid var(--wood-dark);
+    border-radius: 0 0 80px 80px / 0 0 50px 50px;
+    min-height: 64px;
+    padding: 8px 6px 12px;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.1);
+  }
+  .pan-bowl.drop-target {
+    box-shadow: inset 0 0 0 3px var(--gold), inset 0 -6px 0 rgba(0,0,0,0.1);
+    background: linear-gradient(180deg, #fff3a8 0%, #f0c98a 100%);
+  }
+  .pan-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+    align-items: center;
+    min-height: 38px;
+  }
+  .pan-fruit {
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform .12s;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.15));
+  }
+  .pan-fruit:active { transform: scale(0.85); }
+
+  /* Weight badge under each pan */
+  .pan-weight {
+    text-align: center;
+    margin-top: 4px;
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    color: #fff;
+    background: var(--brand);
+    border-radius: 999px;
+    padding: 2px 10px;
+    display: inline-block;
+    box-shadow: 0 2px 0 var(--brand-dark);
+  }
+  .pan-weight-wrap { text-align: center; margin-top: 6px; }
+  .pan-weight.balanced { background: var(--good); box-shadow: 0 2px 0 var(--good-dark); }
+
+  /* Pool below scale */
+  .pool {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border: 4px solid var(--card-border);
+    border-radius: 18px;
+    padding: 10px 12px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    margin-top: auto;
+    margin-bottom: 8px;
+  }
+  .pool.drop-target {
+    border-color: var(--gold);
+    background: #fff9d6;
+  }
+  .pool-label {
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    color: var(--brand-dark);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .pool-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+  }
+  .pool-fruit {
+    font-size: 38px;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;
+    transition: transform .12s;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+  }
+  .pool-fruit:active { cursor: grabbing; }
+  .pool-fruit.dragging { opacity: 0.25; }
+
+  /* Floating ghost while dragging */
+  .ghost {
+    position: fixed;
+    font-size: 48px;
+    pointer-events: none;
+    z-index: 200;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.25));
+    transition: none;
+  }
+
+  /* Reset button */
+  .game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 4px 0 8px;
+  }
+  .ctrl-btn {
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 18px;
+    height: 52px;
+    min-width: 64px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform .08s;
+    padding: 0 16px;
+    font-family: 'Itim', cursive;
+    color: var(--brand-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .ctrl-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brand-dark); }
+
+  /* Win overlay */
+  .win-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn .35s;
+  }
+  .win-overlay.show { display: flex; }
+  .win-card {
+    background: #fff;
+    border: 5px solid var(--gold);
+    border-radius: 28px;
+    padding: 28px 28px 24px;
+    text-align: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    max-width: 320px;
+    width: 86%;
+    animation: pop-in .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .win-card h2 {
+    font-family: 'Itim', cursive;
+    color: var(--brand-dark);
+    font-size: 44px;
+    margin: 0 0 4px;
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.08);
+  }
+  .win-card .moves-result {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 18px;
+  }
+  .win-card .moves-result b { color: var(--brand-dark); font-size: 22px; }
+  .win-card .big-btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    color: #fff;
+    background: var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .win-card .big-btn.secondary {
+    background: #fff;
+    color: var(--brand-dark);
+    border: 3px solid var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+  }
+  .win-card .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    width: 14px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* Phone tweaks */
+  @media (max-width: 480px) {
+    .hud { font-size: 18px; margin-top: 56px; }
+    .hud-item { padding: 4px 14px; min-width: 80px; }
+    .lcard { padding: 10px 6px 8px; border-width: 3px; border-radius: 18px; }
+    .lcard .ltitle { font-size: 18px; }
+    .lcard .lpreview { font-size: 18px; }
+    .pool-fruit { font-size: 34px; }
+    .pan-fruit { font-size: 24px; }
+    .legend-emoji { font-size: 24px; }
+    .legend-weight { font-size: 14px; }
+  }
+  @media (min-width: 768px) {
+    .pool-fruit { font-size: 44px; }
+    .pan-fruit { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
+
+<div class="app">
+
+  <!-- SELECT -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>⚖️ ตาชั่งสมดุล</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">⚖️</span> ทำให้ตาชั่งสองข้างเท่ากัน</li>
+        <li><span class="howto-icon">👆</span> ลากผลไม้จากกล่องไปวางบนจาน</li>
+        <li><span class="howto-icon">✋</span> แตะผลไม้บนจานเพื่อเอาออก</li>
+        <li><span class="howto-icon">🍎</span> ใช้ผลไม้ทุกชิ้นให้หมด</li>
+      </ul>
+      <div class="legend" aria-label="น้ำหนักผลไม้">
+        <div class="legend-item"><span class="legend-emoji">🍒</span><span class="legend-weight">1</span></div>
+        <div class="legend-item"><span class="legend-emoji">🍎</span><span class="legend-weight">2</span></div>
+        <div class="legend-item"><span class="legend-emoji">🍐</span><span class="legend-weight">3</span></div>
+        <div class="legend-item"><span class="legend-emoji">🍍</span><span class="legend-weight">4</span></div>
+        <div class="legend-item"><span class="legend-emoji">🍉</span><span class="legend-weight">5</span></div>
+      </div>
+      <p class="hint">เลือกด่าน</p>
+    </header>
+    <div class="lgrid" id="levelGrid"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="hud">
+      <div class="hud-item">ด่าน <span id="levelNum">1</span></div>
+      <div class="hud-item">ลอง <span id="moveCount">0</span></div>
+    </div>
+    <div class="stage-area">
+      <div class="scale-wrap" id="scaleWrap">
+        <div class="scale-base"></div>
+        <div class="scale-stand"></div>
+        <div class="pivot">🔺</div>
+        <div class="beam-wrap">
+          <div class="beam" id="beam">
+            <div class="pan left" id="panLeftWrap">
+              <div class="pan-rope"></div>
+              <div class="pan-bowl" data-pan="left">
+                <div class="pan-stack" id="panLeft"></div>
+              </div>
+              <div class="pan-weight-wrap"><span class="pan-weight" id="weightLeft">0</span></div>
+            </div>
+            <div class="pan right" id="panRightWrap">
+              <div class="pan-rope"></div>
+              <div class="pan-bowl" data-pan="right">
+                <div class="pan-stack" id="panRight"></div>
+              </div>
+              <div class="pan-weight-wrap"><span class="pan-weight" id="weightRight">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pool" id="pool" data-pan="pool">
+        <div class="pool-label">กล่องผลไม้</div>
+        <div class="pool-stack" id="poolStack"></div>
+      </div>
+
+      <div class="game-controls">
+        <button class="ctrl-btn" id="resetBtn" type="button" aria-label="เริ่มใหม่">🔄 เริ่มใหม่</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <h2>เก่งมาก! 🎉</h2>
+    <div class="moves-result">ลองทั้งหมด <b id="winMoves">0</b> ครั้ง</div>
+    <button class="big-btn" id="nextBtn">ด่านต่อไป ➡️</button>
+    <button class="big-btn secondary" id="selectBtn">เลือกด่านอื่น</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// Fruit weights — kid-intuitive ascending size order
+const FRUITS = {
+  cherry:    { emoji: '🍒', weight: 1 },
+  apple:     { emoji: '🍎', weight: 2 },
+  pear:      { emoji: '🍐', weight: 3 },
+  pineapple: { emoji: '🍍', weight: 4 },
+  watermelon:{ emoji: '🍉', weight: 5 },
+};
+
+// Levels: each `pool` fruit must end up on a pan, and final left==right.
+// Solutions noted alongside for verification.
+const LEVELS = [
+  // L1: apple <-> apple  (sol: pool apple -> right)
+  { left: ['apple'], right: [], pool: ['apple'] },
+  // L2: apple == 2 cherries  (sol: both cherries -> right)
+  { left: ['apple'], right: [], pool: ['cherry', 'cherry'] },
+  // L3: pear == apple + cherry  (sol: both -> left)
+  { left: [], right: ['pear'], pool: ['apple', 'cherry'] },
+  // L4: pineapple == 2 apples  (sol: both apples -> right)
+  { left: ['pineapple'], right: [], pool: ['apple', 'apple'] },
+  // L5: apple+cherry == pear  (sol: pear -> right)
+  { left: ['apple', 'cherry'], right: [], pool: ['pear'] },
+  // L6: watermelon == apple + pear  (sol: both -> left)
+  { left: [], right: ['watermelon'], pool: ['apple', 'pear'] },
+  // L7: pear vs cherry, add apple to right -> 3 == 3
+  { left: ['pear'], right: ['cherry'], pool: ['apple'] },
+  // L8: watermelon vs cherry, add pear+cherry to right -> 5 == 1+3+1
+  { left: ['watermelon'], right: ['cherry'], pool: ['pear', 'cherry'] },
+  // L9: split puzzle. L=pineapple(4), R=apple(2). Pool a+c+c (sum 4). target each=5.
+  //   sol: cherry -> left (5), apple+cherry -> right (5)
+  { left: ['pineapple'], right: ['apple'], pool: ['apple', 'cherry', 'cherry'] },
+  // L10: hardest split. L=pear(3), R=cherry(1). Pool w+pi+a+c (sum 12). target each=8.
+  //   sol: watermelon -> left (8); pineapple+apple+cherry -> right (1+4+2+1=8)
+  { left: ['pear'], right: ['cherry'], pool: ['watermelon', 'pineapple', 'apple', 'cherry'] },
+];
+
+const STORAGE_KEY = 'balance-cleared-v1';
+
+const state = {
+  levelIdx: 0,
+  left: [],   // arrays of fruit-key strings currently on each pan
+  right: [],
+  pool: [],   // fruit-keys still in the pool
+  moves: 0,
+  won: false,
+  cleared: new Set(),
+  balanceTimer: null,
+};
+
+function loadCleared() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) state.cleared = new Set(arr);
+    }
+  } catch (_) { /* ignore */ }
+}
+function saveCleared() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.cleared]));
+  } catch (_) { /* ignore */ }
+}
+
+function weightOf(arr) {
+  return arr.reduce((s, k) => s + (FRUITS[k] ? FRUITS[k].weight : 0), 0);
+}
+
+// ---------- Select screen ----------
+function renderLevelSelect() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const card = document.createElement('div');
+    card.className = 'lcard' + (state.cleared.has(i) ? ' cleared' : '');
+    const leftStr = lv.left.map(k => FRUITS[k].emoji).join('') || '·';
+    const rightStr = lv.right.map(k => FRUITS[k].emoji).join('') || '·';
+    const poolStr = lv.pool.map(k => FRUITS[k].emoji).join('');
+    card.innerHTML = `
+      <div class="ltitle">ด่าน ${i + 1}</div>
+      <div class="lpreview">${leftStr} ⚖️ ${rightStr}</div>
+      <div class="lpool">📦 ${poolStr}</div>
+    `;
+    card.addEventListener('click', () => startLevel(i));
+    grid.appendChild(card);
+  });
+}
+
+// ---------- Level start ----------
+function startLevel(idx) {
+  state.levelIdx = idx;
+  state.moves = 0;
+  state.won = false;
+  if (state.balanceTimer) { clearTimeout(state.balanceTimer); state.balanceTimer = null; }
+
+  const lv = LEVELS[idx];
+  state.left = [...lv.left];
+  state.right = [...lv.right];
+  state.pool = [...lv.pool];
+
+  document.getElementById('levelNum').textContent = idx + 1;
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('winOverlay').classList.remove('show');
+
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('backBtn').classList.add('show');
+
+  renderAll();
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function backToSelect() {
+  if (state.balanceTimer) { clearTimeout(state.balanceTimer); state.balanceTimer = null; }
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('selectScreen').classList.add('active');
+  document.getElementById('backBtn').classList.remove('show');
+  document.getElementById('winOverlay').classList.remove('show');
+  renderLevelSelect();
+}
+
+function resetLevel() {
+  startLevel(state.levelIdx);
+}
+
+function nextLevel() {
+  const next = state.levelIdx + 1;
+  if (next < LEVELS.length) startLevel(next);
+  else backToSelect();
+}
+
+// ---------- Rendering ----------
+function makeFruitEl(key, opts) {
+  const el = document.createElement('div');
+  el.textContent = FRUITS[key].emoji;
+  el.dataset.fruit = key;
+  if (opts && opts.location) el.dataset.location = opts.location;
+  if (opts && opts.index !== undefined) el.dataset.index = opts.index;
+  return el;
+}
+
+function renderAll() {
+  renderPool();
+  renderPans();
+  updateScale();
+}
+
+function renderPool() {
+  const stack = document.getElementById('poolStack');
+  stack.innerHTML = '';
+  state.pool.forEach((key, idx) => {
+    const el = makeFruitEl(key, { location: 'pool', index: idx });
+    el.className = 'pool-fruit';
+    stack.appendChild(el);
+  });
+}
+
+function renderPans() {
+  const lEl = document.getElementById('panLeft');
+  const rEl = document.getElementById('panRight');
+  lEl.innerHTML = '';
+  rEl.innerHTML = '';
+  state.left.forEach((key, idx) => {
+    const el = makeFruitEl(key, { location: 'left', index: idx });
+    el.className = 'pan-fruit';
+    lEl.appendChild(el);
+  });
+  state.right.forEach((key, idx) => {
+    const el = makeFruitEl(key, { location: 'right', index: idx });
+    el.className = 'pan-fruit';
+    rEl.appendChild(el);
+  });
+}
+
+function updateScale() {
+  const lw = weightOf(state.left);
+  const rw = weightOf(state.right);
+  const lEl = document.getElementById('weightLeft');
+  const rEl = document.getElementById('weightRight');
+  lEl.textContent = lw;
+  rEl.textContent = rw;
+  const balanced = lw === rw;
+  lEl.classList.toggle('balanced', balanced);
+  rEl.classList.toggle('balanced', balanced);
+
+  // Positive rotation = left side rises, right side falls. We want heavier
+  // side to go DOWN, so if left is heavier, rotate negative.
+  const diff = lw - rw;
+  const angle = Math.max(-15, Math.min(15, diff * -2.5));
+  const beam = document.getElementById('beam');
+  beam.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+
+  // Counter-rotate each pan so they hang vertically regardless of beam angle.
+  const panL = document.getElementById('panLeftWrap');
+  const panR = document.getElementById('panRightWrap');
+  panL.style.transform = `rotate(${-angle}deg)`;
+  panL.style.transformOrigin = 'top center';
+  panR.style.transform = `rotate(${-angle}deg)`;
+  panR.style.transformOrigin = 'top center';
+
+  checkBalance();
+}
+
+// ---------- Balance / win ----------
+function checkBalance() {
+  if (state.won) return;
+  const lw = weightOf(state.left);
+  const rw = weightOf(state.right);
+  const balanced = lw === rw;
+  const poolEmpty = state.pool.length === 0;
+
+  if (balanced && poolEmpty) {
+    // Auto-win after 1s sustained balance with empty pool
+    if (state.balanceTimer) return;
+    state.balanceTimer = setTimeout(() => {
+      state.balanceTimer = null;
+      onWin();
+    }, 1000);
+  } else if (state.balanceTimer) {
+    clearTimeout(state.balanceTimer);
+    state.balanceTimer = null;
+  }
+}
+
+function onWin() {
+  if (state.won) return;
+  state.won = true;
+  state.cleared.add(state.levelIdx);
+  saveCleared();
+  document.getElementById('winMoves').textContent = state.moves;
+  setTimeout(() => {
+    document.getElementById('winOverlay').classList.add('show');
+    confetti();
+  }, 200);
+  if (navigator.vibrate) navigator.vibrate([20, 50, 20, 50, 20]);
+}
+
+// ---------- Confetti ----------
+function confetti() {
+  const colors = ['#ff6b9d', '#ffd93d', '#5bc13a', '#74b9ff', '#fd79a8', '#fdcb6e'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+  }
+}
+
+// ---------- Fruit moves ----------
+function placeFruit(fruitKey, from, fromIdx, to) {
+  if (state.won) return false;
+  if (from === to) return false;
+
+  // Remove from source array
+  if (from === 'pool') state.pool.splice(fromIdx, 1);
+  else if (from === 'left') state.left.splice(fromIdx, 1);
+  else if (from === 'right') state.right.splice(fromIdx, 1);
+
+  // Add to destination
+  if (to === 'pool') state.pool.push(fruitKey);
+  else if (to === 'left') state.left.push(fruitKey);
+  else if (to === 'right') state.right.push(fruitKey);
+
+  state.moves++;
+  document.getElementById('moveCount').textContent = state.moves;
+  if (navigator.vibrate) navigator.vibrate(6);
+
+  renderAll();
+  return true;
+}
+
+// Tap a pan fruit to return it to the pool
+function onPanFruitTap(el) {
+  if (state.won) return;
+  const loc = el.dataset.location;
+  const idx = parseInt(el.dataset.index, 10);
+  const key = el.dataset.fruit;
+  if (!key || (loc !== 'left' && loc !== 'right')) return;
+  placeFruit(key, loc, idx, 'pool');
+}
+
+// ---------- Drag / drop ----------
+// Pointer-based drag from any fruit (pool OR pan). Pan drags allow moving
+// directly between pans without round-tripping through the pool.
+let drag = null;
+
+function pointFromEvent(e) {
+  return { x: e.clientX, y: e.clientY };
+}
+
+function findDropTarget(x, y) {
+  const el = document.elementFromPoint(x, y);
+  if (!el) return null;
+  // Walk up to find data-pan attribute (pan-bowl or pool)
+  let cur = el;
+  while (cur && cur !== document.body) {
+    if (cur.dataset && cur.dataset.pan) return cur.dataset.pan;
+    cur = cur.parentElement;
+  }
+  return null;
+}
+
+function clearDropHighlights() {
+  document.querySelectorAll('[data-pan]').forEach(el => el.classList.remove('drop-target'));
+}
+
+function setDropHighlight(pan) {
+  clearDropHighlights();
+  if (!pan) return;
+  if (pan === 'pool') {
+    document.getElementById('pool').classList.add('drop-target');
+  } else {
+    document.querySelectorAll(`.pan-bowl[data-pan="${pan}"]`).forEach(el => el.classList.add('drop-target'));
+  }
+}
+
+function onPointerDown(e) {
+  if (state.won) return;
+  const target = e.target.closest('.pool-fruit, .pan-fruit');
+  if (!target) return;
+  const key = target.dataset.fruit;
+  const from = target.dataset.location;
+  const idx = parseInt(target.dataset.index, 10);
+  if (!key || isNaN(idx)) return;
+
+  e.preventDefault();
+  const pt = pointFromEvent(e);
+
+  // Build floating ghost
+  const ghost = document.createElement('div');
+  ghost.className = 'ghost';
+  ghost.textContent = FRUITS[key].emoji;
+  ghost.style.left = pt.x + 'px';
+  ghost.style.top = pt.y + 'px';
+  document.body.appendChild(ghost);
+
+  target.classList.add('dragging');
+  try { target.setPointerCapture(e.pointerId); } catch (_) {}
+
+  drag = {
+    key, from, idx,
+    ghost, source: target,
+    pointerId: e.pointerId,
+    moved: false,
+    startX: pt.x, startY: pt.y,
+  };
+}
+
+function onPointerMove(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;
+  e.preventDefault();
+  const pt = pointFromEvent(e);
+  drag.ghost.style.left = pt.x + 'px';
+  drag.ghost.style.top = pt.y + 'px';
+  const dx = pt.x - drag.startX, dy = pt.y - drag.startY;
+  if (Math.hypot(dx, dy) > 6) drag.moved = true;
+  const pan = findDropTarget(pt.x, pt.y);
+  // Don't highlight the source location itself
+  setDropHighlight(pan && pan !== drag.from ? pan : null);
+}
+
+function onPointerUp(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;
+  e.preventDefault();
+  const pt = pointFromEvent(e);
+  const pan = findDropTarget(pt.x, pt.y);
+
+  // If user barely moved AND the fruit is on a pan, treat as a tap-to-remove.
+  if (!drag.moved && (drag.from === 'left' || drag.from === 'right')) {
+    cleanupDrag();
+    onPanFruitTap(drag && drag.source ? drag.source : e.target);
+    drag = null;
+    return;
+  }
+
+  if (pan && pan !== drag.from) {
+    placeFruit(drag.key, drag.from, drag.idx, pan);
+  }
+  cleanupDrag();
+  drag = null;
+}
+
+function onPointerCancel(e) {
+  if (!drag) return;
+  if (e && drag.pointerId !== undefined && e.pointerId !== drag.pointerId) return;
+  cleanupDrag();
+  drag = null;
+}
+
+function cleanupDrag() {
+  if (!drag) return;
+  if (drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+  if (drag.source) drag.source.classList.remove('dragging');
+  clearDropHighlights();
+}
+
+// Attach handlers to the game screen so pool + pans both work
+const gameScreen = document.getElementById('gameScreen');
+gameScreen.addEventListener('pointerdown', onPointerDown);
+gameScreen.addEventListener('pointermove', onPointerMove);
+gameScreen.addEventListener('pointerup', onPointerUp);
+gameScreen.addEventListener('pointercancel', onPointerCancel);
+
+// ---------- Buttons ----------
+document.getElementById('resetBtn').addEventListener('click', resetLevel);
+document.getElementById('backBtn').addEventListener('click', backToSelect);
+document.getElementById('nextBtn').addEventListener('click', nextLevel);
+document.getElementById('selectBtn').addEventListener('click', backToSelect);
+
+// ---------- Init ----------
+loadCleared();
+renderLevelSelect();
+</script>
+</body>
+</html>

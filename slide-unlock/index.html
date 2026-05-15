@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🚗 เลื่อนปลดล็อค — เกมสำหรับเด็ก</title>
+<meta name="description" content="เลื่อนรถเพื่อปลดล็อคทางออก ฝึกการวางแผนและคิดเป็นขั้นตอนสำหรับเด็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เลื่อนปลดล็อค">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="🚗 เลื่อนปลดล็อค — เกมสำหรับเด็ก">
+<meta property="og:description" content="เลื่อนรถเพื่อปลดล็อคทางออก ฝึกการวางแผน">
+<meta property="og:locale" content="th_TH">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff;
+    --grass-1: #7ed957;
+    --brand: #ff6b9d;
+    --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --good: #5bc13a;
+    --good-dark: #3fa024;
+    --ink: #2d3436;
+    --paper: #fffef9;
+    --card: #ffffff;
+    --card-border: #ffd6e4;
+
+    --lot-bg: #f5e8c8;
+    --lot-grid: #e0d4ad;
+    --lot-border: #b89d6a;
+
+    --car-red:    #ee3a3a;
+    --car-blue:   #4a90e2;
+    --car-yellow: #f5c842;
+    --car-green:  #4caf50;
+    --car-purple: #9c6ade;
+    --car-white:  #f0f0f0;
+    --car-orange: #ff8a3d;
+    --car-teal:   #2dd4bf;
+    --car-pink:   #ff8fb1;
+    --car-brown:  #8b6b4a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%;
+    padding: 0;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', 'Mitr', cursive;
+    font-size: clamp(40px, 8.5vw, 64px);
+    margin: 0;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p.hint {
+    font-family: 'Itim', cursive;
+    font-size: clamp(20px, 4vw, 28px);
+    margin: 8px 0 0;
+    color: var(--brand-dark);
+  }
+
+  /* Home + back buttons */
+  .home-btn, .back-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  /* How-to */
+  .howto {
+    list-style: none;
+    padding: 12px 18px;
+    margin: 8px auto 14px;
+    max-width: 380px;
+    background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border);
+    border-radius: 18px;
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+  }
+  .howto li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 0;
+    line-height: 1.3;
+  }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* Level grid */
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .lcard {
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 22px;
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative;
+  }
+  .lcard:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .lcard.cleared { border-color: var(--good); }
+  .lcard.cleared::before {
+    content: '⭐';
+    position: absolute;
+    top: -10px; right: -8px;
+    font-size: 32px;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+  }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    margin-bottom: 6px;
+  }
+  .lcard .preview {
+    position: relative;
+    width: 100%;
+    max-width: 120px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+    background: var(--lot-bg);
+    border: 2px solid var(--lot-border);
+    border-radius: 6px;
+  }
+  /* exit notch on the preview's right edge at row 2 */
+  .lcard .preview::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: calc(100% * 2 / 6);
+    width: 6px;
+    height: calc(100% / 6);
+    background: var(--lot-bg);
+  }
+  .lcard .preview .p-car {
+    position: absolute;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+  }
+
+  @media (min-width: 480px) {
+    .lgrid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 720px) {
+    .lgrid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* Game screen */
+  #gameScreen {
+    height: 100vh;
+    height: 100dvh;
+    display: none;
+    flex-direction: column;
+    padding: calc(12px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom));
+  }
+  #gameScreen.active { display: flex; }
+
+  .hud {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 60px 0 8px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+  }
+  .hud-item {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 6px 18px;
+    min-width: 90px;
+    text-align: center;
+    color: var(--brand-dark);
+  }
+  .hud-item span { color: var(--ink); font-weight: 700; }
+
+  .stage-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    min-height: 0;
+  }
+
+  /* Board (parking lot) */
+  .board {
+    position: relative;
+    background: var(--lot-bg);
+    border: 5px solid var(--lot-border);
+    border-radius: 14px;
+    padding: 0;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+    touch-action: none;
+  }
+  /* Hide the right-side border at row 2 to form the exit notch */
+  .board::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    top: calc(var(--cs) * 2);
+    width: 7px;
+    height: var(--cs);
+    background: var(--lot-bg);
+    z-index: 2;
+  }
+  /* Grid lines drawn as a single background image */
+  .board .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, var(--lot-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--lot-grid) 1px, transparent 1px);
+    background-size: var(--cs) var(--cs);
+    pointer-events: none;
+  }
+  /* Exit arrow hint outside the board */
+  .board .exit-hint {
+    position: absolute;
+    left: 100%;
+    top: calc(var(--cs) * 2);
+    width: var(--cs);
+    height: var(--cs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cs) * 0.6);
+    color: var(--good-dark);
+    animation: pointRight 1.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pointRight {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(6px); }
+  }
+
+  .car {
+    position: absolute;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cs) * 0.72);
+    line-height: 1;
+    box-shadow:
+      inset 0 -4px 0 rgba(0,0,0,0.15),
+      inset 0 2px 0 rgba(255,255,255,0.35),
+      0 3px 0 rgba(0,0,0,0.18);
+    cursor: grab;
+    touch-action: none;
+    transition: box-shadow .15s, filter .15s;
+    will-change: transform;
+    z-index: 5;
+  }
+  .car.dragging { cursor: grabbing; filter: brightness(1.06); z-index: 10; }
+  .car.bump { animation: nudge .2s; }
+  @keyframes nudge {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.2) saturate(1.3); }
+  }
+  .car.red {
+    box-shadow:
+      inset 0 -4px 0 rgba(0,0,0,0.18),
+      inset 0 2px 0 rgba(255,255,255,0.35),
+      0 0 0 3px rgba(238,58,58,0.25),
+      0 4px 0 rgba(0,0,0,0.22);
+    z-index: 6;
+  }
+  .car.red.dragging { z-index: 11; }
+
+  /* Win overlay */
+  .win-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn .35s;
+  }
+  .win-overlay.show { display: flex; }
+  .win-card {
+    background: #fff;
+    border: 5px solid var(--gold);
+    border-radius: 28px;
+    padding: 28px 28px 24px;
+    text-align: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    max-width: 320px;
+    width: 86%;
+    animation: pop-in .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .win-card h2 {
+    font-family: 'Itim', cursive;
+    color: var(--brand-dark);
+    font-size: 40px;
+    margin: 0 0 4px;
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.08);
+  }
+  .win-card .moves-result {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 18px;
+  }
+  .win-card .moves-result b { color: var(--brand-dark); font-size: 22px; }
+  .win-card .big-btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Itim', cursive;
+    font-size: 24px;
+    color: #fff;
+    background: var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .win-card .big-btn.secondary {
+    background: #fff;
+    color: var(--brand-dark);
+    border: 3px solid var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+  }
+  .win-card .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  /* Controls (just reset + back) */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 8px 12px 0;
+  }
+  .ctrl-btn {
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 18px;
+    width: 64px;
+    height: 64px;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform .08s;
+    padding: 0;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ctrl-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brand-dark); }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    width: 14px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* Phone */
+  @media (max-width: 480px) {
+    .ctrl-btn { width: 58px; height: 58px; font-size: 26px; border-radius: 16px; }
+    .controls { padding: 4px 8px 0; gap: 18px; }
+    .hud { font-size: 18px; margin-top: 56px; }
+    .hud-item { padding: 4px 14px; min-width: 80px; }
+    .lcard { padding: 10px 6px 8px; border-width: 3px; border-radius: 18px; }
+    .lcard .ltitle { font-size: 18px; }
+  }
+
+  /* iPad */
+  @media (min-width: 768px) {
+    .ctrl-btn { width: 72px; height: 72px; font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกด่านใหม่">📋</button>
+
+<div class="app">
+
+  <!-- SELECT -->
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🚗 เลื่อนปลดล็อค</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🚗</span> เลื่อนรถสีแดงออกทางขวา</li>
+        <li><span class="howto-icon">👆</span> ลากรถเพื่อเลื่อน</li>
+        <li><span class="howto-icon">↔️</span> รถแนวนอนเลื่อนซ้าย-ขวา</li>
+        <li><span class="howto-icon">↕️</span> รถแนวตั้งเลื่อนขึ้น-ลง</li>
+      </ul>
+      <p class="hint">เลือกด่าน</p>
+    </header>
+    <div class="lgrid" id="levelGrid"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="hud">
+      <div class="hud-item">ด่าน <span id="levelNum">1</span></div>
+      <div class="hud-item">เลื่อน <span id="moveCount">0</span></div>
+    </div>
+    <div class="stage-area">
+      <div class="board" id="board">
+        <div class="grid"></div>
+        <div class="exit-hint">➡️</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="resetBtn" aria-label="เริ่มใหม่">🔄</button>
+    </div>
+  </section>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <h2>ปลดล็อคแล้ว! 🎉</h2>
+    <div class="moves-result">ใช้ทั้งหมด <b id="winMoves">0</b> ครั้ง</div>
+    <button class="big-btn" id="nextBtn">ด่านต่อไป ➡️</button>
+    <button class="big-btn secondary" id="selectBtn">เลือกด่านอื่น</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ---------- Constants ----------
+const N = 6;                 // 6x6 grid
+const EXIT_ROW = 2;          // red car's row and the exit row
+const STORAGE_KEY = 'slide-unlock-cleared-v1';
+
+// Palette for non-red cars; emoji + color rotate by id position.
+// Length 2 = car emoji, length 3 = truck/van emoji feels right.
+const CAR_STYLES_2 = [
+  { color: 'var(--car-blue)',   emoji: '🚙' },
+  { color: 'var(--car-yellow)', emoji: '🚕' },
+  { color: 'var(--car-green)',  emoji: '🚙' },
+  { color: 'var(--car-purple)', emoji: '🚙' },
+  { color: 'var(--car-white)',  emoji: '🚓' },
+  { color: 'var(--car-orange)', emoji: '🚙' },
+  { color: 'var(--car-teal)',   emoji: '🚙' },
+  { color: 'var(--car-pink)',   emoji: '🚙' },
+];
+const CAR_STYLES_3 = [
+  { color: 'var(--car-green)',  emoji: '🚎' },
+  { color: 'var(--car-purple)', emoji: '🚐' },
+  { color: 'var(--car-orange)', emoji: '🚒' },
+  { color: 'var(--car-white)',  emoji: '🚑' },
+  { color: 'var(--car-blue)',   emoji: '🚌' },
+  { color: 'var(--car-brown)',  emoji: '🚚' },
+];
+
+// ---------- Levels ----------
+// Each car: { x, y, len, h: true|false (horizontal?), red?: true }
+// Red is always len 2, horizontal, on row EXIT_ROW (y=2).
+// Goal: red car slides right past the right edge.
+// All puzzles BFS-verified solvable; minimum-moves rise from 1 to 5.
+// Min-moves count cars-moved, not cells-moved, so a kid's tap count is higher.
+const LEVELS = [
+  // L1 — 1 move. Push col-3 vertical down out of row 2.
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 2, len: 2, h: false },
+      { x: 5, y: 0, len: 2, h: false },
+      { x: 0, y: 0, len: 2, h: true },
+    ],
+  },
+  // L2 — 2 moves. v(3,1) up; v(4,2) down.
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 1, len: 2, h: false },
+      { x: 4, y: 2, len: 3, h: false },
+      { x: 0, y: 5, len: 2, h: true },
+      { x: 5, y: 0, len: 2, h: false },
+    ],
+  },
+  // L3 — 3 moves. Three verticals each block one of cols 3,4,5.
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 2, len: 2, h: false },
+      { x: 4, y: 1, len: 2, h: false },
+      { x: 5, y: 2, len: 3, h: false },
+      { x: 0, y: 5, len: 3, h: true },
+      { x: 0, y: 0, len: 3, h: true },
+    ],
+  },
+  // L4 — col 2 truck (3-tall) and col 5 truck both block.
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 2, y: 0, len: 3, h: false },
+      { x: 3, y: 5, len: 2, h: true },
+      { x: 4, y: 0, len: 2, h: true },
+      { x: 5, y: 1, len: 3, h: false },
+    ],
+  },
+  // L5 — col 4 truck must come down but row 4 horiz at cols 3-4 must shift first.
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 2, len: 2, h: false },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 3, y: 4, len: 2, h: true },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 0, y: 5, len: 3, h: true },
+      { x: 5, y: 3, len: 3, h: false },
+    ],
+  },
+  // L6 — col 4 truck blocks; bottom-right cluster must shuffle.
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 5, y: 0, len: 2, h: false },
+      { x: 3, y: 5, len: 2, h: true },
+      { x: 5, y: 4, len: 2, h: false },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 2, y: 3, len: 2, h: true },
+      { x: 0, y: 5, len: 2, h: true },
+    ],
+  },
+  // L7 — col 4 truck + col 5 vertical; bottom-right horizontal shifts.
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 5, y: 1, len: 2, h: false },
+      { x: 2, y: 0, len: 2, h: false },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 3, y: 5, len: 2, h: true },
+      { x: 5, y: 3, len: 2, h: false },
+      { x: 0, y: 4, len: 2, h: true },
+      { x: 0, y: 5, len: 2, h: true },
+    ],
+  },
+  // L8 — denser: col 3 truck + col 4 truck + col 5 stack.
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 2, len: 3, h: false },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 5, y: 0, len: 2, h: false },
+      { x: 5, y: 2, len: 2, h: false },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 0, y: 1, len: 2, h: false },
+      { x: 4, y: 5, len: 2, h: true },
+      { x: 0, y: 3, len: 2, h: true },
+    ],
+  },
+  // L9 — top row jammed, three verticals on right.
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 2, y: 0, len: 2, h: false },
+      { x: 3, y: 0, len: 3, h: true },
+      { x: 3, y: 2, len: 3, h: false },
+      { x: 4, y: 1, len: 2, h: false },
+      { x: 5, y: 1, len: 3, h: false },
+      { x: 0, y: 3, len: 2, h: false },
+      { x: 4, y: 5, len: 2, h: true },
+    ],
+  },
+  // L10 — hardest: 11 cars, longest dependency chain.
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 0, y: 0, len: 2, h: true },
+      { x: 2, y: 0, len: 2, h: false },
+      { x: 3, y: 0, len: 3, h: true },
+      { x: 0, y: 1, len: 3, h: false },
+      { x: 3, y: 2, len: 3, h: false },
+      { x: 4, y: 3, len: 3, h: false },
+      { x: 5, y: 1, len: 2, h: false },
+      { x: 5, y: 3, len: 3, h: false },
+      { x: 0, y: 4, len: 2, h: true },
+      { x: 0, y: 5, len: 3, h: true },
+    ],
+  },
+];
+
+// ---------- State ----------
+const state = {
+  levelIdx: 0,
+  cars: [],            // [{ id, x, y, len, h, red, el }]
+  cellSize: 56,
+  moves: 0,
+  won: false,
+  cleared: new Set(),
+};
+
+function loadCleared() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) state.cleared = new Set(arr);
+    }
+  } catch (_) { /* ignore */ }
+}
+function saveCleared() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.cleared]));
+  } catch (_) { /* ignore */ }
+}
+
+// ---------- Solvability sanity check (BFS) ----------
+// Tiny BFS to confirm puzzles are solvable; runs once at load in dev contexts.
+// Skipped if the level list is empty.
+function carsKey(cars) {
+  // canonical key: positions in declaration order (cars never reorder).
+  return cars.map(c => c.x + ',' + c.y).join('|');
+}
+function isSolvable(level) {
+  const start = level.cars.map(c => ({ x: c.x, y: c.y, len: c.len, h: c.h, red: !!c.red }));
+  const seen = new Set([carsKey(start)]);
+  const q = [start];
+  while (q.length) {
+    const cur = q.shift();
+    // win check: red car can slide off the right edge
+    const red = cur.find(c => c.red);
+    if (canExit(cur, red)) return true;
+    for (let i = 0; i < cur.length; i++) {
+      const c = cur[i];
+      const dirs = c.h ? [-1, 1] : [-1, 1];
+      for (const step of dirs) {
+        for (let n = 1; n < N; n++) {
+          const dx = c.h ? step * n : 0;
+          const dy = c.h ? 0 : step * n;
+          const nx = c.x + dx;
+          const ny = c.y + dy;
+          if (!fits(cur, i, nx, ny)) break;
+          const next = cur.map((cc, j) => j === i ? { ...cc, x: nx, y: ny } : cc);
+          const k = carsKey(next);
+          if (!seen.has(k)) { seen.add(k); q.push(next); }
+          if (seen.size > 200000) return null;   // bail out — too big
+        }
+      }
+    }
+  }
+  return false;
+}
+function fits(cars, skipIdx, x, y) {
+  const c = cars[skipIdx];
+  if (x < 0 || y < 0) return false;
+  if (c.h) {
+    if (x + c.len > N) return false;
+    if (y >= N) return false;
+  } else {
+    if (y + c.len > N) return false;
+    if (x >= N) return false;
+  }
+  for (let j = 0; j < cars.length; j++) {
+    if (j === skipIdx) continue;
+    if (overlap({ ...c, x, y }, cars[j])) return false;
+  }
+  return true;
+}
+function overlap(a, b) {
+  const ax2 = a.x + (a.h ? a.len : 1);
+  const ay2 = a.y + (a.h ? 1 : a.len);
+  const bx2 = b.x + (b.h ? b.len : 1);
+  const by2 = b.y + (b.h ? 1 : b.len);
+  return !(ax2 <= b.x || bx2 <= a.x || ay2 <= b.y || by2 <= a.y);
+}
+function canExit(cars, red) {
+  // simulate sliding red right cell-by-cell. exit allowed off-board via row EXIT_ROW.
+  for (let x = red.x + 1; x + red.len <= N; x++) {
+    if (!isFreeRange(cars, red, x, red.y)) return false;
+  }
+  // last hop off the grid: ensure no car at (5, EXIT_ROW) (other than red)
+  return true;
+}
+function isFreeRange(cars, red, x, y) {
+  for (const c of cars) {
+    if (c === red || c.red) continue;
+    const tmp = { ...red, x, y };
+    if (overlap(tmp, c)) return false;
+  }
+  return true;
+}
+
+// ---------- Level select ----------
+function renderLevelSelect() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lvl, i) => {
+    const card = document.createElement('div');
+    card.className = 'lcard' + (state.cleared.has(i) ? ' cleared' : '');
+    card.innerHTML = `<div class="ltitle">ด่าน ${i + 1}</div>`;
+
+    const prev = document.createElement('div');
+    prev.className = 'preview';
+
+    // Lay out each car as a positioned div sized as percentage of the lot.
+    lvl.cars.forEach((c, idx) => {
+      const el = document.createElement('div');
+      el.className = 'p-car';
+      const cellPct = 100 / N;
+      const w = (c.h ? c.len : 1) * cellPct;
+      const h = (c.h ? 1 : c.len) * cellPct;
+      el.style.left = (c.x * cellPct) + '%';
+      el.style.top = (c.y * cellPct) + '%';
+      el.style.width = `calc(${w}% - 2px)`;
+      el.style.height = `calc(${h}% - 2px)`;
+      el.style.margin = '1px';
+      el.style.background = c.red ? 'var(--car-red)' : pickStyle(c, idx).color;
+      prev.appendChild(el);
+    });
+
+    card.appendChild(prev);
+    card.addEventListener('click', () => startLevel(i));
+    grid.appendChild(card);
+  });
+}
+
+function pickStyle(car, idx) {
+  const arr = car.len === 3 ? CAR_STYLES_3 : CAR_STYLES_2;
+  return arr[idx % arr.length];
+}
+
+// ---------- Build level ----------
+function startLevel(idx) {
+  state.levelIdx = idx;
+  state.moves = 0;
+  state.won = false;
+
+  // Deep-copy cars so we never mutate LEVELS data.
+  state.cars = LEVELS[idx].cars.map((c, i) => ({
+    id: 'c' + i,
+    x: c.x, y: c.y,
+    len: c.len, h: c.h,
+    red: !!c.red,
+    el: null,
+    style: c.red ? { color: 'var(--car-red)', emoji: '🚗' } : pickStyle(c, i),
+  }));
+
+  document.getElementById('levelNum').textContent = idx + 1;
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('winOverlay').classList.remove('show');
+
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('backBtn').classList.add('show');
+
+  renderBoard();
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function computeCellSize() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const reservedTop = 130;
+  const reservedBottom = vw < 480 ? 110 : 140;
+  // Leave a column's worth of room on the right for the exit hint arrow.
+  const maxW = Math.min(vw - 24, 520);
+  const maxH = vh - reservedTop - reservedBottom;
+  const cellW = Math.floor((maxW - 30) / (N + 0.6));   // +0.6 for exit hint
+  const cellH = Math.floor((maxH - 30) / N);
+  return Math.max(36, Math.min(cellW, cellH, 84));
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  // Wipe previous car elements but keep the static .grid + .exit-hint children.
+  Array.from(board.querySelectorAll('.car')).forEach(n => n.remove());
+
+  const cs = computeCellSize();
+  state.cellSize = cs;
+  board.style.setProperty('--cs', cs + 'px');
+  board.style.width = (cs * N) + 'px';
+  board.style.height = (cs * N) + 'px';
+
+  state.cars.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'car' + (c.red ? ' red' : '');
+    el.style.background = c.style.color;
+    el.style.width = ((c.h ? c.len : 1) * cs - 6) + 'px';
+    el.style.height = ((c.h ? 1 : c.len) * cs - 6) + 'px';
+    el.style.transform = `translate(${c.x * cs + 3}px, ${c.y * cs + 3}px)`;
+    // Wrap emoji in a span so vertical cars get a 90° rotated glyph without
+    // affecting the parent's translate transform.
+    const span = document.createElement('span');
+    span.textContent = c.style.emoji;
+    span.style.display = 'inline-block';
+    if (!c.h) span.style.transform = 'rotate(90deg)';
+    el.appendChild(span);
+    c.el = el;
+    attachDrag(c);
+    board.appendChild(el);
+  });
+}
+
+// ---------- Drag interaction ----------
+function attachDrag(car) {
+  let dragging = false;
+  let startPx = 0, startPy = 0;      // pointer start (px)
+  let startX = 0, startY = 0;        // car start (grid cells)
+  let allowedMin = 0, allowedMax = 0;// allowed px offset along axis
+  let exitAllowed = false;           // can red slide off right edge?
+
+  car.el.addEventListener('pointerdown', (e) => {
+    if (state.won) return;
+    dragging = true;
+    car.el.setPointerCapture(e.pointerId);
+    car.el.classList.add('dragging');
+    startPx = e.clientX;
+    startPy = e.clientY;
+    startX = car.x;
+    startY = car.y;
+
+    // Compute travel range on this car's axis.
+    const cs = state.cellSize;
+    const others = state.cars.filter(c => c !== car);
+
+    if (car.h) {
+      // find leftmost x and rightmost x where the car can sit without overlap.
+      let minX = 0, maxX = N - car.len;
+      for (const o of others) {
+        if (!overlapY(car, o)) continue;
+        if (o.x + (o.h ? o.len : 1) <= car.x) {
+          // o is to the left
+          minX = Math.max(minX, o.x + (o.h ? o.len : 1));
+        } else if (o.x >= car.x + car.len) {
+          // o is to the right
+          maxX = Math.min(maxX, o.x - car.len);
+        }
+      }
+      // Red car can drag off the right edge — extend the cap by 0.9 cells so
+      // the user has a clear visual "off the board" gesture target.
+      exitAllowed = !!car.red;
+      if (exitAllowed && maxX === N - car.len) {
+        allowedMax = (maxX - startX) * cs + cs * 0.9;
+      } else {
+        allowedMax = (maxX - startX) * cs;
+      }
+      allowedMin = (minX - startX) * cs;
+    } else {
+      let minY = 0, maxY = N - car.len;
+      for (const o of others) {
+        if (!overlapX(car, o)) continue;
+        if (o.y + (o.h ? 1 : o.len) <= car.y) {
+          minY = Math.max(minY, o.y + (o.h ? 1 : o.len));
+        } else if (o.y >= car.y + car.len) {
+          maxY = Math.min(maxY, o.y - car.len);
+        }
+      }
+      allowedMin = (minY - startY) * cs;
+      allowedMax = (maxY - startY) * cs;
+    }
+  });
+
+  car.el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const cs = state.cellSize;
+    let dx = e.clientX - startPx;
+    let dy = e.clientY - startPy;
+    if (car.h) {
+      let off = Math.max(allowedMin, Math.min(allowedMax, dx));
+      car.el.style.transform = `translate(${startX * cs + 3 + off}px, ${startY * cs + 3}px)`;
+    } else {
+      let off = Math.max(allowedMin, Math.min(allowedMax, dy));
+      car.el.style.transform = `translate(${startX * cs + 3}px, ${startY * cs + 3 + off}px)`;
+    }
+  });
+
+  function finalize(e) {
+    if (!dragging) return;
+    dragging = false;
+    car.el.classList.remove('dragging');
+    try { car.el.releasePointerCapture(e.pointerId); } catch (_) {}
+
+    const cs = state.cellSize;
+    let dx = e.clientX - startPx;
+    let dy = e.clientY - startPy;
+
+    if (car.h) {
+      const off = Math.max(allowedMin, Math.min(allowedMax, dx));
+
+      // Exit triggers when red has a clear right-path AND the user dragged
+      // close to the extended max (i.e. past the visible right edge).
+      const clearToEdge = exitAllowed && allowedMax > (N - car.len - startX) * cs + cs * 0.3;
+      if (clearToEdge && off > (N - car.len - startX) * cs + cs * 0.4) {
+        car.x = N - car.len;
+        car.el.style.transition = 'transform .4s cubic-bezier(.4,0,.7,.4)';
+        car.el.style.transform = `translate(${(N + 1) * cs}px, ${startY * cs + 3}px)`;
+        state.moves++;
+        document.getElementById('moveCount').textContent = state.moves;
+        if (navigator.vibrate) navigator.vibrate(20);
+        onWin();
+        return;
+      }
+
+      // Snap to nearest legal cell.
+      const maxCellOffset = Math.floor(allowedMax / cs);
+      const minCellOffset = Math.ceil(allowedMin / cs);
+      const cellOff = Math.max(minCellOffset, Math.min(maxCellOffset, Math.round(off / cs)));
+      const newX = startX + cellOff;
+      const moved = newX !== startX;
+      car.x = newX;
+      car.el.style.transition = 'transform .12s ease-out';
+      car.el.style.transform = `translate(${car.x * cs + 3}px, ${car.y * cs + 3}px)`;
+      setTimeout(() => { car.el.style.transition = ''; }, 140);
+      if (moved) {
+        state.moves++;
+        document.getElementById('moveCount').textContent = state.moves;
+        if (navigator.vibrate) navigator.vibrate(6);
+      } else {
+        bump(car);
+      }
+    } else {
+      const maxCellOffset = Math.floor(allowedMax / cs);
+      const minCellOffset = Math.ceil(allowedMin / cs);
+      const cellOff = Math.max(minCellOffset, Math.min(maxCellOffset, Math.round(dy / cs)));
+      const newY = startY + cellOff;
+      const moved = newY !== startY;
+      car.y = newY;
+      car.el.style.transition = 'transform .12s ease-out';
+      car.el.style.transform = `translate(${car.x * cs + 3}px, ${car.y * cs + 3}px)`;
+      setTimeout(() => { car.el.style.transition = ''; }, 140);
+      if (moved) {
+        state.moves++;
+        document.getElementById('moveCount').textContent = state.moves;
+        if (navigator.vibrate) navigator.vibrate(6);
+      } else {
+        bump(car);
+      }
+    }
+  }
+
+  car.el.addEventListener('pointerup', finalize);
+  car.el.addEventListener('pointercancel', finalize);
+}
+
+function bump(car) {
+  car.el.classList.remove('bump');
+  void car.el.offsetWidth;
+  car.el.classList.add('bump');
+}
+
+// Overlap helpers using current grid positions.
+function overlapY(a, b) {
+  const ay2 = a.y + (a.h ? 1 : a.len);
+  const by2 = b.y + (b.h ? 1 : b.len);
+  return !(ay2 <= b.y || by2 <= a.y);
+}
+function overlapX(a, b) {
+  const ax2 = a.x + (a.h ? a.len : 1);
+  const bx2 = b.x + (b.h ? b.len : 1);
+  return !(ax2 <= b.x || bx2 <= a.x);
+}
+
+// ---------- Win ----------
+function onWin() {
+  if (state.won) return;
+  state.won = true;
+  state.cleared.add(state.levelIdx);
+  saveCleared();
+  document.getElementById('winMoves').textContent = state.moves;
+  setTimeout(() => {
+    document.getElementById('winOverlay').classList.add('show');
+    confetti();
+  }, 480);
+  if (navigator.vibrate) navigator.vibrate([20, 50, 20, 50, 20]);
+}
+
+function nextLevel() {
+  const next = state.levelIdx + 1;
+  if (next < LEVELS.length) startLevel(next);
+  else backToSelect();
+}
+
+function backToSelect() {
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('selectScreen').classList.add('active');
+  document.getElementById('backBtn').classList.remove('show');
+  document.getElementById('winOverlay').classList.remove('show');
+  renderLevelSelect();
+}
+
+function resetLevel() {
+  startLevel(state.levelIdx);
+}
+
+// ---------- Confetti ----------
+function confetti() {
+  const colors = ['#ff6b9d', '#ffd93d', '#5bc13a', '#74b9ff', '#fd79a8', '#fdcb6e'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+  }
+}
+
+// ---------- Buttons ----------
+document.getElementById('resetBtn').addEventListener('click', resetLevel);
+document.getElementById('backBtn').addEventListener('click', backToSelect);
+document.getElementById('nextBtn').addEventListener('click', nextLevel);
+document.getElementById('selectBtn').addEventListener('click', backToSelect);
+
+// ---------- Resize ----------
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!document.getElementById('gameScreen').classList.contains('active')) return;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => renderBoard(), 120);
+});
+
+// ---------- Init ----------
+loadCleared();
+renderLevelSelect();
+
+// Dev-only sanity: log any unsolvable levels to console (silent for kids).
+try {
+  for (let i = 0; i < LEVELS.length; i++) {
+    const r = isSolvable(LEVELS[i]);
+    if (r === false) console.warn('Level ' + (i + 1) + ' appears unsolvable');
+    if (r === null) console.warn('Level ' + (i + 1) + ' BFS too large to verify');
+  }
+} catch (_) {}
+</script>
+</body>
+</html>
