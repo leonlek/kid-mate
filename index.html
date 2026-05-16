@@ -33,6 +33,10 @@
     --ink: #2d3436;
     --card: #ffffff;
     --card-border: #ffd6e4;
+    --badge-young: #ffd93d;
+    --badge-young-ink: #8a5e00;
+    --badge-old: #a78bfa;
+    --badge-old-ink: #3d2185;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -80,11 +84,34 @@
     font-weight: 500;
   }
 
+  .section-header {
+    font-family: 'Itim', cursive;
+    font-size: clamp(28px, 6vw, 38px);
+    color: var(--brand-dark);
+    margin: 28px 4px 14px;
+    text-shadow: 2px 2px 0 #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .pill {
+    display: inline-block;
+    font-family: 'Mitr', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-left: auto;
+    color: #fff;
+    background: var(--brand);
+    text-shadow: none;
+  }
+
   .games {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
-    margin-top: 10px;
+    margin-top: 4px;
   }
 
   .game-card {
@@ -116,6 +143,19 @@
   }
   .game-card:hover { border-color: var(--brand); }
 
+  .age-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'Itim', cursive;
+    font-size: 14px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    z-index: 2;
+    font-weight: 500;
+  }
+  .age-badge.young { background: var(--badge-young); color: var(--badge-young-ink); }
+  .age-badge.old   { background: var(--badge-old);   color: var(--badge-old-ink); }
+
   .game-emoji {
     font-size: 96px;
     line-height: 1;
@@ -142,22 +182,16 @@
     max-width: 220px;
   }
 
-  .game-card.soon {
-    opacity: 0.62;
-    cursor: default;
-    pointer-events: none;
-    background: #fafafa;
-  }
-  .game-card.soon .game-emoji { animation: none; filter: grayscale(0.3) drop-shadow(3px 4px 0 rgba(0,0,0,0.08)); }
-  .soon-tag {
+  .new-tag {
     position: absolute;
-    top: 12px; right: 12px;
-    background: #ddd;
-    color: #555;
+    top: 8px; left: 8px;
+    background: #22d3ee;
+    color: #003a44;
     font-family: 'Itim', cursive;
     font-size: 14px;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 999px;
+    z-index: 2;
   }
 
   .credits-footer {
@@ -175,6 +209,9 @@
     .game-emoji { font-size: 52px; }
     .game-title { font-size: 18px; margin-top: 4px; }
     .game-desc { display: none; }
+    .age-badge { font-size: 12px; padding: 2px 8px; top: 4px; right: 4px; }
+    .new-tag { font-size: 12px; padding: 2px 8px; top: 4px; left: 4px; }
+    .section-header { margin: 22px 4px 10px; }
   }
 </style>
 </head>
@@ -185,151 +222,208 @@
       <p>เลือกเกมที่อยากเล่น</p>
     </header>
 
+    <h2 class="section-header">👶 เด็กเล็ก 3-4 ขวบ <span class="pill">19 เกม</span></h2>
     <div class="games">
+
+      <a class="game-card" href="./shape-sort/">
+        <span class="new-tag">ใหม่!</span>
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🔷</div>
+        <div class="game-title">แตะตามรูปร่าง</div>
+        <div class="game-desc">ลากรูปทรงใส่ช่องที่ตรงกัน ฝึกรู้จักรูปทรง</div>
+      </a>
+
+      <a class="game-card" href="./color-pick/">
+        <span class="new-tag">ใหม่!</span>
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🎨</div>
+        <div class="game-title">เลือกสีที่บอก</div>
+        <div class="game-desc">แตะลูกโป่ง จับคู่ดอกไม้ ฝึกรู้จักสี</div>
+      </a>
+
+      <a class="game-card" href="./pet-care/">
+        <span class="new-tag">ใหม่!</span>
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🐶</div>
+        <div class="game-title">เลี้ยงสัตว์น้อย</div>
+        <div class="game-desc">ให้อาหาร อาบน้ำ เล่นด้วย หมา แมว กระต่าย แฮมสเตอร์</div>
+      </a>
+
       <a class="game-card" href="./animal-race/">
+        <span class="age-badge young">3+</span>
         <div class="game-emoji">🏁</div>
         <div class="game-title">แข่งความเร็ว</div>
         <div class="game-desc">สัตว์ รถ เครื่องบิน อะไรเร็วที่สุด?</div>
       </a>
 
-      <a class="game-card" href="./quick-tap/">
-        <div class="game-emoji">🎯</div>
-        <div class="game-title">จับเร็วๆ</div>
-        <div class="game-desc">แตะให้ถูก ห้ามแตะผิด ฝึกสมาธิและไหวพริบ</div>
-      </a>
-
-      <a class="game-card" href="./sort-rule/">
-        <div class="game-emoji">🎴</div>
-        <div class="game-title">เรียงตามกฎ</div>
-        <div class="game-desc">ลากการ์ดเข้าถัง กฎสลับกลางทาง ฝึกการคิดยืดหยุ่น</div>
-      </a>
-
-      <a class="game-card" href="./follow-me/">
-        <div class="game-emoji">🎵</div>
-        <div class="game-title">จำตามฉัน</div>
-        <div class="game-desc">ดูเสียงและสีแล้วทำตาม ฝึกความจำในใจ</div>
-      </a>
-
-      <a class="game-card" href="./finger-maze/">
-        <div class="game-emoji">🐭</div>
-        <div class="game-title">ตามทางหนู</div>
-        <div class="game-desc">ลากนิ้วตามเส้นพาหนูไปหาชีส ฝึกสมาธิและการควบคุมนิ้ว</div>
-      </a>
-
-      <a class="game-card" href="./cup-shuffle/">
-        <div class="game-emoji">🥤</div>
-        <div class="game-title">อยู่ไหน</div>
-        <div class="game-desc">หาของใต้ถ้วยที่สับ ฝึกสายตาและความจำ</div>
-      </a>
-
-      <a class="game-card" href="./number-pop/">
-        <div class="game-emoji">🎈</div>
-        <div class="game-title">ป๊อปลูกโป่ง</div>
-        <div class="game-desc">ป๊อปลูกโป่งตามลำดับเลข ฝึกการนับ</div>
-      </a>
-
-      <a class="game-card" href="./catch-stars/">
-        <div class="game-emoji">🌟</div>
-        <div class="game-title">จับดาว</div>
-        <div class="game-desc">รับดาวที่ตกจากฟ้า หลบดาวร้าย</div>
-      </a>
-
       <a class="game-card" href="./coloring/">
+        <span class="age-badge young">3+</span>
         <div class="game-emoji">🎨</div>
         <div class="game-title">ระบายสี</div>
         <div class="game-desc">ระบายสีรูปสบายๆ ฝึกความคิดสร้างสรรค์</div>
       </a>
 
-      <a class="game-card" href="./memory-match/">
-        <div class="game-emoji">🃏</div>
-        <div class="game-title">จับคู่ภาพ</div>
-        <div class="game-desc">พลิกการ์ดหาคู่เหมือน ฝึกความจำ</div>
+      <a class="game-card" href="./animal-piano/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🎹</div>
+        <div class="game-title">เปียโนสัตว์</div>
+        <div class="game-desc">แตะสัตว์ให้เป็นโน้ตดนตรี เล่นเพลงตามได้</div>
       </a>
 
-      <a class="game-card" href="./shadow-match/">
-        <div class="game-emoji">👤</div>
-        <div class="game-title">เงาตรงไหน</div>
-        <div class="game-desc">หาภาพที่ตรงกับเงา ฝึกการสังเกต</div>
+      <a class="game-card" href="./finger-maze/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🐭</div>
+        <div class="game-title">ตามทางหนู</div>
+        <div class="game-desc">ลากนิ้วตามเส้นพาหนูไปหาชีส</div>
       </a>
 
-      <a class="game-card" href="./jigsaw/">
-        <div class="game-emoji">🧩</div>
-        <div class="game-title">จิ๊กซอว์</div>
-        <div class="game-desc">ตัวต่อจิ๊กซอว์จริง 6 ภาพ ฝึกมือและตา</div>
+      <a class="game-card" href="./catch-stars/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🌟</div>
+        <div class="game-title">จับดาว</div>
+        <div class="game-desc">รับดาวที่ตกจากฟ้า หลบดาวร้าย</div>
       </a>
 
-      <a class="game-card" href="./arrange-pic/">
-        <div class="game-emoji">🖼️</div>
-        <div class="game-title">เรียงภาพ</div>
-        <div class="game-desc">ลากภาพไปวางในช่องที่ถูก ฝึกการสังเกต</div>
+      <a class="game-card" href="./number-pop/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🎈</div>
+        <div class="game-title">ป๊อปลูกโป่ง</div>
+        <div class="game-desc">ป๊อปลูกโป่งตามลำดับเลข ฝึกการนับ</div>
       </a>
 
-      <a class="game-card" href="./alphabet-pop/">
-        <div class="game-emoji">🔤</div>
-        <div class="game-title">ป๊อปตัวอักษร</div>
-        <div class="game-desc">ป๊อปลูกโป่งตามลำดับ ก-ฮ และ A-Z</div>
-      </a>
-
-      <a class="game-card" href="./color-mix/">
-        <div class="game-emoji">🧪</div>
-        <div class="game-title">ผสมสี</div>
-        <div class="game-desc">หยดสีลงในขวด เรียนรู้สูตรผสมสี</div>
+      <a class="game-card" href="./cup-shuffle/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🥤</div>
+        <div class="game-title">อยู่ไหน</div>
+        <div class="game-desc">หาของใต้ถ้วยที่สับ ฝึกสายตาและความจำ</div>
       </a>
 
       <a class="game-card" href="./dress-up/">
+        <span class="age-badge young">3+</span>
         <div class="game-emoji">👗</div>
         <div class="game-title">แต่งตัวตุ๊กตา</div>
         <div class="game-desc">เลือกผม เสื้อ กระโปรง หมวก แต่งตุ๊กตาให้น่ารัก</div>
       </a>
 
       <a class="game-card" href="./flower-garden/">
+        <span class="age-badge young">3+</span>
         <div class="game-emoji">🌸</div>
         <div class="game-title">สวนดอกไม้</div>
         <div class="game-desc">ปลูกเมล็ดและดูดอกไม้บาน เก็บส่งผีเสื้อบินไป</div>
       </a>
 
-      <a class="game-card" href="./animal-piano/">
-        <div class="game-emoji">🎹</div>
-        <div class="game-title">เปียโนสัตว์</div>
-        <div class="game-desc">แตะสัตว์ให้เป็นโน้ตดนตรี เล่นเพลงตามได้</div>
-      </a>
-
       <a class="game-card" href="./my-kitchen/">
+        <span class="age-badge young">3+</span>
         <div class="game-emoji">🍳</div>
         <div class="game-title">ครัวของหนู</div>
         <div class="game-desc">ตอกไข่ ปอกกล้วย ทำแพนเค้ก คุกกี้ ซูชิ</div>
       </a>
 
-      <a class="game-card" href="./push-box/">
-        <div class="game-emoji">📦</div>
-        <div class="game-title">ดันกล่อง</div>
-        <div class="game-desc">ดันกล่องไปวางบนจุด ฝึกการวางแผนและแก้ปัญหา</div>
+      <a class="game-card" href="./shadow-match/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">👤</div>
+        <div class="game-title">เงาตรงไหน</div>
+        <div class="game-desc">หาภาพที่ตรงกับเงา ฝึกการสังเกต</div>
+      </a>
+
+      <a class="game-card" href="./arrange-pic/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🖼️</div>
+        <div class="game-title">เรียงภาพ</div>
+        <div class="game-desc">ลากภาพไปวางในช่องที่ถูก ฝึกการสังเกต</div>
+      </a>
+
+      <a class="game-card" href="./quick-tap/">
+        <span class="age-badge young">3+</span>
+        <div class="game-emoji">🎯</div>
+        <div class="game-title">จับเร็วๆ</div>
+        <div class="game-desc">แตะให้ถูก ห้ามแตะผิด ฝึกสมาธิและไหวพริบ</div>
+      </a>
+
+    </div>
+
+    <h2 class="section-header">🎓 เด็กโต 5-8 ขวบ <span class="pill">11 เกม</span></h2>
+    <div class="games">
+
+      <a class="game-card" href="./memory-match/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🃏</div>
+        <div class="game-title">จับคู่ภาพ</div>
+        <div class="game-desc">พลิกการ์ดหาคู่เหมือน ฝึกความจำ</div>
+      </a>
+
+      <a class="game-card" href="./jigsaw/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🧩</div>
+        <div class="game-title">จิ๊กซอว์</div>
+        <div class="game-desc">ตัวต่อจิ๊กซอว์จริง 6 ภาพ ฝึกมือและตา</div>
+      </a>
+
+      <a class="game-card" href="./color-mix/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🧪</div>
+        <div class="game-title">ผสมสี</div>
+        <div class="game-desc">หยดสีลงในขวด เรียนรู้สูตรผสมสี</div>
+      </a>
+
+      <a class="game-card" href="./alphabet-pop/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🔤</div>
+        <div class="game-title">ป๊อปตัวอักษร</div>
+        <div class="game-desc">ป๊อปลูกโป่งตามลำดับ ก-ฮ และ A-Z</div>
+      </a>
+
+      <a class="game-card" href="./sort-rule/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🎴</div>
+        <div class="game-title">เรียงตามกฎ</div>
+        <div class="game-desc">ลากการ์ดเข้าถัง กฎสลับกลางทาง</div>
+      </a>
+
+      <a class="game-card" href="./follow-me/">
+        <span class="age-badge old">5+</span>
+        <div class="game-emoji">🎵</div>
+        <div class="game-title">จำตามฉัน</div>
+        <div class="game-desc">ดูเสียงและสีแล้วทำตาม ฝึกความจำในใจ</div>
       </a>
 
       <a class="game-card" href="./maze/">
+        <span class="age-badge old">5+</span>
         <div class="game-emoji">🌀</div>
         <div class="game-title">เขาวงกต</div>
-        <div class="game-desc">พาตัวละครหาทางออก สุ่มใหม่ทุกครั้ง ฝึกการแก้ปัญหา</div>
+        <div class="game-desc">พาตัวละครหาทางออก สุ่มใหม่ทุกครั้ง</div>
+      </a>
+
+      <a class="game-card" href="./balance/">
+        <span class="age-badge old">6+</span>
+        <div class="game-emoji">⚖️</div>
+        <div class="game-title">ตาชั่งสมดุล</div>
+        <div class="game-desc">วางผลไม้ให้สองข้างเท่ากัน ฝึกตรรกะ</div>
+      </a>
+
+      <a class="game-card" href="./push-box/">
+        <span class="age-badge old">6+</span>
+        <div class="game-emoji">📦</div>
+        <div class="game-title">ดันกล่อง</div>
+        <div class="game-desc">ดันกล่องไปวางบนจุด ฝึกการวางแผน</div>
       </a>
 
       <a class="game-card" href="./pipe-flow/">
+        <span class="age-badge old">6+</span>
         <div class="game-emoji">💧</div>
         <div class="game-title">ต่อท่อน้ำ</div>
-        <div class="game-desc">หมุนท่อให้น้ำไหลถึงปลายทาง ฝึก spatial reasoning</div>
+        <div class="game-desc">หมุนท่อให้น้ำไหลถึงปลายทาง</div>
       </a>
 
       <a class="game-card" href="./slide-unlock/">
+        <span class="age-badge old">6+</span>
         <div class="game-emoji">🚗</div>
         <div class="game-title">เลื่อนปลดล็อค</div>
         <div class="game-desc">เลื่อนรถให้รถแดงออกได้ ฝึกการวางแผน</div>
       </a>
 
-      <a class="game-card" href="./balance/">
-        <div class="game-emoji">⚖️</div>
-        <div class="game-title">ตาชั่งสมดุล</div>
-        <div class="game-desc">วางผลไม้ให้สองข้างเท่ากัน ฝึกตรรกะและการเปรียบเทียบ</div>
-      </a>
     </div>
+
     <footer class="credits-footer">
       <a href="CREDITS.md">เครดิตรูปและเสียง</a> · ฟรีสำหรับทุกคน
     </footer>

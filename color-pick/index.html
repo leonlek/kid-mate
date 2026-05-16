@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎨 เลือกสีที่บอก — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมเรียนรู้สีไทย ลูกโป่ง ดอกไม้ สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เลือกสี">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --ink: #2d3436;
+    --sky-1: #b5e8ff;
+    --sky-2: #d9f3c9;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+    height: 100vh; height: 100dvh;
+    background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 100%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 70; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .stars {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top));
+    right: 14px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    z-index: 70;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stars.bump { animation: bump .4s ease; }
+  @keyframes bump { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+  /* ===== Mode picker ===== */
+  .picker {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 22px;
+    padding: 20px;
+    z-index: 10;
+  }
+  .picker.hidden { display: none; }
+  .picker h1 {
+    font-family: 'Itim', cursive;
+    font-size: 52px;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .picker .modes {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mode-card {
+    width: 160px;
+    background: #fff;
+    border: 4px solid var(--brand);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--brand-dark);
+    transition: transform .15s;
+  }
+  .mode-card:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .mode-card .icon { font-size: 64px; }
+  .mode-card .label {
+    font-family: 'Itim', cursive;
+    font-size: 28px;
+    color: var(--brand-dark);
+    margin-top: 6px;
+  }
+
+  /* ===== Game scene ===== */
+  .scene {
+    position: relative;
+    width: 100vw;
+    height: 100vh; height: 100dvh;
+    display: none;
+  }
+  .scene.on { display: block; }
+
+  .target {
+    position: absolute;
+    top: calc(74px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 4px solid var(--brand);
+    box-shadow: 0 4px 0 var(--brand-dark);
+    border-radius: 28px;
+    padding: 10px 22px 10px 14px;
+    display: flex; align-items: center;
+    gap: 14px;
+    z-index: 5;
+  }
+  .target .swatch {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.15);
+  }
+  .target .label {
+    font-family: 'Itim', cursive;
+    font-size: 30px;
+    color: var(--ink);
+  }
+  .speak-btn {
+    position: absolute;
+    top: calc(74px + env(safe-area-inset-top) + 90px);
+    left: 50%; transform: translateX(-50%);
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 5;
+  }
+  .speak-btn:active { transform: translate(-50%, 3px); box-shadow: 0 0 0 var(--brand-dark); }
+
+  /* ===== Balloons mode ===== */
+  .balloons {
+    position: absolute; inset: 0;
+  }
+  .balloon {
+    position: absolute;
+    width: 100px; height: 130px;
+    cursor: pointer;
+    will-change: transform;
+    pointer-events: auto;
+  }
+  .balloon svg { width: 100%; height: 100%; display: block; }
+  .balloon.popping {
+    animation: pop .35s ease forwards;
+    pointer-events: none;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); opacity: 1; }
+    40% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.4); opacity: 0; }
+  }
+  .balloon.shake { animation: shake .35s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* ===== Flowers mode ===== */
+  .flowers-area {
+    position: absolute;
+    top: calc(180px + env(safe-area-inset-top));
+    left: 0; right: 0;
+    bottom: 220px;
+  }
+  .flower {
+    position: absolute;
+    width: 84px; height: 84px;
+    cursor: grab;
+    pointer-events: auto;
+    touch-action: none;
+    will-change: transform;
+    filter: drop-shadow(0 4px 0 rgba(0,0,0,0.18));
+  }
+  .flower.dragging { z-index: 50; cursor: grabbing; }
+  .flower.placed { pointer-events: none; transition: left .35s cubic-bezier(.34,1.56,.64,1), top .35s cubic-bezier(.34,1.56,.64,1); }
+  .pots {
+    position: absolute;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: flex; justify-content: center;
+    gap: 8px; padding: 0 8px;
+    flex-wrap: wrap;
+  }
+  .pot {
+    width: 64px; height: 90px;
+    border-radius: 0 0 14px 14px;
+    position: relative;
+    border: 3px solid #000;
+    border-top: none;
+    box-shadow: inset 0 -8px 0 rgba(0,0,0,0.15);
+  }
+  .pot::before {
+    content: '';
+    position: absolute;
+    top: -16px; left: -8px; right: -8px;
+    height: 18px;
+    border-radius: 6px;
+    background: inherit;
+    border: 3px solid #000;
+  }
+  .pot.flash {
+    animation: potFlash .5s ease;
+  }
+  @keyframes potFlash {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+
+  /* Celebration */
+  .celebrate {
+    position: fixed; inset: 0;
+    background: rgba(255, 250, 230, 0.96);
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    z-index: 100;
+    text-align: center;
+    padding: 20px;
+  }
+  .celebrate.on { display: flex; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .celebrate-emoji { font-size: 120px; animation: spin 2s ease-in-out infinite; }
+  @keyframes spin {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50%      { transform: rotate(10deg) scale(1.1); }
+  }
+  .celebrate h2 {
+    font-family: 'Itim', cursive;
+    font-size: 56px;
+    color: var(--brand-dark);
+    margin: 12px 0 8px;
+    text-shadow: 3px 3px 0 #fff;
+  }
+  .celebrate .stars-row { font-size: 56px; letter-spacing: 8px; margin: 8px 0 20px; }
+  .play-again {
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 999px; padding: 18px 42px;
+    font-family: 'Itim', cursive; font-size: 30px;
+    box-shadow: 0 5px 0 var(--brand-dark);
+    cursor: pointer;
+  }
+  .play-again:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  .confetti { position: absolute; width: 12px; height: 12px; pointer-events: none; z-index: 70; }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="stars">⭐ <span id="starCount" class="count-num">0</span></div>
+
+<!-- Mode picker -->
+<div class="picker" id="picker">
+  <h1>🎨 เลือกสีที่บอก</h1>
+  <div class="modes">
+    <div class="mode-card" data-mode="balloons">
+      <div class="icon">🎈</div>
+      <div class="label">ลูกโป่งสี</div>
+    </div>
+    <div class="mode-card" data-mode="flowers">
+      <div class="icon">🌷</div>
+      <div class="label">จับคู่ดอกไม้</div>
+    </div>
+  </div>
+</div>
+
+<!-- Game scene -->
+<div class="scene" id="scene">
+  <div class="target" id="target">
+    <div class="swatch" id="swatch"></div>
+    <div class="label" id="targetLabel">แดง</div>
+  </div>
+  <button class="speak-btn" id="speakBtn" aria-label="ฟังอีกครั้ง">🔊 ฟังอีก</button>
+
+  <div class="balloons" id="balloons"></div>
+
+  <div class="flowers-area" id="flowersArea"></div>
+  <div class="pots" id="pots"></div>
+</div>
+
+<!-- Celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-emoji">🌈</div>
+  <h2>เก่งมาก!</h2>
+  <div class="stars-row" id="starRow">⭐⭐⭐⭐⭐</div>
+  <button class="play-again" id="playAgain">เล่นอีก</button>
+</div>
+
+<script>
+const COLORS = [
+  { id: 'red',    name: 'แดง',     hex: '#ef4444' },
+  { id: 'yellow', name: 'เหลือง',   hex: '#fbbf24' },
+  { id: 'blue',   name: 'น้ำเงิน',   hex: '#3b82f6' },
+  { id: 'green',  name: 'เขียว',    hex: '#10b981' },
+  { id: 'orange', name: 'ส้ม',      hex: '#fb923c' },
+  { id: 'purple', name: 'ม่วง',     hex: '#a855f7' },
+  { id: 'pink',   name: 'ชมพู',    hex: '#ec4899' },
+  { id: 'white',  name: 'ขาว',     hex: '#f8fafc' },
+];
+
+const picker = document.getElementById('picker');
+const scene = document.getElementById('scene');
+const balloonsEl = document.getElementById('balloons');
+const flowersArea = document.getElementById('flowersArea');
+const potsEl = document.getElementById('pots');
+const target = document.getElementById('target');
+const swatch = document.getElementById('swatch');
+const targetLabel = document.getElementById('targetLabel');
+const speakBtn = document.getElementById('speakBtn');
+const starCountEl = document.getElementById('starCount');
+const starsEl = document.querySelector('.stars');
+const celebrate = document.getElementById('celebrate');
+const playAgain = document.getElementById('playAgain');
+const starRow = document.getElementById('starRow');
+
+let mode = null;      // 'balloons' | 'flowers'
+let stars = 0;
+let targetColor = null;
+let round = 0;
+let balloonAnimId = null;
+let activeBalloons = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function colorPool() {
+  if (round < 3) return COLORS.slice(0, 3);  // red, yellow, blue
+  if (round < 6) return COLORS.slice(0, 4);  // + green
+  if (round < 9) return COLORS.slice(0, 6);  // + orange, purple
+  return COLORS.slice(0, 8);
+}
+
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    mode = card.dataset.mode;
+    picker.classList.add('hidden');
+    scene.classList.add('on');
+    stars = 0;
+    round = 0;
+    starCountEl.textContent = '0';
+    if (mode === 'balloons') startBalloons();
+    else if (mode === 'flowers') startFlowers();
+  });
+});
+
+speakBtn.addEventListener('click', () => {
+  if (targetColor) speak('สี' + targetColor.name);
+});
+
+// ============ BALLOONS MODE ============
+
+function startBalloons() {
+  flowersArea.style.display = 'none';
+  potsEl.style.display = 'none';
+  balloonsEl.style.display = 'block';
+  setBalloonsRound();
+}
+
+function balloonSvg(hex) {
+  return `<svg viewBox="0 0 100 130">
+    <ellipse cx="50" cy="50" rx="38" ry="46" fill="${hex}" stroke="${darken(hex)}" stroke-width="3"/>
+    <ellipse cx="38" cy="35" rx="10" ry="14" fill="rgba(255,255,255,0.45)"/>
+    <polygon points="44,94 50,100 56,94" fill="${darken(hex)}"/>
+    <path d="M50,100 Q45,108 50,116 Q55,124 50,128" stroke="#666" stroke-width="2" fill="none"/>
+  </svg>`;
+}
+
+function setBalloonsRound() {
+  cancelAnimationFrame(balloonAnimId);
+  balloonsEl.innerHTML = '';
+  activeBalloons = [];
+
+  const pool = colorPool();
+  targetColor = pool[Math.floor(Math.random() * pool.length)];
+  swatch.style.background = targetColor.hex;
+  targetLabel.textContent = targetColor.name;
+  speak('แตะลูกโป่งสี' + targetColor.name);
+
+  // Spawn 5-6 balloons, at least 2 of target color
+  const count = pool.length <= 4 ? 5 : 6;
+  const colorList = [];
+  colorList.push(targetColor, targetColor);  // 2 target
+  for (let i = 0; i < count - 2; i++) {
+    colorList.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  shuffle(colorList).forEach((c, idx) => {
+    spawnBalloon(c, idx);
+  });
+
+  animateBalloons();
+}
+
+function spawnBalloon(color, idx) {
+  const el = document.createElement('div');
+  el.className = 'balloon';
+  el.innerHTML = balloonSvg(color.hex);
+  const W = window.innerWidth;
+  const x = 30 + Math.random() * (W - 130);
+  const y = window.innerHeight + Math.random() * 200 + idx * 80;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.dataset.colorId = color.id;
+  balloonsEl.appendChild(el);
+  activeBalloons.push({ el, y, vy: 0.6 + Math.random() * 0.4, color });
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (color.id === targetColor.id) {
+      popBalloon(el);
+      onCorrect();
+    } else {
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      vibrate(40);
+    }
+  });
+}
+
+function popBalloon(el) {
+  const r = el.getBoundingClientRect();
+  popConfetti(r.left + r.width/2, r.top + r.height/2);
+  el.classList.add('popping');
+  vibrate([20, 30, 30]);
+  setTimeout(() => el.remove(), 400);
+}
+
+function animateBalloons() {
+  activeBalloons.forEach(b => {
+    if (!b.el.isConnected) return;
+    b.y -= b.vy;
+    b.el.style.top = b.y + 'px';
+    // wrap from bottom when off-screen
+    if (b.y < -150) {
+      b.y = window.innerHeight + 50;
+      b.el.style.left = (30 + Math.random() * (window.innerWidth - 130)) + 'px';
+    }
+  });
+  // Clean popped
+  activeBalloons = activeBalloons.filter(b => b.el.isConnected);
+  balloonAnimId = requestAnimationFrame(animateBalloons);
+}
+
+function onCorrect() {
+  stars++;
+  round++;
+  starCountEl.textContent = stars;
+  starsEl.classList.remove('bump');
+  void starsEl.offsetWidth;
+  starsEl.classList.add('bump');
+  speak('เก่งมาก');
+
+  if (stars >= 10) {
+    setTimeout(showCelebrate, 500);
+  } else {
+    setTimeout(setBalloonsRound, 900);
+  }
+}
+
+// ============ FLOWERS MODE ============
+
+function startFlowers() {
+  balloonsEl.style.display = 'none';
+  flowersArea.style.display = 'block';
+  potsEl.style.display = 'flex';
+  setFlowersRound();
+}
+
+function flowerSvg(hex) {
+  return `<svg viewBox="0 0 100 100">
+    <circle cx="50" cy="30" r="16" fill="${hex}"/>
+    <circle cx="30" cy="50" r="16" fill="${hex}"/>
+    <circle cx="70" cy="50" r="16" fill="${hex}"/>
+    <circle cx="40" cy="68" r="16" fill="${hex}"/>
+    <circle cx="60" cy="68" r="16" fill="${hex}"/>
+    <circle cx="50" cy="50" r="14" fill="#ffd93d" stroke="${darken(hex)}" stroke-width="2"/>
+  </svg>`;
+}
+
+function setFlowersRound() {
+  flowersArea.innerHTML = '';
+  potsEl.innerHTML = '';
+
+  const pool = colorPool();
+  const picks = pool.slice(0, Math.min(pool.length, 5));
+  // hide target panel for flowers mode
+  target.style.display = 'none';
+  speakBtn.style.display = 'none';
+
+  // Pots: 1 per color, shuffled order
+  shuffle(picks).forEach(c => {
+    const pot = document.createElement('div');
+    pot.className = 'pot';
+    pot.style.background = c.hex;
+    pot.dataset.colorId = c.id;
+    potsEl.appendChild(pot);
+  });
+
+  // Flowers: same colors, scattered top, shuffled
+  const fa = flowersArea.getBoundingClientRect();
+  const cols = picks.length;
+  shuffle(picks).forEach((c, i) => {
+    const f = document.createElement('div');
+    f.className = 'flower';
+    f.innerHTML = flowerSvg(c.hex);
+    f.dataset.colorId = c.id;
+    const W = Math.max(fa.width, 300);
+    const cellW = W / cols;
+    const x = i * cellW + cellW/2 - 42;
+    const y = 20 + Math.random() * Math.max(60, fa.height - 120);
+    f.style.left = x + 'px';
+    f.style.top = y + 'px';
+    f.dataset.homeX = x;
+    f.dataset.homeY = y;
+    flowersArea.appendChild(f);
+    attachFlowerDrag(f);
+  });
+}
+
+function attachFlowerDrag(el) {
+  let dragging = false;
+  let sx=0, sy=0, ex=0, ey=0;
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    dragging = true;
+    el.classList.add('dragging');
+    sx = e.clientX; sy = e.clientY;
+    ex = parseFloat(el.style.left); ey = parseFloat(el.style.top);
+    el.setPointerCapture(e.pointerId);
+    vibrate(8);
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    el.style.left = (ex + e.clientX - sx) + 'px';
+    el.style.top = (ey + e.clientY - sy) + 'px';
+  });
+  function end(e) {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+    const er = el.getBoundingClientRect();
+    const fx = er.left + er.width/2;
+    const fy = er.top + er.height/2;
+    let nearestPot = null;
+    let nearestDist = Infinity;
+    document.querySelectorAll('.pot').forEach(p => {
+      const r = p.getBoundingClientRect();
+      const d = Math.hypot(fx - (r.left + r.width/2), fy - (r.top + r.height/2));
+      if (d < nearestDist) { nearestDist = d; nearestPot = p; }
+    });
+    if (nearestPot && nearestDist < 100 && nearestPot.dataset.colorId === el.dataset.colorId) {
+      // snap into pot
+      const pr = nearestPot.getBoundingClientRect();
+      const fa = flowersArea.getBoundingClientRect();
+      el.classList.add('placed');
+      el.style.left = (pr.left - fa.left + pr.width/2 - 42) + 'px';
+      el.style.top = (pr.top - fa.top - 64) + 'px';
+      nearestPot.classList.remove('flash');
+      void nearestPot.offsetWidth;
+      nearestPot.classList.add('flash');
+      vibrate([20, 30, 30]);
+      popConfetti(pr.left + pr.width/2, pr.top + pr.height/2);
+      const c = COLORS.find(c => c.id === el.dataset.colorId);
+      if (c) speak(c.name);
+      checkFlowersDone();
+    } else {
+      // bounce back
+      el.style.transition = 'left .3s, top .3s';
+      el.style.left = el.dataset.homeX + 'px';
+      el.style.top = el.dataset.homeY + 'px';
+      setTimeout(() => el.style.transition = '', 300);
+    }
+  }
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+
+function checkFlowersDone() {
+  const remaining = flowersArea.querySelectorAll('.flower:not(.placed)').length;
+  if (remaining === 0) {
+    round++;
+    stars++;
+    starCountEl.textContent = stars;
+    starsEl.classList.remove('bump');
+    void starsEl.offsetWidth;
+    starsEl.classList.add('bump');
+    if (stars >= 5) {
+      setTimeout(showCelebrate, 600);
+    } else {
+      setTimeout(setFlowersRound, 900);
+    }
+  }
+}
+
+// ============ SHARED ============
+
+function showCelebrate() {
+  celebrate.classList.add('on');
+  starRow.textContent = '⭐'.repeat(Math.min(5, stars));
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => popConfetti(cx + (Math.random() - 0.5) * 200, cy - 100 + Math.random() * 100), i * 30);
+  }
+  speak('เก่งมาก');
+}
+
+playAgain.addEventListener('click', () => {
+  celebrate.classList.remove('on');
+  stars = 0; round = 0;
+  starCountEl.textContent = '0';
+  if (mode === 'balloons') {
+    target.style.display = 'flex';
+    speakBtn.style.display = 'block';
+    setBalloonsRound();
+  } else {
+    setFlowersRound();
+  }
+});
+
+function popConfetti(x, y) {
+  const colors = ['#ff6b6b','#ffd93d','#4fc3f7','#7ed957','#ff8fb3','#a78bfa','#ff9f43','#22d3ee'];
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    const angle = (Math.random() - 0.5) * Math.PI;
+    const dist = 60 + Math.random() * 80;
+    c.style.left = x + 'px';
+    c.style.top = y + 'px';
+    document.body.appendChild(c);
+    requestAnimationFrame(() => {
+      c.style.transform = `translate(${Math.cos(angle) * dist}px, ${100 + Math.random() * 60}px) rotate(${Math.random() * 720}deg)`;
+      c.style.opacity = '0';
+      c.style.transition = 'transform 1s ease-out, opacity 1s ease-out';
+    });
+    setTimeout(() => c.remove(), 1100);
+  }
+}
+
+function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) {} }
+
+function speak(text) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH';
+    u.rate = 0.95;
+    u.pitch = 1.1;
+    speechSynthesis.speak(u);
+  } catch (_) {}
+}
+
+function darken(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, ((n >> 16) & 255) - 50);
+  const g = Math.max(0, ((n >> 8) & 255) - 50);
+  const b = Math.max(0, (n & 255) - 50);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🐶 เลี้ยงหมาแมว — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมเลี้ยงสัตว์น่ารัก ให้อาหาร อาบน้ำ เล่น สำหรับเด็กไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="สัตว์เลี้ยง">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d;
+    --ink: #2d3436;
+    --wall: #ffe9d6;
+    --floor: #f5d6a8;
+    --shelf: #c08e5e;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+    height: 100vh; height: 100dvh;
+    background: var(--wall);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 70; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .change-pet {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: 14px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-family: 'Itim', cursive;
+    font-size: 22px;
+    color: var(--brand-dark);
+    z-index: 70;
+    cursor: pointer;
+    display: none;
+  }
+  .change-pet.on { display: block; }
+  .change-pet:active { transform: translateY(3px); box-shadow: 0 0 0 var(--brand-dark); }
+
+  /* ===== Pet picker ===== */
+  .picker {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 22px;
+    padding: 20px;
+    z-index: 10;
+    background: linear-gradient(180deg, #fff5da 0%, #ffe2ec 100%);
+  }
+  .picker.hidden { display: none; }
+  .picker h1 {
+    font-family: 'Itim', cursive;
+    font-size: 44px;
+    color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .pet-pick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 380px;
+  }
+  .pet-pick {
+    background: #fff;
+    border: 4px solid var(--brand);
+    border-radius: 24px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--brand-dark);
+    transition: transform .15s;
+  }
+  .pet-pick:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .pet-pick .emoji {
+    font-size: 80px;
+    line-height: 1;
+    animation: pickBob 2.4s ease-in-out infinite;
+  }
+  .pet-pick:nth-child(2) .emoji { animation-delay: 0.3s; }
+  .pet-pick:nth-child(3) .emoji { animation-delay: 0.6s; }
+  .pet-pick:nth-child(4) .emoji { animation-delay: 0.9s; }
+  @keyframes pickBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  .pet-pick .name {
+    font-family: 'Itim', cursive;
+    font-size: 28px;
+    color: var(--brand-dark);
+    margin-top: 4px;
+  }
+
+  /* ===== Scene ===== */
+  .scene {
+    position: relative;
+    width: 100vw; height: 100vh; height: 100dvh;
+    display: none;
+    overflow: hidden;
+  }
+  .scene.on { display: block; }
+
+  /* Room background */
+  .room {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, var(--wall) 0%, var(--wall) 60%, var(--floor) 60%, var(--floor) 100%);
+  }
+  .room::before {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    top: 60%; height: 6px;
+    background: var(--shelf);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .room .deco {
+    position: absolute;
+    font-size: 40px;
+  }
+  .deco.frame { top: 30px; left: 30px; }
+  .deco.plant { top: 20%; right: 24px; font-size: 56px; }
+  .deco.window { top: 40px; left: 50%; transform: translateX(-50%); font-size: 80px; }
+
+  /* Hearts */
+  .hearts {
+    position: absolute;
+    top: calc(72px + env(safe-area-inset-top));
+    left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.85);
+    border: 3px solid var(--brand);
+    border-radius: 999px;
+    padding: 6px 18px;
+    display: flex;
+    gap: 6px;
+    z-index: 30;
+  }
+  .heart {
+    font-size: 28px;
+    filter: grayscale(1);
+    opacity: 0.35;
+    transition: filter .35s, opacity .35s, transform .35s;
+  }
+  .heart.on {
+    filter: none;
+    opacity: 1;
+    animation: heartPop .5s ease;
+  }
+  @keyframes heartPop {
+    0% { transform: scale(0.4); }
+    60% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+
+  /* Pet on scene */
+  .pet {
+    position: absolute;
+    left: 50%; top: 52%;
+    transform: translate(-50%, -50%);
+    font-size: 160px;
+    line-height: 1;
+    z-index: 20;
+    filter: drop-shadow(0 8px 0 rgba(0,0,0,0.18));
+    animation: petIdle 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes petIdle {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%      { transform: translate(-50%, -52%) scale(1.02); }
+  }
+  .pet.happy { animation: petHappy .8s ease; }
+  @keyframes petHappy {
+    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+    25% { transform: translate(-50%, -56%) scale(1.12) rotate(-6deg); }
+    75% { transform: translate(-50%, -56%) scale(1.12) rotate(6deg); }
+  }
+  .pet.eat { animation: petEat .6s ease 3; }
+  @keyframes petEat {
+    0%, 100% { transform: translate(-50%, -50%) scale(1, 1); }
+    50%      { transform: translate(-50%, -50%) scale(1.05, 0.95); }
+  }
+
+  /* Thought bubble */
+  .thought {
+    position: absolute;
+    left: 50%;
+    top: 25%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 4px solid var(--brand);
+    border-radius: 60px;
+    padding: 14px 28px;
+    font-size: 48px;
+    box-shadow: 0 5px 0 var(--brand-dark);
+    z-index: 25;
+    animation: thoughtFloat 2.4s ease-in-out infinite;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .thought::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%; transform: translateX(-30px);
+    width: 16px; height: 16px;
+    background: #fff;
+    border: 4px solid var(--brand);
+    border-top: none; border-left: none;
+    border-radius: 50%;
+    box-shadow: 0 3px 0 var(--brand-dark);
+  }
+  .thought::before {
+    content: '';
+    position: absolute;
+    bottom: -32px;
+    left: 50%; transform: translateX(-44px);
+    width: 8px; height: 8px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    border-radius: 50%;
+  }
+  @keyframes thoughtFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-6px); }
+  }
+  .thought.hidden { display: none; }
+
+  /* Floating effect emojis */
+  .effect {
+    position: absolute;
+    font-size: 38px;
+    pointer-events: none;
+    z-index: 28;
+    animation: floatUp 1.4s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    25% { opacity: 1; transform: translateY(-20px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-100px) scale(1); }
+  }
+
+  /* Item tray */
+  .tray {
+    position: absolute;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 8px;
+    z-index: 35;
+    flex-wrap: wrap;
+  }
+  .item {
+    width: 72px; height: 72px;
+    background: #fff;
+    border: 3px solid var(--brand);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 4px 0 var(--brand-dark);
+    cursor: grab;
+    touch-action: none;
+    will-change: transform;
+    user-select: none;
+  }
+  .item.dragging {
+    cursor: grabbing;
+    z-index: 50;
+    box-shadow: 0 8px 4px rgba(0,0,0,0.2);
+    transform: scale(1.15);
+  }
+  .item.wrong {
+    animation: itemWrong .35s ease;
+  }
+  @keyframes itemWrong {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Celebration */
+  .celebrate {
+    position: fixed; inset: 0;
+    background: rgba(255, 250, 230, 0.96);
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    z-index: 100;
+    text-align: center;
+    padding: 20px;
+  }
+  .celebrate.on { display: flex; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .celebrate-emoji { font-size: 140px; animation: spin 2s ease-in-out infinite; }
+  @keyframes spin {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50%      { transform: rotate(10deg) scale(1.12); }
+  }
+  .celebrate h2 {
+    font-family: 'Itim', cursive;
+    font-size: 56px;
+    color: var(--brand-dark);
+    margin: 12px 0 8px;
+    text-shadow: 3px 3px 0 #fff;
+  }
+  .celebrate .stars-row { font-size: 50px; letter-spacing: 6px; margin: 8px 0 16px; }
+  .celebrate p { font-size: 22px; color: #555; margin: 0 0 20px; }
+  .btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .big-btn {
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 999px; padding: 16px 32px;
+    font-family: 'Itim', cursive; font-size: 26px;
+    box-shadow: 0 5px 0 var(--brand-dark);
+    cursor: pointer;
+  }
+  .big-btn.alt { background: #fff; color: var(--brand-dark); border: 3px solid var(--brand); box-shadow: 0 5px 0 var(--brand-dark); }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  .confetti { position: absolute; width: 12px; height: 12px; pointer-events: none; z-index: 110; }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="change-pet" id="changePet">🔄 เปลี่ยน</button>
+
+<!-- Pet picker -->
+<div class="picker" id="picker">
+  <h1>🐾 เลือกสัตว์เลี้ยง</h1>
+  <div class="pet-pick-grid" id="petPickGrid"></div>
+</div>
+
+<!-- Game scene -->
+<div class="scene" id="scene">
+  <div class="room">
+    <div class="deco frame">🖼️</div>
+    <div class="deco plant">🪴</div>
+    <div class="deco window">🪟</div>
+  </div>
+  <div class="hearts" id="hearts"></div>
+  <div class="thought hidden" id="thought">
+    <span id="thoughtEmoji">🍖</span>
+  </div>
+  <div class="pet" id="pet">🐶</div>
+  <div class="tray" id="tray"></div>
+</div>
+
+<!-- Celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-emoji" id="celEmoji">🎉</div>
+  <h2 id="celTitle">เก่งมาก!</h2>
+  <div class="stars-row">⭐⭐⭐⭐⭐</div>
+  <p id="celText">ดูแล<span id="celPet">น้องหมา</span>ครบทุกอย่างแล้ว</p>
+  <div class="btn-row">
+    <button class="big-btn" id="celAgain">เล่นอีก</button>
+    <button class="big-btn alt" id="celChange">เปลี่ยนสัตว์</button>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+
+const PETS = [
+  {
+    id: 'dog',
+    emoji: '🐶',
+    name: 'น้องหมา',
+    happyEmoji: '🐕',
+    foodIcon: '🍖',
+    toyIcon: '🎾',
+    cleanIcon: '🧼',
+    sleepIcon: '🛏️',
+    waterIcon: '💧',
+    items: [
+      { id: 'food', emoji: '🍖', need: 'hungry', effect: '😋', action: 'eat', say: 'อ่ำๆ' },
+      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
+      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
+      { id: 'toy', emoji: '🎾', need: 'play', effect: '✨', action: 'happy', say: 'สนุกจัง' },
+      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    ],
+    needLabels: {
+      hungry: '🍖', thirsty: '💧', dirty: '🫧', play: '🎾', sleepy: '💤',
+    },
+  },
+  {
+    id: 'cat',
+    emoji: '🐱',
+    name: 'น้องแมว',
+    happyEmoji: '😻',
+    items: [
+      { id: 'food', emoji: '🐟', need: 'hungry', effect: '😋', action: 'eat', say: 'อร่อย' },
+      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
+      { id: 'comb', emoji: '🪮', need: 'dirty', effect: '✨', action: 'happy', say: 'ขนสวย' },
+      { id: 'toy', emoji: '🧶', need: 'play', effect: '✨', action: 'happy', say: 'เล่นบอลขน' },
+      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    ],
+    needLabels: {
+      hungry: '🐟', thirsty: '💧', dirty: '🪮', play: '🧶', sleepy: '💤',
+    },
+  },
+  {
+    id: 'rabbit',
+    emoji: '🐰',
+    name: 'น้องกระต่าย',
+    happyEmoji: '🐇',
+    items: [
+      { id: 'food', emoji: '🥕', need: 'hungry', effect: '😋', action: 'eat', say: 'กรอบๆ' },
+      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
+      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
+      { id: 'toy', emoji: '🥎', need: 'play', effect: '✨', action: 'happy', say: 'กระโดดด' },
+      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    ],
+    needLabels: {
+      hungry: '🥕', thirsty: '💧', dirty: '🫧', play: '🥎', sleepy: '💤',
+    },
+  },
+  {
+    id: 'hamster',
+    emoji: '🐹',
+    name: 'น้องแฮมสเตอร์',
+    happyEmoji: '🐹',
+    items: [
+      { id: 'food', emoji: '🌻', need: 'hungry', effect: '😋', action: 'eat', say: 'อร่อย' },
+      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
+      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
+      { id: 'toy', emoji: '🎡', need: 'play', effect: '✨', action: 'happy', say: 'วิ่งสนุก' },
+      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    ],
+    needLabels: {
+      hungry: '🌻', thirsty: '💧', dirty: '🫧', play: '🎡', sleepy: '💤',
+    },
+  },
+];
+
+const NEED_NAMES = {
+  hungry: 'หิว',
+  thirsty: 'กระหายน้ำ',
+  dirty: 'สกปรก',
+  play: 'อยากเล่น',
+  sleepy: 'ง่วงนอน',
+};
+
+// ============ STATE ============
+
+const picker = document.getElementById('picker');
+const petPickGrid = document.getElementById('petPickGrid');
+const scene = document.getElementById('scene');
+const heartsEl = document.getElementById('hearts');
+const thoughtEl = document.getElementById('thought');
+const thoughtEmojiEl = document.getElementById('thoughtEmoji');
+const petEl = document.getElementById('pet');
+const trayEl = document.getElementById('tray');
+const changePetBtn = document.getElementById('changePet');
+const celebrate = document.getElementById('celebrate');
+const celAgain = document.getElementById('celAgain');
+const celChange = document.getElementById('celChange');
+const celEmoji = document.getElementById('celEmoji');
+const celPet = document.getElementById('celPet');
+
+let currentPet = null;
+let needsQueue = [];
+let heartsFilled = 0;
+
+// ============ PICKER ============
+
+function buildPicker() {
+  petPickGrid.innerHTML = '';
+  PETS.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pet-pick';
+    card.innerHTML = `<div class="emoji">${p.emoji}</div><div class="name">${p.name}</div>`;
+    card.addEventListener('click', () => startPet(p));
+    petPickGrid.appendChild(card);
+  });
+}
+
+function startPet(pet) {
+  currentPet = pet;
+  picker.classList.add('hidden');
+  scene.classList.add('on');
+  changePetBtn.classList.add('on');
+  celebrate.classList.remove('on');
+
+  petEl.textContent = pet.emoji;
+  heartsFilled = 0;
+  buildHearts();
+  buildTray();
+  // Build random queue of needs (each need once)
+  const allNeeds = ['hungry', 'thirsty', 'dirty', 'play', 'sleepy'];
+  needsQueue = [...allNeeds].sort(() => Math.random() - 0.5);
+  showNextNeed();
+}
+
+function buildHearts() {
+  heartsEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = '❤️';
+    heartsEl.appendChild(h);
+  }
+}
+
+function buildTray() {
+  trayEl.innerHTML = '';
+  // shuffle items each session
+  const items = [...currentPet.items].sort(() => Math.random() - 0.5);
+  items.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.dataset.itemId = it.id;
+    el.dataset.need = it.need;
+    el.textContent = it.emoji;
+    trayEl.appendChild(el);
+    attachItemDrag(el, it);
+  });
+}
+
+function showNextNeed() {
+  if (needsQueue.length === 0) {
+    finishCelebration();
+    return;
+  }
+  const need = needsQueue[0];
+  thoughtEmojiEl.textContent = currentPet.needLabels[need];
+  thoughtEl.classList.remove('hidden');
+  speak(currentPet.name + ' ' + NEED_NAMES[need]);
+}
+
+function attachItemDrag(el, item) {
+  let dragging = false;
+  let homeX = 0, homeY = 0;
+  let sx = 0, sy = 0;
+  let cx = 0, cy = 0;
+
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    dragging = true;
+    el.classList.add('dragging');
+    const r = el.getBoundingClientRect();
+    homeX = r.left; homeY = r.top;
+    sx = e.clientX; sy = e.clientY;
+    // make absolute on body to drag freely
+    el.style.position = 'fixed';
+    el.style.left = homeX + 'px';
+    el.style.top = homeY + 'px';
+    el.style.zIndex = 50;
+    el.setPointerCapture(e.pointerId);
+    vibrate(8);
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    cx = e.clientX; cy = e.clientY;
+    el.style.left = (homeX + (cx - sx)) + 'px';
+    el.style.top = (homeY + (cy - sy)) + 'px';
+  });
+
+  function end(e) {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+
+    // Check overlap with pet
+    const petR = petEl.getBoundingClientRect();
+    const itemR = el.getBoundingClientRect();
+    const overlap = !(itemR.right < petR.left || itemR.left > petR.right || itemR.bottom < petR.top || itemR.top > petR.bottom);
+
+    const currentNeed = needsQueue[0];
+
+    if (overlap && item.need === currentNeed) {
+      // correct! consume item briefly then return
+      satisfy(item);
+      // hide item briefly
+      el.style.opacity = '0';
+      setTimeout(() => {
+        resetItemPosition(el);
+        el.style.opacity = '1';
+      }, 800);
+    } else if (overlap) {
+      // wrong item — bounce
+      el.classList.add('wrong');
+      setTimeout(() => el.classList.remove('wrong'), 350);
+      resetItemPosition(el);
+      vibrate(20);
+    } else {
+      resetItemPosition(el);
+    }
+  }
+
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+
+function resetItemPosition(el) {
+  el.style.transition = 'left .3s, top .3s';
+  el.style.position = '';
+  el.style.left = '';
+  el.style.top = '';
+  el.style.zIndex = '';
+  setTimeout(() => el.style.transition = '', 320);
+}
+
+function satisfy(item) {
+  needsQueue.shift();
+  heartsFilled++;
+  const hearts = heartsEl.querySelectorAll('.heart');
+  if (hearts[heartsFilled - 1]) {
+    hearts[heartsFilled - 1].classList.add('on');
+  }
+  // pet action animation
+  petEl.classList.remove('happy', 'eat');
+  void petEl.offsetWidth;
+  petEl.classList.add(item.action);
+  // effect emoji on pet
+  showEffect(item.effect);
+  vibrate([20, 30, 40]);
+  popConfetti(window.innerWidth / 2, window.innerHeight * 0.52);
+  speak(item.say);
+
+  setTimeout(() => {
+    petEl.classList.remove('happy', 'eat');
+    showNextNeed();
+  }, 1000);
+}
+
+function showEffect(emoji) {
+  const eff = document.createElement('div');
+  eff.className = 'effect';
+  eff.textContent = emoji;
+  eff.style.left = '50%';
+  eff.style.top = '46%';
+  eff.style.transform = 'translateX(-50%)';
+  scene.appendChild(eff);
+  setTimeout(() => eff.remove(), 1500);
+}
+
+function finishCelebration() {
+  thoughtEl.classList.add('hidden');
+  petEl.textContent = currentPet.happyEmoji || currentPet.emoji;
+  petEl.classList.add('happy');
+  celEmoji.textContent = currentPet.emoji;
+  celPet.textContent = currentPet.name;
+  speak('เก่งมาก ดูแล' + currentPet.name + 'ครบแล้ว');
+
+  setTimeout(() => {
+    celebrate.classList.add('on');
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => popConfetti(cx + (Math.random() - 0.5) * 200, cy - 100 + Math.random() * 100), i * 30);
+    }
+  }, 800);
+}
+
+celAgain.addEventListener('click', () => {
+  startPet(currentPet);
+});
+celChange.addEventListener('click', () => {
+  celebrate.classList.remove('on');
+  scene.classList.remove('on');
+  changePetBtn.classList.remove('on');
+  picker.classList.remove('hidden');
+});
+changePetBtn.addEventListener('click', () => {
+  scene.classList.remove('on');
+  changePetBtn.classList.remove('on');
+  picker.classList.remove('hidden');
+});
+
+// ============ HELPERS ============
+
+function popConfetti(x, y) {
+  const colors = ['#ff6b6b','#ffd93d','#4fc3f7','#7ed957','#ff8fb3','#a78bfa','#ff9f43','#22d3ee'];
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    const angle = (Math.random() - 0.5) * Math.PI;
+    const dist = 60 + Math.random() * 80;
+    c.style.left = x + 'px';
+    c.style.top = y + 'px';
+    document.body.appendChild(c);
+    requestAnimationFrame(() => {
+      c.style.transform = `translate(${Math.cos(angle) * dist}px, ${100 + Math.random() * 60}px) rotate(${Math.random() * 720}deg)`;
+      c.style.opacity = '0';
+      c.style.transition = 'transform 1s ease-out, opacity 1s ease-out';
+    });
+    setTimeout(() => c.remove(), 1100);
+  }
+}
+
+function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) {} }
+
+function speak(text) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH';
+    u.rate = 0.95;
+    u.pitch = 1.1;
+    speechSynthesis.speak(u);
+  } catch (_) {}
+}
+
+// Init
+buildPicker();
+</script>
+</body>
+</html>
