@@ -112,6 +112,21 @@
     font-family: 'Itim', cursive; font-size: 24px;
     color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
   }
+  /* Small inline category header inside the grid */
+  .lgrid .cat-header {
+    grid-column: 1 / -1;
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    color: var(--brand-dark);
+    margin: 10px 4px 0;
+    text-shadow: 2px 2px 0 #fff;
+    letter-spacing: 0.5px;
+    font-weight: normal;
+  }
+  .lgrid .cat-header:first-child { margin-top: 0; }
+  @media (max-width: 480px) {
+    .lgrid .cat-header { font-size: 16px; margin: 6px 4px 0; }
+  }
 
   /* Game */
   #gameScreen.active {
@@ -199,6 +214,100 @@
     stroke-width: 6;
     stroke-linejoin: round;
     pointer-events: none;
+  }
+
+  /* ====================================================================
+     Picture completion animations — when kid colors every region the
+     finished picture comes to life briefly. Each picture picks one anim
+     name (see PICTURE_META). Origin tweaks let things rotate/scale around
+     a sensible pivot (feet for bouncing animals, center for spinners).
+     ==================================================================== */
+  .canvas-stage svg { transform-origin: 50% 80%; }
+
+  .canvas-stage svg.anim-fly { animation: anim-fly 2.4s cubic-bezier(.5,.1,.7,.4) forwards; }
+  @keyframes anim-fly {
+    0%   { transform: translate(0,0) rotate(0) scale(1); }
+    100% { transform: translate(120%, -130%) rotate(35deg) scale(.5); }
+  }
+
+  .canvas-stage svg.anim-swim { animation: anim-swim 2.2s ease-in-out; }
+  @keyframes anim-swim {
+    0%, 100% { transform: translate(0,0) rotate(0); }
+    20% { transform: translate(-12%, -4%) rotate(-6deg); }
+    50% { transform: translate(15%, 3%) rotate(8deg); }
+    80% { transform: translate(-8%, 5%) rotate(-4deg); }
+  }
+
+  .canvas-stage svg.anim-drive { animation: anim-drive 2.2s ease-in forwards; }
+  @keyframes anim-drive {
+    0%   { transform: translateX(0); }
+    15%  { transform: translateX(-3%); }
+    100% { transform: translateX(170%); }
+  }
+
+  .canvas-stage svg.anim-launch { animation: anim-launch 2.4s cubic-bezier(.4,0,.7,.3) forwards; }
+  @keyframes anim-launch {
+    0%   { transform: translateY(0); }
+    15%  { transform: translateY(2%); }
+    100% { transform: translateY(-170%); }
+  }
+
+  .canvas-stage svg.anim-bounce { animation: anim-bounce 1.8s ease-in-out; transform-origin: 50% 95%; }
+  @keyframes anim-bounce {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    20%  { transform: translateY(0) scaleY(.86); }
+    40%  { transform: translateY(-15%) scaleY(1.08); }
+    60%  { transform: translateY(0) scaleY(.92); }
+    80%  { transform: translateY(-7%) scaleY(1.04); }
+  }
+
+  .canvas-stage svg.anim-hop { animation: anim-hop 1.8s ease-out; transform-origin: 50% 95%; }
+  @keyframes anim-hop {
+    0%, 50%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-22%); }
+    75% { transform: translateY(-14%); }
+  }
+
+  .canvas-stage svg.anim-spin { animation: anim-spin 2s linear; transform-origin: 50% 50%; }
+  @keyframes anim-spin { to { transform: rotate(360deg); } }
+
+  .canvas-stage svg.anim-glow { animation: anim-glow 2.5s ease-in-out; transform-origin: 50% 50%; }
+  @keyframes anim-glow {
+    0%, 100% { filter: drop-shadow(0 0 0 transparent); transform: scale(1); }
+    50%      { filter: drop-shadow(0 0 24px var(--gold)) drop-shadow(0 0 50px var(--brand)); transform: scale(1.06); }
+  }
+
+  .canvas-stage svg.anim-wiggle { animation: anim-wiggle 2s ease-in-out; transform-origin: 50% 90%; }
+  @keyframes anim-wiggle {
+    0%, 100% { transform: rotate(0); }
+    20% { transform: rotate(-5deg) translateY(-2%); }
+    40% { transform: rotate(5deg); }
+    60% { transform: rotate(-3deg); }
+    80% { transform: rotate(3deg); }
+  }
+
+  .canvas-stage svg.anim-sway { animation: anim-sway 2.2s ease-in-out; transform-origin: 50% 95%; }
+  @keyframes anim-sway {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    25% { transform: translateX(-5%) rotate(-3deg); }
+    50% { transform: translateX(5%) rotate(3deg); }
+    75% { transform: translateX(-3%) rotate(-2deg); }
+  }
+
+  .canvas-stage svg.anim-shimmer { animation: anim-shimmer 2.5s ease-in-out; transform-origin: 50% 50%; }
+  @keyframes anim-shimmer {
+    0%, 100% { filter: brightness(1) saturate(1); transform: scale(1); }
+    25% { filter: brightness(1.15) saturate(1.4) hue-rotate(20deg); transform: scale(1.03); }
+    50% { filter: brightness(1.3) saturate(1.6) hue-rotate(-20deg); transform: scale(1.05); }
+    75% { filter: brightness(1.15) saturate(1.4) hue-rotate(10deg); transform: scale(1.03); }
+  }
+
+  .canvas-stage svg.anim-waddle { animation: anim-waddle 2s ease-in-out; transform-origin: 50% 95%; }
+  @keyframes anim-waddle {
+    0%, 100% { transform: rotate(0) translateX(0); }
+    25% { transform: rotate(-6deg) translateX(-4%); }
+    50% { transform: rotate(0) translateX(0); }
+    75% { transform: rotate(6deg) translateX(4%); }
   }
 
   .palette {
@@ -802,7 +911,131 @@ const PICTURES = [
       { id: 'helmet', shape: 'circle', cx: 420, cy: 425, r: 28, fill: '#fff' },
     ],
   },
+
+  // ===== THAI PICTURES =====
+  {
+    id: 'elephant',
+    name: '🐘 ช้าง',
+    regions: [
+      { id: 'body', shape: 'ellipse', cx: 460, cy: 460, rx: 200, ry: 140, fill: '#fff' },
+      { id: 'head', shape: 'ellipse', cx: 240, cy: 400, rx: 120, ry: 110, fill: '#fff' },
+      { id: 'trunk', shape: 'path', d: 'M 160 460 Q 80 510 110 620 Q 150 680 220 640 Q 220 600 200 580 Q 200 540 230 510 Q 250 480 220 460 Z', fill: '#fff' },
+      { id: 'ear', shape: 'ellipse', cx: 300, cy: 330, rx: 70, ry: 90, fill: '#fff' },
+      { id: 'tusk', shape: 'path', d: 'M 200 480 Q 180 530 200 560 L 230 540 Q 220 510 220 490 Z', fill: '#fff' },
+      { id: 'leg-fl', shape: 'path', d: 'M 320 590 L 310 720 L 380 720 L 380 590 Z', fill: '#fff' },
+      { id: 'leg-fr', shape: 'path', d: 'M 420 590 L 410 720 L 480 720 L 480 590 Z', fill: '#fff' },
+      { id: 'leg-bl', shape: 'path', d: 'M 540 590 L 530 720 L 600 720 L 600 590 Z', fill: '#fff' },
+      { id: 'leg-br', shape: 'path', d: 'M 620 590 L 610 720 L 680 720 L 680 590 Z', fill: '#fff' },
+      { id: 'tail', shape: 'path', d: 'M 660 440 Q 740 440 750 540 Q 720 540 700 510 Z', fill: '#fff' },
+      { id: 'eye', shape: 'circle', cx: 260, cy: 390, r: 10, fill: '#fff' },
+    ],
+  },
+  {
+    id: 'turtle',
+    name: '🐢 เต่า',
+    regions: [
+      { id: 'shell', shape: 'ellipse', cx: 420, cy: 460, rx: 230, ry: 160, fill: '#fff' },
+      { id: 'shell-spot-1', shape: 'circle', cx: 340, cy: 420, r: 35, fill: '#fff' },
+      { id: 'shell-spot-2', shape: 'circle', cx: 420, cy: 400, r: 38, fill: '#fff' },
+      { id: 'shell-spot-3', shape: 'circle', cx: 500, cy: 420, r: 35, fill: '#fff' },
+      { id: 'shell-spot-4', shape: 'circle', cx: 380, cy: 490, r: 30, fill: '#fff' },
+      { id: 'shell-spot-5', shape: 'circle', cx: 460, cy: 490, r: 30, fill: '#fff' },
+      { id: 'head', shape: 'ellipse', cx: 200, cy: 450, rx: 70, ry: 55, fill: '#fff' },
+      { id: 'eye', shape: 'circle', cx: 170, cy: 430, r: 10, fill: '#fff' },
+      { id: 'leg-fl', shape: 'ellipse', cx: 270, cy: 600, rx: 50, ry: 28, fill: '#fff' },
+      { id: 'leg-fr', shape: 'ellipse', cx: 570, cy: 600, rx: 50, ry: 28, fill: '#fff' },
+      { id: 'leg-bl', shape: 'ellipse', cx: 280, cy: 330, rx: 40, ry: 22, fill: '#fff' },
+      { id: 'leg-br', shape: 'ellipse', cx: 560, cy: 330, rx: 40, ry: 22, fill: '#fff' },
+      { id: 'tail', shape: 'path', d: 'M 640 450 L 720 430 L 720 470 L 640 470 Z', fill: '#fff' },
+    ],
+  },
+  {
+    id: 'lotus',
+    name: '🪷 ดอกบัว',
+    regions: [
+      { id: 'petal-back-l', shape: 'path', d: 'M 320 400 Q 240 280 220 410 Q 240 480 320 460 Z', fill: '#fff' },
+      { id: 'petal-back-r', shape: 'path', d: 'M 480 400 Q 560 280 580 410 Q 560 480 480 460 Z', fill: '#fff' },
+      { id: 'petal-mid-l', shape: 'path', d: 'M 360 420 Q 320 290 360 380 Q 340 470 400 480 Z', fill: '#fff' },
+      { id: 'petal-mid-r', shape: 'path', d: 'M 440 420 Q 480 290 440 380 Q 460 470 400 480 Z', fill: '#fff' },
+      { id: 'petal-center', shape: 'path', d: 'M 380 460 Q 380 320 400 270 Q 420 320 420 460 Z', fill: '#fff' },
+      { id: 'base', shape: 'ellipse', cx: 400, cy: 490, rx: 140, ry: 30, fill: '#fff' },
+      { id: 'leaf-l', shape: 'ellipse', cx: 200, cy: 560, rx: 100, ry: 35, fill: '#fff' },
+      { id: 'leaf-r', shape: 'ellipse', cx: 600, cy: 560, rx: 100, ry: 35, fill: '#fff' },
+      { id: 'water', shape: 'path', d: 'M 60 620 Q 200 600 340 620 Q 480 640 620 620 Q 700 610 740 620 L 740 720 L 60 720 Z', fill: '#fff' },
+    ],
+  },
+  {
+    id: 'tuktuk',
+    name: '🛺 ตุ๊กตุ๊ก',
+    regions: [
+      { id: 'roof', shape: 'path', d: 'M 180 280 L 600 280 L 580 360 L 200 360 Z', fill: '#fff' },
+      { id: 'cabin', shape: 'path', d: 'M 200 360 L 580 360 L 580 540 L 200 540 Z', fill: '#fff' },
+      { id: 'windshield', shape: 'path', d: 'M 220 380 L 380 380 L 380 460 L 220 460 Z', fill: '#fff' },
+      { id: 'seat', shape: 'path', d: 'M 400 400 L 560 400 L 560 480 L 400 480 Z', fill: '#fff' },
+      { id: 'wheel-front', shape: 'circle', cx: 240, cy: 600, r: 55, fill: '#fff' },
+      { id: 'wheel-back-l', shape: 'circle', cx: 480, cy: 600, r: 55, fill: '#fff' },
+      { id: 'wheel-back-r', shape: 'circle', cx: 600, cy: 600, r: 55, fill: '#fff' },
+      { id: 'rim-f', shape: 'circle', cx: 240, cy: 600, r: 22, fill: '#fff' },
+      { id: 'rim-bl', shape: 'circle', cx: 480, cy: 600, r: 22, fill: '#fff' },
+      { id: 'rim-br', shape: 'circle', cx: 600, cy: 600, r: 22, fill: '#fff' },
+      { id: 'headlight', shape: 'circle', cx: 200, cy: 490, r: 18, fill: '#fff' },
+      { id: 'flag-pole', shape: 'path', d: 'M 388 200 L 396 200 L 396 280 L 388 280 Z', fill: '#fff' },
+      { id: 'flag', shape: 'path', d: 'M 396 200 L 460 220 L 396 240 Z', fill: '#fff' },
+    ],
+  },
 ];
+
+// Category → which group each picture belongs to + which animation plays on completion
+const CATEGORIES = [
+  { id: 'animals',  label: '🐾 สัตว์น่ารัก' },
+  { id: 'nature',   label: '🌈 ธรรมชาติ' },
+  { id: 'food',     label: '🍎 อาหารอร่อย' },
+  { id: 'vehicles', label: '🚗 ยานพาหนะ' },
+  { id: 'misc',     label: '🏠 อื่นๆ' },
+];
+
+const PICTURE_META = {
+  butterfly: { category: 'animals', anim: 'fly' },
+  fish:      { category: 'animals', anim: 'swim' },
+  dino:      { category: 'animals', anim: 'bounce' },
+  cat:       { category: 'animals', anim: 'wiggle' },
+  dog:       { category: 'animals', anim: 'wiggle' },
+  rabbit:    { category: 'animals', anim: 'hop' },
+  penguin:   { category: 'animals', anim: 'waddle' },
+  elephant:  { category: 'animals', anim: 'bounce' },
+  turtle:    { category: 'animals', anim: 'bounce' },
+  unicorn:   { category: 'animals', anim: 'glow' },
+
+  flower:    { category: 'nature',  anim: 'glow' },
+  lotus:     { category: 'nature',  anim: 'glow' },
+  sun:       { category: 'nature',  anim: 'spin' },
+  rainbow:   { category: 'nature',  anim: 'shimmer' },
+
+  icecream:  { category: 'food',    anim: 'wiggle' },
+  fruits:    { category: 'food',    anim: 'bounce' },
+  cake:      { category: 'food',    anim: 'glow' },
+  pizza:     { category: 'food',    anim: 'spin' },
+
+  car:       { category: 'vehicles', anim: 'drive' },
+  tuktuk:    { category: 'vehicles', anim: 'drive' },
+  train:     { category: 'vehicles', anim: 'drive' },
+  rocket:    { category: 'vehicles', anim: 'launch' },
+  boat:      { category: 'vehicles', anim: 'sway' },
+  firetruck: { category: 'vehicles', anim: 'drive' },
+  lambo:     { category: 'vehicles', anim: 'drive' },
+  ferrari:   { category: 'vehicles', anim: 'drive' },
+  porsche:   { category: 'vehicles', anim: 'drive' },
+  f1car:     { category: 'vehicles', anim: 'drive' },
+
+  house:     { category: 'misc',     anim: 'bounce' },
+  robot:     { category: 'misc',     anim: 'wiggle' },
+};
+
+const ANIM_MS = {
+  fly: 2400, swim: 2200, drive: 2200, launch: 2400,
+  bounce: 1800, hop: 1800, spin: 2000, glow: 2500,
+  wiggle: 2000, sway: 2200, shimmer: 2500, waddle: 2000,
+};
 
 const PROGRESS_KEY = 'coloringProgress';
 
@@ -817,6 +1050,7 @@ const state = {
   drawing: false,
   pointerId: null,
   pendingTimers: [],
+  completionPlayed: false,
 };
 
 // ============================================================================
@@ -890,17 +1124,24 @@ function later(fn, ms) {
 // ============================================================================
 function renderSelect() {
   levelGrid.innerHTML = '';
-  for (const pic of PICTURES) {
-    const c = document.createElement('div');
-    c.className = 'lcard';
-    // Build a mini SVG preview that just shows the outline
-    const previewSvg = buildPreviewSvg(pic);
-    c.innerHTML = `
-      ${previewSvg}
-      <div class="ltitle">${pic.name}</div>
-    `;
-    c.addEventListener('click', () => { ensureAudio(); openPicture(pic); });
-    levelGrid.appendChild(c);
+  for (const cat of CATEGORIES) {
+    const picsInCat = PICTURES.filter(p => (PICTURE_META[p.id] || {}).category === cat.id);
+    if (picsInCat.length === 0) continue;
+    const h = document.createElement('h3');
+    h.className = 'cat-header';
+    h.textContent = cat.label;
+    levelGrid.appendChild(h);
+    for (const pic of picsInCat) {
+      const c = document.createElement('div');
+      c.className = 'lcard';
+      const previewSvg = buildPreviewSvg(pic);
+      c.innerHTML = `
+        ${previewSvg}
+        <div class="ltitle">${pic.name}</div>
+      `;
+      c.addEventListener('click', () => { ensureAudio(); openPicture(pic); });
+      levelGrid.appendChild(c);
+    }
   }
 }
 
@@ -930,10 +1171,48 @@ function openPicture(pic) {
   state.fills = {};
   state.history = [];
   state.drawing = false;
+  state.completionPlayed = false;
   pictureTitle.textContent = pic.name;
+  const svgEl = document.getElementById('paintSvg');
+  if (svgEl) clearAnimClasses(svgEl);
   buildCanvas();
   updateUndoBtn();
   showScreen('game');
+}
+
+function clearAnimClasses(svgEl) {
+  for (const cls of Array.from(svgEl.classList)) {
+    if (cls.startsWith('anim-')) svgEl.classList.remove(cls);
+  }
+}
+
+function playPictureAnim(force) {
+  if (state.completionPlayed && !force) return;
+  state.completionPlayed = true;
+  const pic = state.picture;
+  if (!pic) return;
+  const meta = PICTURE_META[pic.id] || {};
+  const animKey = meta.anim || 'glow';
+  const svgEl = document.getElementById('paintSvg');
+  if (!svgEl) return;
+  const cls = 'anim-' + animKey;
+  clearAnimClasses(svgEl);
+  void svgEl.offsetWidth;
+  svgEl.classList.add(cls);
+  const ms = ANIM_MS[animKey] || 2200;
+  later(() => {
+    flashOverlay('ครบแล้ว! เก่งมาก! 🌟', 1500, 'win');
+    playWin();
+    celebrate(160);
+    saveProgress();
+    buzz([40, 30, 60]);
+  }, Math.max(0, ms - 300));
+  // Keep "drive/launch/fly" anims at their end state so the picture stays
+  // offscreen — for everything else clear the class so the picture returns.
+  const isExit = (animKey === 'drive' || animKey === 'launch' || animKey === 'fly');
+  if (!isExit) {
+    later(() => { if (svgEl) svgEl.classList.remove(cls); }, ms + 60);
+  }
 }
 
 function updateUndoBtn() {
@@ -1017,6 +1296,15 @@ function paintRegion(regionId) {
   buzz(8);
   playPaintTone(Object.keys(state.fills).length);
   updateUndoBtn();
+
+  // Did this stroke complete the whole picture? Auto-play the reward anim.
+  const total = state.picture.regions.filter(r => !r.noClick).length;
+  const filledCount = Object.values(state.fills).filter(c => c && c !== '#fff').length;
+  if (filledCount === total) {
+    if (!state.completionPlayed) later(() => playPictureAnim(false), 200);
+  } else {
+    state.completionPlayed = false;
+  }
 }
 
 document.addEventListener('pointerup', () => {
@@ -1068,7 +1356,10 @@ $('backBtn').addEventListener('click', () => {
 $('resetBtn').addEventListener('click', () => {
   state.fills = {};
   state.history = [];
+  state.completionPlayed = false;
   for (const el of regionsGroup.querySelectorAll('.region')) el.setAttribute('fill', '#fff');
+  const svgEl = document.getElementById('paintSvg');
+  if (svgEl) clearAnimClasses(svgEl);
   buzz(20);
   updateUndoBtn();
 });
@@ -1081,6 +1372,9 @@ $('undoBtn').addEventListener('click', () => {
   const el = regionsGroup.querySelector(`[data-region-id="${last.regionId}"]`);
   if (el) el.setAttribute('fill', last.prev);
   buzz(12);
+  state.completionPlayed = false;
+  const svgEl = document.getElementById('paintSvg');
+  if (svgEl) clearAnimClasses(svgEl);
   updateUndoBtn();
 });
 
@@ -1132,23 +1426,21 @@ function savePng() {
 }
 
 $('doneBtn').addEventListener('click', () => {
-  // Save thumbnail to localStorage maybe later. For now, celebrate.
   const filledCount = Object.values(state.fills).filter(c => c && c !== '#fff').length;
   const total = state.picture.regions.filter(r => !r.noClick).length;
-  let msg, cls;
   if (filledCount === 0) {
-    msg = 'ลองระบายเลย!'; cls = '';
-  } else if (filledCount < total) {
-    msg = 'สวยจังเลย! 🎨'; cls = 'win';
-  } else {
-    msg = 'ครบแล้ว! เก่งมาก! 🌟'; cls = 'win';
+    flashOverlay('ลองระบายเลย!', 1400, '');
+    return;
   }
-  flashOverlay(msg, 1400, cls);
-  if (filledCount > 0) {
+  if (filledCount < total) {
+    flashOverlay('สวยจังเลย! 🎨', 1400, 'win');
     playWin();
-    celebrate(filledCount === total ? 140 : 70);
+    celebrate(70);
     saveProgress();
+    return;
   }
+  // Fully complete — replay the picture's reward animation.
+  playPictureAnim(true);
 });
 
 function flashOverlay(text, ms, extra) {
