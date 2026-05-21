@@ -155,9 +155,12 @@ At hard cap, unfinished racers are force-finished and ranked by current `progres
 `cbrt` keeps shuttle-vs-snail visible (shuttle takes 4 s, snail reaches ~4.5 % of track in 15 s) while keeping supercar-vs-supercar close. `sqrt` made shuttle too dominant; `log1p` made same-category races too equal.
 
 ### Variance tuning
-±12 % is deliberate: tight enough that cheetah (120) always beats lion (80), but loose enough that ferrari (340) vs lambo (355) is genuinely uncertain. Don't raise above 20 % or the "education" aspect breaks down.
+±5 % is the current tuning. After cube-root compression, two racers' order is guaranteed when their speed ratio exceeds **(1.05/0.95)³ ≈ 1.35** — so cheetah (120) vs lion (80) at ratio 1.5 always resolves the right way, but ferrari (340) vs lambo (355) at ratio 1.04 stays uncertain. Earlier values up to ±12 % flipped clearly-different pairs and the "fastest wins" intuition broke down; don't go above ±8 %.
 
 The `targetMs = 4000` / `hardCap = 15000` numbers are load-bearing. Changing any affects race feel significantly.
+
+### Same-frame finish ordering
+Within a single requestAnimationFrame, multiple racers can cross the line. The engine computes each finisher's **exact sub-frame crossover time** (`targetMs × maxEff / r.effSpeed`) and sorts those crossings before appending to the leaderboard, so finish order reflects real timing rather than array iteration order. If you refactor the loop, keep this — otherwise close finishes will rank by data-structure order, not physics.
 
 ---
 

@@ -522,6 +522,16 @@ const LEVELS = [
   { w: 17, h: 13, label: 'ท้าทาย' },
   { w: 19, h: 15, label: 'แทบหลง' },
   { w: 21, h: 15, label: 'นักผจญภัย' },
+  { w: 23, h: 17, label: 'ใหญ่กว่าเดิม' },
+  { w: 25, h: 19, label: 'ขนาดยักษ์' },
+  { w: 27, h: 19, label: 'ลึก' },
+  { w: 27, h: 21, label: 'ซ่อนทาง' },
+  { w: 29, h: 21, label: 'ปริศนา' },
+  { w: 31, h: 21, label: 'ซับซ้อน' },
+  { w: 31, h: 23, label: 'เขาวงกตยักษ์' },
+  { w: 33, h: 23, label: 'ยากมาก' },
+  { w: 35, h: 23, label: 'เกือบสุดท้าย' },
+  { w: 35, h: 25, label: 'ขั้นสุด' },
 ];
 
 const THEMES = [
@@ -845,25 +855,68 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetLevel(); }
 });
 
-// Swipe on board (continuous: each swipe = one step in direction)
+// Finger-drag: while finger is down, the player follows the finger cell-by-cell.
+// On every pointermove we figure out which grid cell is under the finger and
+// step the player toward it (greedy axis-by-axis). Walls stop progress; the kid
+// keeps dragging to try another direction. Works for mouse, touch and pen.
 (() => {
   const board = document.getElementById('board');
-  let sx = 0, sy = 0, active = false;
+  let dragging = false;
+  let pointerId = null;
+
+  function cellFromEvent(e) {
+    const rect = board.getBoundingClientRect();
+    const cx = Math.floor((e.clientX - rect.left) / state.cellSize);
+    const cy = Math.floor((e.clientY - rect.top) / state.cellSize);
+    return { cx, cy };
+  }
+
+  function stepTowards(cx, cy) {
+    // Take at most 50 steps per tick (kid can swipe across the whole board).
+    let safety = 50;
+    while (safety-- > 0) {
+      if (state.won) return;
+      const dx = cx - state.player.x;
+      const dy = cy - state.player.y;
+      if (dx === 0 && dy === 0) return;
+      // Choose primary axis (larger delta) first; if blocked, try the other.
+      const primary = (Math.abs(dx) >= Math.abs(dy))
+        ? (dx > 0 ? 'right' : (dx < 0 ? 'left' : null))
+        : (dy > 0 ? 'down'  : (dy < 0 ? 'up'   : null));
+      const secondary = (Math.abs(dx) >= Math.abs(dy))
+        ? (dy > 0 ? 'down'  : (dy < 0 ? 'up'   : null))
+        : (dx > 0 ? 'right' : (dx < 0 ? 'left' : null));
+      const before = { x: state.player.x, y: state.player.y };
+      if (primary)   move(primary);
+      if (state.player.x === before.x && state.player.y === before.y && secondary) {
+        move(secondary);
+      }
+      // No progress at all — stop so we don't infinite-loop against a wall.
+      if (state.player.x === before.x && state.player.y === before.y) return;
+    }
+  }
+
   board.addEventListener('pointerdown', (e) => {
-    sx = e.clientX; sy = e.clientY; active = true;
+    if (state.won) return;
+    e.preventDefault();
+    dragging = true;
+    pointerId = e.pointerId;
+    try { board.setPointerCapture(e.pointerId); } catch (_) {}
+    const { cx, cy } = cellFromEvent(e);
+    stepTowards(cx, cy);
   });
-  board.addEventListener('pointerup', (e) => {
-    if (!active) return;
-    active = false;
-    const dx = e.clientX - sx;
-    const dy = e.clientY - sy;
-    const ax = Math.abs(dx), ay = Math.abs(dy);
-    const threshold = 16;
-    if (ax < threshold && ay < threshold) return;
-    if (ax > ay) move(dx > 0 ? 'right' : 'left');
-    else move(dy > 0 ? 'down' : 'up');
+  board.addEventListener('pointermove', (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    const { cx, cy } = cellFromEvent(e);
+    stepTowards(cx, cy);
   });
-  board.addEventListener('pointercancel', () => { active = false; });
+  const end = (e) => {
+    if (e.pointerId !== pointerId) return;
+    dragging = false; pointerId = null;
+    try { board.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  board.addEventListener('pointerup', end);
+  board.addEventListener('pointercancel', end);
 })();
 
 // Resize

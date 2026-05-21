@@ -951,8 +951,10 @@
         runnerEl: lane.querySelector('.runner'),
         position: 0,
         finishTime: null,
-        // small per-race variance for fun (±12%)
-        variance: 0.88 + Math.random() * 0.24,
+        // small per-race variance for fun (±5%) — large enough that very-close
+        // pairs (ferrari vs lambo) stay uncertain, small enough that bigger
+        // gaps (cheetah vs lion) always resolve in the faster racer's favour.
+        variance: 0.95 + Math.random() * 0.10,
       };
     });
 
@@ -1013,6 +1015,7 @@
         if (state.raceAborted) { resolve([]); return; }
         const elapsed = now - start;
         let allDone = true;
+        const newlyFinished = [];
 
         for (const r of racers) {
           if (r.finishTime !== null) continue;
@@ -1020,17 +1023,23 @@
           const progress = (r.effSpeed / maxEff) * (elapsed / targetMs);
           if (progress >= 1) {
             r.position = 1;
-            r.finishTime = elapsed / 1000;
-            finished.push(r);
+            // Exact sub-frame crossover time — so two racers crossing in the
+            // same RAF rank by real finish moment, not array iteration order.
+            r.finishTime = (targetMs * maxEff / r.effSpeed) / 1000;
+            newlyFinished.push(r);
             paintRunner(r);
             r.runnerEl.classList.remove('running');
             r.runnerEl.classList.add('finished');
-            buzz(finished.length === 1 ? [30, 40, 30] : 20);
           } else {
             r.position = progress;
             allDone = false;
             paintRunner(r);
           }
+        }
+        newlyFinished.sort((a, b) => a.finishTime - b.finishTime);
+        for (const r of newlyFinished) {
+          finished.push(r);
+          buzz(finished.length === 1 ? [30, 40, 30] : 20);
         }
 
         if (allDone || elapsed >= hardCap) {

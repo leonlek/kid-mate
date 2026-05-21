@@ -673,6 +673,158 @@ const LEVELS = [
       { x: 0, y: 5, len: 3, h: true },
     ],
   },
+  // ===== Expert tier (L11–L20) =====
+  // BFS-generated and verified. Move counts are minimum cars-moved.
+  // L11 — 8 moves, 8 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 5, y: 0, len: 3, h: false },
+      { x: 2, y: 1, len: 3, h: false },
+      { x: 2, y: 5, len: 2, h: true },
+      { x: 2, y: 0, len: 3, h: true },
+      { x: 4, y: 2, len: 2, h: false },
+      { x: 3, y: 4, len: 3, h: true },
+      { x: 0, y: 5, len: 2, h: true },
+    ],
+  },
+  // L12 — 9 moves, 9 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 0, y: 0, len: 3, h: true },
+      { x: 5, y: 1, len: 3, h: false },
+      { x: 2, y: 1, len: 2, h: false },
+      { x: 4, y: 5, len: 2, h: true },
+      { x: 2, y: 3, len: 2, h: true },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 2, y: 4, len: 2, h: false },
+      { x: 0, y: 3, len: 2, h: true },
+    ],
+  },
+  // L13 — 11 moves, 10 cars
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 4, y: 4, len: 2, h: true },
+      { x: 2, y: 4, len: 2, h: true },
+      { x: 1, y: 4, len: 2, h: false },
+      { x: 1, y: 3, len: 2, h: true },
+      { x: 3, y: 1, len: 2, h: false },
+      { x: 2, y: 5, len: 3, h: true },
+      { x: 0, y: 0, len: 3, h: true },
+      { x: 3, y: 3, len: 2, h: true },
+      { x: 4, y: 0, len: 3, h: false },
+    ],
+  },
+  // L14 — 12 moves, 10 cars
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 4, y: 2, len: 2, h: false },
+      { x: 1, y: 0, len: 2, h: true },
+      { x: 3, y: 0, len: 2, h: false },
+      { x: 4, y: 4, len: 2, h: true },
+      { x: 3, y: 4, len: 2, h: false },
+      { x: 1, y: 3, len: 2, h: false },
+      { x: 0, y: 0, len: 2, h: false },
+      { x: 5, y: 1, len: 3, h: false },
+      { x: 2, y: 4, len: 2, h: false },
+    ],
+  },
+  // L15 — 13 moves, 10 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 2, y: 5, len: 3, h: true },
+      { x: 0, y: 4, len: 2, h: false },
+      { x: 1, y: 1, len: 3, h: true },
+      { x: 1, y: 0, len: 2, h: true },
+      { x: 4, y: 0, len: 3, h: false },
+      { x: 3, y: 3, len: 2, h: true },
+      { x: 2, y: 3, len: 2, h: false },
+      { x: 5, y: 1, len: 3, h: false },
+      { x: 1, y: 3, len: 3, h: false },
+    ],
+  },
+  // L16 — 14 moves, 11 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 2, y: 4, len: 3, h: true },
+      { x: 4, y: 1, len: 2, h: false },
+      { x: 5, y: 3, len: 3, h: false },
+      { x: 1, y: 0, len: 2, h: false },
+      { x: 2, y: 0, len: 2, h: true },
+      { x: 0, y: 3, len: 2, h: true },
+      { x: 4, y: 0, len: 2, h: true },
+      { x: 1, y: 5, len: 3, h: true },
+      { x: 0, y: 4, len: 2, h: false },
+      { x: 2, y: 1, len: 3, h: false },
+    ],
+  },
+  // L17 — 16 moves, 10 cars
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 4, len: 2, h: true },
+      { x: 2, y: 3, len: 2, h: true },
+      { x: 5, y: 3, len: 3, h: false },
+      { x: 2, y: 5, len: 3, h: true },
+      { x: 1, y: 3, len: 2, h: false },
+      { x: 0, y: 1, len: 3, h: false },
+      { x: 3, y: 0, len: 3, h: false },
+      { x: 0, y: 4, len: 2, h: false },
+      { x: 4, y: 2, len: 2, h: false },
+    ],
+  },
+  // L18 — 16 moves, 10 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 3, y: 4, len: 2, h: true },
+      { x: 3, y: 1, len: 2, h: false },
+      { x: 1, y: 0, len: 3, h: true },
+      { x: 2, y: 1, len: 3, h: false },
+      { x: 5, y: 0, len: 2, h: false },
+      { x: 4, y: 1, len: 3, h: false },
+      { x: 0, y: 4, len: 2, h: false },
+      { x: 5, y: 4, len: 2, h: false },
+      { x: 1, y: 4, len: 2, h: false },
+    ],
+  },
+  // L19 — 16 moves, 11 cars
+  {
+    cars: [
+      { x: 0, y: 2, len: 2, h: true, red: true },
+      { x: 4, y: 0, len: 2, h: true },
+      { x: 4, y: 4, len: 2, h: false },
+      { x: 0, y: 3, len: 2, h: false },
+      { x: 2, y: 4, len: 2, h: true },
+      { x: 5, y: 3, len: 2, h: false },
+      { x: 2, y: 2, len: 2, h: false },
+      { x: 1, y: 1, len: 2, h: true },
+      { x: 2, y: 5, len: 2, h: true },
+      { x: 0, y: 0, len: 3, h: true },
+      { x: 5, y: 1, len: 2, h: false },
+    ],
+  },
+  // L20 — 19 moves, 11 cars (hardest)
+  {
+    cars: [
+      { x: 1, y: 2, len: 2, h: true, red: true },
+      { x: 1, y: 0, len: 2, h: true },
+      { x: 5, y: 0, len: 2, h: false },
+      { x: 4, y: 1, len: 3, h: false },
+      { x: 1, y: 3, len: 3, h: false },
+      { x: 0, y: 1, len: 3, h: false },
+      { x: 3, y: 5, len: 3, h: true },
+      { x: 1, y: 1, len: 3, h: true },
+      { x: 4, y: 4, len: 2, h: true },
+      { x: 2, y: 3, len: 2, h: false },
+      { x: 5, y: 2, len: 2, h: false },
+    ],
+  },
 ];
 
 // ---------- State ----------
