@@ -615,9 +615,9 @@
 <script>
   // ============ DATA ============
   const ANIMALS = [
-    { id: 'shuttle', emoji: '🚀', name: 'กระสวยอวกาศ', speed: 28000, cat: 'aircraft', en: 'Space shuttle', img: 'assets/images/shuttle.jpg', sfx: 'assets/sounds/shuttle.ogg' },
     { id: 'f22', emoji: '🛩️', name: 'F-22 แร็พเตอร์', speed: 2410, cat: 'aircraft', en: 'F-22 Raptor', img: 'assets/images/f22.jpg', sfx: 'assets/sounds/f22.ogg' },
     { id: 'f16', emoji: '🛩️', name: 'F-16', speed: 2180, cat: 'aircraft', en: 'F-16', img: 'assets/images/f16.jpg', sfx: 'assets/sounds/f16.ogg' },
+    { id: 'f35', emoji: '🛩️', name: 'F-35 ไลท์นิ่ง', speed: 1930, cat: 'aircraft', en: 'F-35 Lightning', img: 'assets/images/f35.jpg' },
     { id: 'f18', emoji: '🛩️', name: 'F-18 ฮอร์เน็ต', speed: 1915, cat: 'aircraft', en: 'F-18 Hornet', img: 'assets/images/f18.jpg', sfx: 'assets/sounds/f18.ogg' },
     { id: 'airliner', emoji: '✈️', name: 'เครื่องบินโดยสาร', speed: 920, cat: 'aircraft', en: 'Airliner', img: 'assets/images/airliner.jpg', sfx: 'assets/sounds/airliner.ogg' },
     { id: 'bugatti', emoji: '🏎️', name: 'บูกัตติ', speed: 490, cat: 'vehicle', en: 'Bugatti', img: 'assets/images/bugatti.jpg', sfx: 'assets/sounds/bugatti.ogg' },
@@ -991,7 +991,7 @@
   function runRace(racers) {
     return new Promise(resolve => {
       // compute effective speed for animation: cube root compresses the huge
-      // range (0.05 km/h snail to 28,000 km/h shuttle) so that slow racers
+      // range (0.05 km/h snail to 2,400 km/h F-22) so that slow racers
       // still make visible progress against fast ones
       racers.forEach(r => {
         r.effSpeed = Math.cbrt(r.speed) * r.variance;
