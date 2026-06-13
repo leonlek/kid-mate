@@ -240,11 +240,32 @@
   .back-btn { right: 12px; display: none; }
   .back-btn.show { display: flex; }
   .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .nav-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: none; align-items: center; justify-content: center;
+    color: var(--ink); z-index: 60; cursor: pointer; padding: 0;
+    transition: transform .12s;
+  }
+  .nav-btn.show { display: flex; }
+  .nav-btn.nav-prev { left: 10px; }
+  .nav-btn.nav-next { right: 10px; }
+  .nav-btn:active { transform: translateY(-50%) scale(0.9); }
+  @media (max-width: 480px) { .nav-btn { width: 46px; height: 46px; } }
 </style>
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
 <button class="back-btn" id="backBtn" type="button" aria-label="เลือกตัวอักษรใหม่">📋</button>
+<button class="nav-btn nav-prev" id="prevBtn" type="button" aria-label="ตัวก่อนหน้า">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<button class="nav-btn nav-next" id="nextBtn" type="button" aria-label="ตัวถัดไป">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 <div class="app">
 
   <section id="selectScreen" class="screen active">
@@ -294,6 +315,8 @@ const GROUPS = [
   { id: 'eng',  label: '🔤 ตัวอักษรอังกฤษ A-Z', chars: ENG },
   { id: 'num',  label: '🔢 ตัวเลข 0-9', chars: NUM },
 ];
+// Flat ordered list for ◀ ▶ navigation (wraps around — no dead ends)
+const ALL = [].concat(THAI, ENG, NUM);
 
 // 10 crayon colors + eraser
 const COLORS = [
@@ -312,6 +335,7 @@ const PROGRESS_KEY = 'colorLettersProgress';
 // ============================================================================
 const state = {
   ch: null,
+  index: 0,
   currentColor: COLORS[0],
   erasing: false,
   drawing: false,
@@ -420,7 +444,10 @@ function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function showScreen(name) {
   $('selectScreen').classList.toggle('active', name === 'select');
   $('gameScreen').classList.toggle('active', name === 'game');
-  $('backBtn').classList.toggle('show', name === 'game');
+  const onGame = name === 'game';
+  $('backBtn').classList.toggle('show', onGame);
+  $('prevBtn').classList.toggle('show', onGame);
+  $('nextBtn').classList.toggle('show', onGame);
 }
 
 // ============================================================================
@@ -658,6 +685,8 @@ function renderSelect() {
 // ============================================================================
 async function openGlyph(ch) {
   state.ch = ch;
+  const i = ALL.indexOf(ch);
+  if (i >= 0) state.index = i;
   state.done = false;
   state.drawing = false;
   $('glyphTitle').textContent = ch;
@@ -703,6 +732,14 @@ $('backBtn').addEventListener('click', () => {
   renderSelect();
   showScreen('select');
 });
+function goTo(delta) {
+  const n = ALL.length;
+  const idx = ((state.index + delta) % n + n) % n;
+  buzz(10);
+  openGlyph(ALL[idx]);
+}
+$('prevBtn').addEventListener('click', () => goTo(-1));
+$('nextBtn').addEventListener('click', () => goTo(1));
 $('resetBtn').addEventListener('click', () => {
   pctx.clearRect(0, 0, R, R);
   state.done = false;
