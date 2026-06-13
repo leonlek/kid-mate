@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>✏️ เขียนตามรอย — เกมสำหรับเด็ก</title>
+<meta name="description" content="เขียนตามรอย ลากนิ้วตามเส้นประ ฝึกกล้ามเนื้อมือก่อนเขียน ตัวเลข 0-9 และ A-Z">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เขียนตามรอย">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%);} to { transform: translateX(10%);} }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app { max-width: 100%; padding: 0; height: 100vh; height: 100dvh; }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(38px, 8.5vw, 64px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 14px auto 4px;
+    max-width: 380px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* SELECT */
+  .cat-header {
+    font-family: 'Itim', cursive;
+    font-size: clamp(22px, 5vw, 30px);
+    color: var(--brand-dark);
+    margin: 26px 6px 12px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 12px;
+  }
+  .gcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 22px; aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .12s, box-shadow .12s, border-color .12s;
+    overflow: hidden; position: relative;
+  }
+  .gcard:active { transform: scale(0.94) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .gcard:hover { border-color: var(--brand); }
+  .gcard .glyph {
+    font-family: 'Itim', cursive;
+    font-size: 56px; line-height: 1;
+    color: #fff;
+    -webkit-text-stroke: 3px var(--brand-dark);
+    text-stroke: 3px var(--brand-dark);
+    padding-bottom: 4px;
+  }
+  .gcard.done::after {
+    content: '⭐'; position: absolute; top: 4px; right: 6px; font-size: 18px;
+    -webkit-text-stroke: 0;
+  }
+  @media (min-width: 560px) {
+    .glyph-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+    .gcard .glyph { font-size: 64px; }
+  }
+
+  /* GAME */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .top-bar {
+    flex: 0 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 6px; margin: 12px 76px 0 76px; flex-wrap: nowrap;
+  }
+  .glyph-title {
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 5vw, 36px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    white-space: nowrap; min-width: 0; flex: 0 1 auto;
+  }
+  .top-bar-buttons { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 8px 14px;
+    font-family: 'Itim', cursive; font-size: 18px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, box-shadow .12s, opacity .12s;
+    color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+  .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+  .icon-btn .btn-label { display: inline; margin-left: 4px; }
+  @media (max-width: 600px) {
+    .icon-btn { padding: 8px 11px; font-size: 20px; }
+    .icon-btn .btn-label { display: none; }
+    .top-bar { margin: 8px 64px 0 64px; }
+  }
+
+  .canvas-area {
+    flex: 1 1 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px; min-height: 0;
+  }
+  .canvas-stage {
+    background: #fff; border: 4px solid #fff;
+    border-radius: 28px; box-shadow: 0 6px 0 rgba(0,0,0,0.10);
+    aspect-ratio: 1 / 1;
+    width: min(100%, 540px, calc(100dvh - 240px));
+    overflow: hidden; touch-action: none; position: relative;
+  }
+  .canvas-stage svg { width: 100%; height: 100%; display: block; touch-action: none; }
+  .canvas-stage.pop { animation: pop .7s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes pop {
+    0% { transform: scale(1);} 40% { transform: scale(1.07) rotate(-2deg);}
+    70% { transform: scale(0.98) rotate(1deg);} 100% { transform: scale(1);}
+  }
+
+  /* SVG tracing layers */
+  .ghost { fill: none; stroke: #e9eef2; stroke-width: 96; stroke-linecap: round; stroke-linejoin: round; }
+  .guide { fill: none; stroke: #c4cdd6; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 26; }
+  .trail { fill: none; stroke: var(--brand); stroke-width: 70; stroke-linecap: round; stroke-linejoin: round; }
+  .trail.glow { animation: trailGlow 1.6s ease-in-out; }
+  @keyframes trailGlow {
+    0%,100% { filter: drop-shadow(0 0 0 transparent); }
+    50% { filter: drop-shadow(0 0 14px var(--gold)) drop-shadow(0 0 26px var(--brand)); }
+  }
+  .startdot { fill: var(--good); stroke: #fff; stroke-width: 6; }
+  .startdot.pulse { animation: dotPulse 1.1s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100% { transform: scale(1);} 50% { transform: scale(1.35);} }
+  .startlabel { fill: var(--good); font-family: 'Itim', cursive; font-size: 56px; text-anchor: middle; }
+  .hintdot { fill: #fff; stroke: var(--brand-dark); stroke-width: 6; }
+
+  .palette {
+    flex: 0 0 auto;
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; padding: 12px 14px env(safe-area-inset-bottom);
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    cursor: pointer; transition: transform .12s, box-shadow .12s; position: relative;
+  }
+  .swatch:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .swatch.active {
+    border-color: var(--gold); transform: scale(1.12);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18), 0 0 0 4px var(--gold);
+  }
+  @media (max-width: 480px) {
+    .swatch { width: 44px; height: 44px; border-width: 3px; }
+    .palette { gap: 8px; padding: 8px 10px env(safe-area-inset-bottom); }
+    .top-bar { margin: 8px 64px 0 64px; }
+    .canvas-area { padding: 8px; }
+  }
+  @media (min-width: 768px) { .swatch { width: 62px; height: 62px; } .palette { gap: 14px; } }
+
+  .overlay-msg {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(38px, 7vw, 64px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34,1.56,0.64,1);
+    text-shadow: 3px 3px 0 var(--brand-dark); max-width: 90vw;
+  }
+  .overlay-msg .msg.win { background: var(--gold); color: var(--ink); text-shadow: 3px 3px 0 #fff; }
+  @keyframes msgPop {
+    0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .confetti {
+    position: fixed; top: -20px; width: 12px; height: 18px;
+    z-index: 90; pointer-events: none; animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn, .back-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .nav-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: none; align-items: center; justify-content: center;
+    color: var(--ink); z-index: 60; cursor: pointer; padding: 0;
+    transition: transform .12s;
+  }
+  .nav-btn.show { display: flex; }
+  .nav-btn.nav-prev { left: 10px; }
+  .nav-btn.nav-next { right: 10px; }
+  .nav-btn:active { transform: translateY(-50%) scale(0.9); }
+  @media (max-width: 480px) { .nav-btn { width: 46px; height: 46px; } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกตัวใหม่">📋</button>
+<button class="nav-btn nav-prev" id="prevBtn" type="button" aria-label="ตัวก่อนหน้า">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<button class="nav-btn nav-next" id="nextBtn" type="button" aria-label="ตัวถัดไป">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>✏️ เขียนตามรอย</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🟢</span> เริ่มที่จุดสีเขียว</li>
+        <li><span class="howto-icon">👆</span> ลากนิ้วตามเส้นประ</li>
+        <li><span class="howto-icon">⭐</span> เขียนครบทุกเส้นได้ดาว!</li>
+      </ul>
+    </header>
+    <div id="glyphList"></div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="top-bar">
+      <div class="glyph-title" id="glyphTitle">0</div>
+      <div class="top-bar-buttons">
+        <button class="icon-btn" id="resetBtn" aria-label="เริ่มใหม่"><span aria-hidden="true">🔄</span><span class="btn-label">ใหม่</span></button>
+        <button class="icon-btn" id="sayBtn" aria-label="ฟังเสียง"><span aria-hidden="true">🔊</span><span class="btn-label">ฟัง</span></button>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-stage" id="canvasStage">
+        <svg id="traceSvg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+          <g id="ghostGroup"></g>
+          <g id="guideGroup"></g>
+          <g id="trailGroup"></g>
+          <g id="hintGroup"></g>
+          <g id="startGroup"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// GLYPH STROKE DATA
+// Each glyph = ordered list of strokes; each stroke = SVG path "d" string in a
+// 1000x1000 viewBox. Numbers drawn the standard "school" way; letters likewise.
+// Coordinate box roughly x:300..700, y:150..820 to leave margins.
+// ============================================================================
+const G = {
+  // ---- DIGITS 0-9 (mandatory) ----
+  '0': [ 'M 500 180 C 360 180 330 340 330 500 C 330 660 360 820 500 820 C 640 820 670 660 670 500 C 670 340 640 180 500 180 Z' ],
+  '1': [ 'M 380 280 L 510 190 L 510 820' ],
+  '2': [ 'M 350 290 C 380 200 520 170 600 250 C 680 330 620 440 500 540 L 340 690 L 340 820 L 670 820' ],
+  '3': [ 'M 360 270 C 430 180 600 190 620 320 C 630 420 520 470 460 470 C 540 470 660 510 650 640 C 630 800 420 830 340 720' ],
+  '4': [ 'M 560 820 L 560 180 L 300 580 L 690 580' ],
+  '5': [ 'M 640 190 L 380 190 L 350 470 C 430 410 600 420 650 540 C 700 670 600 800 460 800 C 390 800 340 760 320 710' ],
+  '6': [ 'M 620 220 C 540 170 420 200 380 320 C 330 460 330 640 420 730 C 520 820 660 760 660 620 C 660 500 560 450 470 470 C 400 485 360 540 380 620' ],
+  '7': [ 'M 320 200 L 680 200 L 460 820' ],
+  '8': [ 'M 500 470 C 380 470 350 350 420 270 C 490 190 590 220 600 320 C 610 420 510 470 500 470 C 620 470 680 560 660 660 C 640 790 380 800 340 660 C 320 560 380 470 500 470 Z' ],
+  '9': [ 'M 620 470 C 540 540 400 530 360 420 C 330 320 410 210 530 220 C 640 230 690 340 660 500 C 630 660 560 760 420 810' ],
+
+  // ---- UPPERCASE A-Z ----
+  // straight/simple letters get clean multi-stroke polylines; rounded letters
+  // get smooth curves. Drawn top-down / left-to-right in school order.
+  'A': [ 'M 320 820 L 500 180 L 680 820', 'M 390 580 L 610 580' ],
+  'B': [ 'M 350 180 L 350 820', 'M 350 180 L 560 180 C 680 180 680 470 540 480 L 350 480', 'M 350 480 L 580 480 C 720 480 720 820 560 820 L 350 820' ],
+  'C': [ 'M 660 280 C 580 180 360 180 330 420 C 300 660 360 840 540 840 C 620 840 660 800 680 740' ],
+  'D': [ 'M 350 180 L 350 820', 'M 350 180 L 520 180 C 700 200 700 800 520 820 L 350 820' ],
+  'E': [ 'M 650 180 L 340 180 L 340 820 L 650 820', 'M 340 500 L 580 500' ],
+  'F': [ 'M 650 180 L 340 180 L 340 820', 'M 340 500 L 580 500' ],
+  'G': [ 'M 660 280 C 580 180 360 180 330 420 C 300 660 360 840 540 840 C 660 840 680 720 680 600 L 500 600' ],
+  'H': [ 'M 340 180 L 340 820', 'M 660 180 L 660 820', 'M 340 500 L 660 500' ],
+  'I': [ 'M 360 180 L 640 180', 'M 500 180 L 500 820', 'M 360 820 L 640 820' ],
+  'J': [ 'M 640 180 L 640 660 C 640 800 420 840 350 720' ],
+  'K': [ 'M 350 180 L 350 820', 'M 660 180 L 350 510', 'M 430 440 L 670 820' ],
+  'L': [ 'M 350 180 L 350 820 L 660 820' ],
+  'M': [ 'M 320 820 L 320 180 L 500 560 L 680 180 L 680 820' ],
+  'N': [ 'M 340 820 L 340 180 L 660 820 L 660 180' ],
+  'O': [ 'M 500 180 C 340 180 300 360 300 500 C 300 640 340 820 500 820 C 660 820 700 640 700 500 C 700 360 660 180 500 180 Z' ],
+  'P': [ 'M 350 820 L 350 180 L 560 180 C 700 180 700 500 540 500 L 350 500' ],
+  'Q': [ 'M 500 180 C 340 180 300 360 300 500 C 300 640 340 820 500 820 C 660 820 700 640 700 500 C 700 360 660 180 500 180 Z', 'M 560 620 L 720 840' ],
+  'R': [ 'M 350 820 L 350 180 L 560 180 C 700 180 700 480 540 490 L 350 490', 'M 470 490 L 680 820' ],
+  'S': [ 'M 660 270 C 580 180 380 180 360 320 C 340 450 480 470 560 510 C 680 560 690 760 530 810 C 420 840 330 790 320 720' ],
+  'T': [ 'M 300 190 L 700 190', 'M 500 190 L 500 820' ],
+  'U': [ 'M 340 180 L 340 600 C 340 800 660 800 660 600 L 660 180' ],
+  'V': [ 'M 320 180 L 500 820 L 680 180' ],
+  'W': [ 'M 280 180 L 400 820 L 500 380 L 600 820 L 720 180' ],
+  'X': [ 'M 330 180 L 670 820', 'M 670 180 L 330 820' ],
+  'Y': [ 'M 330 180 L 500 480 L 670 180', 'M 500 480 L 500 820' ],
+  'Z': [ 'M 330 190 L 670 190 L 330 820 L 670 820' ],
+};
+
+const NUM = '0123456789'.split('');
+const ENG = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const GROUPS = [
+  { id: 'num', label: '🔢 ตัวเลข 0-9', chars: NUM },
+  { id: 'eng', label: '🔤 ตัวอักษร A-Z', chars: ENG },
+];
+const ALL = [].concat(NUM, ENG);
+
+// Trail colors the kid can pick (decorative; default pink)
+const COLORS = ['#ff6b9d', '#ff914d', '#f1c40f', '#7ed957', '#5bc0eb', '#9b59b6'];
+
+const TOL = 130;          // how far off-path a finger may stray (viewBox units)
+const ADVANCE = 90;       // forward look window when matching nearest length
+const DONE_FRAC = 0.92;   // fraction of a stroke's length to count it complete
+const PROGRESS_KEY = 'traceLettersProgress';
+
+// ============================================================================
+// SPEECH — say the digit (Thai word) / letter (English) out loud on success
+// ============================================================================
+const NUM_NAME = {
+  '0':'ศูนย์','1':'หนึ่ง','2':'สอง','3':'สาม','4':'สี่',
+  '5':'ห้า','6':'หก','7':'เจ็ด','8':'แปด','9':'เก้า',
+};
+function saySpec(ch) {
+  if (NUM_NAME[ch]) return { text: NUM_NAME[ch], lang: 'th-TH' };
+  return { text: ch, lang: 'en-US' };   // English letter name
+}
+function pickVoice(lang) {
+  try {
+    const vs = speechSynthesis.getVoices() || [];
+    const pre = lang.slice(0, 2).toLowerCase();
+    return vs.find(v => (v.lang || '').toLowerCase().startsWith(pre)) || null;
+  } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+function speak(ch) {
+  if (!('speechSynthesis' in window) || !ch) return;
+  const s = saySpec(ch);
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(s.text);
+    u.lang = s.lang; u.rate = 0.8; u.pitch = 1.1;
+    const v = pickVoice(s.lang);
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// ============================================================================
+// AUDIO
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function blip(freq) {
+  if (!audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.12;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.12, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch(e) {}
+}
+function playWin() {
+  [523, 659, 784, 1046].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// UTIL
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function showScreen(name) {
+  $('selectScreen').classList.toggle('active', name === 'select');
+  $('gameScreen').classList.toggle('active', name === 'game');
+  const onGame = name === 'game';
+  $('backBtn').classList.toggle('show', onGame);
+  $('prevBtn').classList.toggle('show', onGame);
+  $('nextBtn').classList.toggle('show', onGame);
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  ch: null,
+  index: 0,
+  color: COLORS[0],
+  strokes: [],        // [{ pathEl, len, ghostEl, guideEl, trailEl, progress, done }]
+  active: 0,          // index of the stroke currently being traced
+  drawing: false,
+  pointerId: null,
+  done: false,
+  hintEl: null,
+  hintRAF: 0,
+};
+
+const svg = $('traceSvg');
+const ghostGroup = $('ghostGroup');
+const guideGroup = $('guideGroup');
+const trailGroup = $('trailGroup');
+const hintGroup  = $('hintGroup');
+const startGroup = $('startGroup');
+
+// Hidden measuring path (kept out of view, used for getPointAtLength)
+let measure = el('path', { d: '', fill: 'none' });
+measure.style.visibility = 'hidden';
+svg.appendChild(measure);
+
+// ============================================================================
+// OPEN A GLYPH — build ghost + dashed guide + trail layers per stroke
+// ============================================================================
+function openGlyph(ch) {
+  if (!G[ch]) ch = ALL.find(c => G[c]) || '0';
+  state.ch = ch;
+  const i = ALL.indexOf(ch);
+  if (i >= 0) state.index = i;
+  state.done = false;
+  state.drawing = false;
+  state.active = 0;
+  state.strokes = [];
+  $('glyphTitle').textContent = ch;
+  ghostGroup.innerHTML = '';
+  guideGroup.innerHTML = '';
+  trailGroup.innerHTML = '';
+  hintGroup.innerHTML = '';
+  startGroup.innerHTML = '';
+  stopHint();
+
+  const defs = G[ch];
+  defs.forEach((d, si) => {
+    const ghost = el('path', { d, class: 'ghost' });
+    ghostGroup.appendChild(ghost);
+    const guide = el('path', { d, class: 'guide' });
+    guideGroup.appendChild(guide);
+    const trail = el('path', { d, class: 'trail' });
+    trail.style.stroke = state.color;
+    trail.style.display = 'none';
+    trailGroup.appendChild(trail);
+
+    measure.setAttribute('d', d);
+    const len = measure.getTotalLength();
+    trail.style.strokeDasharray = len;
+    trail.style.strokeDashoffset = len;   // hidden until traced
+
+    state.strokes.push({ d, len, trail, progress: 0, done: false });
+  });
+
+  showScreen('game');
+  beginStroke(0);
+}
+
+// point at a given length along a stroke's path
+function ptAt(stroke, l) {
+  measure.setAttribute('d', stroke.d);
+  return measure.getPointAtLength(Math.max(0, Math.min(l, stroke.len)));
+}
+
+// Show the green start dot + animated direction hint for stroke `idx`
+function beginStroke(idx) {
+  stopHint();
+  startGroup.innerHTML = '';
+  hintGroup.innerHTML = '';
+  if (idx >= state.strokes.length) return;
+  state.active = idx;
+  const s = state.strokes[idx];
+  const p0 = ptAt(s, s.progress > 0 ? s.progress : 0);
+
+  const dot = el('circle', { cx: p0.x, cy: p0.y, r: 34, class: 'startdot pulse' });
+  dot.style.transformOrigin = p0.x + 'px ' + p0.y + 'px';
+  startGroup.appendChild(dot);
+  if (s.progress < 1) {
+    const lbl = el('text', { x: p0.x, y: p0.y - 56, class: 'startlabel' });
+    lbl.textContent = '▶';
+    startGroup.appendChild(lbl);
+  }
+
+  // moving hint dot showing the direction along the path
+  state.hintEl = el('circle', { cx: p0.x, cy: p0.y, r: 20, class: 'hintdot' });
+  hintGroup.appendChild(state.hintEl);
+  runHint(s);
+}
+
+function runHint(s) {
+  const start = performance.now();
+  const span = Math.max(0.05, 1 - (s.progress / s.len));   // remaining fraction
+  const dur = 1700;
+  const tick = (now) => {
+    if (state.active < 0 || !state.hintEl || s.done) return;
+    const t = ((now - start) % dur) / dur;             // 0..1 loop
+    const l = s.progress + t * span * s.len;
+    const p = ptAt(s, l);
+    state.hintEl.setAttribute('cx', p.x);
+    state.hintEl.setAttribute('cy', p.y);
+    state.hintRAF = requestAnimationFrame(tick);
+  };
+  state.hintRAF = requestAnimationFrame(tick);
+}
+function stopHint() {
+  if (state.hintRAF) cancelAnimationFrame(state.hintRAF);
+  state.hintRAF = 0;
+}
+
+// ============================================================================
+// TRACING — map pointer to nearest forward length, only advance forward
+// ============================================================================
+function toView(e) {
+  const rect = svg.getBoundingClientRect();
+  // viewBox is 1000x1000 with xMidYMid meet -> square stage, so simple scale
+  const s = 1000 / rect.width;
+  return { x: (e.clientX - rect.left) * s, y: (e.clientY - rect.top) * s };
+}
+
+// Find the length (searching forward from current progress) whose point is
+// closest to (x,y). Returns { l, dist }. Coarse then fine scan = forgiving.
+function nearestForward(s, x, y) {
+  const from = s.progress;
+  const to = Math.min(s.len, s.progress + s.len * 0.18 + ADVANCE);
+  let bestL = from, bestD = Infinity;
+  const coarse = 16;
+  for (let l = from; l <= to; l += (to - from) / coarse || 1) {
+    const p = ptAt(s, l);
+    const dd = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+    if (dd < bestD) { bestD = dd; bestL = l; }
+  }
+  // refine around best
+  const step = (to - from) / coarse || 1;
+  for (let l = Math.max(from, bestL - step); l <= Math.min(to, bestL + step); l += step / 8 || 1) {
+    const p = ptAt(s, l);
+    const dd = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+    if (dd < bestD) { bestD = dd; bestL = l; }
+  }
+  return { l: bestL, dist: Math.sqrt(bestD) };
+}
+
+function advance(x, y) {
+  const s = state.strokes[state.active];
+  if (!s || s.done) return;
+  const near = nearestForward(s, x, y);
+  if (near.dist > TOL) return;              // off-path: silently stop advancing
+  if (near.l > s.progress) {
+    s.progress = near.l;
+    // reveal traced portion via dashoffset
+    s.trail.style.display = 'block';
+    s.trail.style.strokeDashoffset = (s.len - s.progress);
+    // keep start dot near current head as a moving guide
+  }
+  if (s.progress >= s.len * DONE_FRAC && !s.done) finishStroke();
+}
+
+function finishStroke() {
+  const s = state.strokes[state.active];
+  s.done = true;
+  s.progress = s.len;
+  s.trail.style.strokeDashoffset = 0;
+  blip(660 + state.active * 60);
+  buzz(12);
+  const next = state.active + 1;
+  if (next < state.strokes.length) {
+    setTimeout(() => beginStroke(next), 200);
+  } else {
+    stopHint();
+    startGroup.innerHTML = '';
+    hintGroup.innerHTML = '';
+    celebrate();
+  }
+}
+
+// ============================================================================
+// POINTER EVENTS
+// ============================================================================
+svg.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  ensureAudio();
+  if (state.done) return;
+  const s = state.strokes[state.active];
+  if (!s) return;
+  const p = toView(e);
+  // only begin if finger lands reasonably near the active head / path
+  const near = nearestForward(s, p.x, p.y);
+  const headPt = ptAt(s, s.progress);
+  const dHead = Math.hypot(p.x - headPt.x, p.y - headPt.y);
+  if (near.dist > TOL + 40 && dHead > TOL + 60) return;
+  state.drawing = true;
+  state.pointerId = e.pointerId;
+  try { svg.setPointerCapture(e.pointerId); } catch(_) {}
+  advance(p.x, p.y);
+});
+svg.addEventListener('pointermove', (e) => {
+  if (!state.drawing || e.pointerId !== state.pointerId) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e])) {
+    const p = toView(ev);
+    advance(p.x, p.y);
+  }
+});
+function endStroke() {
+  if (!state.drawing) return;
+  state.drawing = false;
+  state.pointerId = null;
+}
+svg.addEventListener('pointerup', endStroke);
+svg.addEventListener('pointercancel', endStroke);
+
+// ============================================================================
+// CELEBRATION
+// ============================================================================
+function celebrate() {
+  if (state.done) return;
+  state.done = true;
+  saveProgress();
+  // glyph fills / glows
+  state.strokes.forEach(s => {
+    s.trail.classList.add('glow');
+    s.trail.style.strokeDashoffset = 0;
+    s.trail.style.display = 'block';
+  });
+  const stage = $('canvasStage');
+  stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
+  const praises = ['เก่งมาก! 🌟', 'สุดยอด! 🎉', 'เยี่ยมเลย! 👏', 'สวยมาก! ✨'];
+  flashOverlay(praises[Math.floor(Math.random() * praises.length)], 1600, 'win');
+  playWin();
+  confetti(150);
+  buzz([40, 30, 60]);
+  setTimeout(() => speak(state.ch), 550);
+}
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveProgress() {
+  if (!state.ch) return;
+  const p = loadProgress();
+  p[state.ch] = (p[state.ch] || 0) + 1;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch(e) {}
+}
+function renderSelect() {
+  const list = $('glyphList');
+  const progress = loadProgress();
+  list.innerHTML = '';
+  for (const grp of GROUPS) {
+    const h = document.createElement('h2');
+    h.className = 'cat-header';
+    h.textContent = grp.label;
+    list.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'glyph-grid';
+    for (const ch of grp.chars) {
+      const card = document.createElement('div');
+      card.className = 'gcard' + (progress[ch] ? ' done' : '');
+      card.innerHTML = `<span class="glyph">${ch}</span>`;
+      card.addEventListener('click', () => { ensureAudio(); openGlyph(ch); });
+      grid.appendChild(card);
+    }
+    list.appendChild(grid);
+  }
+}
+
+// ============================================================================
+// PALETTE — pick trail color (cosmetic)
+// ============================================================================
+function renderPalette() {
+  const palette = $('palette');
+  palette.innerHTML = '';
+  COLORS.forEach((col, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = col;
+    sw.addEventListener('click', () => selectColor(col, sw));
+    palette.appendChild(sw);
+  });
+}
+function selectColor(col, elm) {
+  state.color = col;
+  for (const s of $('palette').querySelectorAll('.swatch')) s.classList.remove('active');
+  elm.classList.add('active');
+  // recolor any visible trails
+  state.strokes.forEach(s => { s.trail.style.stroke = col; });
+}
+
+// ============================================================================
+// BUTTONS / NAV (wrap around — no dead ends)
+// ============================================================================
+$('backBtn').addEventListener('click', () => {
+  $('overlayMsg').classList.remove('shown');
+  stopHint();
+  renderSelect();
+  showScreen('select');
+});
+function goTo(delta) {
+  const n = ALL.length;
+  const idx = ((state.index + delta) % n + n) % n;
+  buzz(10);
+  openGlyph(ALL[idx]);
+}
+$('prevBtn').addEventListener('click', () => goTo(-1));
+$('nextBtn').addEventListener('click', () => goTo(1));
+$('resetBtn').addEventListener('click', () => {
+  buzz(20);
+  if (state.ch) openGlyph(state.ch);
+});
+$('sayBtn').addEventListener('click', () => { ensureAudio(); speak(state.ch); });
+
+// ============================================================================
+// EFFECTS
+// ============================================================================
+function flashOverlay(text, ms, extra) {
+  const overlay = $('overlayMsg');
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+function confetti(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[Math.floor(Math.random() * cols.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// MISC — block double-tap zoom
+// ============================================================================
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+renderPalette();
+renderSelect();
+</script>
+</body>
+</html>

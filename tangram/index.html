@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🧩 ต่อรูปทรง — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมต่อรูปทรงเรขาคณิต ฝึกการมองเห็นเชิงพื้นที่และการแก้ปัญหา">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ต่อรูปทรง">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --bad: #ff5757; --bad-dark: #d83838;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%; padding: 0; height: 100vh; height: 100dvh;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero { text-align: center; padding: 14px 10px 24px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(42px, 9vw, 68px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 8px auto 14px;
+    max-width: 360px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
+
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; margin: 24px 0 32px;
+  }
+  .lcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 24px; padding: 16px 14px 14px; text-align: center;
+    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative; overflow: hidden;
+  }
+  .lcard:active { transform: scale(0.96) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .lcard:hover { border-color: var(--brand); }
+  .lcard svg.preview { width: 100%; height: 110px; display: block; margin: 0 auto 8px; }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive; font-size: 24px;
+    color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
+  }
+  .lcard .done-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 22px; filter: drop-shadow(0 2px 0 rgba(0,0,0,0.15));
+  }
+
+  /* Game */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .top-bar {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 76px 0 76px;
+    flex-wrap: nowrap;
+  }
+  .picture-title {
+    font-family: 'Itim', cursive;
+    font-size: clamp(20px, 3.6vw, 30px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0; flex: 0 1 auto;
+  }
+  .top-bar-buttons { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #fff;
+    border: 3px solid var(--card-border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, box-shadow .12s, opacity .12s;
+    color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+  .icon-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+  .icon-btn .btn-label { display: inline; margin-left: 4px; }
+  @media (max-width: 600px) {
+    .icon-btn { padding: 8px 11px; font-size: 20px; }
+    .icon-btn .btn-label { display: none; }
+    .top-bar { margin: 8px 64px 0 64px; }
+    .picture-title { font-size: 18px; }
+  }
+
+  .play-area {
+    flex: 1 1 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px;
+    min-height: 0;
+  }
+  .play-stage {
+    background: #fff;
+    border: 4px solid #fff;
+    border-radius: 28px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.10);
+    aspect-ratio: 800 / 1000;
+    width: min(100%, 560px, calc((100dvh - 130px) * 0.8));
+    overflow: visible;
+    touch-action: none;
+  }
+  .play-stage svg { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  /* Slot guides (faint target outlines) */
+  .slot {
+    fill: rgba(0,0,0,0.05);
+    stroke: var(--brand);
+    stroke-width: 4;
+    stroke-dasharray: 12 10;
+    stroke-linejoin: round;
+    opacity: 0.7;
+  }
+  .slot.filled { opacity: 0; }
+  .slot-hint { stroke: var(--gold); stroke-width: 8; opacity: 0.9; }
+
+  /* Divider between board and tray */
+  .divider { stroke: var(--card-border); stroke-width: 3; stroke-dasharray: 6 8; }
+
+  /* Pieces */
+  .piece {
+    cursor: grab;
+    stroke: rgba(0,0,0,0.30);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    touch-action: none;
+    transition: filter .12s;
+  }
+  .piece.dragging { cursor: grabbing; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.3)); }
+  .piece.locked { pointer-events: none; }
+  .piece.pop { animation: piecePop .4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes piecePop {
+    0% { transform: scale(1.18); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  /* "Comes alive" picture animation on the whole assembled group */
+  .picGroup.alive { animation: aliveWobble 1.8s ease-in-out; transform-origin: 50% 40%; }
+  @keyframes aliveWobble {
+    0%, 100% { transform: rotate(0) translateY(0) scale(1); }
+    15% { transform: rotate(-4deg) translateY(-2%); }
+    30% { transform: rotate(4deg) scale(1.04); }
+    45% { transform: rotate(-3deg) translateY(-3%); }
+    60% { transform: rotate(3deg) scale(1.03); }
+    80% { transform: rotate(-1deg) translateY(-1%); }
+  }
+
+  /* Big banner overlay */
+  .overlay-msg {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(40px, 7.5vw, 70px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+    max-width: 90vw;
+  }
+  .overlay-msg .msg.win {
+    background: var(--gold); color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn, .back-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  @media (min-width: 768px) {
+    .lgrid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  }
+  @media (min-width: 1024px) {
+    .lgrid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .play-area { padding: 6px; }
+    .lcard svg.preview { height: 90px; }
+    .lcard .ltitle { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกรูปใหม่">📋</button>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🧩 ต่อรูปทรง</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🖼️</span> เลือกรูปที่อยากต่อ</li>
+        <li><span class="howto-icon">👆</span> ลากชิ้นส่วนสีไปวางบนช่อง</li>
+        <li><span class="howto-icon">✨</span> ต่อครบทุกชิ้นรูปจะมีชีวิต!</li>
+      </ul>
+    </header>
+    <div id="levelGrid" class="lgrid"></div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="top-bar">
+      <div class="picture-title" id="pictureTitle">รูป</div>
+      <div class="top-bar-buttons">
+        <button class="icon-btn" id="resetBtn" aria-label="เริ่มใหม่"><span aria-hidden="true">🔄</span><span class="btn-label">เล่นใหม่</span></button>
+        <button class="icon-btn" id="nextBtn" aria-label="รูปถัดไป"><span aria-hidden="true">➡️</span><span class="btn-label">ถัดไป</span></button>
+      </div>
+    </div>
+    <div class="play-area">
+      <div class="play-stage" id="playStage">
+        <svg id="gameSvg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid meet">
+          <g id="slotsGroup"></g>
+          <g id="picGroup" class="picGroup"></g>
+          <line class="divider" x1="40" y1="700" x2="760" y2="700"></line>
+          <g id="piecesGroup"></g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// COORDINATE SYSTEM
+// The SVG viewBox is 800 x 1000.
+//   Board (where the picture is built):   y  20 .. 690
+//   Tray  (where loose pieces start):     y 720 .. 980
+// Every piece defines its target polygon in BOARD coordinates ("pts"), the
+// fill color, and a tray "home" anchor (hx, hy) — the piece is rendered at its
+// home first (translated from target to home) so a kid drags it UP into place.
+// No rotation is needed: each piece's polygon already matches its slot.
+// ============================================================================
+
+// Helper: build a triangle / quad polygon point string
+const P = (...pairs) => pairs.map(p => p.join(',')).join(' ');
+
+// ----------------------------------------------------------------------------
+// PUZZLES — 5, increasing piece counts (3 -> 6)
+// Each piece: { id, color, pts:[[x,y],...] (target), home:[hx,hy] }
+//   home is the CENTER the piece should sit at in the tray initially.
+// ----------------------------------------------------------------------------
+const PUZZLES = [
+  {
+    id: 'boat', name: '⛵ เรือใบ', anim: 'sway',
+    pieces: [
+      // sail (triangle)
+      { id: 'sail', color: '#ff6b9d',
+        pts: [[400,120],[400,460],[600,460]], home: [200, 850] },
+      // mast bar (thin rectangle)
+      { id: 'mast', color: '#a0522d',
+        pts: [[392,120],[408,120],[408,470],[392,470]], home: [400, 870] },
+      // hull (parallelogram / trapezoid)
+      { id: 'hull', color: '#5bc0eb',
+        pts: [[200,480],[600,480],[540,600],[260,600]], home: [600, 850] },
+    ],
+  },
+  {
+    id: 'house', name: '🏠 บ้าน', anim: 'bounce',
+    pieces: [
+      // roof (triangle)
+      { id: 'roof', color: '#e74c3c',
+        pts: [[200,300],[600,300],[400,140]], home: [180, 850] },
+      // wall (square)
+      { id: 'wall', color: '#ffd93d',
+        pts: [[240,300],[560,300],[560,600],[240,600]], home: [420, 860] },
+      // door (rectangle)
+      { id: 'door', color: '#a0522d',
+        pts: [[360,440],[440,440],[440,600],[360,600]], home: [620, 850] },
+    ],
+  },
+  {
+    id: 'fish', name: '🐟 ปลา', anim: 'swim',
+    pieces: [
+      // body (big diamond)
+      { id: 'body', color: '#ff914d',
+        pts: [[200,400],[440,260],[560,400],[440,540]], home: [180, 850] },
+      // tail (triangle)
+      { id: 'tail', color: '#ffd93d',
+        pts: [[560,400],[700,300],[700,500]], home: [400, 840] },
+      // top fin (triangle)
+      { id: 'fin', color: '#5bc0eb',
+        pts: [[330,330],[460,330],[395,250]], home: [620, 850] },
+    ],
+  },
+  {
+    id: 'tree', name: '🌳 ต้นไม้', anim: 'sway',
+    pieces: [
+      // top triangle
+      { id: 'top', color: '#5bc13a',
+        pts: [[400,120],[300,300],[500,300]], home: [160, 830] },
+      // middle triangle (wider)
+      { id: 'mid', color: '#3fa024',
+        pts: [[400,240],[270,420],[530,420]], home: [320, 870] },
+      // bottom triangle (widest)
+      { id: 'bot', color: '#5bc13a',
+        pts: [[400,360],[240,540],[560,540]], home: [490, 830] },
+      // trunk (rectangle)
+      { id: 'trunk', color: '#a0522d',
+        pts: [[365,540],[435,540],[435,640],[365,640]], home: [650, 870] },
+    ],
+  },
+  {
+    id: 'rocket', name: '🚀 จรวด', anim: 'launch',
+    pieces: [
+      // nose cone (triangle)
+      { id: 'nose', color: '#ff6b9d',
+        pts: [[400,120],[480,300],[320,300]], home: [140, 820] },
+      // body (rectangle)
+      { id: 'body', color: '#c8d6e5',
+        pts: [[320,300],[480,300],[480,560],[320,560]], home: [300, 870] },
+      // window (small diamond)
+      { id: 'win', color: '#5bc0eb',
+        pts: [[400,360],[450,410],[400,460],[350,410]], home: [410, 820] },
+      // left fin (triangle)
+      { id: 'finL', color: '#e74c3c',
+        pts: [[320,470],[240,600],[320,600]], home: [540, 870] },
+      // right fin (triangle)
+      { id: 'finR', color: '#e74c3c',
+        pts: [[480,470],[560,600],[480,600]], home: [660, 820] },
+      // flame (triangle, pointing down)
+      { id: 'flame', color: '#ff914d',
+        pts: [[350,560],[450,560],[400,660]], home: [410, 920] },
+    ],
+  },
+];
+
+// ============================================================================
+// AUDIO
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function playDing() {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.value = 880;
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime, d = 0.16;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.16, t + 0.005);
+  g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function playWin() {
+  [523, 659, 784, 1047].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// DOM
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+const screens = { select: $('selectScreen'), game: $('gameScreen') };
+const levelGrid   = $('levelGrid');
+const overlay     = $('overlayMsg');
+const slotsGroup  = $('slotsGroup');
+const picGroup    = $('picGroup');
+const piecesGroup = $('piecesGroup');
+const pictureTitle = $('pictureTitle');
+const gameSvg     = $('gameSvg');
+const playStage   = $('playStage');
+
+const PROGRESS_KEY = 'tangram-done-v1';
+const PRAISES = ['เก่งมาก! 🌟', 'สุดยอด! 🎉', 'เยี่ยมเลย! ✨', 'ดีมาก! 👏', 'เจ๋งมาก! 🏆'];
+
+// snap tolerance in SVG units (center-to-center distance)
+const SNAP_TOL = 110;
+
+const state = {
+  puzzleIdx: 0,
+  puzzle: null,
+  placed: {},      // pieceId -> true when locked
+  pieceEls: {},    // pieceId -> { el, target:[cx,cy], home:[cx,cy], offset:[ox,oy] }
+  total: 0,
+  drag: null,
+  pendingTimers: [],
+  solved: false,
+};
+
+// ============================================================================
+// UTIL
+// ============================================================================
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function later(fn, ms) { const id = setTimeout(fn, ms); state.pendingTimers.push(id); return id; }
+function clearTimers() { state.pendingTimers.forEach(clearTimeout); state.pendingTimers = []; }
+function showScreen(name) {
+  for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k === name);
+  $('backBtn').classList.toggle('show', name === 'game');
+}
+function centroid(pts) {
+  let x = 0, y = 0;
+  for (const p of pts) { x += p[0]; y += p[1]; }
+  return [x / pts.length, y / pts.length];
+}
+function loadDone() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch (e) { return {}; }
+}
+function markDone(id) {
+  const d = loadDone(); d[id] = true;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(d)); } catch (e) {}
+}
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function renderSelect() {
+  const done = loadDone();
+  levelGrid.innerHTML = '';
+  PUZZLES.forEach((pz, idx) => {
+    const c = document.createElement('div');
+    c.className = 'lcard';
+    c.innerHTML = `
+      ${buildPreviewSvg(pz)}
+      <div class="ltitle">${pz.name}</div>
+      ${done[pz.id] ? '<div class="done-badge">⭐</div>' : ''}
+    `;
+    c.addEventListener('click', () => { ensureAudio(); openPuzzle(idx); });
+    levelGrid.appendChild(c);
+  });
+}
+
+function buildPreviewSvg(pz) {
+  // Show the assembled colored picture (board coords ~ 120..660 in y)
+  const polys = pz.pieces.map(p =>
+    `<polygon points="${P(...p.pts)}" fill="${p.color}" stroke="rgba(0,0,0,0.25)" stroke-width="4" stroke-linejoin="round" />`
+  ).join('');
+  return `<svg class="preview" viewBox="120 80 560 600" preserveAspectRatio="xMidYMid meet">${polys}</svg>`;
+}
+
+// ============================================================================
+// GAME — build a puzzle
+// ============================================================================
+function openPuzzle(idx) {
+  clearTimers();
+  state.puzzleIdx = idx;
+  state.puzzle = PUZZLES[idx];
+  state.placed = {};
+  state.pieceEls = {};
+  state.total = state.puzzle.pieces.length;
+  state.drag = null;
+  state.solved = false;
+  pictureTitle.textContent = state.puzzle.name;
+  picGroup.classList.remove('alive');
+
+  slotsGroup.innerHTML = '';
+  picGroup.innerHTML = '';
+  piecesGroup.innerHTML = '';
+
+  state.puzzle.pieces.forEach((pc, i) => {
+    const target = centroid(pc.pts);
+    const home = pc.home.slice();
+    const offset = [home[0] - target[0], home[1] - target[1]];
+
+    // Faint slot outline at the target location
+    const slot = document.createElementNS(SVGNS, 'polygon');
+    slot.setAttribute('points', P(...pc.pts));
+    slot.setAttribute('class', 'slot');
+    slot.dataset.pieceId = pc.id;
+    slotsGroup.appendChild(slot);
+
+    // The colored piece — drawn at target geometry but translated to home
+    const piece = document.createElementNS(SVGNS, 'polygon');
+    piece.setAttribute('points', P(...pc.pts));
+    piece.setAttribute('class', 'piece');
+    piece.setAttribute('fill', pc.color);
+    piece.dataset.pieceId = pc.id;
+    piece.style.transformOrigin = `${target[0]}px ${target[1]}px`;
+    piece.setAttribute('transform', `translate(${offset[0]}, ${offset[1]})`);
+    piecesGroup.appendChild(piece);
+
+    state.pieceEls[pc.id] = { el: piece, slot, target, home, offset: offset.slice(), cur: offset.slice() };
+
+    piece.addEventListener('pointerdown', onPointerDown);
+  });
+
+  showScreen('game');
+}
+
+// ============================================================================
+// DRAG — pointer events in SVG user coordinates
+// ============================================================================
+function clientToSvg(clientX, clientY) {
+  const r = gameSvg.getBoundingClientRect();
+  const vb = gameSvg.viewBox.baseVal;
+  // preserveAspectRatio xMidYMid meet: uniform scale, centered
+  const scale = Math.min(r.width / vb.width, r.height / vb.height);
+  const drawW = vb.width * scale, drawH = vb.height * scale;
+  const padX = (r.width - drawW) / 2, padY = (r.height - drawH) / 2;
+  return {
+    x: (clientX - r.left - padX) / scale + vb.x,
+    y: (clientY - r.top - padY) / scale + vb.y,
+  };
+}
+
+function onPointerDown(e) {
+  const piece = e.currentTarget;
+  const id = piece.dataset.pieceId;
+  if (state.placed[id]) return;
+  ensureAudio();
+  e.preventDefault();
+
+  const pt = clientToSvg(e.clientX, e.clientY);
+  const info = state.pieceEls[id];
+  // grab offset: where on the piece (relative to its current translate) we grabbed
+  state.drag = {
+    id, piece, info,
+    grabX: pt.x - info.cur[0],
+    grabY: pt.y - info.cur[1],
+    pointerId: e.pointerId,
+  };
+  piece.classList.add('dragging');
+  // raise to top so it floats above siblings
+  piecesGroup.appendChild(piece);
+  // highlight the matching slot
+  info.slot.classList.add('slot-hint');
+  try { piece.setPointerCapture(e.pointerId); } catch (_) {}
+  piece.onpointermove = onPointerMove;
+  piece.onpointerup = piece.onpointercancel = onPointerUp;
+}
+
+function onPointerMove(e) {
+  const d = state.drag;
+  if (!d || e.pointerId !== d.pointerId) return;
+  e.preventDefault();
+  const pt = clientToSvg(e.clientX, e.clientY);
+  let tx = pt.x - d.grabX;
+  let ty = pt.y - d.grabY;
+  // clamp within the viewBox-ish bounds so a piece can't fly away
+  const c = d.info.target;
+  tx = Math.max(-c[0] + 40, Math.min(800 - c[0] - 40, tx));
+  ty = Math.max(-c[1] + 40, Math.min(1000 - c[1] - 40, ty));
+  d.info.cur = [tx, ty];
+  d.piece.setAttribute('transform', `translate(${tx}, ${ty})`);
+}
+
+function onPointerUp(e) {
+  const d = state.drag;
+  if (!d) return;
+  const piece = d.piece, info = d.info;
+  piece.onpointermove = piece.onpointerup = piece.onpointercancel = null;
+  piece.classList.remove('dragging');
+  info.slot.classList.remove('slot-hint');
+  try { piece.releasePointerCapture(d.pointerId); } catch (_) {}
+  state.drag = null;
+
+  // Current center of the piece = target + current translate
+  const cx = info.target[0] + info.cur[0];
+  const cy = info.target[1] + info.cur[1];
+  const dist = Math.hypot(cx - info.target[0], cy - info.target[1]);
+
+  if (dist <= SNAP_TOL) {
+    snapPiece(d.id);
+  }
+  // else: leave it where it is (no punishment, kid can keep trying)
+}
+
+function snapPiece(id) {
+  const info = state.pieceEls[id];
+  state.placed[id] = true;
+  info.cur = [0, 0];
+  info.el.setAttribute('transform', 'translate(0, 0)');
+  info.el.classList.add('locked');
+  // restyle: full opacity, crisp
+  info.el.classList.remove('pop');
+  void info.el.getBoundingClientRect(); // reflow to restart anim
+  info.el.classList.add('pop');
+  info.slot.classList.add('filled');
+  // move locked piece into the assembled picture group so the "alive" anim
+  // can transform them all together
+  picGroup.appendChild(info.el);
+
+  playDing();
+  buzz(20);
+
+  const placedCount = Object.keys(state.placed).length;
+  if (placedCount >= state.total && !state.solved) {
+    state.solved = true;
+    later(onSolved, 350);
+  }
+}
+
+// ============================================================================
+// SOLVED
+// ============================================================================
+function onSolved() {
+  // bring the picture to life
+  picGroup.classList.remove('alive');
+  void picGroup.getBoundingClientRect();
+  picGroup.classList.add('alive');
+  markDone(state.puzzle.id);
+  const praise = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  flashOverlay(praise, 1700, 'win');
+  playWin();
+  celebrate(80);
+  buzz([40, 30, 40, 30, 60]);
+  // auto-advance to next puzzle
+  later(() => {
+    const next = (state.puzzleIdx + 1) % PUZZLES.length;
+    openPuzzle(next);
+  }, 2300);
+}
+
+function flashOverlay(text, ms, extra) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// CONTROLS
+// ============================================================================
+$('resetBtn').addEventListener('click', () => { ensureAudio(); openPuzzle(state.puzzleIdx); });
+$('nextBtn').addEventListener('click', () => {
+  ensureAudio();
+  const next = (state.puzzleIdx + 1) % PUZZLES.length;
+  openPuzzle(next);
+});
+$('backBtn').addEventListener('click', () => { clearTimers(); showScreen('select'); renderSelect(); });
+
+// ============================================================================
+// Block double-tap zoom
+// ============================================================================
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+gameSvg.addEventListener('gesturestart', (e) => e.preventDefault());
+
+// Init
+renderSelect();
+</script>
+</body>
+</html>

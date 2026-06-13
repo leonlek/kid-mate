@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🔢 เรียงเหตุการณ์ — เกมสำหรับเด็ก</title>
+<meta name="description" content="ลากการ์ดเรียงเหตุการณ์ตามลำดับ ฝึกเหตุและผล และการคิดเป็นขั้นตอน">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="เรียงเหตุการณ์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --bad: #ff5757; --bad-dark: #d83838;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app {
+    max-width: 100%; padding: 0; min-height: 100vh; min-height: 100dvh;
+  }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(40px, 8.5vw, 64px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .hero p {
+    font-size: clamp(15px, 3.2vw, 20px);
+    margin: 8px 0 0; color: #555; font-weight: 500;
+  }
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 12px auto 18px;
+    max-width: 360px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
+
+  /* Big "เริ่มเล่น" play button — non-readers just tap it */
+  .start-wrap { text-align: center; margin: 8px 0 18px; }
+  .btn-play {
+    font-family: 'Itim', cursive;
+    font-size: 34px; padding: 18px 52px;
+    border: 5px solid #fff; border-radius: 999px;
+    background: var(--brand); color: #fff;
+    box-shadow: 0 7px 0 var(--brand-dark);
+    cursor: pointer; text-shadow: 2px 2px 0 var(--brand-dark);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-play:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--brand-dark); }
+
+  /* Game */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    min-height: 100vh; min-height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    overflow: hidden;
+  }
+  .hud {
+    flex: 0 0 auto; display: flex; justify-content: center; gap: 10px;
+    margin: 10px 70px 0; font-family: 'Itim', cursive; font-size: 22px;
+    flex-wrap: wrap;
+  }
+  .hud-item {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 6px 18px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    text-align: center; color: var(--brand-dark);
+  }
+
+  .stage {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 12px; gap: 18px;
+    overflow: hidden;
+  }
+  .prompt {
+    font-family: 'Itim', cursive;
+    color: var(--brand-dark);
+    font-size: clamp(20px, 4.6vw, 30px);
+    text-shadow: 2px 2px 0 #fff;
+    text-align: center; margin: 0;
+  }
+
+  /* Target slots row, with arrows between */
+  .slots {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; flex-wrap: nowrap;
+    width: 100%;
+  }
+  .slot {
+    --card-size: clamp(78px, 22vw, 132px);
+    width: var(--card-size); height: calc(var(--card-size) * 1.18);
+    flex: 0 0 auto;
+    background: #fffbf2;
+    border: 4px dashed var(--brand);
+    border-radius: 22px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slot .slot-num {
+    position: absolute; top: -14px; left: -8px;
+    width: 34px; height: 34px;
+    background: var(--brand); color: #fff;
+    border: 3px solid #fff; border-radius: 50%;
+    font-family: 'Itim', cursive; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 var(--brand-dark);
+    z-index: 2;
+  }
+  .slot.hover { background: #ffe9f1; border-style: solid; transform: scale(1.04); }
+  .slot.lit { background: #e8ffe0; border: 4px solid var(--gold); animation: litPop .5s ease; }
+  @keyframes litPop { 0%{transform:scale(1);} 50%{transform:scale(1.12);} 100%{transform:scale(1);} }
+  .arrow {
+    flex: 0 0 auto;
+    font-size: clamp(20px, 5vw, 32px);
+    color: var(--brand);
+    opacity: 0.55;
+    user-select: none;
+  }
+
+  /* Shuffled card source tray */
+  .tray-label {
+    font-family: 'Itim', cursive; color: #555; font-size: 16px; margin: 0;
+  }
+  .tray {
+    background: rgba(255,255,255,0.5);
+    border: 3px dashed var(--card-border);
+    border-radius: 22px;
+    padding: 12px;
+    display: flex; flex-wrap: wrap; gap: 12px;
+    justify-content: center; align-items: center;
+    width: min(96vw, 560px);
+    min-height: 120px;
+  }
+
+  /* A draggable story card (lives in tray or a slot) */
+  .card {
+    --card-size: clamp(78px, 22vw, 132px);
+    width: var(--card-size); height: calc(var(--card-size) * 1.18);
+    background: #fff;
+    border: 4px solid var(--card-border);
+    border-radius: 20px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    cursor: grab;
+    touch-action: none;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s;
+    text-align: center;
+    padding: 4px;
+  }
+  .card .card-emoji { font-size: clamp(38px, 11vw, 64px); line-height: 1; }
+  .card .card-cap {
+    font-family: 'Mitr', sans-serif; font-weight: 600;
+    font-size: clamp(11px, 2.7vw, 15px); color: var(--ink);
+    line-height: 1.05;
+  }
+  .card:active { cursor: grabbing; }
+  .card.dragging {
+    transition: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.28);
+    transform: scale(1.06);
+    z-index: 1000; border-color: var(--brand);
+  }
+  .card.wiggle { animation: wiggle .45s ease; }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(0); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(7deg); }
+    60% { transform: rotate(-5deg); }
+    80% { transform: rotate(4deg); }
+  }
+  .card.cheer { animation: cheer .5s ease; border-color: var(--gold); }
+  @keyframes cheer {
+    0%,100% { transform: translateY(0) scale(1); }
+    40% { transform: translateY(-16px) scale(1.12); }
+  }
+
+  /* Big banner overlay (verbatim from coloring) */
+  .overlay-msg {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(40px, 7.5vw, 70px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+    max-width: 90vw;
+  }
+  .overlay-msg .msg.win {
+    background: var(--gold); color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn, .reset-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .reset-btn { right: 12px; display: none; }
+  .reset-btn.show { display: flex; }
+  .home-btn:active, .reset-btn:active { transform: scale(0.92); }
+
+  @media (max-width: 480px) {
+    .hud { font-size: 18px; margin: 8px 62px 0; }
+    .hud-item { padding: 5px 14px; }
+    .stage { gap: 12px; padding: 8px; }
+    .slots { gap: 2px; }
+    .tray { padding: 8px; gap: 8px; }
+    .slot .slot-num { width: 28px; height: 28px; font-size: 17px; top: -12px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="reset-btn" id="resetBtn" type="button" aria-label="เล่นใหม่">🔄</button>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🔢 เรียงเหตุการณ์</h1>
+      <p>อะไรเกิดก่อน อะไรเกิดทีหลัง?</p>
+      <ul class="howto">
+        <li><span class="howto-icon">👀</span> ดูการ์ดเหตุการณ์</li>
+        <li><span class="howto-icon">✋</span> ลากใส่ช่อง 1 → 2 → 3</li>
+        <li><span class="howto-icon">🌟</span> เรียงให้ถูกตามลำดับ!</li>
+      </ul>
+      <div class="start-wrap">
+        <button id="playBtn" class="btn-play" type="button">▶️ เริ่มเล่น</button>
+      </div>
+    </header>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="hud">
+      <div class="hud-item">⭐ <span id="scoreText">0</span></div>
+    </div>
+    <div class="stage">
+      <p class="prompt" id="prompt">เรียงให้ถูกลำดับ</p>
+      <div id="slots" class="slots"></div>
+      <p class="tray-label">↓ ลากการ์ดจากตรงนี้ ↓</p>
+      <div id="tray" class="tray"></div>
+    </div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// SEQUENCES — each: 3 or 4 cards in CORRECT chronological order (index 0 first)
+// Card = { e: emoji, c: short Thai caption }
+// ============================================================================
+const SEQUENCES = [
+  { prompt: 'ลูกไก่เกิดมายังไง?', cards: [
+    { e: '🥚', c: 'ไข่' }, { e: '🐣', c: 'ฟักออกมา' }, { e: '🐔', c: 'โตเป็นไก่' } ] },
+  { prompt: 'ต้นไม้โตยังไง?', cards: [
+    { e: '🌱', c: 'ต้นอ่อน' }, { e: '🌿', c: 'แตกใบ' }, { e: '🌳', c: 'ต้นใหญ่' } ] },
+  { prompt: 'เมล็ดเป็นดอกไม้', cards: [
+    { e: '🌰', c: 'เมล็ด' }, { e: '🌱', c: 'งอก' }, { e: '🌸', c: 'ออกดอก' } ] },
+  { prompt: 'หนึ่งวันผ่านไป', cards: [
+    { e: '🌅', c: 'เช้า' }, { e: '☀️', c: 'กลางวัน' }, { e: '🌙', c: 'กลางคืน' } ] },
+  { prompt: 'หนอนเป็นผีเสื้อ', cards: [
+    { e: '🐛', c: 'หนอน' }, { e: '🍃', c: 'ดักแด้' }, { e: '🦋', c: 'ผีเสื้อ' } ] },
+  { prompt: 'น้ำแข็งกลายเป็น...', cards: [
+    { e: '🧊', c: 'น้ำแข็ง' }, { e: '💧', c: 'ละลาย' }, { e: '☁️', c: 'เป็นเมฆ' } ] },
+  { prompt: 'สร้างบ้าน', cards: [
+    { e: '🧱', c: 'อิฐ' }, { e: '🏗️', c: 'ก่อสร้าง' }, { e: '🏠', c: 'บ้านเสร็จ' } ] },
+  { prompt: 'เป่าลูกโป่ง', cards: [
+    { e: '🎈', c: 'เล็ก' }, { e: '🎈', c: 'กลาง' }, { e: '🎈', c: 'ใหญ่' } ], sizes: [0.55, 0.8, 1.15] },
+  // ---- 4-card sequences (later rounds) ----
+  { prompt: 'กินแอปเปิ้ล', cards: [
+    { e: '🍎', c: 'ผลแอปเปิ้ล' }, { e: '🍏', c: 'กัดคำแรก' }, { e: '🍽️', c: 'กินต่อ' }, { e: '🍂', c: 'แกนที่เหลือ' } ] },
+  { prompt: 'จากน้ำกลับเป็นฝน', cards: [
+    { e: '🌊', c: 'ทะเล' }, { e: '☁️', c: 'เมฆ' }, { e: '🌧️', c: 'ฝนตก' }, { e: '🌈', c: 'รุ้งกินน้ำ' } ] },
+  { prompt: 'ดวงจันทร์ค่อยๆ เต็มดวง', cards: [
+    { e: '🌑', c: 'มืด' }, { e: '🌒', c: 'เสี้ยว' }, { e: '🌓', c: 'ครึ่ง' }, { e: '🌕', c: 'เต็มดวง' } ] },
+];
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  order: [],        // shuffled queue of sequence indexes
+  qPos: 0,
+  seq: null,        // current sequence object
+  n: 0,             // number of cards
+  score: 0,
+  drag: null,
+  locked: false,    // true while a check/celebration is animating
+  timers: [],
+};
+
+// ============================================================================
+// AUDIO (verbatim helpers from coloring + a snap/miss for this game)
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function tone(freq, ms, type, vol) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime, d = ms / 1000;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol == null ? 0.16 : vol, t + 0.01);
+  g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function playSnap() { tone(660, 80, 'triangle', 0.15); later(()=>tone(880, 90, 'triangle', 0.13), 70); }
+function playStep(i) { tone(523 + i * 130, 200, 'triangle', 0.18); }
+function playWin() {
+  [523, 659, 784].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// DOM + UTIL
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const screens = { select: $('selectScreen'), game: $('gameScreen') };
+const slotsEl = $('slots');
+const trayEl  = $('tray');
+const overlay = $('overlayMsg');
+
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function later(fn, ms) { const id = setTimeout(fn, ms); state.timers.push(id); return id; }
+function clearTimers() { state.timers.forEach(clearTimeout); state.timers = []; }
+function shuffle(a) {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+  return r;
+}
+function showScreen(name) {
+  for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k === name);
+  $('resetBtn').classList.toggle('show', name === 'game');
+}
+
+// ============================================================================
+// CARD ELEMENT
+// ============================================================================
+function makeCard(card, correctIdx) {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.dataset.correct = correctIdx;   // the slot index this card belongs in
+  const em = document.createElement('div');
+  em.className = 'card-emoji';
+  em.textContent = card.e;
+  if (card.scale) em.style.fontSize = `calc(clamp(38px, 11vw, 64px) * ${card.scale})`;
+  const cap = document.createElement('div');
+  cap.className = 'card-cap';
+  cap.textContent = card.c;
+  el.appendChild(em); el.appendChild(cap);
+  el.addEventListener('pointerdown', (e) => startDrag(e, el));
+  return el;
+}
+
+// ============================================================================
+// ROUND SETUP
+// ============================================================================
+function newGame() {
+  state.order = shuffle(SEQUENCES.map((_, i) => i));
+  state.qPos = 0;
+  state.score = 0;
+  $('scoreText').textContent = '0';
+  showScreen('game');
+  loadRound();
+}
+
+function loadRound() {
+  state.locked = false;
+  clearTimers();
+  const seq = SEQUENCES[state.order[state.qPos]];
+  state.seq = seq;
+  state.n = seq.cards.length;
+  $('prompt').textContent = seq.prompt;
+
+  // Build slots with numbers + arrows between
+  slotsEl.innerHTML = '';
+  for (let i = 0; i < state.n; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.slot = i;
+    const num = document.createElement('div');
+    num.className = 'slot-num';
+    num.textContent = (i + 1);
+    slot.appendChild(num);
+    slotsEl.appendChild(slot);
+    if (i < state.n - 1) {
+      const arr = document.createElement('div');
+      arr.className = 'arrow';
+      arr.textContent = '➜';
+      slotsEl.appendChild(arr);
+    }
+  }
+
+  // Build shuffled cards into the tray. correctIdx = card's true position.
+  trayEl.innerHTML = '';
+  const cardEls = seq.cards.map((c, idx) => {
+    const data = Object.assign({}, c);
+    if (seq.sizes) data.scale = seq.sizes[idx];
+    return makeCard(data, idx);
+  });
+  shuffle(cardEls).forEach((el) => trayEl.appendChild(el));
+}
+
+// ============================================================================
+// DRAG (pointer-events, adapted from arrange-pic). Cards can come from the
+// tray OR from a slot; on drop they snap to nearest slot (swap if occupied).
+// ============================================================================
+function startDrag(e, card) {
+  if (state.locked || state.drag) return;
+  e.preventDefault();
+  ensureAudio();
+  const rect = card.getBoundingClientRect();
+  // Remember where it came from so we can restore on a bad drop.
+  const home = card.parentElement;
+  card.classList.add('dragging');
+  card.style.width  = rect.width + 'px';
+  card.style.height = rect.height + 'px';
+  card.style.position = 'fixed';
+  card.style.left = rect.left + 'px';
+  card.style.top  = rect.top + 'px';
+  document.body.appendChild(card);
+  try { card.setPointerCapture(e.pointerId); } catch(_) {}
+
+  state.drag = {
+    card, home,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+    pointerId: e.pointerId,
+    lastSlot: null,
+  };
+  card.onpointermove = onDragMove;
+  card.onpointerup = card.onpointercancel = onDragEnd;
+}
+
+function slotUnder(x, y, card) {
+  card.style.pointerEvents = 'none';
+  const el = document.elementFromPoint(x, y);
+  card.style.pointerEvents = '';
+  return el && el.closest ? el.closest('.slot') : null;
+}
+
+function onDragMove(e) {
+  const d = state.drag; if (!d) return;
+  const c = d.card;
+  c.style.left = (e.clientX - d.offsetX) + 'px';
+  c.style.top  = (e.clientY - d.offsetY) + 'px';
+  const slot = slotUnder(e.clientX, e.clientY, c);
+  if (d.lastSlot && d.lastSlot !== slot) d.lastSlot.classList.remove('hover');
+  if (slot) slot.classList.add('hover');
+  d.lastSlot = slot;
+}
+
+function onDragEnd(e) {
+  const d = state.drag; if (!d) return;
+  const c = d.card;
+  try { c.releasePointerCapture(d.pointerId); } catch(_) {}
+  c.onpointermove = c.onpointerup = c.onpointercancel = null;
+  if (d.lastSlot) d.lastSlot.classList.remove('hover');
+  const slot = slotUnder(e.clientX, e.clientY, c);
+  state.drag = null;
+
+  resetCardStyle(c);
+
+  if (slot) {
+    dropIntoSlot(c, slot, d.home);
+  } else {
+    // dropped in empty space -> go back where it came from
+    d.home.appendChild(c);
+  }
+  maybeCheck();
+}
+
+function resetCardStyle(c) {
+  c.classList.remove('dragging');
+  c.style.position = '';
+  c.style.left = c.style.top = '';
+  c.style.width = c.style.height = '';
+  c.style.pointerEvents = '';
+}
+
+function dropIntoSlot(card, slot, home) {
+  // Existing card already in the target slot?
+  const existing = slot.querySelector('.card');
+  if (existing === card) { slot.appendChild(card); return; }
+
+  if (existing) {
+    // Swap: move the existing card to where this card came from.
+    if (home && home.classList.contains('slot')) {
+      home.appendChild(existing);
+    } else {
+      trayEl.appendChild(existing);
+    }
+  }
+  slot.appendChild(card);
+  playSnap();
+  buzz([18, 30, 18]);
+}
+
+// ============================================================================
+// CHECK — only when every slot is filled
+// ============================================================================
+function allSlots() { return Array.from(slotsEl.querySelectorAll('.slot')); }
+
+function maybeCheck() {
+  if (state.locked) return;
+  const slots = allSlots();
+  const filled = slots.every(s => s.querySelector('.card'));
+  if (!filled) return;
+
+  // Correct if each slot index === the card's correct index.
+  let wrong = [];
+  slots.forEach((s, i) => {
+    const card = s.querySelector('.card');
+    if (parseInt(card.dataset.correct, 10) !== i) wrong.push(card);
+  });
+
+  if (wrong.length === 0) {
+    winRound(slots);
+  } else {
+    // Forgiving: only misplaced cards wiggle and stay. No game-over.
+    state.locked = true;
+    tone(200, 160, 'sine', 0.12);
+    buzz(40);
+    wrong.forEach(card => {
+      card.classList.add('wiggle');
+      later(() => card.classList.remove('wiggle'), 480);
+    });
+    later(() => { state.locked = false; }, 500);
+  }
+}
+
+function winRound(slots) {
+  state.locked = true;
+  buzz([30, 50, 30, 50, 120]);
+  // Play forward: highlight 1 -> 2 -> 3 (-> 4) in sequence.
+  slots.forEach((s, i) => {
+    later(() => {
+      s.classList.add('lit');
+      const card = s.querySelector('.card');
+      if (card) card.classList.add('cheer');
+      playStep(i);
+    }, 260 * i);
+  });
+  later(() => {
+    state.score += 1;
+    $('scoreText').textContent = state.score;
+    playWin();
+    celebrate(110);
+    const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    flashOverlay(praise, 1300, 'win');
+  }, 260 * slots.length + 150);
+  // Advance to next round (loop sequences forever — no dead end).
+  later(() => {
+    state.qPos = (state.qPos + 1) % state.order.length;
+    if (state.qPos === 0) state.order = shuffle(state.order); // reshuffle each lap
+    loadRound();
+  }, 260 * slots.length + 1700);
+}
+
+const PRAISE = ['เก่งมาก! 🌟', 'ถูกต้อง! 🎉', 'สุดยอด! 👏', 'เยี่ยมเลย! ✨', 'ดีมาก! 🥳'];
+
+// ============================================================================
+// OVERLAY + CONFETTI (verbatim from coloring)
+// ============================================================================
+function flashOverlay(text, ms, extra) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// EVENTS
+// ============================================================================
+$('playBtn').addEventListener('click', () => { ensureAudio(); newGame(); });
+$('resetBtn').addEventListener('click', () => { ensureAudio(); clearTimers(); loadRound(); });
+
+// Block double-tap zoom on touch.
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+</script>
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🔍 อะไรหายไป — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมฝึกความจำสำหรับเด็ก จำของบนถาดแล้วทายว่าอะไรหายไป">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="อะไรหายไป">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --bad: #ff5757; --bad-dark: #d83838;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app {
+    max-width: 720px; margin: 0 auto;
+    padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; min-height: 100dvh;
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
+
+  .home-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .replay-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: 12px;
+    height: 52px; min-width: 52px;
+    border-radius: 999px;
+    padding: 0 18px;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: 'Itim', cursive; font-size: 20px; color: var(--ink);
+    z-index: 60; cursor: pointer;
+    transition: transform .12s;
+  }
+  .replay-btn:active { transform: scale(0.92); }
+
+  .hero { text-align: center; padding: 8px 10px 6px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(34px, 8vw, 56px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+
+  /* Score / streak bar */
+  .scorebar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin: 8px 0 4px;
+    font-family: 'Itim', cursive; font-size: 22px;
+    color: var(--brand-dark);
+  }
+  .scorebar .pill {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 4px 16px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+  }
+
+  /* Prompt line */
+  .prompt {
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 6vw, 38px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    text-align: center;
+    margin: 10px 0 6px;
+    min-height: 46px;
+  }
+
+  /* Tray */
+  .tray-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin: 4px auto 8px;
+  }
+  .tray {
+    background:
+      linear-gradient(180deg, #ffe9b0 0%, #ffcf7a 100%);
+    border: 6px solid #e0a44a;
+    border-radius: 28px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+    padding: 18px 14px;
+    min-height: 200px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: center;
+    justify-items: center;
+  }
+  .tray.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .tray.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .slot {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 110px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.55);
+    border: 3px dashed #d99a3e;
+    border-radius: 20px;
+    font-size: clamp(40px, 13vw, 72px);
+    line-height: 1;
+  }
+  .slot.empty {
+    background: rgba(255,255,255,0.2);
+    border-style: dashed;
+    border-color: #c98a2e;
+  }
+  .slot .obj { display: inline-block; }
+  .slot.pop-in .obj { animation: popIn .5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes popIn {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.25) rotate(8deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  /* Cover (blanket) that slides over the tray */
+  .cover {
+    position: absolute;
+    inset: 0;
+    border-radius: 28px;
+    background:
+      repeating-linear-gradient(45deg, #ff8fb3 0 24px, #ff6b9d 24px 48px);
+    border: 6px solid var(--brand-dark);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(70px, 22vw, 130px);
+    transform: translateX(-115%);
+    transition: transform .6s cubic-bezier(.6,0,.4,1);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .cover.on { transform: translateX(0); }
+
+  /* Big countdown number overlay on the tray */
+  .countdown {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 8; pointer-events: none;
+  }
+  .countdown.shown { display: flex; }
+  .countdown .num {
+    font-family: 'Itim', cursive;
+    font-size: clamp(90px, 26vw, 150px);
+    color: #fff;
+    text-shadow: 4px 4px 0 var(--brand-dark), 0 0 18px rgba(0,0,0,0.25);
+    animation: cdPop .8s ease;
+  }
+  @keyframes cdPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    30%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Choice row */
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px auto 0;
+    width: 100%;
+    max-width: 560px;
+    min-height: 96px;
+  }
+  .choice {
+    width: 86px; height: 86px;
+    flex: 0 0 auto;
+    background: var(--card);
+    border: 4px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.10);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px; line-height: 1;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s, border-color .12s;
+  }
+  .choice:active { transform: scale(0.93) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.10); }
+  .choice.wrong { animation: wiggle .45s ease; border-color: var(--bad); }
+  .choice.gone { opacity: 0; transform: scale(0.4); pointer-events: none; transition: opacity .35s, transform .35s; }
+  @keyframes wiggle {
+    0%,100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-8px) rotate(-5deg); }
+    40% { transform: translateX(8px) rotate(5deg); }
+    60% { transform: translateX(-6px) rotate(-3deg); }
+    80% { transform: translateX(6px) rotate(3deg); }
+  }
+  @media (min-width: 600px) {
+    .choice { width: 100px; height: 100px; font-size: 62px; }
+  }
+
+  /* Big banner overlay */
+  .overlay-msg {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 24px 44px; font-size: clamp(40px, 7.5vw, 70px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 var(--brand-dark);
+    max-width: 90vw;
+  }
+  .overlay-msg .msg.win {
+    background: var(--gold); color: var(--ink);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+  }
+  @keyframes msgPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="replay-btn" id="replayBtn" type="button" aria-label="เล่นใหม่">🔄<span>ใหม่</span></button>
+
+<div class="app">
+  <header class="hero">
+    <h1>🔍 อะไรหายไป</h1>
+  </header>
+
+  <div class="scorebar">
+    <div class="pill" id="streakPill">⭐ 0</div>
+  </div>
+
+  <div class="prompt" id="prompt">จำให้ดีนะ!</div>
+
+  <div class="tray-wrap">
+    <div class="tray cols-3" id="tray"></div>
+    <div class="cover" id="cover">🧺</div>
+    <div class="countdown" id="countdown"><span class="num" id="cdNum">3</span></div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// POOL — distinct cute emoji (animals / fruits / toys)
+// ============================================================================
+const POOL = [
+  '🐶','🐱','🐰','🐼','🦊','🐯','🐵','🐸','🐷','🐮',
+  '🍎','🍌','🍓','🍉','🍇','🍊','🍒','🥝',
+  '⚽','🚗','🚂','✈️','🎈','🎁','⭐','🌸','🍩','🍦',
+  '🦋','🐢'
+];
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  round: 0,
+  streak: 0,
+  trayItems: [],   // emoji currently shown on tray
+  missing: null,   // emoji that was removed
+  missingIdx: -1,  // slot index the removed item lived in
+  busy: false,     // block input during animations
+  timers: [],
+};
+
+// ============================================================================
+// AUDIO
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+}
+function playWin() {
+  [523, 659, 784].forEach((f, i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+function playTone(freq, type) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime, d = 0.12;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.12, t + 0.005);
+  g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function playWrong() {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine';
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime;
+  o.frequency.setValueAtTime(300, t);
+  o.frequency.linearRampToValueAtTime(180, t + 0.18);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.12, t + 0.01);
+  g.gain.linearRampToValueAtTime(0, t + 0.2);
+  o.start(t); o.stop(t + 0.22);
+}
+
+// ============================================================================
+// UTIL
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function later(fn, ms) {
+  const id = setTimeout(fn, ms);
+  state.timers.push(id);
+  return id;
+}
+function clearTimers() {
+  state.timers.forEach(clearTimeout);
+  state.timers = [];
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function pickN(arr, n) { return shuffle(arr).slice(0, n); }
+
+function flashOverlay(text, ms, extra) {
+  const overlay = $('overlayMsg');
+  overlay.classList.add('shown');
+  overlay.innerHTML = '<div class="msg ' + (extra || '') + '">' + text + '</div>';
+  later(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+
+function confetti(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// GAME FLOW
+// ============================================================================
+const PRAISE = ['เก่งมาก!', 'ยอดเยี่ยม!', 'สุดยอด!', 'เยี่ยมเลย!', 'เก่งจัง!'];
+
+function itemCount(round) {
+  // round 1 -> 3, +1 every 2 rounds, cap 6
+  return Math.min(6, 3 + Math.floor((round - 1) / 2));
+}
+
+function renderTray() {
+  const tray = $('tray');
+  const n = state.trayItems.length;
+  tray.className = 'tray ' + (n <= 4 ? 'cols-2' : 'cols-3');
+  tray.innerHTML = '';
+  state.trayItems.forEach((emoji, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.idx = String(i);
+    slot.innerHTML = '<span class="obj">' + emoji + '</span>';
+    tray.appendChild(slot);
+  });
+}
+
+function startRound() {
+  state.round++;
+  state.busy = true;
+  clearTimers();
+  $('choices').innerHTML = '';
+
+  const cover = $('cover');
+  cover.classList.remove('on');
+
+  const n = itemCount(state.round);
+  state.trayItems = pickN(POOL, n);
+  renderTray();
+
+  // 1. Memorize prompt + countdown 3-2-1
+  $('prompt').textContent = 'จำให้ดีนะ!';
+  const cd = $('countdown');
+  const cdNum = $('cdNum');
+  cd.classList.add('shown');
+
+  let count = 3;
+  const showNum = () => {
+    cdNum.textContent = String(count);
+    cdNum.style.animation = 'none';
+    void cdNum.offsetWidth; // reflow to restart animation
+    cdNum.style.animation = '';
+    playTone(660 + (3 - count) * 80, 'sine');
+    buzz(20);
+  };
+  showNum();
+  const tick = () => {
+    count--;
+    if (count >= 1) {
+      showNum();
+      later(tick, 1000);
+    } else {
+      later(coverAndRemove, 1000);
+    }
+  };
+  later(tick, 1000);
+}
+
+function coverAndRemove() {
+  $('countdown').classList.remove('shown');
+  const cover = $('cover');
+  cover.classList.add('on');
+  buzz(30);
+  playTone(300, 'sine');
+
+  // After cover fully on, secretly remove one item, then reveal
+  later(() => {
+    const idx = Math.floor(Math.random() * state.trayItems.length);
+    state.missing = state.trayItems[idx];
+    state.missingIdx = idx;
+
+    // empty that slot
+    const tray = $('tray');
+    const slot = tray.querySelector('.slot[data-idx="' + idx + '"]');
+    if (slot) {
+      slot.classList.add('empty');
+      slot.innerHTML = '';
+    }
+
+    // slide cover away
+    later(() => {
+      cover.classList.remove('on');
+      later(askChoices, 650);
+    }, 350);
+  }, 700);
+}
+
+function askChoices() {
+  $('prompt').textContent = 'อะไรหายไป?';
+
+  // decoys = other items that WERE on the tray (still visible), plus pool fillers
+  const onTray = state.trayItems.filter((e, i) => i !== state.missingIdx);
+  let decoys = pickN(onTray, Math.min(3, onTray.length));
+  // if not enough on-tray decoys, top up from pool (distinct, not the missing one)
+  if (decoys.length < 3) {
+    const extra = POOL.filter(e => e !== state.missing && !decoys.includes(e) && !state.trayItems.includes(e));
+    decoys = decoys.concat(pickN(extra, 3 - decoys.length));
+  }
+
+  const options = shuffle([state.missing].concat(decoys));
+  const choices = $('choices');
+  choices.innerHTML = '';
+  options.forEach(emoji => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.type = 'button';
+    b.textContent = emoji;
+    b.dataset.emoji = emoji;
+    b.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      onChoiceTap(b, emoji);
+    });
+    choices.appendChild(b);
+  });
+
+  state.busy = false;
+}
+
+function onChoiceTap(btn, emoji) {
+  if (state.busy) return;
+  ensureAudio();
+
+  if (emoji === state.missing) {
+    state.busy = true;
+    buzz([20, 40, 20]);
+    playWin();
+
+    // fly missing item back into its gap with a pop
+    const tray = $('tray');
+    const slot = tray.querySelector('.slot[data-idx="' + state.missingIdx + '"]');
+    if (slot) {
+      slot.classList.remove('empty');
+      slot.innerHTML = '<span class="obj">' + state.missing + '</span>';
+      slot.classList.add('pop-in');
+    }
+    // hide all choices
+    document.querySelectorAll('.choice').forEach(c => c.classList.add('gone'));
+
+    state.streak++;
+    updateStreak();
+
+    const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    flashOverlay(praise, 1300, 'win');
+    confetti(60);
+
+    later(startRound, 1700);
+  } else {
+    // wrong — gentle wiggle + soft buzz, keep trying
+    buzz(40);
+    playWrong();
+    btn.classList.remove('wrong');
+    void btn.offsetWidth;
+    btn.classList.add('wrong');
+  }
+}
+
+function updateStreak() {
+  $('streakPill').textContent = '⭐ ' + state.streak;
+}
+
+function restart() {
+  ensureAudio();
+  clearTimers();
+  state.round = 0;
+  state.streak = 0;
+  updateStreak();
+  startRound();
+}
+
+// ============================================================================
+// EVENTS
+// ============================================================================
+$('replayBtn').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  restart();
+});
+
+// First gesture anywhere unlocks audio
+document.addEventListener('pointerdown', ensureAudio, { once: true });
+
+// Block double-tap zoom
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+updateStreak();
+startRound();
+</script>
+</body>
+</html>

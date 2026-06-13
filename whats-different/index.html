@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🔍 อะไรเปลี่ยนไป — เกมสำหรับเด็ก</title>
+<meta name="description" content="เกมจำภาพแล้วหาสิ่งที่เปลี่ยนไป ฝึกความจำและการสังเกต">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="อะไรเปลี่ยนไป">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
+    --bad: #ff5757; --bad-dark: #d83838;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  .app {
+    max-width: 720px; margin: 0 auto;
+    padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+    position: relative; z-index: 1;
+    min-height: 100vh; min-height: 100dvh;
+    display: flex; flex-direction: column;
+  }
+
+  .hero { text-align: center; padding: 8px 4px 4px; flex: 0 0 auto; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(34px, 8vw, 56px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+
+  /* status strip */
+  .status {
+    display: flex; justify-content: center; align-items: center;
+    gap: 14px; margin: 10px 64px 6px; flex: 0 0 auto; flex-wrap: wrap;
+  }
+  .pill {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 7px 18px;
+    font-family: 'Itim', cursive; font-size: 22px;
+    color: var(--brand-dark); box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    white-space: nowrap;
+  }
+  .pill.score { color: var(--good-dark); }
+
+  /* prompt banner */
+  .prompt {
+    text-align: center; flex: 0 0 auto;
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 5.5vw, 38px);
+    color: var(--ink); margin: 6px 0 10px;
+    text-shadow: 2px 2px 0 #fff;
+    min-height: 1.2em;
+  }
+
+  /* timer ring */
+  .timer-wrap { display: flex; justify-content: center; flex: 0 0 auto; min-height: 0; }
+  .timer-ring {
+    width: 64px; height: 64px; margin: 0 0 8px;
+    display: none; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .timer-ring.show { display: flex; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring .tnum {
+    position: absolute; font-family: 'Itim', cursive;
+    font-size: 30px; color: var(--brand-dark);
+  }
+  .ring-bg { fill: none; stroke: #ffe3ee; stroke-width: 8; }
+  .ring-fg {
+    fill: none; stroke: var(--brand); stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  /* main stage */
+  .stage-wrap {
+    flex: 1 1 auto; display: flex; align-items: center; justify-content: center;
+    min-height: 0; padding: 4px 0;
+  }
+  .grid {
+    background: var(--card);
+    border: 5px solid #fff;
+    border-radius: 28px;
+    box-shadow: 0 7px 0 rgba(0,0,0,0.10);
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    width: min(100%, 460px, calc(100dvh - 300px) * var(--ar, 1));
+    aspect-ratio: var(--ar, 1);
+    touch-action: manipulation;
+    position: relative;
+  }
+  .cell {
+    background: #fff7fb;
+    border: 4px solid #ffe3ee;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(34px, 13vw, 72px);
+    line-height: 1;
+    cursor: pointer;
+    transition: transform .12s, border-color .15s, background .15s;
+    aspect-ratio: 1 / 1;
+    -webkit-user-select: none; user-select: none;
+    position: relative;
+  }
+  .cell.empty { background: #f4f6f8; border-style: dashed; cursor: default; }
+  .cell .em { display: block; transition: filter .2s, transform .2s; }
+  .cell.tappable:active { transform: scale(0.93); }
+
+  /* covered state */
+  .cell.covered { background: var(--brand); border-color: var(--brand-dark); cursor: default; }
+  .cell.covered .em { opacity: 0; }
+  .cell.covered::after {
+    content: '❔'; font-size: clamp(28px, 10vw, 56px);
+    filter: grayscale(0.1);
+    animation: covPop .3s ease;
+  }
+  @keyframes covPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .cell.wrong { animation: wiggle .45s ease; border-color: var(--bad); }
+  @keyframes wiggle {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-9px) rotate(-4deg); }
+    40% { transform: translateX(9px) rotate(4deg); }
+    60% { transform: translateX(-6px) rotate(-2deg); }
+    80% { transform: translateX(6px) rotate(2deg); }
+  }
+
+  .cell.hint { animation: hintPulse 1s ease-in-out infinite; }
+  @keyframes hintPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,107,157,0); border-color: #ffe3ee; }
+    50% { box-shadow: 0 0 0 8px rgba(255,107,157,0.35); border-color: var(--brand); }
+  }
+
+  .cell.correct {
+    border-color: var(--gold); background: #fffbe6;
+    animation: spotlight 1s ease;
+    z-index: 5;
+  }
+  @keyframes spotlight {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,217,61,0); }
+    40% { transform: scale(1.18); box-shadow: 0 0 0 12px rgba(255,217,61,0.5); }
+    100% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(255,217,61,0.0); }
+  }
+  .grid.dim .cell:not(.correct):not(.empty) { filter: brightness(0.55) saturate(0.6); }
+
+  /* big start button */
+  .start-area { text-align: center; flex: 0 0 auto; padding: 10px 0; }
+  .big-btn {
+    font-family: 'Itim', cursive;
+    font-size: 30px;
+    background: var(--brand); color: #fff;
+    border: 4px solid #fff;
+    border-radius: 999px;
+    padding: 16px 42px;
+    min-height: 66px;
+    box-shadow: 0 6px 0 var(--brand-dark);
+    cursor: pointer;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--brand-dark); }
+  .big-btn.go { background: var(--good); box-shadow: 0 6px 0 var(--good-dark); }
+
+  /* home + replay buttons */
+  .home-btn, .replay-btn {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink);
+    z-index: 60;
+    transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; }
+  .replay-btn { right: 12px; }
+  .home-btn:active, .replay-btn:active { transform: scale(0.92); }
+
+  /* overlay banner */
+  .overlay-msg {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--gold); color: var(--ink);
+    border: 4px solid #fff; border-radius: 32px;
+    padding: 24px 44px; font-size: clamp(38px, 7.5vw, 64px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+    max-width: 90vw;
+  }
+  @keyframes msgPop {
+    0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confetti {
+    position: fixed; top: -20px;
+    width: 12px; height: 18px;
+    z-index: 90; pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 420px) {
+    .pill { font-size: 18px; padding: 6px 14px; }
+    .status { gap: 8px; margin: 8px 60px 4px; }
+    .cell { gap: 6px; }
+    .grid { gap: 8px; padding: 10px; }
+    .big-btn { font-size: 26px; padding: 14px 34px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="replay-btn" id="replayBtn" type="button" aria-label="เล่นใหม่">🔄</button>
+
+<div class="app">
+  <header class="hero">
+    <h1>🔍 อะไรเปลี่ยนไป</h1>
+  </header>
+
+  <div class="status">
+    <div class="pill" id="levelPill">รอบ 1</div>
+    <div class="pill score" id="scorePill">⭐ 0</div>
+  </div>
+
+  <div class="prompt" id="prompt">จำภาพให้แม่นนะ</div>
+
+  <div class="timer-wrap">
+    <div class="timer-ring" id="timerRing">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle class="ring-bg" cx="32" cy="32" r="28"></circle>
+        <circle class="ring-fg" id="ringFg" cx="32" cy="32" r="28"></circle>
+      </svg>
+      <span class="tnum" id="tnum">3</span>
+    </div>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="start-area">
+    <button class="big-btn" id="bigBtn" type="button">เริ่มเลย ▶</button>
+  </div>
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// AUDIO helpers (reused from coloring game)
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function playWin() {
+  [523, 659, 784].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+function playTone(freq, type, dur, vol) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  o.connect(g).connect(audioCtx.destination);
+  const t = audioCtx.currentTime, d = dur || 0.12;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol || 0.12, t + 0.01);
+  g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function playWrong() { playTone(180, 'sawtooth', 0.18, 0.10); }
+function playTick() { playTone(700, 'sine', 0.05, 0.06); }
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+
+// ============================================================================
+// EMOJI POOL — bright, distinct, kid-friendly. No near-duplicates.
+// ============================================================================
+const POOL = [
+  '🐶','🐱','🐰','🐻','🐼','🦊','🦁','🐮','🐷','🐸',
+  '🐵','🐔','🐧','🦄','🐢','🐠','🐙','🦋','🐝','🐞',
+  '🍎','🍌','🍓','🍉','🍇','🍊','🍋','🍒','🥕','🌽',
+  '⭐','🌈','🌸','🌻','🍀','🌙','☀️','🔥','💧','⚡',
+  '🚗','🚕','🚌','🚓','🚑','🚲','✈️','🚀','⛵','🚂',
+  '⚽','🏀','🎈','🎁','🎀','🎩','👑','💎','🔔','🎵'
+];
+// Color-variant pairs for the COLOR-change type (visually same shape, new color)
+const COLOR_VARIANTS = [
+  ['❤️','💙','💚','💛','💜','🧡','🤍','🖤'],
+  ['🔴','🔵','🟢','🟡','🟣','🟠','⚪','🟤'],
+  ['🟥','🟦','🟩','🟨','🟪','🟧','⬜','🟫'],
+  ['🌹','🌷','🌻','🌼','🌸'],
+  ['🍎','🍏'],
+  ['🟢','🔵','🟡','🔴','🟣','🟠']
+];
+
+// Praise strings
+const PRAISE = ['เก่งมาก!', 'ใช่เลย!', 'สุดยอด!', 'ถูกต้อง!', 'เยี่ยม!', 'เจอแล้ว!'];
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  round: 1,
+  score: 0,
+  cells: [],          // current emoji per cell index (null = empty)
+  before: [],         // snapshot before the change
+  cols: 2, rows: 2,
+  total: 4,
+  changedIdx: -1,
+  misses: 0,
+  phase: 'idle',      // idle | memorize | covered | guess | done
+  timers: [],
+};
+
+const $ = (id) => document.getElementById(id);
+const gridEl = $('grid');
+const promptEl = $('prompt');
+const levelPill = $('levelPill');
+const scorePill = $('scorePill');
+const bigBtn = $('bigBtn');
+const timerRing = $('timerRing');
+const ringFg = $('ringFg');
+const tnum = $('tnum');
+const overlay = $('overlayMsg');
+
+const RING_LEN = 2 * Math.PI * 28;
+ringFg.style.strokeDasharray = RING_LEN;
+
+function later(fn, ms) { const id = setTimeout(fn, ms); state.timers.push(id); return id; }
+function clearTimers() {
+  state.timers.forEach(t => {
+    if (t && t._interval != null) clearInterval(t._interval);
+    else clearTimeout(t);
+  });
+  state.timers = [];
+}
+
+function rnd(n) { return Math.floor(Math.random() * n); }
+function pick(arr) { return arr[rnd(arr.length)]; }
+function shuffle(a) { for (let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+// ============================================================================
+// LAYOUT — pick grid size by round. Item count grows 4 -> 8.
+// ============================================================================
+function layoutForRound(r) {
+  // total items, cols, rows (rows*cols cells, some may be empty for the 'add' type)
+  if (r <= 1) return { total: 4, cols: 2, rows: 2 };
+  if (r === 2) return { total: 5, cols: 3, rows: 2 };
+  if (r === 3) return { total: 6, cols: 3, rows: 2 };
+  if (r === 4) return { total: 6, cols: 3, rows: 3 };
+  if (r === 5) return { total: 7, cols: 3, rows: 3 };
+  return { total: 8, cols: 3, rows: 3 };   // round 6+
+}
+function memorizeMs(r) {
+  // shrink memorize time as rounds advance: 3.5s -> ~2.2s
+  return Math.max(2200, 3500 - (r - 1) * 250);
+}
+
+// ============================================================================
+// ROUND SETUP
+// ============================================================================
+function buildRound() {
+  clearTimers();
+  state.phase = 'idle';
+  state.misses = 0;
+  state.changedIdx = -1;
+
+  const lay = layoutForRound(state.round);
+  state.cols = lay.cols; state.rows = lay.rows;
+  const slots = lay.cols * lay.rows;
+
+  // choose distinct emoji for the filled slots
+  const chosen = shuffle(POOL.slice()).slice(0, lay.total);
+  // place items: fill first `total` cells, rest empty, then shuffle positions
+  const cells = new Array(slots).fill(null);
+  for (let i = 0; i < lay.total; i++) cells[i] = chosen[i];
+  shuffle(cells); // randomize which cells are empty
+  state.cells = cells;
+  state.before = cells.slice();
+
+  levelPill.textContent = 'รอบ ' + state.round;
+  scorePill.textContent = '⭐ ' + state.score;
+
+  gridEl.style.setProperty('--ar', (lay.cols / lay.rows).toFixed(4));
+  gridEl.style.gridTemplateColumns = 'repeat(' + lay.cols + ', 1fr)';
+  gridEl.classList.remove('dim');
+
+  renderGrid(false);
+  promptEl.textContent = 'จำภาพนี้นะ 👀';
+  bigBtn.classList.remove('hidden', 'go');
+  bigBtn.textContent = 'จำได้แล้ว เริ่มเลย ▶';
+  timerRing.classList.remove('show');
+}
+
+function renderGrid(tappable) {
+  gridEl.innerHTML = '';
+  state.cells.forEach((em, idx) => {
+    const c = document.createElement('div');
+    c.className = 'cell' + (em == null ? ' empty' : '');
+    c.dataset.idx = idx;
+    if (em != null) {
+      const span = document.createElement('span');
+      span.className = 'em';
+      span.textContent = em.char != null ? em.char : em;
+      if (em.hue != null) span.style.filter = 'hue-rotate(' + em.hue + 'deg) saturate(1.6)';
+      c.appendChild(span);
+    }
+    if (tappable && state.phase === 'guess') c.classList.add('tappable');
+    gridEl.appendChild(c);
+  });
+}
+
+// ============================================================================
+// MEMORIZE -> COVER -> CHANGE -> GUESS
+// ============================================================================
+function startMemorize() {
+  ensureAudio();
+  if (state.phase !== 'idle') return;
+  state.phase = 'memorize';
+  bigBtn.classList.add('hidden');
+  promptEl.textContent = 'จำภาพนี้นะ 👀';
+
+  const dur = memorizeMs(state.round);
+  runTimer(dur, () => coverGrid());
+}
+
+function runTimer(dur, done) {
+  timerRing.classList.add('show');
+  const secs = Math.ceil(dur / 1000);
+  tnum.textContent = secs;
+  // reset ring full
+  ringFg.style.transition = 'none';
+  ringFg.style.strokeDashoffset = '0';
+  // force reflow then animate to empty
+  void ringFg.getBoundingClientRect();
+  ringFg.style.transition = 'stroke-dashoffset ' + dur + 'ms linear';
+  ringFg.style.strokeDashoffset = RING_LEN;
+
+  let remaining = secs;
+  const tickId = setInterval(() => {
+    remaining -= 1;
+    if (remaining >= 0) { tnum.textContent = remaining > 0 ? remaining : ''; playTick(); }
+  }, 1000);
+  state.timers.push({ _interval: tickId });
+  later(() => { clearInterval(tickId); timerRing.classList.remove('show'); done(); }, dur);
+}
+
+function coverGrid() {
+  state.phase = 'covered';
+  promptEl.textContent = '🙈 ปิดไว้แป๊บนึง...';
+  Array.from(gridEl.children).forEach(c => {
+    if (!c.classList.contains('empty')) c.classList.add('covered');
+  });
+  buzz(20);
+  later(() => applyChange(), 750);
+}
+
+// ============================================================================
+// APPLY ONE CHANGE
+// ============================================================================
+function applyChange() {
+  const cells = state.cells;
+  const filled = [];
+  const emptyIdx = [];
+  cells.forEach((v, i) => { if (v == null) emptyIdx.push(i); else filled.push(i); });
+
+  // pick change types that make sense for this layout
+  const types = ['swap', 'color', 'move'];
+  if (emptyIdx.length > 0) types.push('move'); // weight move when space exists
+  if (emptyIdx.length > 0 && filled.length > 3) types.push('add');
+  if (filled.length > 4) types.push('remove');
+
+  let type = pick(types);
+  // guard: move/add need empty cell
+  if ((type === 'move' || type === 'add') && emptyIdx.length === 0) type = 'swap';
+  if (type === 'remove' && filled.length <= 3) type = 'swap';
+
+  let changed = -1;
+
+  if (type === 'swap') {
+    // change one item to a different emoji not currently present
+    const i = pick(filled);
+    const present = new Set(filled.map(k => charOf(cells[k])));
+    const candidates = POOL.filter(e => !present.has(e));
+    const nu = candidates.length ? pick(candidates) : pick(POOL);
+    cells[i] = nu;
+    changed = i;
+  } else if (type === 'color') {
+    // recolor one item via hue-rotate (keeps shape, clearly different color)
+    const i = pick(filled);
+    const cur = cells[i];
+    const baseChar = charOf(cur);
+    const hue = 90 + rnd(4) * 60; // 90,150,210,270
+    cells[i] = { char: baseChar, hue: hue };
+    changed = i;
+  } else if (type === 'move') {
+    // move one item into an empty cell
+    const from = pick(filled);
+    const to = pick(emptyIdx);
+    cells[to] = cells[from];
+    cells[from] = null;
+    changed = to;
+  } else if (type === 'add') {
+    const to = pick(emptyIdx);
+    const present = new Set(filled.map(k => charOf(cells[k])));
+    const candidates = POOL.filter(e => !present.has(e));
+    cells[to] = candidates.length ? pick(candidates) : pick(POOL);
+    changed = to;
+  } else if (type === 'remove') {
+    const i = pick(filled);
+    cells[i] = null;
+    changed = i;
+  }
+
+  state.changedIdx = changed;
+  revealGrid();
+}
+
+function charOf(v) { return v == null ? null : (v.char != null ? v.char : v); }
+
+function revealGrid() {
+  state.phase = 'guess';
+  renderGrid(true);
+  promptEl.textContent = 'อะไรเปลี่ยนไป? แตะเลย 👆';
+  buzz(15);
+}
+
+// ============================================================================
+// GUESS HANDLING
+// ============================================================================
+gridEl.addEventListener('pointerdown', (e) => {
+  if (state.phase !== 'guess') return;
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  const idx = parseInt(cell.dataset.idx, 10);
+  ensureAudio();
+
+  if (idx === state.changedIdx) {
+    onCorrect(cell);
+  } else {
+    onWrong(cell);
+  }
+});
+
+function onWrong(cell) {
+  state.misses += 1;
+  buzz([30, 40, 30]);
+  playWrong();
+  cell.classList.remove('wrong');
+  void cell.getBoundingClientRect();
+  cell.classList.add('wrong');
+  later(() => cell.classList.remove('wrong'), 500);
+
+  if (state.misses >= 2) {
+    // gentle pulse hint on the changed cell
+    const target = gridEl.querySelector('.cell[data-idx="' + state.changedIdx + '"]');
+    if (target) target.classList.add('hint');
+    promptEl.textContent = 'ลองดูตรงที่กระพริบนะ 💡';
+  }
+}
+
+function onCorrect(cell) {
+  state.phase = 'done';
+  state.score += 1;
+  scorePill.textContent = '⭐ ' + state.score;
+  buzz([20, 30, 60]);
+  playWin();
+
+  gridEl.querySelectorAll('.cell.hint').forEach(c => c.classList.remove('hint'));
+  gridEl.classList.add('dim');
+  cell.classList.add('correct');
+  promptEl.textContent = pick(PRAISE);
+
+  celebrate(70);
+  flashOverlay(pick(PRAISE), 1200);
+
+  later(() => {
+    state.round += 1;
+    buildRound();
+    // auto-start next memorize so there's no dead end
+    later(() => startMemorize(), 350);
+  }, 1500);
+}
+
+// ============================================================================
+// OVERLAY + CONFETTI
+// ============================================================================
+function flashOverlay(text, ms) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = '<div class="msg">' + text + '</div>';
+  later(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+function celebrate(n) {
+  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.6 + 's';
+    c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// CONTROLS
+// ============================================================================
+bigBtn.addEventListener('click', () => { ensureAudio(); startMemorize(); });
+
+$('replayBtn').addEventListener('click', () => {
+  ensureAudio();
+  clearTimers();
+  state.round = 1;
+  state.score = 0;
+  buildRound();
+});
+
+// block double-tap zoom
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+buildRound();
+</script>
+</body>
+</html>
