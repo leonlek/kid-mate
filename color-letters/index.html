@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🖍️ ระบายตัวอักษร — เกมสำหรับเด็ก</title>
+<meta name="description" content="ระบายตัวอักษร ก-ฮ A-Z และตัวเลข ลากนิ้วค่อยๆ ระบายเหมือนสีเทียนจริง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ระบายตัวอักษร">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%);} to { transform: translateX(10%);} }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app { max-width: 100%; padding: 0; height: 100vh; height: 100dvh; }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(38px, 8.5vw, 64px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 14px auto 4px;
+    max-width: 380px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* SELECT */
+  .cat-header {
+    font-family: 'Itim', cursive;
+    font-size: clamp(22px, 5vw, 30px);
+    color: var(--brand-dark);
+    margin: 26px 6px 12px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 12px;
+  }
+  .gcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 22px; aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .12s, box-shadow .12s, border-color .12s;
+    overflow: hidden; position: relative;
+  }
+  .gcard:active { transform: scale(0.94) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .gcard:hover { border-color: var(--brand); }
+  .gcard .glyph {
+    font-family: 'Itim', cursive;
+    font-size: 56px; line-height: 1;
+    color: #fff;
+    -webkit-text-stroke: 3px var(--brand-dark);
+    text-stroke: 3px var(--brand-dark);
+    padding-bottom: 4px;
+  }
+  .gcard.done::after {
+    content: '⭐'; position: absolute; top: 4px; right: 6px; font-size: 18px;
+    -webkit-text-stroke: 0;
+  }
+  @media (min-width: 560px) {
+    .glyph-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+    .gcard .glyph { font-size: 64px; }
+  }
+
+  /* GAME */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .top-bar {
+    flex: 0 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 6px; margin: 12px 76px 0 76px; flex-wrap: nowrap;
+  }
+  .glyph-title {
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 5vw, 36px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    white-space: nowrap; min-width: 0; flex: 0 1 auto;
+  }
+  .top-bar-buttons { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 8px 14px;
+    font-family: 'Itim', cursive; font-size: 18px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, box-shadow .12s, opacity .12s;
+    color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+  .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+  .icon-btn .btn-label { display: inline; margin-left: 4px; }
+  @media (max-width: 600px) {
+    .icon-btn { padding: 8px 11px; font-size: 20px; }
+    .icon-btn .btn-label { display: none; }
+    .top-bar { margin: 8px 64px 0 64px; }
+  }
+
+  .canvas-area {
+    flex: 1 1 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px; min-height: 0;
+  }
+  .canvas-stage {
+    background: #fff; border: 4px solid #fff;
+    border-radius: 28px; box-shadow: 0 6px 0 rgba(0,0,0,0.10);
+    aspect-ratio: 1 / 1;
+    width: min(100%, 540px, calc(100dvh - 240px));
+    overflow: hidden; touch-action: none; position: relative;
+  }
+  #paintCanvas {
+    width: 100%; height: 100%; display: block; touch-action: none;
+  }
+  .canvas-stage.pop { animation: pop .7s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes pop {
+    0% { transform: scale(1);} 40% { transform: scale(1.07) rotate(-2deg);}
+    70% { transform: scale(0.98) rotate(1deg);} 100% { transform: scale(1);}
+  }
+
+  .palette {
+    flex: 0 0 auto;
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; padding: 12px 14px env(safe-area-inset-bottom);
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    cursor: pointer; transition: transform .12s, box-shadow .12s; position: relative;
+  }
+  .swatch:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .swatch.active {
+    border-color: var(--gold); transform: scale(1.12);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18), 0 0 0 4px var(--gold);
+  }
+  .swatch.eraser {
+    background: linear-gradient(45deg, #fff 25%, #ddd 25%, #ddd 50%, #fff 50%, #fff 75%, #ddd 75%);
+    background-size: 14px 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  @media (max-width: 480px) {
+    .swatch { width: 42px; height: 42px; border-width: 3px; }
+    .palette { gap: 8px; padding: 8px 10px env(safe-area-inset-bottom); }
+    .top-bar { margin: 8px 64px 0 64px; }
+    .canvas-area { padding: 8px; }
+  }
+  @media (min-width: 768px) { .swatch { width: 62px; height: 62px; } .palette { gap: 14px; } }
+
+  .overlay-msg {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(38px, 7vw, 64px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34,1.56,0.64,1);
+    text-shadow: 3px 3px 0 var(--brand-dark); max-width: 90vw;
+  }
+  .overlay-msg .msg.win { background: var(--gold); color: var(--ink); text-shadow: 3px 3px 0 #fff; }
+  @keyframes msgPop {
+    0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .confetti {
+    position: fixed; top: -20px; width: 12px; height: 18px;
+    z-index: 90; pointer-events: none; animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn, .back-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกตัวอักษรใหม่">📋</button>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🖍️ ระบายตัวอักษร</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🔤</span> เลือกตัวอักษรหรือตัวเลข</li>
+        <li><span class="howto-icon">🎨</span> แตะสีจากจานด้านล่าง</li>
+        <li><span class="howto-icon">👆</span> ลากนิ้วค่อยๆ ระบายให้เต็ม</li>
+      </ul>
+    </header>
+    <div id="glyphList"></div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="top-bar">
+      <div class="glyph-title" id="glyphTitle">ก</div>
+      <div class="top-bar-buttons">
+        <button class="icon-btn" id="resetBtn" aria-label="ล้างทั้งหมด"><span aria-hidden="true">🧽</span><span class="btn-label">ล้าง</span></button>
+        <button class="icon-btn" id="saveBtn" aria-label="บันทึกรูป"><span aria-hidden="true">💾</span><span class="btn-label">บันทึก</span></button>
+        <button class="icon-btn" id="doneBtn" aria-label="เสร็จ"><span aria-hidden="true">✓</span><span class="btn-label">เสร็จ</span></button>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-stage" id="canvasStage">
+        <canvas id="paintCanvas" width="1000" height="1000"></canvas>
+      </div>
+    </div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// CONTENT — Thai consonants ก-ฮ, English A-Z, digits 0-9
+// ============================================================================
+const THAI = 'ก ข ฃ ค ฅ ฆ ง จ ฉ ช ซ ฌ ญ ฎ ฏ ฐ ฑ ฒ ณ ด ต ถ ท ธ น บ ป ผ ฝ พ ฟ ภ ม ย ร ล ว ศ ษ ส ห ฬ อ ฮ'.split(' ');
+const ENG  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const NUM  = '0123456789'.split('');
+const GROUPS = [
+  { id: 'thai', label: '🇹🇭 ตัวอักษรไทย ก-ฮ', chars: THAI },
+  { id: 'eng',  label: '🔤 ตัวอักษรอังกฤษ A-Z', chars: ENG },
+  { id: 'num',  label: '🔢 ตัวเลข 0-9', chars: NUM },
+];
+
+// 10 crayon colors + eraser
+const COLORS = [
+  '#ff6b9d', '#e74c3c', '#ff914d', '#f1c40f', '#7ed957',
+  '#5bc0eb', '#3498db', '#9b59b6', '#a0522d', '#2c3e50',
+];
+
+const R = 1000;          // canvas buffer resolution
+const BRUSH = 72;        // brush radius in buffer px
+const DR = 200;          // detection resolution
+const DONE_COVERAGE = 0.82;
+const PROGRESS_KEY = 'colorLettersProgress';
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  ch: null,
+  currentColor: COLORS[0],
+  erasing: false,
+  drawing: false,
+  pointerId: null,
+  lastX: 0, lastY: 0,
+  done: false,
+};
+
+// ============================================================================
+// CANVAS BUFFERS
+// ============================================================================
+const view = document.getElementById('paintCanvas');
+const vctx = view.getContext('2d');
+
+function makeBuf() { const c = document.createElement('canvas'); c.width = R; c.height = R; return c; }
+const paint = makeBuf(), pctx = paint.getContext('2d');          // free color strokes
+const temp  = makeBuf(), tctx = temp.getContext('2d');           // paint clipped to glyph
+const glyphFill = makeBuf(), gfctx = glyphFill.getContext('2d'); // white letter body (+ mask)
+const glyphOut  = makeBuf(), goctx = glyphOut.getContext('2d');  // dark outline
+
+// detection
+const detect = document.createElement('canvas'); detect.width = DR; detect.height = DR;
+const dctx = detect.getContext('2d', { willReadFrequently: true });
+let maskAlpha = null, glyphTotal = 0;
+
+// brush sprites
+let softMask = null;             // soft white radial dab (alpha)
+const tintCache = {};            // color -> tinted brush canvas
+
+// ============================================================================
+// AUDIO
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function playWin() {
+  [523, 659, 784, 1046].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// SPEECH — say the letter / number out loud when finished
+// ============================================================================
+const THAI_NAME = {
+  'ก':'ก ไก่','ข':'ข ไข่','ฃ':'ฃ ขวด','ค':'ค ควาย','ฅ':'ฅ คน','ฆ':'ฆ ระฆัง',
+  'ง':'ง งู','จ':'จ จาน','ฉ':'ฉ ฉิ่ง','ช':'ช ช้าง','ซ':'ซ โซ่','ฌ':'ฌ เฌอ',
+  'ญ':'ญ หญิง','ฎ':'ฎ ชฎา','ฏ':'ฏ ปฏัก','ฐ':'ฐ ฐาน','ฑ':'ฑ มณโฑ','ฒ':'ฒ ผู้เฒ่า',
+  'ณ':'ณ เณร','ด':'ด เด็ก','ต':'ต เต่า','ถ':'ถ ถุง','ท':'ท ทหาร','ธ':'ธ ธง',
+  'น':'น หนู','บ':'บ ใบไม้','ป':'ป ปลา','ผ':'ผ ผึ้ง','ฝ':'ฝ ฝา','พ':'พ พาน',
+  'ฟ':'ฟ ฟัน','ภ':'ภ สำเภา','ม':'ม ม้า','ย':'ย ยักษ์','ร':'ร เรือ','ล':'ล ลิง',
+  'ว':'ว แหวน','ศ':'ศ ศาลา','ษ':'ษ ฤๅษี','ส':'ส เสือ','ห':'ห หีบ','ฬ':'ฬ จุฬา',
+  'อ':'อ อ่าง','ฮ':'ฮ นกฮูก',
+};
+const NUM_NAME = {
+  '0':'ศูนย์','1':'หนึ่ง','2':'สอง','3':'สาม','4':'สี่',
+  '5':'ห้า','6':'หก','7':'เจ็ด','8':'แปด','9':'เก้า',
+};
+function saySpec(ch) {
+  if (NUM_NAME[ch]) return { text: NUM_NAME[ch], lang: 'th-TH' };
+  if (THAI_NAME[ch]) return { text: THAI_NAME[ch], lang: 'th-TH' };
+  return { text: ch, lang: 'en-US' };   // English letter
+}
+function pickVoice(lang) {
+  try {
+    const vs = speechSynthesis.getVoices() || [];
+    const pre = lang.slice(0, 2).toLowerCase();
+    return vs.find(v => (v.lang || '').toLowerCase().startsWith(pre)) || null;
+  } catch (e) { return null; }
+}
+// Warm up the voice list (some browsers populate it lazily)
+if ('speechSynthesis' in window) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+function speak(ch) {
+  if (!('speechSynthesis' in window) || !ch) return;
+  const s = saySpec(ch);
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(s.text);
+    u.lang = s.lang;
+    u.rate = 0.8;
+    u.pitch = 1.1;
+    const v = pickVoice(s.lang);
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// ============================================================================
+// UTIL
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function showScreen(name) {
+  $('selectScreen').classList.toggle('active', name === 'select');
+  $('gameScreen').classList.toggle('active', name === 'game');
+  $('backBtn').classList.toggle('show', name === 'game');
+}
+
+// ============================================================================
+// FONT — ensure Itim is loaded before drawing glyphs to canvas
+// ============================================================================
+let fontReady = null;
+function ensureFont() {
+  if (!fontReady) {
+    fontReady = (document.fonts && document.fonts.load)
+      ? Promise.all([
+          document.fonts.load('700 200px Itim', 'ก'),
+          document.fonts.load('700 200px Itim', 'A'),
+        ]).then(() => document.fonts.ready).catch(() => {})
+      : Promise.resolve();
+  }
+  return fontReady;
+}
+
+// ============================================================================
+// GLYPH RENDERING — fit + center one character into an SxS canvas
+// ============================================================================
+function metricsFor(ctx, ch, size) {
+  ctx.font = `700 ${size}px Itim`;
+  const m = ctx.measureText(ch);
+  const aL = m.actualBoundingBoxLeft  != null ? m.actualBoundingBoxLeft  : 0;
+  const aR = m.actualBoundingBoxRight != null ? m.actualBoundingBoxRight : m.width;
+  const aA = m.actualBoundingBoxAscent  != null ? m.actualBoundingBoxAscent  : size * 0.72;
+  const aD = m.actualBoundingBoxDescent != null ? m.actualBoundingBoxDescent : size * 0.20;
+  return { aL, aR, aA, aD, gw: aL + aR, gh: aA + aD };
+}
+
+function drawGlyph(ctx, ch, S, mode) {
+  ctx.clearRect(0, 0, S, S);
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  // Fit: measure at reference size, scale to a margin box
+  const ref = S;
+  let m = metricsFor(ctx, ch, ref);
+  const box = S * 0.70;
+  const scale = Math.min(box / (m.gw || ref), box / (m.gh || ref));
+  const size = ref * scale;
+  m = metricsFor(ctx, ch, size);
+  const x = (S - m.gw) / 2 + m.aL;
+  const y = (S - m.gh) / 2 + m.aA;
+  ctx.font = `700 ${size}px Itim`;
+  if (mode === 'stroke') {
+    // Dark silhouette expanded outward by a thick round stroke → uniform outline.
+    // The white body (drawn on top) covers the interior, leaving only the halo.
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.lineWidth = Math.max(8, size * 0.03);
+    ctx.strokeStyle = '#2d3436';
+    ctx.fillStyle = '#2d3436';
+    ctx.strokeText(ch, x, y);
+    ctx.fillText(ch, x, y);
+  } else {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(ch, x, y);
+  }
+  ctx.restore();
+}
+
+function buildGlyph(ch) {
+  drawGlyph(gfctx, ch, R, 'fill');     // white body / mask
+  drawGlyph(goctx, ch, R, 'stroke');   // outline
+  // detection mask (downsampled glyph alpha)
+  dctx.clearRect(0, 0, DR, DR);
+  dctx.drawImage(glyphFill, 0, 0, DR, DR);
+  const d = dctx.getImageData(0, 0, DR, DR).data;
+  maskAlpha = new Uint8Array(DR * DR);
+  glyphTotal = 0;
+  for (let i = 0; i < DR * DR; i++) {
+    const a = d[i * 4 + 3];
+    maskAlpha[i] = a;
+    if (a > 60) glyphTotal++;
+  }
+}
+
+// ============================================================================
+// BRUSH SPRITES
+// ============================================================================
+function buildSoftMask() {
+  softMask = document.createElement('canvas');
+  softMask.width = softMask.height = BRUSH * 2;
+  const c = softMask.getContext('2d');
+  const g = c.createRadialGradient(BRUSH, BRUSH, 0, BRUSH, BRUSH, BRUSH);
+  g.addColorStop(0,    'rgba(255,255,255,0.95)');
+  g.addColorStop(0.55, 'rgba(255,255,255,0.75)');
+  g.addColorStop(1,    'rgba(255,255,255,0)');
+  c.fillStyle = g;
+  c.beginPath(); c.arc(BRUSH, BRUSH, BRUSH, 0, Math.PI * 2); c.fill();
+}
+function tintedBrush(color) {
+  if (tintCache[color]) return tintCache[color];
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = BRUSH * 2;
+  const c = cv.getContext('2d');
+  c.fillStyle = color;
+  c.fillRect(0, 0, BRUSH * 2, BRUSH * 2);
+  c.globalCompositeOperation = 'destination-in';
+  c.drawImage(softMask, 0, 0);
+  tintCache[color] = cv;
+  return cv;
+}
+
+// ============================================================================
+// PAINTING
+// ============================================================================
+function stamp(x, y) {
+  if (state.erasing) {
+    pctx.globalCompositeOperation = 'destination-out';
+    pctx.drawImage(softMask, x - BRUSH, y - BRUSH);
+  } else {
+    pctx.globalCompositeOperation = 'source-over';
+    pctx.drawImage(tintedBrush(state.currentColor), x - BRUSH, y - BRUSH);
+  }
+}
+function strokeTo(x, y) {
+  const dx = x - state.lastX, dy = y - state.lastY;
+  const dist = Math.hypot(dx, dy);
+  const step = BRUSH * 0.28;
+  const n = Math.max(1, Math.floor(dist / step));
+  for (let i = 1; i <= n; i++) stamp(state.lastX + dx * (i / n), state.lastY + dy * (i / n));
+  state.lastX = x; state.lastY = y;
+}
+function recompose() {
+  tctx.globalCompositeOperation = 'source-over';
+  tctx.clearRect(0, 0, R, R);
+  tctx.drawImage(paint, 0, 0);
+  tctx.globalCompositeOperation = 'destination-in';
+  tctx.drawImage(glyphFill, 0, 0);
+  vctx.clearRect(0, 0, R, R);
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.drawImage(glyphOut, 0, 0);    // dark silhouette + outward halo (outline)
+  vctx.drawImage(glyphFill, 0, 0);   // white body covers interior, leaves halo as outline
+  vctx.drawImage(temp, 0, 0);        // colored fill (clipped to glyph)
+}
+
+function toBuf(e) {
+  const rect = view.getBoundingClientRect();
+  const s = R / rect.width;
+  return { x: (e.clientX - rect.left) * s, y: (e.clientY - rect.top) * s };
+}
+
+view.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  ensureAudio();
+  state.drawing = true;
+  state.pointerId = e.pointerId;
+  try { view.setPointerCapture(e.pointerId); } catch(_) {}
+  const p = toBuf(e);
+  state.lastX = p.x; state.lastY = p.y;
+  stamp(p.x, p.y);
+  recompose();
+  buzz(6);
+});
+view.addEventListener('pointermove', (e) => {
+  if (!state.drawing || e.pointerId !== state.pointerId) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e])) {
+    const p = toBuf(ev);
+    strokeTo(p.x, p.y);
+  }
+  recompose();
+});
+function endStroke() {
+  if (!state.drawing) return;
+  state.drawing = false;
+  state.pointerId = null;
+  checkDone();
+}
+view.addEventListener('pointerup', endStroke);
+view.addEventListener('pointercancel', endStroke);
+
+// ============================================================================
+// COMPLETION
+// ============================================================================
+function coverage() {
+  dctx.clearRect(0, 0, DR, DR);
+  dctx.drawImage(paint, 0, 0, DR, DR);
+  const d = dctx.getImageData(0, 0, DR, DR).data;
+  let painted = 0;
+  for (let i = 0; i < DR * DR; i++) {
+    if (maskAlpha[i] > 60 && d[i * 4 + 3] > 40) painted++;
+  }
+  return glyphTotal ? painted / glyphTotal : 0;
+}
+function checkDone() {
+  if (state.done) return;
+  if (coverage() >= DONE_COVERAGE) celebrate();
+}
+function celebrate() {
+  state.done = true;
+  saveProgress();
+  const stage = $('canvasStage');
+  stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
+  flashOverlay('เก่งมาก! 🌟', 1500, 'win');
+  playWin();
+  confetti(150);
+  buzz([40, 30, 60]);
+  setTimeout(() => speak(state.ch), 550);   // say the letter / number aloud
+}
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function renderSelect() {
+  const list = $('glyphList');
+  const progress = loadProgress();
+  list.innerHTML = '';
+  for (const grp of GROUPS) {
+    const h = document.createElement('h2');
+    h.className = 'cat-header';
+    h.textContent = grp.label;
+    list.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'glyph-grid';
+    for (const ch of grp.chars) {
+      const card = document.createElement('div');
+      card.className = 'gcard' + (progress[ch] ? ' done' : '');
+      card.innerHTML = `<span class="glyph">${ch}</span>`;
+      card.addEventListener('click', () => { ensureAudio(); openGlyph(ch); });
+      grid.appendChild(card);
+    }
+    list.appendChild(grid);
+  }
+}
+
+// ============================================================================
+// OPEN A GLYPH
+// ============================================================================
+async function openGlyph(ch) {
+  state.ch = ch;
+  state.done = false;
+  state.drawing = false;
+  $('glyphTitle').textContent = ch;
+  pctx.clearRect(0, 0, R, R);
+  vctx.clearRect(0, 0, R, R);
+  showScreen('game');
+  await ensureFont();
+  buildGlyph(ch);
+  recompose();
+}
+
+// ============================================================================
+// PALETTE
+// ============================================================================
+function renderPalette() {
+  const palette = $('palette');
+  palette.innerHTML = '';
+  COLORS.forEach((col, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = col;
+    sw.addEventListener('click', () => selectColor(col, sw, false));
+    palette.appendChild(sw);
+  });
+  const er = document.createElement('div');
+  er.className = 'swatch eraser';
+  er.textContent = '🧽';
+  er.addEventListener('click', () => selectColor(null, er, true));
+  palette.appendChild(er);
+}
+function selectColor(col, el, erasing) {
+  state.erasing = erasing;
+  if (!erasing) state.currentColor = col;
+  for (const s of $('palette').querySelectorAll('.swatch')) s.classList.remove('active');
+  el.classList.add('active');
+}
+
+// ============================================================================
+// BUTTONS
+// ============================================================================
+$('backBtn').addEventListener('click', () => {
+  $('overlayMsg').classList.remove('shown');
+  renderSelect();
+  showScreen('select');
+});
+$('resetBtn').addEventListener('click', () => {
+  pctx.clearRect(0, 0, R, R);
+  state.done = false;
+  recompose();
+  buzz(20);
+});
+$('doneBtn').addEventListener('click', () => {
+  const cov = coverage();
+  if (cov < 0.05) { flashOverlay('ลองระบายเลย!', 1300, ''); return; }
+  if (state.done) { playWin(); confetti(80); speak(state.ch); return; }
+  if (cov >= DONE_COVERAGE) { celebrate(); return; }
+  flashOverlay('สวยจังเลย! 🎨', 1300, 'win');
+  playWin(); confetti(70); saveProgress();
+});
+$('saveBtn').addEventListener('click', savePng);
+
+function savePng() {
+  if (!state.ch) return;
+  const out = document.createElement('canvas');
+  out.width = R; out.height = R;
+  const o = out.getContext('2d');
+  o.fillStyle = '#ffffff';
+  o.fillRect(0, 0, R, R);
+  o.drawImage(view, 0, 0);
+  out.toBlob((blob) => {
+    if (!blob) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    a.download = `rabai-akson-${state.ch}-${ts}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    flashOverlay('บันทึกแล้ว! 💾', 1100, 'win');
+    buzz([30, 20, 30]);
+  }, 'image/png');
+}
+
+// ============================================================================
+// EFFECTS + PERSISTENCE
+// ============================================================================
+function flashOverlay(text, ms, extra) {
+  const overlay = $('overlayMsg');
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+function confetti(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[Math.floor(Math.random() * cols.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+function saveProgress() {
+  if (!state.ch) return;
+  const p = loadProgress();
+  p[state.ch] = (p[state.ch] || 0) + 1;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch(e) {}
+}
+
+// ============================================================================
+// MISC — block double-tap zoom
+// ============================================================================
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+buildSoftMask();
+renderPalette();
+renderSelect();
+</script>
+</body>
+</html>
