@@ -307,7 +307,7 @@
   <div class="tray-wrap">
     <div class="tray cols-3" id="tray"></div>
     <div class="cover" id="cover">🧺</div>
-    <div class="countdown" id="countdown"><span class="num" id="cdNum">3</span></div>
+    <div class="countdown" id="countdown"><span class="num" id="cdNum">5</span></div>
   </div>
 
   <div class="choices" id="choices"></div>
@@ -481,7 +481,7 @@ function startRound() {
   const cdNum = $('cdNum');
   cd.classList.add('shown');
 
-  let count = 3;
+  let count = 5;   // memorize time = countdown seconds (5-4-3-2-1)
   const showNum = () => {
     cdNum.textContent = String(count);
     cdNum.style.animation = 'none';
