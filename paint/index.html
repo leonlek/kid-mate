@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🖌️ วาดรูป — เกมสำหรับเด็ก</title>
+<meta name="description" content="กระดานวาดรูประบายสีอิสระ มีจานสี แปรงสายรุ้ง แสตมป์ ถังเทสี ฝึกจินตนาการและการควบคุมนิ้ว">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="วาดรูป">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --paper: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    height: 100dvh;
+    overflow: hidden;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 65%, #7ed957 100%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+  body { display: flex; flex-direction: column; }
+
+  /* Home button — fixed top-left, matches the family style */
+  .home {
+    position: fixed; top: 12px; left: 12px; z-index: 30;
+    width: 52px; height: 52px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none;
+    background: var(--paper); border: 4px solid var(--card-border);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .home:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+
+  /* Drawing stage */
+  .stage { flex: 1; min-height: 0; position: relative; }
+  #board {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block; touch-action: none;
+    background: var(--paper);
+  }
+
+  /* Bottom toolbar */
+  .toolbar {
+    flex-shrink: 0;
+    background: var(--paper);
+    border-top: 4px solid var(--card-border);
+    box-shadow: 0 -4px 0 rgba(0,0,0,0.05);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative; z-index: 20;
+  }
+
+  .palette {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 7px;
+  }
+  .swatch {
+    width: 44px; height: 44px; border-radius: 999px;
+    border: 3px solid rgba(0,0,0,0.12);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+    cursor: pointer; padding: 0;
+    transition: transform .12s;
+    position: relative;
+  }
+  .swatch:active { transform: scale(0.9); }
+  .swatch.sel {
+    transform: scale(1.12);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--brand);
+  }
+  .swatch.rainbow {
+    background: conic-gradient(#ff5757,#ff9f43,#ffd93d,#5bc13a,#20b6b6,#4a90e2,#a259d6,#ff6b9d,#ff5757);
+    font-size: 22px; display: flex; align-items: center; justify-content: center;
+  }
+
+  .tools {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    align-items: center; gap: 8px;
+  }
+  .tbtn {
+    min-width: 58px; height: 58px; padding: 0 10px;
+    border-radius: 18px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink);
+    font-size: 26px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.10);
+    transition: transform .12s, box-shadow .12s, background .12s;
+  }
+  .tbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.10); }
+  .tbtn.active { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .tbtn:disabled { opacity: .35; box-shadow: none; }
+
+  /* Size picker group */
+  .sizes { display: flex; gap: 6px; align-items: center;
+           background: #fff7fb; border: 3px solid var(--card-border);
+           border-radius: 18px; padding: 4px; }
+  .sbtn {
+    width: 50px; height: 50px; border-radius: 14px;
+    border: none; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s;
+  }
+  .sbtn.active { background: var(--brand); }
+  .sbtn .dot { background: var(--ink); border-radius: 999px; }
+  .sbtn.active .dot { background: #fff; }
+  .sep { width: 3px; height: 36px; background: var(--card-border); border-radius: 3px; }
+
+  /* Sticker tray — overlays above the toolbar, doesn't resize the canvas */
+  .stamptray {
+    position: absolute; left: 0; right: 0; bottom: 100%;
+    background: var(--paper); border-top: 4px solid var(--card-border);
+    box-shadow: 0 -6px 12px rgba(0,0,0,0.08);
+    padding: 10px; display: none;
+    flex-wrap: wrap; justify-content: center; gap: 8px;
+  }
+  .stamptray.open { display: flex; }
+  .stamp {
+    width: 56px; height: 56px; border-radius: 16px;
+    border: 3px solid var(--card-border); background: #fff;
+    font-size: 30px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s;
+  }
+  .stamp:active { transform: scale(0.9); }
+  .stamp.sel { border-color: var(--brand-dark); background: #fff0f6; transform: scale(1.06); }
+
+  /* "saved" toast */
+  .toast {
+    position: fixed; left: 50%; top: 18px; transform: translateX(-50%) translateY(-80px);
+    background: var(--brand-dark); color: #fff;
+    font-family: 'Itim', cursive; font-size: 20px;
+    padding: 10px 22px; border-radius: 999px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+    z-index: 40; opacity: 0; pointer-events: none;
+    transition: transform .3s ease, opacity .3s ease;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  @media (max-width: 380px) {
+    .swatch { width: 38px; height: 38px; }
+    .tbtn { min-width: 52px; height: 52px; font-size: 23px; }
+    .sbtn { width: 44px; height: 44px; }
+  }
+</style>
+</head>
+<body>
+  <a class="home" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+  <div class="stage">
+    <canvas id="board"></canvas>
+  </div>
+
+  <div class="toolbar">
+    <div class="stamptray" id="stamptray"></div>
+    <div class="palette" id="palette"></div>
+    <div class="tools">
+      <div class="sizes" id="sizes"></div>
+      <div class="sep"></div>
+      <button class="tbtn" id="eraserBtn" aria-label="ยางลบ">🩹</button>
+      <button class="tbtn" id="fillBtn" aria-label="ถังเทสี">🪣</button>
+      <button class="tbtn" id="stampBtn" aria-label="แสตมป์">⭐</button>
+      <div class="sep"></div>
+      <button class="tbtn" id="undoBtn" aria-label="ย้อนกลับ">↩️</button>
+      <button class="tbtn" id="clearBtn" aria-label="ล้างทั้งหมด">🗑️</button>
+      <button class="tbtn" id="saveBtn" aria-label="บันทึกรูป">💾</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">บันทึกแล้ว!</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Config -------------------------------------------------------------
+  var PAPER  = '#ffffff';
+  var COLORS = ['#2d3436','#ff5757','#ff9f43','#ffd93d','#5bc13a','#20b6b6',
+                '#4a90e2','#7b5cff','#a259d6','#ff6b9d','#b06b3f','#ffffff'];
+  var STAMPS = ['⭐','❤️','🌸','🦋','🐶','🐱','🚗','🌈','🎈','🌞','🍎','🐠'];
+  var SIZES       = [8, 18, 38];   // brush widths (css px)
+  var SIZE_DOTS   = [12, 22, 34];  // visual dot sizes in the picker
+  var STAMP_SIZE  = [40, 66, 96];  // emoji sizes per size step
+  var UNDO_MAX    = 8;
+
+  // ---- State --------------------------------------------------------------
+  var mode = 'brush';          // brush | eraser | fill | stamp
+  var color = COLORS[0];
+  var rainbow = false;
+  var sizeIdx = 1;
+  var stamp = STAMPS[0];
+  var hue = 0;
+
+  var canvas = document.getElementById('board');
+  var ctx = canvas.getContext('2d', { willReadFrequently: true });
+  var stage = canvas.parentNode;
+  var dpr = 1;
+  var canvasRect = null;
+  var undoStack = [];
+
+  // tiny helper context to parse any CSS color into rgba
+  var probe = document.createElement('canvas');
+  probe.width = probe.height = 1;
+  var pctx = probe.getContext('2d', { willReadFrequently: true });
+  function parseColor(css) {
+    pctx.clearRect(0, 0, 1, 1);
+    pctx.fillStyle = css;
+    pctx.fillRect(0, 0, 1, 1);
+    return pctx.getImageData(0, 0, 1, 1).data; // [r,g,b,a]
+  }
+
+  function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+  // ---- Canvas sizing (preserves art across orientation changes) -----------
+  function fitCanvas() {
+    var r = stage.getBoundingClientRect();
+    var w = Math.max(1, Math.round(r.width));
+    var h = Math.max(1, Math.round(r.height));
+    var snap = null;
+    if (canvas.width) {
+      snap = document.createElement('canvas');
+      snap.width = canvas.width; snap.height = canvas.height;
+      snap.getContext('2d').drawImage(canvas, 0, 0);
+    }
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(0, 0, w, h);
+    if (snap) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(snap, 0, 0, snap.width, snap.height, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+    canvasRect = canvas.getBoundingClientRect();
+    undoStack = [];           // sizes won't match after a resize — start fresh
+    updateUndoBtn();
+  }
+
+  // ---- Undo ---------------------------------------------------------------
+  function pushUndo() {
+    try { undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height)); } catch (e) { return; }
+    if (undoStack.length > UNDO_MAX) undoStack.shift();
+    updateUndoBtn();
+  }
+  function undo() {
+    if (!undoStack.length) return;
+    var img = undoStack.pop();
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.putImageData(img, 0, 0);
+    ctx.restore();
+    updateUndoBtn();
+    buzz(10);
+  }
+  function updateUndoBtn() {
+    document.getElementById('undoBtn').disabled = undoStack.length === 0;
+  }
+
+  // ---- Drawing primitives -------------------------------------------------
+  function lineWidth() {
+    var w = SIZES[sizeIdx];
+    return mode === 'eraser' ? w * 2.2 : w;
+  }
+  function drawColor() {
+    if (mode === 'eraser') return PAPER;
+    if (rainbow) return 'hsl(' + hue + ',90%,55%)';
+    return color;
+  }
+  function pt(ev) {
+    var r = canvasRect;
+    return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+  }
+  function drawDot(x, y) {
+    ctx.beginPath();
+    ctx.fillStyle = drawColor();
+    ctx.arc(x, y, Math.max(1, lineWidth() / 2), 0, Math.PI * 2);
+    ctx.fill();
+    if (rainbow && mode !== 'eraser') hue = (hue + 8) % 360;
+  }
+  function drawSeg(x0, y0, x1, y1) {
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = lineWidth();
+    ctx.strokeStyle = drawColor();
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    if (rainbow && mode !== 'eraser') hue = (hue + 8) % 360;
+  }
+  function placeStamp(x, y) {
+    var sz = STAMP_SIZE[sizeIdx];
+    ctx.save();
+    ctx.font = sz + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(stamp, x, y);
+    ctx.restore();
+  }
+
+  // ---- Flood fill (scanline) ----------------------------------------------
+  function dist2(a, b) {
+    var dr = a[0] - b[0], dg = a[1] - b[1], db = a[2] - b[2], da = a[3] - b[3];
+    return dr * dr + dg * dg + db * db + da * da;
+  }
+  function floodFill(cssX, cssY) {
+    var w = canvas.width, h = canvas.height;
+    var sx = Math.max(0, Math.min(w - 1, Math.round(cssX * dpr)));
+    var sy = Math.max(0, Math.min(h - 1, Math.round(cssY * dpr)));
+    var img = ctx.getImageData(0, 0, w, h);
+    var d = img.data;
+    var fill = rainbow ? parseColor('hsl(' + hue + ',90%,55%)') : parseColor(color);
+    var si = (sy * w + sx) * 4;
+    var target = [d[si], d[si + 1], d[si + 2], d[si + 3]];
+    var tol = 48, tol2 = tol * tol;
+    if (dist2(target, [fill[0], fill[1], fill[2], 255]) <= tol2) return; // already that color
+    function matches(i) {
+      var dr = d[i] - target[0], dg = d[i + 1] - target[1],
+          db = d[i + 2] - target[2], da = d[i + 3] - target[3];
+      return (dr * dr + dg * dg + db * db + da * da) <= tol2;
+    }
+    var stack = [[sx, sy]];
+    while (stack.length) {
+      var p = stack.pop(), x = p[0], y = p[1];
+      while (y >= 0 && matches((y * w + x) * 4)) y--;
+      y++;
+      var reachL = false, reachR = false;
+      while (y < h && matches((y * w + x) * 4)) {
+        var i = (y * w + x) * 4;
+        d[i] = fill[0]; d[i + 1] = fill[1]; d[i + 2] = fill[2]; d[i + 3] = 255;
+        if (x > 0) {
+          if (matches((y * w + x - 1) * 4)) { if (!reachL) { stack.push([x - 1, y]); reachL = true; } }
+          else reachL = false;
+        }
+        if (x < w - 1) {
+          if (matches((y * w + x + 1) * 4)) { if (!reachR) { stack.push([x + 1, y]); reachR = true; } }
+          else reachR = false;
+        }
+        y++;
+      }
+    }
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.putImageData(img, 0, 0);
+    ctx.restore();
+    if (rainbow) hue = (hue + 40) % 360;
+  }
+
+  // ---- Pointer interaction ------------------------------------------------
+  var drawing = false, lastX = 0, lastY = 0;
+
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    canvasRect = canvas.getBoundingClientRect();
+    var p = pt(e);
+    closeTray();
+    if (mode === 'fill') { pushUndo(); floodFill(p.x, p.y); buzz(12); return; }
+    if (mode === 'stamp') { pushUndo(); placeStamp(p.x, p.y); buzz(12); return; }
+    // brush or eraser
+    pushUndo();
+    drawing = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    lastX = p.x; lastY = p.y;
+    drawDot(p.x, p.y);
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+    if (!evs || !evs.length) evs = [e];
+    for (var k = 0; k < evs.length; k++) {
+      var p = pt(evs[k]);
+      drawSeg(lastX, lastY, p.x, p.y);
+      lastX = p.x; lastY = p.y;
+    }
+  });
+
+  function endStroke() { drawing = false; }
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('lostpointercapture', endStroke);
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- UI build -----------------------------------------------------------
+  var palette = document.getElementById('palette');
+  var swatchEls = [];
+  COLORS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.className = 'swatch';
+    b.style.background = c;
+    if (c.toLowerCase() === '#ffffff') b.style.borderColor = '#ddd';
+    b.addEventListener('click', function () { pickColor(c, b); });
+    palette.appendChild(b);
+    swatchEls.push(b);
+  });
+  var rainbowEl = document.createElement('button');
+  rainbowEl.className = 'swatch rainbow';
+  rainbowEl.textContent = '🌈';
+  rainbowEl.setAttribute('aria-label', 'แปรงสายรุ้ง');
+  rainbowEl.addEventListener('click', function () { pickRainbow(); });
+  palette.appendChild(rainbowEl);
+
+  var sizesWrap = document.getElementById('sizes');
+  var sizeEls = [];
+  SIZES.forEach(function (_, idx) {
+    var b = document.createElement('button');
+    b.className = 'sbtn' + (idx === sizeIdx ? ' active' : '');
+    b.setAttribute('aria-label', 'ขนาด ' + (idx + 1));
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.width = SIZE_DOTS[idx] + 'px';
+    dot.style.height = SIZE_DOTS[idx] + 'px';
+    b.appendChild(dot);
+    b.addEventListener('click', function () { pickSize(idx); });
+    sizesWrap.appendChild(b);
+    sizeEls.push(b);
+  });
+
+  var tray = document.getElementById('stamptray');
+  var stampEls = [];
+  STAMPS.forEach(function (s) {
+    var b = document.createElement('button');
+    b.className = 'stamp';
+    b.textContent = s;
+    b.addEventListener('click', function () { pickStamp(s, b); });
+    tray.appendChild(b);
+    stampEls.push(b);
+  });
+
+  var eraserBtn = document.getElementById('eraserBtn');
+  var fillBtn   = document.getElementById('fillBtn');
+  var stampBtn  = document.getElementById('stampBtn');
+
+  // ---- Tool selection -----------------------------------------------------
+  function clearSwatchSel() { swatchEls.forEach(function (s) { s.classList.remove('sel'); });
+                              rainbowEl.classList.remove('sel'); }
+  function refreshTools() {
+    eraserBtn.classList.toggle('active', mode === 'eraser');
+    fillBtn.classList.toggle('active', mode === 'fill');
+    stampBtn.classList.toggle('active', mode === 'stamp');
+  }
+  function pickColor(c, el) {
+    color = c; rainbow = false; mode = 'brush';
+    clearSwatchSel(); el.classList.add('sel');
+    refreshTools(); buzz(8);
+  }
+  function pickRainbow() {
+    rainbow = true; mode = 'brush';
+    clearSwatchSel(); rainbowEl.classList.add('sel');
+    refreshTools(); buzz(8);
+  }
+  function pickSize(idx) {
+    sizeIdx = idx;
+    sizeEls.forEach(function (b, i) { b.classList.toggle('active', i === idx); });
+    buzz(8);
+  }
+  function pickStamp(s, el) {
+    stamp = s; mode = 'stamp';
+    stampBtn.textContent = s;
+    stampEls.forEach(function (b) { b.classList.remove('sel'); });
+    el.classList.add('sel');
+    refreshTools(); buzz(8);
+  }
+  function closeTray() { tray.classList.remove('open'); }
+
+  eraserBtn.addEventListener('click', function () {
+    mode = 'eraser'; closeTray(); refreshTools(); buzz(10);
+  });
+  fillBtn.addEventListener('click', function () {
+    mode = 'fill'; closeTray(); refreshTools(); buzz(10);
+  });
+  stampBtn.addEventListener('click', function () {
+    if (mode === 'stamp') { tray.classList.toggle('open'); return; }
+    mode = 'stamp';
+    if (!tray.classList.contains('open')) tray.classList.add('open');
+    if (!stampEls.some(function (b) { return b.classList.contains('sel'); })) {
+      pickStamp(STAMPS[0], stampEls[0]);
+      tray.classList.add('open');
+    }
+    refreshTools(); buzz(10);
+  });
+
+  document.getElementById('undoBtn').addEventListener('click', undo);
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    pushUndo();
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    ctx.restore();
+    buzz(15);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var url;
+    try { url = canvas.toDataURL('image/png'); } catch (e) { return; }
+    var a = document.createElement('a');
+    a.href = url; a.download = 'วาดรูป.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    showToast(); buzz(20);
+  });
+
+  var toast = document.getElementById('toast'), toastT = 0;
+  function showToast() {
+    toast.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+
+  // ---- Init ---------------------------------------------------------------
+  swatchEls[0].classList.add('sel');   // start on black brush
+  refreshTools();
+  fitCanvas();
+
+  var resizeT = 0;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(fitCanvas, 150);
+  });
+  window.addEventListener('orientationchange', function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(fitCanvas, 250);
+  });
+})();
+</script>
+</body>
+</html>
