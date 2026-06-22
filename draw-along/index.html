@@ -169,6 +169,7 @@
   }
 
   /* SVG drawing layers — thinner than trace-letters so picture details read */
+  .region { fill: #fff; stroke: none; cursor: pointer; transition: fill .12s ease; }
   .ghost { fill: none; stroke: #eef1f4; stroke-width: 46; stroke-linecap: round; stroke-linejoin: round; }
   .guide { fill: none; stroke: #c4cdd6; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 4 22; }
   .trail { fill: none; stroke: var(--brand); stroke-width: 30; stroke-linecap: round; stroke-linejoin: round; }
@@ -280,7 +281,7 @@
       <ul class="howto">
         <li><span class="howto-icon">🟢</span> เริ่มที่จุดสีเขียว</li>
         <li><span class="howto-icon">👆</span> ลากนิ้วตามเส้นประทีละเส้น</li>
-        <li><span class="howto-icon">⭐</span> วาดครบทุกเส้นได้ภาพสวย!</li>
+        <li><span class="howto-icon">🎨</span> วาดครบแล้ว แตะระบายสีได้เลย!</li>
       </ul>
     </header>
     <div id="glyphList"></div>
@@ -297,6 +298,7 @@
     <div class="canvas-area">
       <div class="canvas-stage" id="canvasStage">
         <svg id="traceSvg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+          <g id="fillGroup"></g>
           <g id="ghostGroup"></g>
           <g id="guideGroup"></g>
           <g id="trailGroup"></g>
@@ -484,6 +486,102 @@ const GROUPS = [
   { id: 'vehicle', label: '🚗 ยานพาหนะ' },
 ];
 
+// ============================================================================
+// FILL REGIONS — closed shapes the kid can tap-to-color AFTER tracing is done.
+// Keyed by picture id; each = list of closed path "d" strings (drawn behind the
+// outline). Thin parts (rays, stems, strings, masts, cross-bars) are outline-
+// only and intentionally have no region.
+// ============================================================================
+const REGIONS = {
+  ball: ['M 500 200 C 334 200 200 334 200 500 C 200 666 334 800 500 800 C 666 800 800 666 800 500 C 800 334 666 200 500 200 Z'],
+  star: ['M 500 160 L 582 387 L 823 395 L 633 543 L 700 775 L 500 640 L 300 775 L 367 543 L 177 395 L 418 387 Z'],
+  heart: ['M 500 770 C 360 650 200 520 200 380 C 200 280 300 240 380 280 C 440 308 480 350 500 410 C 520 350 560 308 620 280 C 700 240 800 280 800 380 C 800 520 640 650 500 770 Z'],
+  moon: ['M 640 200 C 430 250 430 750 640 800 C 500 680 500 320 640 200 Z'],
+  cloud: ['M 330 660 C 230 660 220 540 320 525 C 320 415 470 400 525 475 C 580 380 740 405 730 520 C 825 525 825 660 730 660 Z'],
+  balloon: ['M 500 200 C 380 200 310 300 310 410 C 310 530 420 600 500 620 C 580 600 690 530 690 410 C 690 300 620 200 500 200 Z'],
+  icecream: ['M 360 390 C 380 250 620 250 640 390 Z', 'M 360 390 L 500 770 L 640 390 Z'],
+  sun: ['M 500 330 C 405 330 330 405 330 500 C 330 595 405 670 500 670 C 595 670 670 595 670 500 C 670 405 595 330 500 330 Z'],
+  tree: ['M 500 170 L 370 370 L 630 370 Z', 'M 500 300 L 320 520 L 680 520 Z', 'M 500 440 L 280 690 L 720 690 Z', 'M 440 690 L 440 810 L 560 810 L 560 690 Z'],
+  flower: [
+    ...petalRing(500, 420, 6, 95, 235, 70, -90),
+    'M 500 340 C 456 340 420 376 420 420 C 420 464 456 500 500 500 C 544 500 580 464 580 420 C 580 376 544 340 500 340 Z',
+    'M 500 690 C 590 650 670 690 650 752 C 588 772 532 730 500 690 Z'
+  ],
+  fish: [
+    'M 200 500 C 280 380 560 380 640 500 C 560 620 280 620 200 500 Z',
+    'M 640 500 L 800 400 L 800 600 Z',
+    'M 300 445 C 275 445 262 467 262 490 C 262 513 275 535 300 535 C 325 535 338 513 338 490 C 338 467 325 445 300 445 Z'
+  ],
+  butterfly: [
+    'M 500 410 C 320 300 200 420 250 520 C 200 640 350 720 500 600 Z',
+    'M 500 410 C 680 300 800 420 750 520 C 800 640 650 720 500 600 Z',
+    'M 500 370 C 478 370 478 650 500 660 C 522 650 522 370 500 370 Z'
+  ],
+  rainbow: [
+    'M 180 700 C 180 350 820 350 820 700 L 730 700 C 730 430 270 430 270 700 Z',
+    'M 270 700 C 270 430 730 430 730 700 L 640 700 C 640 510 360 510 360 700 Z',
+    'M 360 700 C 360 510 640 510 640 700 Z'
+  ],
+  house: [
+    'M 300 470 L 300 770 L 700 770 L 700 470 Z',
+    'M 250 470 L 500 250 L 750 470 Z',
+    'M 440 770 L 440 600 L 560 600 L 560 770 Z',
+    'M 590 520 L 670 520 L 670 590 L 590 590 Z'
+  ],
+  umbrella: ['M 200 470 C 230 290 770 290 800 470 C 720 440 660 460 580 455 C 540 452 520 470 500 470 C 480 470 460 452 420 455 C 340 460 280 440 200 470 Z'],
+  gift: [
+    'M 230 440 L 770 440 L 770 780 L 230 780 Z',
+    'M 420 360 C 360 360 360 440 500 440 C 640 440 640 360 580 360 C 520 360 520 425 500 440 C 480 425 480 360 420 360 Z'
+  ],
+  kite: [
+    'M 500 200 L 500 440 L 310 440 Z',
+    'M 500 200 L 690 440 L 500 440 Z',
+    'M 500 440 L 690 440 L 500 770 Z',
+    'M 500 440 L 500 770 L 310 440 Z'
+  ],
+  car: [
+    'M 180 660 L 180 580 C 180 558 198 540 240 540 L 350 540 L 430 460 L 640 460 L 720 540 L 800 540 C 822 540 830 558 830 580 L 830 660 Z',
+    'M 445 540 L 495 480 L 600 480 L 645 540 Z',
+    'M 320 660 C 280 660 255 690 255 725 C 255 760 280 790 320 790 C 360 790 385 760 385 725 C 385 690 360 660 320 660 Z',
+    'M 680 660 C 640 660 615 690 615 725 C 615 760 640 790 680 790 C 720 790 745 760 745 725 C 745 690 720 660 680 660 Z'
+  ],
+  truck: [
+    'M 150 380 L 560 380 L 560 470 L 660 470 L 740 560 L 850 560 L 850 660 L 150 660 Z',
+    'M 300 660 C 262 660 238 688 238 720 C 238 752 262 780 300 780 C 338 780 362 752 362 720 C 362 688 338 660 300 660 Z',
+    'M 720 660 C 682 660 658 688 658 720 C 658 752 682 780 720 780 C 758 780 782 752 782 720 C 782 688 758 660 720 660 Z'
+  ],
+  bus: [
+    'M 170 360 C 170 340 185 330 210 330 L 790 330 C 815 330 830 345 830 370 L 830 650 L 170 650 Z',
+    'M 220 400 L 780 400 L 780 470 L 220 470 Z',
+    'M 300 650 C 262 650 238 678 238 710 C 238 742 262 770 300 770 C 338 770 362 742 362 710 C 362 678 338 650 300 650 Z',
+    'M 700 650 C 662 650 638 678 638 710 C 638 742 662 770 700 770 C 738 770 762 742 762 710 C 762 678 738 650 700 650 Z'
+  ],
+  train: [
+    'M 170 660 L 170 470 L 600 470 L 600 350 L 760 350 L 760 470 L 820 470 L 820 660 Z',
+    'M 280 470 L 280 380 L 360 380 L 360 470 Z',
+    'M 300 660 C 268 660 248 684 248 712 C 248 740 268 764 300 764 C 332 764 352 740 352 712 C 352 684 332 660 300 660 Z',
+    'M 660 660 C 628 660 608 684 608 712 C 608 740 628 764 660 764 C 692 764 712 740 712 712 C 712 684 692 660 660 660 Z'
+  ],
+  airplane: [
+    'M 500 170 C 545 170 565 240 565 340 L 560 660 L 535 790 L 465 790 L 440 660 L 435 340 C 435 240 455 170 500 170 Z',
+    'M 450 400 L 160 540 L 165 590 L 450 505 Z',
+    'M 550 400 L 840 540 L 835 590 L 550 505 Z',
+    'M 470 690 L 360 745 L 365 780 L 470 735 Z',
+    'M 530 690 L 640 745 L 635 780 L 530 735 Z'
+  ],
+  boat: [
+    'M 250 680 L 750 680 L 670 800 L 330 800 Z',
+    'M 510 270 L 510 610 L 280 610 Z'
+  ],
+  rocket: [
+    'M 500 180 C 580 260 600 380 600 520 L 600 700 L 400 700 L 400 520 C 400 380 420 260 500 180 Z',
+    'M 500 360 C 460 360 435 388 435 420 C 435 452 460 480 500 480 C 540 480 565 452 565 420 C 565 388 540 360 500 360 Z',
+    'M 400 560 L 300 720 L 400 685 Z',
+    'M 600 560 L 700 720 L 600 685 Z',
+    'M 440 700 L 500 820 L 560 700 Z'
+  ],
+};
+
 // Crayon colors the kid can pick (decorative; default pink)
 const COLORS = ['#ff6b9d', '#ff914d', '#f1c40f', '#7ed957', '#5bc0eb', '#9b59b6'];
 
@@ -587,9 +685,13 @@ const state = {
   done: false,
   hintEl: null,
   hintRAF: 0,
+  colorMode: false,    // true once tracing is finished -> tap regions to color
+  coloredIdx: null,    // Set of region indices the kid has filled
+  coloredAll: false,   // sparkle once when every region is filled
 };
 
 const svg = $('traceSvg');
+const fillGroup  = $('fillGroup');
 const ghostGroup = $('ghostGroup');
 const guideGroup = $('guideGroup');
 const trailGroup = $('trailGroup');
@@ -613,13 +715,32 @@ function openPic(pic) {
   state.drawing = false;
   state.active = 0;
   state.strokes = [];
+  state.colorMode = false;
+  state.coloredIdx = new Set();
+  state.coloredAll = false;
   $('glyphTitle').textContent = pic.emoji + ' ' + pic.name;
+  fillGroup.innerHTML = '';
+  fillGroup.style.display = 'none';
   ghostGroup.innerHTML = '';
+  ghostGroup.style.display = '';
   guideGroup.innerHTML = '';
+  guideGroup.style.display = '';
   trailGroup.innerHTML = '';
   hintGroup.innerHTML = '';
   startGroup.innerHTML = '';
   stopHint();
+
+  // Build the tap-to-color regions (hidden until tracing completes)
+  (REGIONS[pic.id] || []).forEach((d, ri) => {
+    const reg = el('path', { d, class: 'region' });
+    reg.style.fill = '#fff';
+    reg.addEventListener('pointerdown', (e) => {
+      if (!state.colorMode) return;
+      e.preventDefault();
+      paintRegion(reg, ri);
+    });
+    fillGroup.appendChild(reg);
+  });
 
   pic.strokes.forEach((d) => {
     const ghost = el('path', { d, class: 'ghost' });
@@ -796,6 +917,44 @@ svg.addEventListener('pointerup', endStroke);
 svg.addEventListener('pointercancel', endStroke);
 
 // ============================================================================
+// COLORING — after the picture is traced, tap regions to fill them
+// ============================================================================
+function enterColorMode() {
+  if (state.colorMode || !state.done) return;
+  state.colorMode = true;
+  stopHint();
+  startGroup.innerHTML = '';
+  hintGroup.innerHTML = '';
+  ghostGroup.style.display = 'none';
+  guideGroup.style.display = 'none';
+  // ink the outline so the colors pop
+  state.strokes.forEach(s => {
+    s.trail.classList.remove('glow');
+    s.trail.style.stroke = '#3a3a3a';
+    s.trail.style.strokeDashoffset = 0;
+    s.trail.style.display = 'block';
+  });
+  fillGroup.style.display = 'block';
+  flashOverlay('ระบายสีกันเถอะ! 🎨', 1200);
+}
+
+function paintRegion(reg, idx) {
+  reg.style.fill = state.color;
+  blip(520);
+  buzz(8);
+  state.coloredIdx.add(idx);
+  const total = fillGroup.childElementCount;
+  if (total && state.coloredIdx.size >= total && !state.coloredAll) {
+    state.coloredAll = true;
+    confetti(70);
+    playWin();
+    buzz([30, 20, 40]);
+    const stage = $('canvasStage');
+    stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
+  }
+}
+
+// ============================================================================
 // CELEBRATION
 // ============================================================================
 function celebrate() {
@@ -816,6 +975,7 @@ function celebrate() {
   confetti(150);
   buzz([40, 30, 60]);
   setTimeout(() => speak(state.pic.name), 550);
+  setTimeout(enterColorMode, 1900);   // then let the kid color their drawing
 }
 
 // ============================================================================
@@ -870,8 +1030,11 @@ function selectColor(col, elm) {
   state.color = col;
   for (const s of $('palette').querySelectorAll('.swatch')) s.classList.remove('active');
   elm.classList.add('active');
-  // recolor any visible trails
-  state.strokes.forEach(s => { s.trail.style.stroke = col; });
+  // while tracing, the swatch tints the "crayon"; while coloring it only sets
+  // the fill color for the next region tap (outline stays inked).
+  if (!state.colorMode) {
+    state.strokes.forEach(s => { s.trail.style.stroke = col; });
+  }
 }
 
 // ============================================================================
