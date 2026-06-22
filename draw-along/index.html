@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎨 วาดตามรอย — เกมสำหรับเด็ก</title>
+<meta name="description" content="หัดวาดรูปง่ายๆ ลากนิ้วตามเส้นประทีละเส้น จนได้ดาว หัวใจ แมว ปลา บ้าน ดอกไม้ ฝึกกล้ามเนื้อมือและจินตนาการ">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="วาดตามรอย">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --good: #5bc13a;
+    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%);} to { transform: translateX(10%);} }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+  body:has(#gameScreen.active) .app { max-width: 100%; padding: 0; height: 100vh; height: 100dvh; }
+  body:has(#gameScreen.active)::before { display: none; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  .hero { text-align: center; padding: 14px 10px 18px; }
+  .hero h1 {
+    font-family: 'Itim', cursive;
+    font-size: clamp(38px, 8.5vw, 64px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+    letter-spacing: 1px;
+  }
+  .howto {
+    list-style: none; padding: 12px 18px; margin: 14px auto 4px;
+    max-width: 380px; background: rgba(255,255,255,0.55);
+    border: 2px dashed var(--card-border); border-radius: 18px;
+    font-size: 16px; color: #555; font-weight: 500; text-align: left;
+  }
+  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
+  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+  /* SELECT */
+  .cat-header {
+    font-family: 'Itim', cursive;
+    font-size: clamp(22px, 5vw, 30px);
+    color: var(--brand-dark);
+    margin: 26px 6px 12px;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+  }
+  .gcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 22px; aspect-ratio: 1 / 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .12s, box-shadow .12s, border-color .12s;
+    overflow: hidden; position: relative;
+  }
+  .gcard:active { transform: scale(0.94) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .gcard:hover { border-color: var(--brand); }
+  .gcard .glyph { font-size: 52px; line-height: 1; }
+  .gcard .pname {
+    font-family: 'Mitr', sans-serif; font-weight: 600;
+    font-size: 14px; color: var(--brand-dark); line-height: 1;
+  }
+  .gcard.done::after {
+    content: '⭐'; position: absolute; top: 4px; right: 6px; font-size: 18px;
+  }
+  @media (min-width: 560px) {
+    .glyph-grid { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); }
+    .gcard .glyph { font-size: 60px; }
+    .gcard .pname { font-size: 15px; }
+  }
+
+  /* GAME */
+  #gameScreen.active {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .top-bar {
+    flex: 0 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 6px; margin: 12px 76px 0 76px; flex-wrap: nowrap;
+  }
+  .glyph-title {
+    font-family: 'Itim', cursive;
+    font-size: clamp(24px, 5vw, 36px);
+    color: var(--brand-dark);
+    text-shadow: 2px 2px 0 #fff;
+    white-space: nowrap; min-width: 0; flex: 0 1 auto;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .top-bar-buttons { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #fff; border: 3px solid var(--card-border);
+    border-radius: 999px; padding: 8px 14px;
+    font-family: 'Itim', cursive; font-size: 18px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    transition: transform .12s, box-shadow .12s, opacity .12s;
+    color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+  .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+  .icon-btn .btn-label { display: inline; margin-left: 4px; }
+  @media (max-width: 600px) {
+    .icon-btn { padding: 8px 11px; font-size: 20px; }
+    .icon-btn .btn-label { display: none; }
+    .top-bar { margin: 8px 64px 0 64px; }
+  }
+
+  .canvas-area {
+    flex: 1 1 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px; min-height: 0;
+  }
+  .canvas-stage {
+    background: #fff; border: 4px solid #fff;
+    border-radius: 28px; box-shadow: 0 6px 0 rgba(0,0,0,0.10);
+    aspect-ratio: 1 / 1;
+    width: min(100%, 540px, calc(100dvh - 240px));
+    overflow: hidden; touch-action: none; position: relative;
+  }
+  .canvas-stage svg { width: 100%; height: 100%; display: block; touch-action: none; }
+  .canvas-stage.pop { animation: pop .7s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes pop {
+    0% { transform: scale(1);} 40% { transform: scale(1.07) rotate(-2deg);}
+    70% { transform: scale(0.98) rotate(1deg);} 100% { transform: scale(1);}
+  }
+
+  /* SVG drawing layers — thinner than trace-letters so picture details read */
+  .ghost { fill: none; stroke: #eef1f4; stroke-width: 46; stroke-linecap: round; stroke-linejoin: round; }
+  .guide { fill: none; stroke: #c4cdd6; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 4 22; }
+  .trail { fill: none; stroke: var(--brand); stroke-width: 30; stroke-linecap: round; stroke-linejoin: round; }
+  .trail.glow { animation: trailGlow 1.6s ease-in-out; }
+  @keyframes trailGlow {
+    0%,100% { filter: drop-shadow(0 0 0 transparent); }
+    50% { filter: drop-shadow(0 0 14px var(--gold)) drop-shadow(0 0 26px var(--brand)); }
+  }
+  .startdot { fill: var(--good); stroke: #fff; stroke-width: 6; }
+  .startdot.pulse { animation: dotPulse 1.1s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100% { transform: scale(1);} 50% { transform: scale(1.35);} }
+  .startlabel { fill: var(--good); font-family: 'Itim', cursive; font-size: 50px; text-anchor: middle; }
+  .hintdot { fill: #fff; stroke: var(--brand-dark); stroke-width: 6; }
+
+  .palette {
+    flex: 0 0 auto;
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; padding: 12px 14px env(safe-area-inset-bottom);
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    cursor: pointer; transition: transform .12s, box-shadow .12s; position: relative;
+  }
+  .swatch:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .swatch.active {
+    border-color: var(--gold); transform: scale(1.12);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18), 0 0 0 4px var(--gold);
+  }
+  @media (max-width: 480px) {
+    .swatch { width: 44px; height: 44px; border-width: 3px; }
+    .palette { gap: 8px; padding: 8px 10px env(safe-area-inset-bottom); }
+    .top-bar { margin: 8px 64px 0 64px; }
+    .canvas-area { padding: 8px; }
+  }
+  @media (min-width: 768px) { .swatch { width: 62px; height: 62px; } .palette { gap: 14px; } }
+
+  .overlay-msg {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 100;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay-msg.shown { display: flex; }
+  .overlay-msg .msg {
+    background: var(--brand); border: 4px solid #fff; border-radius: 32px;
+    padding: 28px 48px; font-size: clamp(36px, 6.5vw, 60px); line-height: 1.1;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+    animation: msgPop .5s cubic-bezier(0.34,1.56,0.64,1);
+    text-shadow: 3px 3px 0 var(--brand-dark); max-width: 90vw;
+  }
+  .overlay-msg .msg.win { background: var(--gold); color: var(--ink); text-shadow: 3px 3px 0 #fff; }
+  @keyframes msgPop {
+    0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .confetti {
+    position: fixed; top: -20px; width: 12px; height: 18px;
+    z-index: 90; pointer-events: none; animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .home-btn, .back-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; display: flex; font-size: 26px; }
+  .back-btn { right: 12px; display: none; }
+  .back-btn.show { display: flex; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+
+  .nav-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand);
+    box-shadow: 0 3px 0 var(--brand-dark);
+    display: none; align-items: center; justify-content: center;
+    color: var(--ink); z-index: 60; cursor: pointer; padding: 0;
+    transition: transform .12s;
+  }
+  .nav-btn.show { display: flex; }
+  .nav-btn.nav-prev { left: 10px; }
+  .nav-btn.nav-next { right: 10px; }
+  .nav-btn:active { transform: translateY(-50%) scale(0.9); }
+  @media (max-width: 480px) { .nav-btn { width: 46px; height: 46px; } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn" id="backBtn" type="button" aria-label="เลือกรูปใหม่">📋</button>
+<button class="nav-btn nav-prev" id="prevBtn" type="button" aria-label="รูปก่อนหน้า">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<button class="nav-btn nav-next" id="nextBtn" type="button" aria-label="รูปถัดไป">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<div class="app">
+
+  <section id="selectScreen" class="screen active">
+    <header class="hero">
+      <h1>🎨 วาดตามรอย</h1>
+      <ul class="howto">
+        <li><span class="howto-icon">🟢</span> เริ่มที่จุดสีเขียว</li>
+        <li><span class="howto-icon">👆</span> ลากนิ้วตามเส้นประทีละเส้น</li>
+        <li><span class="howto-icon">⭐</span> วาดครบทุกเส้นได้ภาพสวย!</li>
+      </ul>
+    </header>
+    <div id="glyphList"></div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="top-bar">
+      <div class="glyph-title" id="glyphTitle">รูป</div>
+      <div class="top-bar-buttons">
+        <button class="icon-btn" id="resetBtn" aria-label="เริ่มใหม่"><span aria-hidden="true">🔄</span><span class="btn-label">ใหม่</span></button>
+        <button class="icon-btn" id="sayBtn" aria-label="ฟังเสียง"><span aria-hidden="true">🔊</span><span class="btn-label">ฟัง</span></button>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-stage" id="canvasStage">
+        <svg id="traceSvg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+          <g id="ghostGroup"></g>
+          <g id="guideGroup"></g>
+          <g id="trailGroup"></g>
+          <g id="hintGroup"></g>
+          <g id="startGroup"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+</div>
+
+<div id="overlayMsg" class="overlay-msg"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// SHAPE HELPERS — generate evenly-spaced strokes (sun rays, flower petals)
+// All coordinates live in the 1000x1000 viewBox.
+// ============================================================================
+const R = Math.round;
+function rayBurst(cx, cy, rIn, rOut, n, startDeg) {
+  const a = [];
+  for (let i = 0; i < n; i++) {
+    const t = (startDeg + i * 360 / n) * Math.PI / 180;
+    const dx = Math.cos(t), dy = Math.sin(t);
+    a.push(`M ${R(cx + dx * rIn)} ${R(cy + dy * rIn)} L ${R(cx + dx * rOut)} ${R(cy + dy * rOut)}`);
+  }
+  return a;
+}
+function petalRing(cx, cy, n, rIn, rOut, halfW, startDeg) {
+  const a = [];
+  for (let i = 0; i < n; i++) {
+    const t = (startDeg + i * 360 / n) * Math.PI / 180;
+    const dx = Math.cos(t), dy = Math.sin(t), px = -dy, py = dx;
+    const b1x = cx + dx * rIn + px * halfW, b1y = cy + dy * rIn + py * halfW;
+    const b2x = cx + dx * rIn - px * halfW, b2y = cy + dy * rIn - py * halfW;
+    const tx = cx + dx * rOut, ty = cy + dy * rOut;
+    const c1x = cx + dx * rOut * 0.55 + px * halfW * 1.9, c1y = cy + dy * rOut * 0.55 + py * halfW * 1.9;
+    const c2x = cx + dx * rOut * 0.55 - px * halfW * 1.9, c2y = cy + dy * rOut * 0.55 - py * halfW * 1.9;
+    a.push(`M ${R(b1x)} ${R(b1y)} C ${R(c1x)} ${R(c1y)} ${R(tx)} ${R(ty)} ${R(tx)} ${R(ty)} C ${R(tx)} ${R(ty)} ${R(c2x)} ${R(c2y)} ${R(b2x)} ${R(b2y)} Z`);
+  }
+  return a;
+}
+
+// ============================================================================
+// PICTURE STROKE DATA
+// Each picture = ordered list of strokes (drawn in a sensible "teaching" order).
+// Each stroke = an SVG path "d" string in the 1000x1000 viewBox.
+// ============================================================================
+const PICS = [
+  // ---- EASY shapes (great for the youngest) ----
+  { id: 'ball', emoji: '⚽', name: 'ลูกบอล', grp: 'easy', strokes: [
+    'M 500 200 C 334 200 200 334 200 500 C 200 666 334 800 500 800 C 666 800 800 666 800 500 C 800 334 666 200 500 200 Z'
+  ]},
+  { id: 'star', emoji: '⭐', name: 'ดาว', grp: 'easy', strokes: [
+    'M 500 160 L 582 387 L 823 395 L 633 543 L 700 775 L 500 640 L 300 775 L 367 543 L 177 395 L 418 387 Z'
+  ]},
+  { id: 'heart', emoji: '❤️', name: 'หัวใจ', grp: 'easy', strokes: [
+    'M 500 770 C 360 650 200 520 200 380 C 200 280 300 240 380 280 C 440 308 480 350 500 410 C 520 350 560 308 620 280 C 700 240 800 280 800 380 C 800 520 640 650 500 770 Z'
+  ]},
+  { id: 'moon', emoji: '🌙', name: 'พระจันทร์', grp: 'easy', strokes: [
+    'M 640 200 C 430 250 430 750 640 800 C 500 680 500 320 640 200 Z'
+  ]},
+  { id: 'cloud', emoji: '☁️', name: 'เมฆ', grp: 'easy', strokes: [
+    'M 330 660 C 230 660 220 540 320 525 C 320 415 470 400 525 475 C 580 380 740 405 730 520 C 825 525 825 660 730 660 Z'
+  ]},
+  { id: 'balloon', emoji: '🎈', name: 'ลูกโป่ง', grp: 'easy', strokes: [
+    'M 500 200 C 380 200 310 300 310 410 C 310 530 420 600 500 620 C 580 600 690 530 690 410 C 690 300 620 200 500 200 Z',
+    'M 480 620 L 500 665 L 520 620',
+    'M 500 665 C 545 740 455 800 510 870'
+  ]},
+  { id: 'icecream', emoji: '🍦', name: 'ไอศกรีม', grp: 'easy', strokes: [
+    'M 360 390 C 380 250 620 250 640 390 Z',
+    'M 360 390 L 500 770 L 640 390'
+  ]},
+
+  // ---- NATURE ----
+  { id: 'sun', emoji: '☀️', name: 'พระอาทิตย์', grp: 'nature', strokes: [
+    'M 500 330 C 405 330 330 405 330 500 C 330 595 405 670 500 670 C 595 670 670 595 670 500 C 670 405 595 330 500 330 Z',
+    ...rayBurst(500, 500, 200, 300, 8, -90)
+  ]},
+  { id: 'tree', emoji: '🌲', name: 'ต้นไม้', grp: 'nature', strokes: [
+    'M 500 170 L 370 370 L 630 370 Z',
+    'M 500 300 L 320 520 L 680 520 Z',
+    'M 500 440 L 280 690 L 720 690 Z',
+    'M 440 690 L 440 810 L 560 810 L 560 690'
+  ]},
+  { id: 'flower', emoji: '🌸', name: 'ดอกไม้', grp: 'nature', strokes: [
+    ...petalRing(500, 420, 6, 95, 235, 70, -90),
+    'M 500 340 C 456 340 420 376 420 420 C 420 464 456 500 500 500 C 544 500 580 464 580 420 C 580 376 544 340 500 340 Z',
+    'M 500 500 C 510 620 485 720 500 840',
+    'M 500 690 C 590 650 670 690 650 752 C 588 772 532 730 500 690 Z'
+  ]},
+  { id: 'fish', emoji: '🐟', name: 'ปลา', grp: 'nature', strokes: [
+    'M 200 500 C 280 380 560 380 640 500 C 560 620 280 620 200 500 Z',
+    'M 640 500 L 800 400 L 800 600 Z',
+    'M 300 445 C 275 445 262 467 262 490 C 262 513 275 535 300 535 C 325 535 338 513 338 490 C 338 467 325 445 300 445 Z'
+  ]},
+  { id: 'butterfly', emoji: '🦋', name: 'ผีเสื้อ', grp: 'nature', strokes: [
+    'M 500 370 C 478 370 478 650 500 660 C 522 650 522 370 500 370 Z',
+    'M 500 410 C 320 300 200 420 250 520 C 200 640 350 720 500 600 Z',
+    'M 500 410 C 680 300 800 420 750 520 C 800 640 650 720 500 600 Z'
+  ]},
+  { id: 'rainbow', emoji: '🌈', name: 'รุ้ง', grp: 'nature', strokes: [
+    'M 180 700 C 180 350 820 350 820 700',
+    'M 270 700 C 270 430 730 430 730 700',
+    'M 360 700 C 360 510 640 510 640 700'
+  ]},
+
+  // ---- HOME & THINGS ----
+  { id: 'house', emoji: '🏠', name: 'บ้าน', grp: 'thing', strokes: [
+    'M 250 470 L 500 250 L 750 470',
+    'M 300 470 L 300 770 L 700 770 L 700 470',
+    'M 440 770 L 440 600 L 560 600 L 560 770',
+    'M 590 520 L 670 520 L 670 590 L 590 590 Z'
+  ]},
+  { id: 'umbrella', emoji: '☂️', name: 'ร่ม', grp: 'thing', strokes: [
+    'M 200 470 C 230 290 770 290 800 470 C 720 440 660 460 580 455 C 540 452 520 470 500 470 C 480 470 460 452 420 455 C 340 460 280 440 200 470 Z',
+    'M 500 470 L 500 740 C 500 800 430 800 420 745'
+  ]},
+  { id: 'gift', emoji: '🎁', name: 'กล่องของขวัญ', grp: 'thing', strokes: [
+    'M 230 440 L 770 440 L 770 780 L 230 780 Z',
+    'M 500 440 L 500 780',
+    'M 420 360 C 360 360 360 440 500 440 C 640 440 640 360 580 360 C 520 360 520 425 500 440 C 480 425 480 360 420 360 Z'
+  ]},
+  { id: 'kite', emoji: '🪁', name: 'ว่าว', grp: 'thing', strokes: [
+    'M 500 200 L 690 440 L 500 770 L 310 440 Z',
+    'M 500 200 L 500 770',
+    'M 310 440 L 690 440',
+    'M 500 770 C 560 820 440 860 510 910'
+  ]},
+
+  // ---- VEHICLES (great for older kids) ----
+  { id: 'car', emoji: '🚗', name: 'รถยนต์', grp: 'vehicle', strokes: [
+    'M 180 660 L 180 580 C 180 558 198 540 240 540 L 350 540 L 430 460 L 640 460 L 720 540 L 800 540 C 822 540 830 558 830 580 L 830 660 Z',
+    'M 445 540 L 495 480 L 600 480 L 645 540 Z',
+    'M 320 660 C 280 660 255 690 255 725 C 255 760 280 790 320 790 C 360 790 385 760 385 725 C 385 690 360 660 320 660 Z',
+    'M 680 660 C 640 660 615 690 615 725 C 615 760 640 790 680 790 C 720 790 745 760 745 725 C 745 690 720 660 680 660 Z'
+  ]},
+  { id: 'truck', emoji: '🚚', name: 'รถบรรทุก', grp: 'vehicle', strokes: [
+    'M 150 380 L 560 380 L 560 470 L 660 470 L 740 560 L 850 560 L 850 660 L 150 660 Z',
+    'M 300 660 C 262 660 238 688 238 720 C 238 752 262 780 300 780 C 338 780 362 752 362 720 C 362 688 338 660 300 660 Z',
+    'M 720 660 C 682 660 658 688 658 720 C 658 752 682 780 720 780 C 758 780 782 752 782 720 C 782 688 758 660 720 660 Z'
+  ]},
+  { id: 'bus', emoji: '🚌', name: 'รถบัส', grp: 'vehicle', strokes: [
+    'M 170 360 C 170 340 185 330 210 330 L 790 330 C 815 330 830 345 830 370 L 830 650 L 170 650 Z',
+    'M 220 400 L 780 400 L 780 470 L 220 470 Z',
+    'M 300 650 C 262 650 238 678 238 710 C 238 742 262 770 300 770 C 338 770 362 742 362 710 C 362 678 338 650 300 650 Z',
+    'M 700 650 C 662 650 638 678 638 710 C 638 742 662 770 700 770 C 738 770 762 742 762 710 C 762 678 738 650 700 650 Z'
+  ]},
+  { id: 'train', emoji: '🚂', name: 'รถไฟ', grp: 'vehicle', strokes: [
+    'M 170 660 L 170 470 L 600 470 L 600 350 L 760 350 L 760 470 L 820 470 L 820 660 Z',
+    'M 280 470 L 280 380 L 360 380 L 360 470',
+    'M 300 660 C 268 660 248 684 248 712 C 248 740 268 764 300 764 C 332 764 352 740 352 712 C 352 684 332 660 300 660 Z',
+    'M 660 660 C 628 660 608 684 608 712 C 608 740 628 764 660 764 C 692 764 712 740 712 712 C 712 684 692 660 660 660 Z'
+  ]},
+  { id: 'airplane', emoji: '✈️', name: 'เครื่องบิน', grp: 'vehicle', strokes: [
+    'M 500 170 C 545 170 565 240 565 340 L 560 660 L 535 790 L 465 790 L 440 660 L 435 340 C 435 240 455 170 500 170 Z',
+    'M 450 400 L 160 540 L 165 590 L 450 505 Z',
+    'M 550 400 L 840 540 L 835 590 L 550 505 Z',
+    'M 470 690 L 360 745 L 365 780 L 470 735 Z',
+    'M 530 690 L 640 745 L 635 780 L 530 735 Z'
+  ]},
+  { id: 'boat', emoji: '⛵', name: 'เรือใบ', grp: 'vehicle', strokes: [
+    'M 250 680 L 750 680 L 670 800 L 330 800 Z',
+    'M 500 660 L 500 250',
+    'M 510 270 L 510 610 L 280 610 Z'
+  ]},
+  { id: 'rocket', emoji: '🚀', name: 'จรวด', grp: 'vehicle', strokes: [
+    'M 500 180 C 580 260 600 380 600 520 L 600 700 L 400 700 L 400 520 C 400 380 420 260 500 180 Z',
+    'M 500 360 C 460 360 435 388 435 420 C 435 452 460 480 500 480 C 540 480 565 452 565 420 C 565 388 540 360 500 360 Z',
+    'M 400 560 L 300 720 L 400 685 Z',
+    'M 600 560 L 700 720 L 600 685 Z',
+    'M 440 700 L 500 820 L 560 700'
+  ]},
+];
+
+const GROUPS = [
+  { id: 'easy',    label: '🟢 รูปง่ายๆ' },
+  { id: 'nature',  label: '🌳 ธรรมชาติ' },
+  { id: 'thing',   label: '🏠 บ้านและสิ่งของ' },
+  { id: 'vehicle', label: '🚗 ยานพาหนะ' },
+];
+
+// Crayon colors the kid can pick (decorative; default pink)
+const COLORS = ['#ff6b9d', '#ff914d', '#f1c40f', '#7ed957', '#5bc0eb', '#9b59b6'];
+
+const TOL = 130;          // how far off-path a finger may stray (viewBox units)
+const ADVANCE = 90;       // forward look window when matching nearest length
+const DONE_FRAC = 0.9;    // fraction of a stroke's length to count it complete
+const PROGRESS_KEY = 'drawAlongProgress';
+
+// ============================================================================
+// SPEECH — say the picture name (Thai) out loud on success
+// ============================================================================
+function pickVoice(lang) {
+  try {
+    const vs = speechSynthesis.getVoices() || [];
+    const pre = lang.slice(0, 2).toLowerCase();
+    return vs.find(v => (v.lang || '').toLowerCase().startsWith(pre)) || null;
+  } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+function speak(name) {
+  if (!('speechSynthesis' in window) || !name) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(name);
+    u.lang = 'th-TH'; u.rate = 0.85; u.pitch = 1.1;
+    const v = pickVoice('th-TH');
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// ============================================================================
+// AUDIO
+// ============================================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+}
+function blip(freq) {
+  if (!audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.12;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.12, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch(e) {}
+}
+function playWin() {
+  [523, 659, 784, 1046].forEach((f,i) => setTimeout(() => {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime, d = 0.22;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  }, i * 110));
+}
+
+// ============================================================================
+// UTIL
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function showScreen(name) {
+  $('selectScreen').classList.toggle('active', name === 'select');
+  $('gameScreen').classList.toggle('active', name === 'game');
+  const onGame = name === 'game';
+  $('backBtn').classList.toggle('show', onGame);
+  $('prevBtn').classList.toggle('show', onGame);
+  $('nextBtn').classList.toggle('show', onGame);
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = {
+  pic: null,
+  index: 0,
+  color: COLORS[0],
+  strokes: [],        // [{ d, len, trail, progress, done }]
+  active: 0,          // index of the stroke currently being drawn
+  drawing: false,
+  pointerId: null,
+  done: false,
+  hintEl: null,
+  hintRAF: 0,
+};
+
+const svg = $('traceSvg');
+const ghostGroup = $('ghostGroup');
+const guideGroup = $('guideGroup');
+const trailGroup = $('trailGroup');
+const hintGroup  = $('hintGroup');
+const startGroup = $('startGroup');
+
+// Hidden measuring path (used for getPointAtLength)
+let measure = el('path', { d: '', fill: 'none' });
+measure.style.visibility = 'hidden';
+svg.appendChild(measure);
+
+// ============================================================================
+// OPEN A PICTURE — build ghost + dashed guide + trail layers per stroke
+// ============================================================================
+function openPic(pic) {
+  if (!pic) pic = PICS[0];
+  state.pic = pic;
+  const i = PICS.indexOf(pic);
+  if (i >= 0) state.index = i;
+  state.done = false;
+  state.drawing = false;
+  state.active = 0;
+  state.strokes = [];
+  $('glyphTitle').textContent = pic.emoji + ' ' + pic.name;
+  ghostGroup.innerHTML = '';
+  guideGroup.innerHTML = '';
+  trailGroup.innerHTML = '';
+  hintGroup.innerHTML = '';
+  startGroup.innerHTML = '';
+  stopHint();
+
+  pic.strokes.forEach((d) => {
+    const ghost = el('path', { d, class: 'ghost' });
+    ghostGroup.appendChild(ghost);
+    const guide = el('path', { d, class: 'guide' });
+    guideGroup.appendChild(guide);
+    const trail = el('path', { d, class: 'trail' });
+    trail.style.stroke = state.color;
+    trail.style.display = 'none';
+    trailGroup.appendChild(trail);
+
+    measure.setAttribute('d', d);
+    const len = measure.getTotalLength();
+    trail.style.strokeDasharray = len;
+    trail.style.strokeDashoffset = len;   // hidden until drawn
+
+    state.strokes.push({ d, len, trail, progress: 0, done: false });
+  });
+
+  showScreen('game');
+  beginStroke(0);
+}
+
+// point at a given length along a stroke's path
+function ptAt(stroke, l) {
+  measure.setAttribute('d', stroke.d);
+  return measure.getPointAtLength(Math.max(0, Math.min(l, stroke.len)));
+}
+
+// Show the green start dot + animated direction hint for stroke `idx`
+function beginStroke(idx) {
+  stopHint();
+  startGroup.innerHTML = '';
+  hintGroup.innerHTML = '';
+  if (idx >= state.strokes.length) return;
+  state.active = idx;
+  const s = state.strokes[idx];
+  const p0 = ptAt(s, s.progress > 0 ? s.progress : 0);
+
+  const dot = el('circle', { cx: p0.x, cy: p0.y, r: 28, class: 'startdot pulse' });
+  dot.style.transformOrigin = p0.x + 'px ' + p0.y + 'px';
+  startGroup.appendChild(dot);
+  if (s.progress < 1) {
+    const lbl = el('text', { x: p0.x, y: p0.y - 50, class: 'startlabel' });
+    lbl.textContent = '▶';
+    startGroup.appendChild(lbl);
+  }
+
+  // moving hint dot showing the direction along the path
+  state.hintEl = el('circle', { cx: p0.x, cy: p0.y, r: 16, class: 'hintdot' });
+  hintGroup.appendChild(state.hintEl);
+  runHint(s);
+}
+
+function runHint(s) {
+  const start = performance.now();
+  const span = Math.max(0.05, 1 - (s.progress / s.len));   // remaining fraction
+  const dur = 1700;
+  const tick = (now) => {
+    if (state.active < 0 || !state.hintEl || s.done) return;
+    const t = ((now - start) % dur) / dur;             // 0..1 loop
+    const l = s.progress + t * span * s.len;
+    const p = ptAt(s, l);
+    state.hintEl.setAttribute('cx', p.x);
+    state.hintEl.setAttribute('cy', p.y);
+    state.hintRAF = requestAnimationFrame(tick);
+  };
+  state.hintRAF = requestAnimationFrame(tick);
+}
+function stopHint() {
+  if (state.hintRAF) cancelAnimationFrame(state.hintRAF);
+  state.hintRAF = 0;
+}
+
+// ============================================================================
+// DRAWING — map pointer to nearest forward length, only advance forward
+// ============================================================================
+function toView(e) {
+  const rect = svg.getBoundingClientRect();
+  // viewBox is 1000x1000 with xMidYMid meet -> square stage, so simple scale
+  const s = 1000 / rect.width;
+  return { x: (e.clientX - rect.left) * s, y: (e.clientY - rect.top) * s };
+}
+
+// Find the length (searching forward from current progress) whose point is
+// closest to (x,y). Returns { l, dist }. Coarse then fine scan = forgiving.
+function nearestForward(s, x, y) {
+  const from = s.progress;
+  const to = Math.min(s.len, s.progress + s.len * 0.18 + ADVANCE);
+  let bestL = from, bestD = Infinity;
+  const coarse = 16;
+  for (let l = from; l <= to; l += (to - from) / coarse || 1) {
+    const p = ptAt(s, l);
+    const dd = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+    if (dd < bestD) { bestD = dd; bestL = l; }
+  }
+  // refine around best
+  const step = (to - from) / coarse || 1;
+  for (let l = Math.max(from, bestL - step); l <= Math.min(to, bestL + step); l += step / 8 || 1) {
+    const p = ptAt(s, l);
+    const dd = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+    if (dd < bestD) { bestD = dd; bestL = l; }
+  }
+  return { l: bestL, dist: Math.sqrt(bestD) };
+}
+
+function advance(x, y) {
+  const s = state.strokes[state.active];
+  if (!s || s.done) return;
+  const near = nearestForward(s, x, y);
+  if (near.dist > TOL) return;              // off-path: silently stop advancing
+  if (near.l > s.progress) {
+    s.progress = near.l;
+    // reveal drawn portion via dashoffset
+    s.trail.style.display = 'block';
+    s.trail.style.strokeDashoffset = (s.len - s.progress);
+  }
+  if (s.progress >= s.len * DONE_FRAC && !s.done) finishStroke();
+}
+
+function finishStroke() {
+  const s = state.strokes[state.active];
+  s.done = true;
+  s.progress = s.len;
+  s.trail.style.strokeDashoffset = 0;
+  blip(660 + state.active * 40);
+  buzz(12);
+  const next = state.active + 1;
+  if (next < state.strokes.length) {
+    setTimeout(() => beginStroke(next), 200);
+  } else {
+    stopHint();
+    startGroup.innerHTML = '';
+    hintGroup.innerHTML = '';
+    celebrate();
+  }
+}
+
+// ============================================================================
+// POINTER EVENTS
+// ============================================================================
+svg.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  ensureAudio();
+  if (state.done) return;
+  const s = state.strokes[state.active];
+  if (!s) return;
+  const p = toView(e);
+  // only begin if finger lands reasonably near the active head / path
+  const near = nearestForward(s, p.x, p.y);
+  const headPt = ptAt(s, s.progress);
+  const dHead = Math.hypot(p.x - headPt.x, p.y - headPt.y);
+  if (near.dist > TOL + 40 && dHead > TOL + 60) return;
+  state.drawing = true;
+  state.pointerId = e.pointerId;
+  try { svg.setPointerCapture(e.pointerId); } catch(_) {}
+  advance(p.x, p.y);
+});
+svg.addEventListener('pointermove', (e) => {
+  if (!state.drawing || e.pointerId !== state.pointerId) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e])) {
+    const p = toView(ev);
+    advance(p.x, p.y);
+  }
+});
+function endStroke() {
+  if (!state.drawing) return;
+  state.drawing = false;
+  state.pointerId = null;
+}
+svg.addEventListener('pointerup', endStroke);
+svg.addEventListener('pointercancel', endStroke);
+
+// ============================================================================
+// CELEBRATION
+// ============================================================================
+function celebrate() {
+  if (state.done) return;
+  state.done = true;
+  saveProgress();
+  // picture glows
+  state.strokes.forEach(s => {
+    s.trail.classList.add('glow');
+    s.trail.style.strokeDashoffset = 0;
+    s.trail.style.display = 'block';
+  });
+  const stage = $('canvasStage');
+  stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
+  const praises = ['เก่งมาก! 🌟', 'สุดยอด! 🎉', 'เยี่ยมเลย! 👏', 'สวยมาก! ✨'];
+  flashOverlay(praises[Math.floor(Math.random() * praises.length)], 1600, 'win');
+  playWin();
+  confetti(150);
+  buzz([40, 30, 60]);
+  setTimeout(() => speak(state.pic.name), 550);
+}
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveProgress() {
+  if (!state.pic) return;
+  const p = loadProgress();
+  p[state.pic.id] = (p[state.pic.id] || 0) + 1;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch(e) {}
+}
+function renderSelect() {
+  const list = $('glyphList');
+  const progress = loadProgress();
+  list.innerHTML = '';
+  for (const grp of GROUPS) {
+    const h = document.createElement('h2');
+    h.className = 'cat-header';
+    h.textContent = grp.label;
+    list.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'glyph-grid';
+    for (const pic of PICS.filter(p => p.grp === grp.id)) {
+      const card = document.createElement('div');
+      card.className = 'gcard' + (progress[pic.id] ? ' done' : '');
+      card.innerHTML = `<span class="glyph">${pic.emoji}</span><span class="pname">${pic.name}</span>`;
+      card.addEventListener('click', () => { ensureAudio(); openPic(pic); });
+      grid.appendChild(card);
+    }
+    list.appendChild(grid);
+  }
+}
+
+// ============================================================================
+// PALETTE — pick crayon color (cosmetic)
+// ============================================================================
+function renderPalette() {
+  const palette = $('palette');
+  palette.innerHTML = '';
+  COLORS.forEach((col, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = col;
+    sw.addEventListener('click', () => selectColor(col, sw));
+    palette.appendChild(sw);
+  });
+}
+function selectColor(col, elm) {
+  state.color = col;
+  for (const s of $('palette').querySelectorAll('.swatch')) s.classList.remove('active');
+  elm.classList.add('active');
+  // recolor any visible trails
+  state.strokes.forEach(s => { s.trail.style.stroke = col; });
+}
+
+// ============================================================================
+// BUTTONS / NAV (wrap around — no dead ends)
+// ============================================================================
+$('backBtn').addEventListener('click', () => {
+  $('overlayMsg').classList.remove('shown');
+  stopHint();
+  renderSelect();
+  showScreen('select');
+});
+function goTo(delta) {
+  const n = PICS.length;
+  const idx = ((state.index + delta) % n + n) % n;
+  buzz(10);
+  openPic(PICS[idx]);
+}
+$('prevBtn').addEventListener('click', () => goTo(-1));
+$('nextBtn').addEventListener('click', () => goTo(1));
+$('resetBtn').addEventListener('click', () => {
+  buzz(20);
+  if (state.pic) openPic(state.pic);
+});
+$('sayBtn').addEventListener('click', () => { ensureAudio(); if (state.pic) speak(state.pic.name); });
+
+// ============================================================================
+// EFFECTS
+// ============================================================================
+function flashOverlay(text, ms, extra) {
+  const overlay = $('overlayMsg');
+  overlay.classList.add('shown');
+  overlay.innerHTML = `<div class="msg ${extra || ''}">${text}</div>`;
+  setTimeout(() => { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+function confetti(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[Math.floor(Math.random() * cols.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// MISC — block double-tap zoom
+// ============================================================================
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+// Init
+renderPalette();
+renderSelect();
+</script>
+</body>
+</html>
