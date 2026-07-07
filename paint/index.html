@@ -143,6 +143,8 @@
   }
   .stamp:active { transform: scale(0.9); }
   .stamp.sel { border-color: var(--brand-dark); background: #fff0f6; transform: scale(1.06); }
+  /* fill/outline toggle sits at the front of the shape tray */
+  .stamp.shptoggle { background: #fff7fb; border-style: dashed; border-color: var(--brand); }
 
   /* "saved" toast */
   .toast {
@@ -222,6 +224,7 @@
   var sizeIdx = 1;
   var stamp = STAMPS[0];
   var shapeType = SHAPES[0].id;
+  var shapeOutline = false;    // shapes: false = filled, true = outline only
   var hue = 0;
 
   var canvas = document.getElementById('board');
@@ -457,10 +460,9 @@
     c.restore();
   }
   // Draw shape `type` filling box `b` on context `c`.
-  function drawShape(c, type, b, fill, stroke, lw) {
+  function drawShape(c, type, b, fill, stroke, lw, outline) {
     c.save();
     c.lineJoin = 'round'; c.lineCap = 'round'; c.lineWidth = lw || 3;
-    c.fillStyle = fill;
     var doStroke = !!stroke, rule = 'nonzero';
     switch (type) {
       case 'circle':
@@ -485,8 +487,12 @@
         c.ellipse(b.x + b.w * 0.6,  b.y + b.h * 0.5, b.w * 0.38, b.h * 0.38, 0, 0, Math.PI * 2);
         rule = 'evenodd'; doStroke = false; break;
     }
-    c.fill(rule);
-    if (doStroke) { c.strokeStyle = stroke; c.stroke(); }
+    if (outline) {                       // outline only — ready to fill-bucket inside
+      c.strokeStyle = stroke; c.stroke();
+    } else {
+      c.fillStyle = fill; c.fill(rule);
+      if (doStroke) { c.strokeStyle = stroke; c.stroke(); }
+    }
     c.restore();
   }
   // Small preview canvas for a shape-tray button (shows the real outline).
@@ -525,7 +531,12 @@
     var box;
     if (moved) box = normBox(sStartX, sStartY, sCurX, sCurY);
     else { var s = SHAPE_DEFAULT[sizeIdx]; box = { x: sStartX - s / 2, y: sStartY - s / 2, w: s, h: s }; }
-    drawShape(ctx, shapeType, box, fill, stroke, lw);
+    if (shapeOutline) {
+      var ocol = rainbow ? 'hsl(' + hue + ',90%,50%)' : color;
+      drawShape(ctx, shapeType, box, null, ocol, Math.max(4, SIZES[sizeIdx] * 0.6), true);
+    } else {
+      drawShape(ctx, shapeType, box, fill, stroke, lw);
+    }
   }
 
   canvas.addEventListener('pointerdown', function (e) {
@@ -630,6 +641,36 @@
 
   var shapeTray = document.getElementById('shapetray');
   var shapeEls = [];
+  // fill/outline toggle — first item in the tray
+  var fillToggleBtn = document.createElement('button');
+  fillToggleBtn.className = 'stamp shptoggle';
+  fillToggleBtn.setAttribute('aria-label', 'สลับ ทึบ / ขอบ');
+  function renderToggleIcon() {
+    var S = 40, r = window.devicePixelRatio || 1;
+    var cv = document.createElement('canvas');
+    cv.width = S * r; cv.height = S * r;
+    cv.style.width = S + 'px'; cv.style.height = S + 'px';
+    var c = cv.getContext('2d');
+    c.setTransform(r, 0, 0, r, 0, 0);
+    c.lineJoin = 'round';
+    if (shapeOutline) {                 // hollow square = outline mode
+      c.lineWidth = 5; c.strokeStyle = '#ff6b9d';
+      c.strokeRect(9, 9, 22, 22);
+    } else {                            // solid square = filled mode
+      c.fillStyle = '#ff6b9d'; c.strokeStyle = '#c23b6b'; c.lineWidth = 2;
+      c.beginPath(); c.rect(8, 8, 24, 24); c.fill(); c.stroke();
+    }
+    fillToggleBtn.innerHTML = '';
+    fillToggleBtn.appendChild(cv);
+  }
+  renderToggleIcon();
+  fillToggleBtn.addEventListener('click', function () {
+    shapeOutline = !shapeOutline;
+    renderToggleIcon();
+    if (mode !== 'shape') { mode = 'shape'; refreshTools(); }
+    buzz(8);
+  });
+  shapeTray.appendChild(fillToggleBtn);
   SHAPES.forEach(function (sh) {
     var b = document.createElement('button');
     b.className = 'stamp';

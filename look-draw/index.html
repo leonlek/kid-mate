@@ -179,6 +179,7 @@
   }
   .stamp:active { transform: scale(0.9); }
   .stamp.sel { border-color: var(--brand-dark); background: #fff0f6; transform: scale(1.06); }
+  .stamp.shptoggle { background: #fff7fb; border-style: dashed; border-color: var(--brand); }
 
   /* "saved" toast */
   .toast {
@@ -322,6 +323,61 @@
       '<circle cx="30" cy="78" r="7" fill="#2d3436"/><circle cx="30" cy="78" r="2.6" fill="#c8d6e5"/>' +
       '<circle cx="52" cy="78" r="7" fill="#2d3436"/><circle cx="52" cy="78" r="2.6" fill="#c8d6e5"/>' +
       '<circle cx="72" cy="78" r="7" fill="#2d3436"/><circle cx="72" cy="78" r="2.6" fill="#c8d6e5"/>' },
+    { id:'station', name:'สถานีรถไฟ', svg:
+      '<rect x="4" y="4" width="92" height="92" rx="12" fill="#eaf6ff"/>' +
+      '<rect x="0" y="74" width="100" height="26" fill="#cdd3d8"/>' +
+      '<rect x="10" y="40" width="32" height="34" fill="#ffe08a" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<polygon points="6,40 26,26 46,40" fill="#ff6b6b" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<rect x="14" y="43" width="24" height="6" rx="1" fill="#fff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="17" y="55" width="9" height="19" fill="#b06b3f" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="30" y="53" width="9" height="9" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.8"/>' +
+      '<rect x="54" y="46" width="34" height="26" rx="4" fill="#4a90e2" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="58" y="51" width="10" height="10" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="74" y="51" width="10" height="10" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<circle cx="63" cy="74" r="5" fill="#2d3436"/><circle cx="79" cy="74" r="5" fill="#2d3436"/>' +
+      '<line x1="48" y1="80" x2="98" y2="80" stroke="#8a6a4a" stroke-width="2.4"/>' },
+    { id:'crossing', name:'ไม้กั้นทางรถไฟ', svg:
+      '<rect x="4" y="4" width="92" height="92" rx="12" fill="#eaf6ff"/>' +
+      '<rect x="4" y="76" width="92" height="20" fill="#cde7a5"/>' +
+      '<line x1="6" y1="82" x2="94" y2="82" stroke="#5a5a5a" stroke-width="2.4"/>' +
+      '<line x1="6" y1="90" x2="94" y2="90" stroke="#5a5a5a" stroke-width="2.4"/>' +
+      '<line x1="16" y1="79" x2="16" y2="93" stroke="#8a6a4a" stroke-width="2.4"/>' +
+      '<line x1="34" y1="79" x2="34" y2="93" stroke="#8a6a4a" stroke-width="2.4"/>' +
+      '<line x1="52" y1="79" x2="52" y2="93" stroke="#8a6a4a" stroke-width="2.4"/>' +
+      '<line x1="70" y1="79" x2="70" y2="93" stroke="#8a6a4a" stroke-width="2.4"/>' +
+      '<line x1="88" y1="79" x2="88" y2="93" stroke="#8a6a4a" stroke-width="2.4"/>' +
+      '<rect x="15" y="30" width="6" height="46" fill="#c8d6e5" stroke="#2d3436" stroke-width="2"/>' +
+      '<line x1="8" y1="22" x2="24" y2="38" stroke="#ffd93d" stroke-width="4" stroke-linecap="round"/>' +
+      '<line x1="24" y1="22" x2="8" y2="38" stroke="#ffd93d" stroke-width="4" stroke-linecap="round"/>' +
+      '<rect x="21" y="46" width="58" height="7" fill="#fff" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="27" y="46.5" width="9" height="6" fill="#ff5757"/>' +
+      '<rect x="45" y="46.5" width="9" height="6" fill="#ff5757"/>' +
+      '<rect x="63" y="46.5" width="9" height="6" fill="#ff5757"/>' +
+      '<rect x="82" y="34" width="6" height="24" fill="#c8d6e5" stroke="#2d3436" stroke-width="2"/>' +
+      '<circle cx="85" cy="33" r="5" fill="#ff5757" stroke="#2d3436" stroke-width="2"/>' },
+    { id:'skytrain', name:'รถไฟลอยฟ้า', svg:
+      '<rect x="4" y="4" width="92" height="92" rx="12" fill="#eaf6ff"/>' +
+      '<circle cx="82" cy="18" r="7" fill="#ffd93d" stroke="#2d3436" stroke-width="1.8"/>' +
+      '<rect x="18" y="52" width="10" height="40" fill="#b0b6bd" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="72" y="52" width="10" height="40" fill="#b0b6bd" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="6" y="46" width="88" height="9" fill="#95a5a6" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="14" y="22" width="72" height="24" rx="9" fill="#20b6b6" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="20" y="28" width="10" height="11" rx="2" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="34" y="28" width="10" height="11" rx="2" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="48" y="28" width="10" height="11" rx="2" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="62" y="28" width="10" height="11" rx="2" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' },
+    { id:'tunnel', name:'อุโมงค์รถไฟ', svg:
+      '<rect x="4" y="4" width="92" height="92" rx="12" fill="#eaf6ff"/>' +
+      '<circle cx="20" cy="20" r="7" fill="#ffd93d" stroke="#2d3436" stroke-width="1.8"/>' +
+      '<path d="M8 82 Q50 18 92 82 Z" fill="#8bbf5a" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<path d="M38 82 L38 62 Q50 50 62 62 L62 82 Z" fill="#2d3436"/>' +
+      '<rect x="42" y="64" width="16" height="18" fill="#ff5757" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="45" y="68" width="10" height="8" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="4" y="82" width="92" height="14" fill="#cde7a5"/>' +
+      '<line x1="45" y1="82" x2="40" y2="96" stroke="#5a5a5a" stroke-width="2"/>' +
+      '<line x1="55" y1="82" x2="60" y2="96" stroke="#5a5a5a" stroke-width="2"/>' +
+      '<line x1="43" y1="87" x2="57" y2="87" stroke="#8a6a4a" stroke-width="2"/>' +
+      '<line x1="40" y1="93" x2="60" y2="93" stroke="#8a6a4a" stroke-width="2"/>' },
     { id:'bridge', name:'สะพานข้ามทางรถไฟ', svg:
       '<rect x="4" y="4" width="92" height="92" rx="12" fill="#eaf6ff"/>' +
       '<circle cx="82" cy="18" r="7" fill="#ffd93d" stroke="#2d3436" stroke-width="1.8"/>' +
@@ -363,7 +419,62 @@
       '<path d="M52 42 Q80 22 82 44 Q80 56 52 50 Z" fill="#ff6b9d" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
       '<path d="M48 52 Q26 54 24 70 Q34 80 48 62 Z" fill="#ffd93d" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
       '<path d="M52 52 Q74 54 76 70 Q66 80 52 62 Z" fill="#ffd93d" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
-      '<circle cx="32" cy="40" r="3.4" fill="#fff"/><circle cx="68" cy="40" r="3.4" fill="#fff"/>' }
+      '<circle cx="32" cy="40" r="3.4" fill="#fff"/><circle cx="68" cy="40" r="3.4" fill="#fff"/>' },
+    { id:'robot', name:'หุ่นยนต์', svg:
+      '<line x1="50" y1="16" x2="50" y2="8" stroke="#2d3436" stroke-width="2"/>' +
+      '<circle cx="50" cy="7" r="3" fill="#ff5757" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="34" y="16" width="32" height="24" rx="5" fill="#c8d6e5" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<circle cx="43" cy="27" r="4" fill="#4a90e2" stroke="#2d3436" stroke-width="1.8"/>' +
+      '<circle cx="57" cy="27" r="4" fill="#4a90e2" stroke="#2d3436" stroke-width="1.8"/>' +
+      '<rect x="42" y="34" width="16" height="3" rx="1.5" fill="#2d3436"/>' +
+      '<rect x="18" y="46" width="10" height="22" rx="4" fill="#c8d6e5" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="72" y="46" width="10" height="22" rx="4" fill="#c8d6e5" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="30" y="44" width="40" height="30" rx="5" fill="#95a5a6" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<circle cx="42" cy="55" r="3" fill="#ffd93d" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<circle cx="54" cy="55" r="3" fill="#5bc13a" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<rect x="40" y="63" width="20" height="6" rx="2" fill="#2d3436"/>' +
+      '<rect x="38" y="74" width="9" height="16" rx="2" fill="#7f8c9a" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="53" y="74" width="9" height="16" rx="2" fill="#7f8c9a" stroke="#2d3436" stroke-width="2"/>' },
+    { id:'firetruck', name:'รถดับเพลิง', svg:
+      '<line x1="4" y1="80" x2="96" y2="80" stroke="#95a5a6" stroke-width="4" stroke-linecap="round"/>' +
+      '<line x1="14" y1="44" x2="60" y2="24" stroke="#c8a06b" stroke-width="4"/>' +
+      '<line x1="14" y1="39" x2="60" y2="19" stroke="#c8a06b" stroke-width="4"/>' +
+      '<line x1="22" y1="41" x2="26" y2="30" stroke="#c8a06b" stroke-width="2"/>' +
+      '<line x1="34" y1="36" x2="38" y2="25" stroke="#c8a06b" stroke-width="2"/>' +
+      '<line x1="46" y1="31" x2="50" y2="20" stroke="#c8a06b" stroke-width="2"/>' +
+      '<rect x="8" y="44" width="66" height="26" rx="3" fill="#ff5757" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<path d="M74 70 L74 50 L86 50 L91 62 L91 70 Z" fill="#ff5757" stroke="#2d3436" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<rect x="77" y="53" width="9" height="9" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="56" y="48" width="15" height="18" fill="#e04444" stroke="#2d3436" stroke-width="1.6"/>' +
+      '<rect x="30" y="38" width="8" height="6" rx="2" fill="#4a90e2" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<circle cx="26" cy="72" r="8" fill="#2d3436"/><circle cx="26" cy="72" r="3" fill="#c8d6e5"/>' +
+      '<circle cx="68" cy="72" r="8" fill="#2d3436"/><circle cx="68" cy="72" r="3" fill="#c8d6e5"/>' },
+    { id:'dino', name:'ไดโนเสาร์', svg:
+      '<line x1="4" y1="84" x2="96" y2="84" stroke="#7ed957" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M74 62 Q90 58 96 70" fill="none" stroke="#2d3436" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M74 62 Q90 58 96 70" fill="none" stroke="#5bc13a" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M34 56 Q22 44 26 28" fill="none" stroke="#2d3436" stroke-width="11" stroke-linecap="round"/>' +
+      '<path d="M34 56 Q22 44 26 28" fill="none" stroke="#5bc13a" stroke-width="8" stroke-linecap="round"/>' +
+      '<circle cx="26" cy="24" r="9" fill="#5bc13a" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<circle cx="23" cy="22" r="2" fill="#2d3436"/>' +
+      '<ellipse cx="52" cy="60" rx="26" ry="15" fill="#5bc13a" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<rect x="40" y="70" width="9" height="15" rx="3" fill="#4bab30" stroke="#2d3436" stroke-width="2"/>' +
+      '<rect x="58" y="70" width="9" height="15" rx="3" fill="#4bab30" stroke="#2d3436" stroke-width="2"/>' +
+      '<polygon points="44,48 48,38 52,48" fill="#3fa34d" stroke="#2d3436" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<polygon points="54,47 58,36 62,47" fill="#3fa34d" stroke="#2d3436" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<polygon points="64,48 68,39 72,48" fill="#3fa34d" stroke="#2d3436" stroke-width="1.6" stroke-linejoin="round"/>' },
+    { id:'airplane', name:'เครื่องบิน', svg:
+      '<rect x="4" y="4" width="92" height="92" rx="12" fill="#d6f2ff"/>' +
+      '<ellipse cx="22" cy="24" rx="12" ry="6" fill="#fff"/>' +
+      '<ellipse cx="76" cy="72" rx="14" ry="7" fill="#fff"/>' +
+      '<path d="M44 48 L60 30 L74 30 Z" fill="#4a90e2" stroke="#2d3436" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M44 52 L60 74 L74 74 Z" fill="#4a90e2" stroke="#2d3436" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M16 50 L9 33 L23 43 Z" fill="#ff5757" stroke="#2d3436" stroke-width="2" stroke-linejoin="round"/>' +
+      '<ellipse cx="50" cy="50" rx="34" ry="11" fill="#eef3f7" stroke="#2d3436" stroke-width="2.2"/>' +
+      '<circle cx="40" cy="50" r="3" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<circle cx="50" cy="50" r="3" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<circle cx="60" cy="50" r="3" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.4"/>' +
+      '<path d="M78 44 Q90 47 85 54 Q80 52 78 56 Z" fill="#bfe8ff" stroke="#2d3436" stroke-width="1.8"/>' }
   ];
 
   // ---- Config -------------------------------------------------------------
@@ -394,6 +505,7 @@
   var sizeIdx = 1;
   var stamp = STAMPS[0];
   var shapeType = SHAPES[0].id;
+  var shapeOutline = false;    // shapes: false = filled, true = outline only
   var hue = 0;
   var current = null;          // chosen subject
 
@@ -633,10 +745,9 @@
     c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
     c.restore();
   }
-  function drawShape(c, type, b, fill, stroke, lw) {
+  function drawShape(c, type, b, fill, stroke, lw, outline) {
     c.save();
     c.lineJoin = 'round'; c.lineCap = 'round'; c.lineWidth = lw || 3;
-    c.fillStyle = fill;
     var doStroke = !!stroke, rule = 'nonzero';
     switch (type) {
       case 'circle':
@@ -661,8 +772,12 @@
         c.ellipse(b.x + b.w * 0.6,  b.y + b.h * 0.5, b.w * 0.38, b.h * 0.38, 0, 0, Math.PI * 2);
         rule = 'evenodd'; doStroke = false; break;
     }
-    c.fill(rule);
-    if (doStroke) { c.strokeStyle = stroke; c.stroke(); }
+    if (outline) {                       // outline only — ready to fill-bucket inside
+      c.strokeStyle = stroke; c.stroke();
+    } else {
+      c.fillStyle = fill; c.fill(rule);
+      if (doStroke) { c.strokeStyle = stroke; c.stroke(); }
+    }
     c.restore();
   }
   function shapeIcon(type) {
@@ -699,7 +814,12 @@
     var box;
     if (moved) box = normBox(sStartX, sStartY, sCurX, sCurY);
     else { var s = SHAPE_DEFAULT[sizeIdx]; box = { x: sStartX - s / 2, y: sStartY - s / 2, w: s, h: s }; }
-    drawShape(ctx, shapeType, box, fill, stroke, lw);
+    if (shapeOutline) {
+      var ocol = rainbow ? 'hsl(' + hue + ',90%,50%)' : color;
+      drawShape(ctx, shapeType, box, null, ocol, Math.max(4, SIZES[sizeIdx] * 0.6), true);
+    } else {
+      drawShape(ctx, shapeType, box, fill, stroke, lw);
+    }
   }
 
   canvas.addEventListener('pointerdown', function (e) {
@@ -803,6 +923,35 @@
 
   var shapeTray = document.getElementById('shapetray');
   var shapeEls = [];
+  var fillToggleBtn = document.createElement('button');
+  fillToggleBtn.className = 'stamp shptoggle';
+  fillToggleBtn.setAttribute('aria-label', 'สลับ ทึบ / ขอบ');
+  function renderToggleIcon() {
+    var S = 40, r = window.devicePixelRatio || 1;
+    var cv = document.createElement('canvas');
+    cv.width = S * r; cv.height = S * r;
+    cv.style.width = S + 'px'; cv.style.height = S + 'px';
+    var c = cv.getContext('2d');
+    c.setTransform(r, 0, 0, r, 0, 0);
+    c.lineJoin = 'round';
+    if (shapeOutline) {
+      c.lineWidth = 5; c.strokeStyle = '#ff6b9d';
+      c.strokeRect(9, 9, 22, 22);
+    } else {
+      c.fillStyle = '#ff6b9d'; c.strokeStyle = '#c23b6b'; c.lineWidth = 2;
+      c.beginPath(); c.rect(8, 8, 24, 24); c.fill(); c.stroke();
+    }
+    fillToggleBtn.innerHTML = '';
+    fillToggleBtn.appendChild(cv);
+  }
+  renderToggleIcon();
+  fillToggleBtn.addEventListener('click', function () {
+    shapeOutline = !shapeOutline;
+    renderToggleIcon();
+    if (mode !== 'shape') { mode = 'shape'; refreshTools(); }
+    buzz(8);
+  });
+  shapeTray.appendChild(fillToggleBtn);
   SHAPES.forEach(function (sh) {
     var b = document.createElement('button');
     b.className = 'stamp';
