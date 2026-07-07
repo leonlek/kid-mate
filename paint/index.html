@@ -172,12 +172,14 @@
 
   <div class="toolbar">
     <div class="stamptray" id="stamptray"></div>
+    <div class="stamptray" id="shapetray"></div>
     <div class="palette" id="palette"></div>
     <div class="tools">
       <div class="sizes" id="sizes"></div>
       <div class="sep"></div>
       <button class="tbtn" id="eraserBtn" aria-label="ยางลบ">🩹</button>
       <button class="tbtn" id="fillBtn" aria-label="ถังเทสี">🪣</button>
+      <button class="tbtn" id="shapesBtn" aria-label="รูปทรง">🔷</button>
       <button class="tbtn" id="stampBtn" aria-label="แสตมป์">⭐</button>
       <div class="sep"></div>
       <button class="tbtn" id="undoBtn" aria-label="ย้อนกลับ">↩️</button>
@@ -197,17 +199,29 @@
   var COLORS = ['#2d3436','#ff5757','#ff9f43','#ffd93d','#5bc13a','#20b6b6',
                 '#4a90e2','#7b5cff','#a259d6','#ff6b9d','#b06b3f','#ffffff'];
   var STAMPS = ['⭐','❤️','🌸','🦋','🐶','🐱','🚗','🌈','🎈','🌞','🍎','🐠'];
-  var SIZES       = [8, 18, 38];   // brush widths (css px)
-  var SIZE_DOTS   = [12, 22, 34];  // visual dot sizes in the picker
-  var STAMP_SIZE  = [40, 66, 96];  // emoji sizes per size step
-  var UNDO_MAX    = 8;
+  var SHAPES = [
+    { id: 'circle',   label: 'วงกลม' },     { id: 'square',   label: 'สี่เหลี่ยม' },
+    { id: 'triangle', label: 'สามเหลี่ยม' }, { id: 'diamond',  label: 'ข้าวหลามตัด' },
+    { id: 'pentagon', label: 'ห้าเหลี่ยม' }, { id: 'hexagon',  label: 'หกเหลี่ยม' },
+    { id: 'star',     label: 'ดาว' },        { id: 'heart',    label: 'หัวใจ' },
+    { id: 'arrow',    label: 'ลูกศร' },       { id: 'plus',     label: 'กากบาท' },
+    { id: 'bolt',     label: 'สายฟ้า' },      { id: 'crescent', label: 'พระจันทร์' },
+    { id: 'cloud',    label: 'เมฆ' },         { id: 'flower',   label: 'ดอกไม้' },
+    { id: 'line',     label: 'เส้นตรง' }
+  ];
+  var SIZES         = [8, 18, 38];    // brush widths (css px)
+  var SIZE_DOTS     = [12, 22, 34];   // visual dot sizes in the picker
+  var STAMP_SIZE    = [40, 66, 96];   // emoji sizes per size step
+  var SHAPE_DEFAULT = [64, 120, 190]; // tap-to-place shape box (css px) per size step
+  var UNDO_MAX      = 8;
 
   // ---- State --------------------------------------------------------------
-  var mode = 'brush';          // brush | eraser | fill | stamp
+  var mode = 'brush';          // brush | eraser | fill | stamp | shape
   var color = COLORS[0];
   var rainbow = false;
   var sizeIdx = 1;
   var stamp = STAMPS[0];
+  var shapeType = SHAPES[0].id;
   var hue = 0;
 
   var canvas = document.getElementById('board');
@@ -367,8 +381,152 @@
     if (rainbow) hue = (hue + 40) % 360;
   }
 
+  // ---- Shapes -------------------------------------------------------------
+  // Darken any css color ~38% for a shape's outline (white -> mid grey).
+  function shade(css) {
+    var d = parseColor(css);
+    return 'rgb(' + Math.round(d[0] * 0.62) + ',' + Math.round(d[1] * 0.62) +
+                    ',' + Math.round(d[2] * 0.62) + ')';
+  }
+  function normBox(x0, y0, x1, y1) {
+    return { x: Math.min(x0, x1), y: Math.min(y0, y1),
+             w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) };
+  }
+  // Normalized (0..1) polygon point sets, mapped into a box on draw.
+  var P_TRI     = [[.5,0],[1,1],[0,1]];
+  var P_DIAMOND = [[.5,0],[1,.5],[.5,1],[0,.5]];
+  var P_ARROW   = [[0,.32],[.58,.32],[.58,.12],[1,.5],[.58,.88],[.58,.68],[0,.68]];
+  var P_PLUS    = [[.34,0],[.66,0],[.66,.34],[1,.34],[1,.66],[.66,.66],[.66,1],
+                   [.34,1],[.34,.66],[0,.66],[0,.34],[.34,.34]];
+  var P_BOLT    = [[.6,0],[.15,.55],[.44,.55],[.36,1],[.85,.4],[.54,.4],[.62,0]];
+  function regPts(n) {                // regular polygon, first vertex at top
+    var a = [], s = -Math.PI / 2;
+    for (var i = 0; i < n; i++) {
+      var t = s + i * 2 * Math.PI / n;
+      a.push([0.5 + 0.5 * Math.cos(t), 0.5 + 0.5 * Math.sin(t)]);
+    }
+    return a;
+  }
+  function starPts(sp) {              // sp-pointed star, top point up
+    var a = [];
+    for (var i = 0; i < sp * 2; i++) {
+      var r = (i % 2) ? 0.2 : 0.5;
+      var t = -Math.PI / 2 + i * Math.PI / sp;
+      a.push([0.5 + r * Math.cos(t), 0.5 + r * Math.sin(t)]);
+    }
+    return a;
+  }
+  function pathPoly(c, pts, b) {
+    c.beginPath();
+    for (var i = 0; i < pts.length; i++) {
+      var X = b.x + pts[i][0] * b.w, Y = b.y + pts[i][1] * b.h;
+      if (i) c.lineTo(X, Y); else c.moveTo(X, Y);
+    }
+    c.closePath();
+  }
+  function heartPath(c, b) {
+    var x = b.x, y = b.y, w = b.w, h = b.h, cx = x + w / 2;
+    c.beginPath();
+    c.moveTo(cx, y + h * 0.88);
+    c.bezierCurveTo(x - w * 0.02, y + h * 0.55, x + w * 0.06, y + h * 0.02, cx, y + h * 0.28);
+    c.bezierCurveTo(x + w * 0.94, y + h * 0.02, x + w * 1.02, y + h * 0.55, cx, y + h * 0.88);
+    c.closePath();
+  }
+  function cloudPath(c, b) {          // union of overlapping circles + a slab (nonzero)
+    var x = b.x, y = b.y, w = b.w, h = b.h;
+    c.beginPath();
+    c.rect(x + w * 0.18, y + h * 0.55, w * 0.64, h * 0.33);
+    c.moveTo(x + w * 0.32 + h * 0.26, y + h * 0.6); c.arc(x + w * 0.32, y + h * 0.6, h * 0.26, 0, Math.PI * 2);
+    c.moveTo(x + w * 0.5  + h * 0.32, y + h * 0.45); c.arc(x + w * 0.5,  y + h * 0.45, h * 0.32, 0, Math.PI * 2);
+    c.moveTo(x + w * 0.7  + h * 0.24, y + h * 0.6); c.arc(x + w * 0.7,  y + h * 0.6, h * 0.24, 0, Math.PI * 2);
+  }
+  function flowerPath(c, b) {         // 6 petals + center, union (nonzero)
+    var cx = b.x + b.w / 2, cy = b.y + b.h / 2, R = Math.min(b.w, b.h) / 2;
+    c.beginPath();
+    for (var i = 0; i < 6; i++) {
+      var t = -Math.PI / 2 + i * Math.PI / 3;
+      var px = cx + Math.cos(t) * R * 0.55, py = cy + Math.sin(t) * R * 0.55;
+      c.moveTo(px + R * 0.34, py); c.arc(px, py, R * 0.34, 0, Math.PI * 2);
+    }
+    c.moveTo(cx + R * 0.3, cy); c.arc(cx, cy, R * 0.3, 0, Math.PI * 2);
+  }
+  function drawLine(c, x0, y0, x1, y1, lw, col) {
+    c.save();
+    c.lineCap = 'round'; c.lineWidth = lw; c.strokeStyle = col;
+    c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+    c.restore();
+  }
+  // Draw shape `type` filling box `b` on context `c`.
+  function drawShape(c, type, b, fill, stroke, lw) {
+    c.save();
+    c.lineJoin = 'round'; c.lineCap = 'round'; c.lineWidth = lw || 3;
+    c.fillStyle = fill;
+    var doStroke = !!stroke, rule = 'nonzero';
+    switch (type) {
+      case 'circle':
+        c.beginPath();
+        c.ellipse(b.x + b.w / 2, b.y + b.h / 2, Math.max(1, b.w / 2), Math.max(1, b.h / 2), 0, 0, Math.PI * 2);
+        break;
+      case 'square':   c.beginPath(); c.rect(b.x, b.y, b.w, b.h); break;
+      case 'triangle': pathPoly(c, P_TRI, b); break;
+      case 'diamond':  pathPoly(c, P_DIAMOND, b); break;
+      case 'pentagon': pathPoly(c, regPts(5), b); break;
+      case 'hexagon':  pathPoly(c, regPts(6), b); break;
+      case 'star':     pathPoly(c, starPts(5), b); break;
+      case 'arrow':    pathPoly(c, P_ARROW, b); break;
+      case 'plus':     pathPoly(c, P_PLUS, b); break;
+      case 'bolt':     pathPoly(c, P_BOLT, b); break;
+      case 'heart':    heartPath(c, b); break;
+      case 'cloud':    cloudPath(c, b); doStroke = false; break;
+      case 'flower':   flowerPath(c, b); doStroke = false; break;
+      case 'crescent':
+        c.beginPath();
+        c.ellipse(b.x + b.w * 0.5,  b.y + b.h * 0.5, b.w * 0.48, b.h * 0.48, 0, 0, Math.PI * 2);
+        c.ellipse(b.x + b.w * 0.6,  b.y + b.h * 0.5, b.w * 0.38, b.h * 0.38, 0, 0, Math.PI * 2);
+        rule = 'evenodd'; doStroke = false; break;
+    }
+    c.fill(rule);
+    if (doStroke) { c.strokeStyle = stroke; c.stroke(); }
+    c.restore();
+  }
+  // Small preview canvas for a shape-tray button (shows the real outline).
+  function shapeIcon(type) {
+    var S = 40, r = window.devicePixelRatio || 1;
+    var cv = document.createElement('canvas');
+    cv.width = S * r; cv.height = S * r;
+    cv.style.width = S + 'px'; cv.style.height = S + 'px';
+    var c = cv.getContext('2d');
+    c.setTransform(r, 0, 0, r, 0, 0);
+    if (type === 'line') drawLine(c, 7, 20, 33, 20, 5, '#ff6b9d');
+    else drawShape(c, type, { x: 6, y: 6, w: 28, h: 28 }, '#ff6b9d', '#c23b6b', 2);
+    return cv;
+  }
+
   // ---- Pointer interaction ------------------------------------------------
   var drawing = false, lastX = 0, lastY = 0;
+  var shaping = false, shapeSnap = null, sStartX = 0, sStartY = 0, sCurX = 0, sCurY = 0;
+
+  // Redraw the in-progress shape over the snapshot taken at pointerdown.
+  function renderShapePreview() {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.putImageData(shapeSnap, 0, 0);
+    ctx.restore();
+    var moved = Math.hypot(sCurX - sStartX, sCurY - sStartY) > 8;
+    var fill   = rainbow ? 'hsl(' + hue + ',90%,55%)' : color;
+    var stroke = rainbow ? 'hsl(' + hue + ',85%,32%)' : shade(color);
+    var lw = Math.max(3, SIZES[sizeIdx] * 0.45);
+    if (shapeType === 'line') {
+      var lcol = rainbow ? 'hsl(' + hue + ',90%,50%)' : color;
+      var llw = SIZES[sizeIdx] + 4;
+      if (moved) drawLine(ctx, sStartX, sStartY, sCurX, sCurY, llw, lcol);
+      else { var d = SHAPE_DEFAULT[sizeIdx] / 2; drawLine(ctx, sStartX - d, sStartY, sStartX + d, sStartY, llw, lcol); }
+      return;
+    }
+    var box;
+    if (moved) box = normBox(sStartX, sStartY, sCurX, sCurY);
+    else { var s = SHAPE_DEFAULT[sizeIdx]; box = { x: sStartX - s / 2, y: sStartY - s / 2, w: s, h: s }; }
+    drawShape(ctx, shapeType, box, fill, stroke, lw);
+  }
 
   canvas.addEventListener('pointerdown', function (e) {
     e.preventDefault();
@@ -377,6 +535,14 @@
     closeTray();
     if (mode === 'fill') { pushUndo(); floodFill(p.x, p.y); buzz(12); return; }
     if (mode === 'stamp') { pushUndo(); placeStamp(p.x, p.y); buzz(12); return; }
+    if (mode === 'shape') {
+      pushUndo();
+      shapeSnap = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      shaping = true;
+      sStartX = sCurX = p.x; sStartY = sCurY = p.y;
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+      return;
+    }
     // brush or eraser
     pushUndo();
     drawing = true;
@@ -386,6 +552,12 @@
   });
 
   canvas.addEventListener('pointermove', function (e) {
+    if (shaping) {
+      e.preventDefault();
+      var sp = pt(e); sCurX = sp.x; sCurY = sp.y;
+      renderShapePreview();
+      return;
+    }
     if (!drawing) return;
     e.preventDefault();
     var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
@@ -397,7 +569,14 @@
     }
   });
 
-  function endStroke() { drawing = false; }
+  function endStroke() {
+    if (shaping) {
+      renderShapePreview();          // places the tap-shape if no move happened
+      shaping = false; shapeSnap = null;
+      if (rainbow) hue = (hue + 30) % 360;
+    }
+    drawing = false;
+  }
   canvas.addEventListener('pointerup', endStroke);
   canvas.addEventListener('pointercancel', endStroke);
   canvas.addEventListener('lostpointercapture', endStroke);
@@ -449,8 +628,21 @@
     stampEls.push(b);
   });
 
+  var shapeTray = document.getElementById('shapetray');
+  var shapeEls = [];
+  SHAPES.forEach(function (sh) {
+    var b = document.createElement('button');
+    b.className = 'stamp';
+    b.setAttribute('aria-label', sh.label);
+    b.appendChild(shapeIcon(sh.id));
+    b.addEventListener('click', function () { pickShape(sh.id, b); });
+    shapeTray.appendChild(b);
+    shapeEls.push(b);
+  });
+
   var eraserBtn = document.getElementById('eraserBtn');
   var fillBtn   = document.getElementById('fillBtn');
+  var shapesBtn = document.getElementById('shapesBtn');
   var stampBtn  = document.getElementById('stampBtn');
 
   // ---- Tool selection -----------------------------------------------------
@@ -459,17 +651,18 @@
   function refreshTools() {
     eraserBtn.classList.toggle('active', mode === 'eraser');
     fillBtn.classList.toggle('active', mode === 'fill');
+    shapesBtn.classList.toggle('active', mode === 'shape');
     stampBtn.classList.toggle('active', mode === 'stamp');
   }
   function pickColor(c, el) {
     color = c; rainbow = false; mode = 'brush';
     clearSwatchSel(); el.classList.add('sel');
-    refreshTools(); buzz(8);
+    closeTray(); refreshTools(); buzz(8);
   }
   function pickRainbow() {
     rainbow = true; mode = 'brush';
     clearSwatchSel(); rainbowEl.classList.add('sel');
-    refreshTools(); buzz(8);
+    closeTray(); refreshTools(); buzz(8);
   }
   function pickSize(idx) {
     sizeIdx = idx;
@@ -483,7 +676,14 @@
     el.classList.add('sel');
     refreshTools(); buzz(8);
   }
-  function closeTray() { tray.classList.remove('open'); }
+  function pickShape(id, el) {
+    shapeType = id; mode = 'shape';
+    shapeEls.forEach(function (b) { b.classList.remove('sel'); });
+    el.classList.add('sel');
+    refreshTools(); buzz(8);
+  }
+  function closeTray() { tray.classList.remove('open'); shapeTray.classList.remove('open'); }
+  function openTray(t) { closeTray(); t.classList.add('open'); }
 
   eraserBtn.addEventListener('click', function () {
     mode = 'eraser'; closeTray(); refreshTools(); buzz(10);
@@ -492,12 +692,21 @@
     mode = 'fill'; closeTray(); refreshTools(); buzz(10);
   });
   stampBtn.addEventListener('click', function () {
-    if (mode === 'stamp') { tray.classList.toggle('open'); return; }
+    if (mode === 'stamp') { var wasOpen = tray.classList.contains('open'); closeTray(); if (!wasOpen) tray.classList.add('open'); return; }
     mode = 'stamp';
-    if (!tray.classList.contains('open')) tray.classList.add('open');
+    openTray(tray);
     if (!stampEls.some(function (b) { return b.classList.contains('sel'); })) {
       pickStamp(STAMPS[0], stampEls[0]);
-      tray.classList.add('open');
+    }
+    refreshTools(); buzz(10);
+  });
+
+  shapesBtn.addEventListener('click', function () {
+    if (mode === 'shape') { var wasOpen = shapeTray.classList.contains('open'); closeTray(); if (!wasOpen) shapeTray.classList.add('open'); return; }
+    mode = 'shape';
+    openTray(shapeTray);
+    if (!shapeEls.some(function (b) { return b.classList.contains('sel'); })) {
+      pickShape(SHAPES[0].id, shapeEls[0]);
     }
     refreshTools(); buzz(10);
   });
