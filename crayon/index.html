@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🖍️ สมุดระบายสี — เกมสำหรับเด็ก</title>
+<meta name="description" content="สมุดภาพระบายสีเทียนซีนใหญ่เต็มจอ ระบายเหมือนจริง มีปากกาตามนิ้ว รถไฟข้ามสะพาน ลอดใต้สะพาน สับราง อุโมงค์ บ้าน ทะเล">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="สมุดระบายสี">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --paper: #fffef9; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    height: 100dvh; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 18% 8%, #fff9c4 0%, transparent 48%),
+      radial-gradient(ellipse at 86% 14%, #ffcfd2 0%, transparent 42%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .screen { display: none; height: 100dvh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ---- Home / action buttons (float) ---- */
+  .fab {
+    position: fixed; z-index: 60;
+    width: 50px; height: 50px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    background: var(--paper); border: 4px solid var(--card-border);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    transition: transform .12s, box-shadow .12s, opacity .12s;
+    cursor: pointer; padding: 0; font-family: inherit;
+  }
+  .fab:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .fab:disabled { opacity: .35; box-shadow: none; }
+  .home { top: calc(10px + env(safe-area-inset-top)); left: 12px; }
+  .actions {
+    position: fixed; z-index: 60;
+    top: calc(10px + env(safe-area-inset-top)); right: 12px;
+    display: flex; gap: 8px;
+  }
+  .actions .fab { position: static; }
+
+  /* ============================ SELECT SCREEN ============================ */
+  #selectScreen { overflow-y: auto; display: none; }
+  #selectScreen.active { display: block; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px 16px 40px; }
+  .hero { text-align: center; padding: 14px 10px 6px; }
+  .hero h1 {
+    font-family: 'Itim', cursive; font-size: clamp(38px, 8vw, 60px);
+    margin: 0; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+  }
+  .hero p { font-size: clamp(15px, 3.2vw, 20px); margin: 8px 0 0; color: #555; font-weight: 500; }
+
+  .lgrid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; margin: 22px 0 0;
+  }
+  @media (min-width: 720px) { .lgrid { grid-template-columns: repeat(3, 1fr); } }
+  .lcard {
+    background: var(--card); border: 4px solid var(--card-border);
+    border-radius: 22px; padding: 12px 12px 10px; text-align: center;
+    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative; overflow: hidden;
+  }
+  .lcard:active { transform: scale(0.96) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .lcard svg.preview { width: 100%; height: 150px; display: block; margin: 0 auto 6px; }
+  .lcard svg.preview * { stroke: var(--brand-dark); stroke-width: 7; fill: #fff; }
+  .lcard .ltitle {
+    font-family: 'Itim', cursive; font-size: clamp(16px, 4.3vw, 22px);
+    line-height: 1.15; color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
+    overflow-wrap: anywhere;
+  }
+  .lcard .done-star {
+    position: absolute; top: 6px; right: 8px; font-size: 22px;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.15));
+  }
+
+  /* ============================ GAME SCREEN ============================ */
+  #gameScreen { padding: env(safe-area-inset-top) 0 0; }
+  .stage {
+    flex: 1 1 auto; min-height: 0;
+    display: grid; place-items: center;
+    padding: 6px;
+  }
+  .paper {
+    aspect-ratio: 800 / 1200;
+    height: 100%; max-width: 100%; width: auto;
+    background: var(--brand);
+    border-radius: 30px;
+    padding: 11px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.14);
+  }
+  .sheet {
+    position: relative; width: 100%; height: 100%;
+    background: #fff; border-radius: 20px; overflow: hidden;
+    touch-action: none;
+  }
+  .sheet canvas, .sheet svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .sheet svg { pointer-events: none; }
+
+  /* ---- Crayon cursor ---- */
+  #crayon {
+    position: fixed; left: 0; top: 0; z-index: 55;
+    width: 44px; height: 100px;
+    pointer-events: none; opacity: 0;
+    transition: opacity .12s;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.28));
+    will-change: transform;
+  }
+  #crayon.show { opacity: 1; }
+
+  /* ---- Palette ---- */
+  .palette {
+    flex: 0 0 auto;
+    display: flex; justify-content: center; align-items: center; flex-wrap: wrap;
+    gap: 9px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .swatch {
+    width: 50px; height: 50px; border-radius: 50%;
+    border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    cursor: pointer; transition: transform .12s, box-shadow .12s; padding: 0;
+  }
+  .swatch:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .swatch.active { border-color: var(--gold); transform: scale(1.14); box-shadow: 0 5px 0 rgba(0,0,0,0.18), 0 0 0 4px var(--gold); }
+  .swatch.eraser {
+    background: linear-gradient(45deg, #fff 25%, #ddd 25%, #ddd 50%, #fff 50%, #fff 75%, #ddd 75%);
+    background-size: 14px 14px; font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-width: 420px) { .swatch { width: 42px; height: 42px; border-width: 3px; } .palette { gap: 7px; } }
+  @media (min-width: 768px) { .swatch { width: 58px; height: 58px; } }
+
+  /* ---- Overlay message + confetti ---- */
+  .overlay {
+    position: fixed; inset: 0; display: none; z-index: 100;
+    align-items: center; justify-content: center; pointer-events: none;
+    font-family: 'Itim', cursive; color: #fff; text-align: center;
+  }
+  .overlay.shown { display: flex; }
+  .overlay .msg {
+    background: var(--gold); color: var(--ink);
+    border: 4px solid #fff; border-radius: 30px;
+    padding: 24px 44px; font-size: clamp(34px, 6.5vw, 60px); line-height: 1.15;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.16);
+    text-shadow: 2px 2px 0 #fff, 3px 3px 0 rgba(0,0,0,0.12);
+    animation: pop .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 90vw;
+  }
+  @keyframes pop { 0% { transform: scale(.4) rotate(-6deg); opacity: 0; } 60% { transform: scale(1.1) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home fab" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<!-- ===================== SELECT SCREEN ===================== -->
+<section id="selectScreen" class="screen active">
+  <div class="wrap">
+    <header class="hero">
+      <h1>🖍️ สมุดระบายสี</h1>
+      <p>เลือกภาพใหญ่ ระบายสีเทียนทั้งจอ</p>
+    </header>
+    <div id="levelGrid" class="lgrid"></div>
+  </div>
+</section>
+
+<!-- ===================== GAME SCREEN ===================== -->
+<section id="gameScreen" class="screen">
+  <div class="actions">
+    <button class="fab" id="listBtn" aria-label="เลือกภาพใหม่">📋</button>
+    <button class="fab" id="undoBtn" aria-label="ย้อนกลับ" disabled>↩️</button>
+    <button class="fab" id="clearBtn" aria-label="ล้างทั้งหมด">🧽</button>
+    <button class="fab" id="saveBtn" aria-label="บันทึกรูป">💾</button>
+  </div>
+
+  <div class="stage">
+    <div class="paper">
+      <div class="sheet" id="sheet">
+        <canvas id="paint"></canvas>
+        <svg id="lines" viewBox="0 0 800 1200" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette" id="palette"></div>
+</section>
+
+<!-- Crayon cursor -->
+<div id="crayon" aria-hidden="true">
+  <svg viewBox="0 0 44 100">
+    <rect id="cr-cap" x="11" y="6" width="22" height="16" rx="5"></rect>
+    <rect id="cr-body" x="9" y="18" width="26" height="56"></rect>
+    <rect x="6" y="34" width="32" height="13" rx="2" fill="#fff"></rect>
+    <polygon points="9,74 35,74 22,99" fill="#ffe0b2"></polygon>
+    <polygon points="18,90 26,90 22,99" fill="#c98a4a"></polygon>
+  </svg>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// COLORS
+// ============================================================================
+var COLORS = [
+  '#ff6b9d', '#ff5757', '#ff914d', '#ffd93d', '#7ed957',
+  '#5bc0eb', '#3498db', '#9b59b6', '#8b5a2b', '#2d3436'
+];
+var ERASE = '__erase__';
+
+// ============================================================================
+// REGION HELPERS — every scene is a list of regions in an 800x1200 viewBox.
+// Regions later in the list draw ON TOP (foreground). noClick = a black line
+// detail that lives only on the outline layer (not colorable).
+// ============================================================================
+function rect(id, x, y, w, h, rx, opt) { return Object.assign({ id: id, shape: 'rect', x: x, y: y, w: w, h: h, rx: rx || 0 }, opt || {}); }
+function circ(id, cx, cy, r, opt) { return Object.assign({ id: id, shape: 'circle', cx: cx, cy: cy, r: r }, opt || {}); }
+function elli(id, cx, cy, rx, ry, opt) { return Object.assign({ id: id, shape: 'ellipse', cx: cx, cy: cy, rx: rx, ry: ry }, opt || {}); }
+function pathR(id, d, opt) { return Object.assign({ id: id, shape: 'path', d: d }, opt || {}); }
+function line(id, d, sw) { return { id: id, shape: 'path', d: d, noClick: true, strokeWidth: sw || 6 }; }
+
+// A reusable friendly side-view steam train. Placed at (ox,oy) scaled by s.
+function makeTrain(pfx, ox, oy, s) {
+  var R = function (id, x, y, w, h, rx, opt) { return rect(pfx + id, ox + x * s, oy + y * s, w * s, h * s, (rx || 0) * s, opt); };
+  var C = function (id, cx, cy, r, opt) { return circ(pfx + id, ox + cx * s, oy + cy * s, r * s, opt); };
+  return [
+    C('sm1', 300, -16, 24), C('sm2', 346, -60, 30), C('sm3', 402, -104, 38),   // smoke puffs
+    R('car', 300, 46, 178, 96, 14),
+    R('carRoof', 292, 28, 194, 24, 10),
+    R('boiler', 96, 58, 206, 82, 16),
+    R('cab', 18, 22, 94, 120, 12),
+    R('cabRoof', 10, 12, 110, 18, 8),
+    R('funnel', 248, 8, 48, 54, 8),
+    C('dome', 198, 52, 24),
+    R('cabWin', 40, 46, 54, 46, 6),
+    R('carWin1', 334, 64, 54, 42, 6),
+    R('carWin2', 412, 64, 54, 42, 6),
+    C('w1', 72, 152, 30), C('w2', 158, 152, 30), C('w3', 250, 150, 24),
+    C('w4', 360, 158, 28), C('w5', 442, 158, 28),
+    line(pfx + 'coup', 'M' + (ox + 286 * s) + ',' + (oy + 108 * s) + ' h' + (26 * s), 8)
+  ];
+}
+
+// ============================================================================
+// SCENES
+// ============================================================================
+var SCENES = [
+  {
+    id: 'train-cross', name: '🚂 ข้ามสะพาน',
+    regions: [].concat([
+      rect('sky', 0, 0, 800, 900),
+      circ('sun', 662, 150, 82),
+      elli('cloud1', 200, 190, 122, 50),
+      elli('cloud2', 520, 120, 92, 40),
+      pathR('hillL', 'M0,700 L200,430 L400,700 Z'),
+      pathR('hillR', 'M470,700 L650,470 L800,700 Z'),
+      rect('river', 0, 860, 800, 340),
+      rect('deck', 40, 600, 720, 54, 8),
+      rect('pier1', 120, 654, 54, 210),
+      rect('pier2', 373, 654, 54, 210),
+      rect('pier3', 626, 654, 54, 210),
+      line('waveA', 'M40,960 q60,-26 120,0 q60,26 120,0 q60,-26 120,0 q60,26 120,0 q60,-26 120,0', 6),
+      line('waveB', 'M80,1070 q60,-26 120,0 q60,26 120,0 q60,-26 120,0 q60,26 120,0', 6)
+    ], makeTrain('t_', 150, 430, 0.95))
+  },
+  {
+    id: 'train-under', name: '🌉 ลอดใต้สะพาน',
+    regions: [].concat([
+      rect('sky', 0, 0, 800, 1200),
+      circ('sun', 120, 148, 74),
+      elli('cloud1', 560, 150, 112, 46),
+      rect('ground', 0, 838, 800, 362),
+      rect('bed', 56, 690, 688, 62, 6),
+      rect('pillarL', 66, 246, 150, 592),
+      rect('pillarR', 584, 246, 150, 592),
+      rect('deck', 36, 148, 728, 100, 12),
+      line('rail', 'M40,150 h720', 7),
+      line('post1', 'M180,150 v-34', 7), line('post2', 'M400,150 v-34', 7), line('post3', 'M620,150 v-34', 7),
+      line('railTop', 'M150,116 h500', 7)
+    ], makeTrain('u_', 214, 548, 0.78))
+  },
+  {
+    id: 'train-switch', name: '🔀 สับราง',
+    regions: [].concat([
+      rect('sky', 0, 0, 800, 1200),
+      circ('sun', 682, 140, 76),
+      elli('cloud1', 180, 172, 112, 46),
+      elli('cloud2', 470, 120, 84, 36),
+      rect('ground', 0, 700, 800, 500),
+      pathR('ballast', 'M120,1182 L680,1182 L544,720 L256,720 Z'),
+      line('railA1', 'M296,720 L150,1182', 8), line('railA2', 'M340,720 L282,1182', 8),
+      line('railB1', 'M460,720 L520,1182', 8), line('railB2', 'M504,720 L650,1182', 8),
+      line('tie1', 'M262,880 L558,880', 7), line('tie2', 'M232,1020 L610,1020', 7),
+      rect('signalPost', 634, 542, 18, 200),
+      circ('signalLight', 643, 520, 34),
+      rect('switchBox', 300, 700, 46, 46, 6)
+    ], makeTrain('s_', 246, 540, 0.9))
+  },
+  {
+    id: 'train-tunnel', name: '⛰️ เข้าอุโมงค์',
+    regions: [
+      rect('sky', 0, 0, 800, 1200),
+      circ('sun', 150, 138, 72),
+      elli('cloud1', 604, 150, 112, 46),
+      pathR('mountain', 'M0,1200 L0,600 Q400,318 800,600 L800,1200 Z'),
+      rect('grass', 0, 1048, 800, 152),
+      pathR('rim', 'M262,1050 L262,742 Q400,626 538,742 L538,1050 Z'),
+      pathR('tunnel', 'M300,1050 L300,772 Q400,682 500,772 L500,1050 Z'),
+      rect('trackbed', 336, 1028, 128, 92),
+      rect('body', 330, 812, 140, 220, 18),
+      rect('roof', 320, 792, 160, 28, 10),
+      rect('windshield', 352, 832, 96, 66, 10),
+      circ('headlight', 400, 954, 34),
+      rect('buffer', 330, 1000, 140, 28, 4),
+      circ('buf1', 352, 1015, 12, { noClick: true, fill: '#2d3436' }),
+      circ('buf2', 448, 1015, 12, { noClick: true, fill: '#2d3436' }),
+      line('rail1', 'M356,1122 L360,1030', 8), line('rail2', 'M444,1122 L440,1030', 8)
+    ]
+  },
+  {
+    id: 'house-garden', name: '🏡 บ้านในสวน',
+    regions: [
+      rect('sky', 0, 0, 800, 1200),
+      circ('sun', 662, 152, 80),
+      elli('cloud1', 180, 182, 122, 50),
+      elli('cloud2', 430, 120, 90, 40),
+      rect('grass', 0, 820, 800, 380),
+      pathR('path', 'M356,1200 L444,1200 L472,900 L328,900 Z'),
+      rect('trunk', 120, 720, 42, 140),
+      circ('leaves', 141, 648, 96),
+      rect('wall', 250, 560, 300, 280),
+      rect('chimney', 480, 438, 50, 92),
+      pathR('roof', 'M214,562 L400,398 L586,562 Z'),
+      rect('door', 360, 700, 80, 140, 8),
+      rect('winL', 285, 610, 66, 66, 6),
+      rect('winR', 449, 610, 66, 66, 6),
+      circ('flower1', 150, 910, 26),
+      circ('flower2', 620, 918, 26),
+      circ('flower3', 700, 884, 22),
+      line('winLbar', 'M318,610 v66 M285,643 h66', 5),
+      line('winRbar', 'M482,610 v66 M449,643 h66', 5)
+    ]
+  },
+  {
+    id: 'sea-boat', name: '⛵ ทะเลกว้าง',
+    regions: [
+      rect('sky', 0, 0, 800, 700),
+      circ('sun', 650, 150, 82),
+      elli('cloud1', 200, 172, 112, 46),
+      rect('sea', 0, 640, 800, 560),
+      pathR('hull', 'M250,772 L560,772 L520,868 L290,868 Z'),
+      pathR('sailL', 'M395,520 L395,754 L262,754 Z'),
+      pathR('sailR', 'M410,470 L410,754 L560,754 Z'),
+      pathR('flag', 'M410,466 L476,484 L410,502 Z'),
+      line('mast', 'M403,462 L403,772', 8),
+      line('wave1', 'M40,940 q60,-28 120,0 q60,28 120,0 q60,-28 120,0 q60,28 120,0 q60,-28 120,0', 7),
+      line('wave2', 'M80,1058 q60,-28 120,0 q60,28 120,0 q60,-28 120,0 q60,28 120,0', 7),
+      line('bird1', 'M150,330 q22,-22 44,0 q22,-22 44,0', 6),
+      line('bird2', 'M520,270 q18,-18 36,0 q18,-18 36,0', 6)
+    ]
+  }
+];
+
+var VBW = 800, VBH = 1200;
+var BRUSH_R = 34, ERASE_R = 50;
+var PROGRESS_KEY = 'crayon-done-v1';
+
+// ============================================================================
+// STATE + ELEMENTS
+// ============================================================================
+var $ = function (id) { return document.getElementById(id); };
+var selectScreen = $('selectScreen'), gameScreen = $('gameScreen');
+var canvas = $('paint'), linesSvg = $('lines'), sheet = $('sheet');
+var ctx = canvas.getContext('2d', { willReadFrequently: true });
+var palette = $('palette'), overlay = $('overlay'), crayon = $('crayon');
+
+var state = {
+  scene: null,
+  color: COLORS[0],
+  scale: 1,           // vb -> device px multiplier (= canvas.width / VBW)
+  drawing: false,
+  pointerId: null,
+  region: null,       // region currently being painted
+  lastX: 0, lastY: 0, // last vb coords in the stroke
+  touched: {},        // regionId -> true
+  undo: [],
+  celebrated: false
+};
+
+function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+// ============================================================================
+// AUDIO — subtle crayon scritch + blips (Web Audio, unlocked on first gesture)
+// ============================================================================
+var AC = null, noiseBuf = null;
+function ensureAudio() {
+  if (AC) return;
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    var len = Math.floor(AC.sampleRate * 0.3);
+    noiseBuf = AC.createBuffer(1, len, AC.sampleRate);
+    var d = noiseBuf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  } catch (e) { AC = null; }
+}
+function scritch() {
+  if (!AC) return;
+  try {
+    var src = AC.createBufferSource(); src.buffer = noiseBuf;
+    var f = AC.createBiquadFilter(); f.type = 'bandpass';
+    f.frequency.value = 1500 + Math.random() * 900; f.Q.value = 0.8;
+    var g = AC.createGain(); var t = AC.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.05, t + 0.02);
+    g.gain.linearRampToValueAtTime(0, t + 0.12);
+    src.connect(f); f.connect(g); g.connect(AC.destination);
+    src.start(t); src.stop(t + 0.14);
+  } catch (e) {}
+}
+function blip(freq) {
+  if (!AC) return;
+  try {
+    var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = 'sine'; o.frequency.value = freq || 660;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.16, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + 0.2);
+  } catch (e) {}
+}
+function cheer() { [523, 659, 784, 1047].forEach(function (f, i) { setTimeout(function () { blip(f); }, i * 110); }); }
+
+// ============================================================================
+// PATH2D + SVG builders
+// ============================================================================
+function buildPath2D(r) {
+  var p = new Path2D();
+  if (r.shape === 'circle') { p.arc(r.cx, r.cy, r.r, 0, Math.PI * 2); }
+  else if (r.shape === 'ellipse') { p.ellipse(r.cx, r.cy, r.rx, r.ry, 0, 0, Math.PI * 2); }
+  else if (r.shape === 'rect') {
+    if (r.rx && p.roundRect) { p.roundRect(r.x, r.y, r.w, r.h, r.rx); }
+    else { p.rect(r.x, r.y, r.w, r.h); }
+  } else { p = new Path2D(r.d); }
+  return p;
+}
+function createShapeEl(r) {
+  var ns = 'http://www.w3.org/2000/svg', el;
+  if (r.shape === 'circle') { el = document.createElementNS(ns, 'circle'); el.setAttribute('cx', r.cx); el.setAttribute('cy', r.cy); el.setAttribute('r', r.r); }
+  else if (r.shape === 'ellipse') { el = document.createElementNS(ns, 'ellipse'); el.setAttribute('cx', r.cx); el.setAttribute('cy', r.cy); el.setAttribute('rx', r.rx); el.setAttribute('ry', r.ry); }
+  else if (r.shape === 'rect') { el = document.createElementNS(ns, 'rect'); el.setAttribute('x', r.x); el.setAttribute('y', r.y); el.setAttribute('width', r.w); el.setAttribute('height', r.h); if (r.rx) el.setAttribute('rx', r.rx); }
+  else { el = document.createElementNS(ns, 'path'); el.setAttribute('d', r.d); }
+  return el;
+}
+function outlineEl(r) {
+  var el = createShapeEl(r);
+  if (r.noClick && r.fill) {
+    el.setAttribute('fill', r.fill); el.setAttribute('stroke', 'none');
+  } else {
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', '#2d3436');
+    el.setAttribute('stroke-width', r.strokeWidth || 6);
+    el.setAttribute('stroke-linejoin', 'round');
+    el.setAttribute('stroke-linecap', 'round');
+  }
+  return el;
+}
+
+// ============================================================================
+// SELECT SCREEN
+// ============================================================================
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch (e) { return {}; }
+}
+function renderSelect() {
+  var grid = $('levelGrid');
+  grid.innerHTML = '';
+  var done = loadProgress();
+  SCENES.forEach(function (sc) {
+    var card = document.createElement('div');
+    card.className = 'lcard';
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 800 1200');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.setAttribute('class', 'preview');
+    sc.regions.forEach(function (r) { svg.appendChild(outlineEl(r)); });
+    card.appendChild(svg);
+    var title = document.createElement('div');
+    title.className = 'ltitle'; title.textContent = sc.name;
+    card.appendChild(title);
+    if (done[sc.id]) { var st = document.createElement('div'); st.className = 'done-star'; st.textContent = '⭐'; card.appendChild(st); }
+    card.addEventListener('click', function () { ensureAudio(); openScene(sc); });
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================================
+// OPEN A SCENE
+// ============================================================================
+function openScene(sc) {
+  state.scene = sc;
+  state.touched = {};
+  state.undo = [];
+  state.celebrated = false;
+  updateUndoBtn();
+
+  // Prepare geometry: own Path2D + an even-odd clip = self minus everything on top.
+  var colorable = sc.regions.filter(function (r) { return !r.noClick; });
+  colorable.forEach(function (r, i) {
+    r._p2d = buildPath2D(r);
+    var clip = new Path2D();
+    clip.addPath(r._p2d);
+    for (var j = i + 1; j < colorable.length; j++) { clip.addPath(buildPath2D(colorable[j])); }
+    r._clip = clip;
+    r._touched = false;
+  });
+  state._colorable = colorable;
+
+  // Build the black line-art overlay.
+  linesSvg.innerHTML = '';
+  sc.regions.forEach(function (r) { linesSvg.appendChild(outlineEl(r)); });
+
+  selectScreen.classList.remove('active');
+  gameScreen.classList.add('active');
+  // size the canvas after layout settles
+  requestAnimationFrame(function () { fitCanvas(true); });
+}
+
+// ============================================================================
+// CANVAS SIZING (preserves art on resize)
+// ============================================================================
+function fitCanvas(fresh) {
+  var rect = sheet.getBoundingClientRect();
+  var w = Math.max(1, Math.round(rect.width));
+  var h = Math.max(1, Math.round(rect.height));
+  var dpr = window.devicePixelRatio || 1;
+  var snap = null;
+  if (!fresh && canvas.width) {
+    snap = document.createElement('canvas');
+    snap.width = canvas.width; snap.height = canvas.height;
+    snap.getContext('2d').drawImage(canvas, 0, 0);
+  }
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  state.scale = canvas.width / VBW;
+  ctx.setTransform(state.scale, 0, 0, canvas.height / VBH, 0, 0);
+  if (snap) {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(snap, 0, 0, snap.width, snap.height, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+  state.undo = []; updateUndoBtn();
+}
+
+// ============================================================================
+// DRAWING
+// ============================================================================
+function vbFromEvent(e) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) / rect.width * VBW,
+    y: (e.clientY - rect.top) / rect.height * VBH
+  };
+}
+function deviceXY(vx, vy) { return [vx * (canvas.width / VBW), vy * (canvas.height / VBH)]; }
+
+function hitRegion(vx, vy) {
+  var d = deviceXY(vx, vy);
+  var found = null;
+  var list = state._colorable;
+  for (var i = 0; i < list.length; i++) {
+    if (ctx.isPointInPath(list[i]._p2d, d[0], d[1])) found = list[i];
+  }
+  return found;
+}
+
+function stampAt(vx, vy) {
+  var R = (state.color === ERASE) ? ERASE_R : BRUSH_R;
+  var i, a, dd;
+  if (state.color === ERASE) {
+    ctx.globalCompositeOperation = 'destination-out';
+    for (i = 0; i < 3; i++) {
+      a = Math.random() * 6.283; dd = Math.random() * R * 0.4;
+      ctx.globalAlpha = 0.65;
+      ctx.beginPath();
+      ctx.arc(vx + Math.cos(a) * dd, vy + Math.sin(a) * dd, R * (0.5 + Math.random() * 0.4), 0, 6.283);
+      ctx.fillStyle = '#000'; ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  } else {
+    ctx.fillStyle = state.color;
+    for (i = 0; i < 3; i++) {
+      a = Math.random() * 6.283; dd = Math.random() * R * 0.42;
+      ctx.globalAlpha = 0.09 + Math.random() * 0.11;
+      ctx.beginPath();
+      ctx.arc(vx + Math.cos(a) * dd, vy + Math.sin(a) * dd, R * (0.48 + Math.random() * 0.4), 0, 6.283);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function strokeTo(vx, vy) {
+  var dx = vx - state.lastX, dy = vy - state.lastY;
+  var dist = Math.hypot(dx, dy);
+  var step = BRUSH_R * 0.3;
+  var n = Math.max(1, Math.floor(dist / step));
+  for (var k = 1; k <= n; k++) {
+    stampAt(state.lastX + dx * (k / n), state.lastY + dy * (k / n));
+  }
+  state.lastX = vx; state.lastY = vy;
+}
+
+function pushUndo() {
+  var img;
+  try { img = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (e) { return; }
+  state.undo.push({ img: img, touched: Object.assign({}, state.touched) });
+  if (state.undo.length > 8) state.undo.shift();
+  updateUndoBtn();
+}
+
+// ---- Pointer handlers ----
+var lastScritch = 0;
+sheet.addEventListener('pointerdown', function (e) {
+  if (!state.scene) return;
+  e.preventDefault();
+  if (state.drawing) return;          // single active stroke — ignore extra fingers
+  ensureAudio();
+  var vb = vbFromEvent(e);
+  var r = hitRegion(vb.x, vb.y);
+  if (!r) return;
+  pushUndo();
+  state.drawing = true;
+  state.pointerId = e.pointerId;
+  state.region = r;
+  state.lastX = vb.x; state.lastY = vb.y;
+  try { sheet.setPointerCapture(e.pointerId); } catch (err) {}
+  ctx.save();
+  ctx.clip(r._clip, 'evenodd');
+  stampAt(vb.x, vb.y);
+  markTouched(r);
+  showCrayon(e.clientX, e.clientY);
+  scritch(); lastScritch = e.timeStamp || 0;
+  buzz(6);
+});
+
+sheet.addEventListener('pointermove', function (e) {
+  if (state.drawing) {
+    if (e.pointerId !== state.pointerId) return;
+    e.preventDefault();
+    var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+    if (!evs || !evs.length) evs = [e];
+    for (var k = 0; k < evs.length; k++) {
+      var vb = vbFromEvent(evs[k]);
+      strokeTo(vb.x, vb.y);
+    }
+    moveCrayon(e.clientX, e.clientY);
+    var ts = e.timeStamp || 0;
+    if (ts - lastScritch > 130) { scritch(); lastScritch = ts; }
+  }
+});
+
+function endStroke(e) {
+  if (!state.drawing) return;
+  if (e && e.pointerId != null && state.pointerId != null && e.pointerId !== state.pointerId) return;
+  ctx.restore();               // drop the region clip
+  state.drawing = false;
+  state.pointerId = null;
+  state.region = null;
+  hideCrayon();
+  checkComplete();
+}
+sheet.addEventListener('pointerup', endStroke);
+sheet.addEventListener('pointercancel', endStroke);
+sheet.addEventListener('lostpointercapture', endStroke);
+
+function markTouched(r) {
+  if (state.touched[r.id]) return;
+  state.touched[r.id] = true;
+  r._touched = true;
+}
+
+function checkComplete() {
+  if (state.celebrated) return;
+  var all = state._colorable.every(function (r) { return state.touched[r.id]; });
+  if (!all) return;
+  state.celebrated = true;
+  saveProgress();
+  celebrate(150);
+  cheer();
+  buzz([40, 30, 60]);
+  flashOverlay('สวยจังเลย! 🌈', 1700);
+}
+
+// ============================================================================
+// CRAYON CURSOR
+// ============================================================================
+function darken(hex, f) {
+  if (hex[0] !== '#') return hex;
+  var n = parseInt(hex.slice(1), 16);
+  var r = Math.round(((n >> 16) & 255) * f);
+  var g = Math.round(((n >> 8) & 255) * f);
+  var b = Math.round((n & 255) * f);
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+function tintCrayon(col) {
+  var body = col === ERASE ? '#e6e6e6' : col;
+  var cap = col === ERASE ? '#bdbdbd' : darken(col, 0.7);
+  $('cr-body').setAttribute('fill', body);
+  $('cr-cap').setAttribute('fill', cap);
+}
+function placeCrayon(x, y) {
+  crayon.style.transformOrigin = '22px 99px';
+  crayon.style.transform = 'translate(' + (x - 22) + 'px,' + (y - 99) + 'px) rotate(-24deg)';
+}
+function showCrayon(x, y) { placeCrayon(x, y); crayon.classList.add('show'); }
+function moveCrayon(x, y) { placeCrayon(x, y); }
+function hideCrayon() { crayon.classList.remove('show'); }
+
+// ============================================================================
+// PALETTE
+// ============================================================================
+function renderPalette() {
+  palette.innerHTML = '';
+  COLORS.forEach(function (c, i) {
+    var sw = document.createElement('button');
+    sw.className = 'swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = c;
+    sw.setAttribute('aria-label', 'สี');
+    sw.addEventListener('click', function () { selectColor(c, sw); });
+    palette.appendChild(sw);
+  });
+  var er = document.createElement('button');
+  er.className = 'swatch eraser';
+  er.textContent = '🧽';
+  er.setAttribute('aria-label', 'ยางลบ');
+  er.addEventListener('click', function () { selectColor(ERASE, er); });
+  palette.appendChild(er);
+  tintCrayon(state.color);
+}
+function selectColor(c, el) {
+  state.color = c;
+  var sws = palette.querySelectorAll('.swatch');
+  for (var i = 0; i < sws.length; i++) sws[i].classList.remove('active');
+  el.classList.add('active');
+  tintCrayon(c);
+  ensureAudio(); blip(c === ERASE ? 380 : 720); buzz(6);
+}
+
+// ============================================================================
+// BUTTONS
+// ============================================================================
+$('undoBtn').addEventListener('click', function () {
+  var last = state.undo.pop();
+  if (!last) { updateUndoBtn(); return; }
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.putImageData(last.img, 0, 0);
+  ctx.restore();
+  state.touched = last.touched;
+  state.celebrated = false;
+  updateUndoBtn(); buzz(10);
+});
+$('clearBtn').addEventListener('click', function () {
+  pushUndo();
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+  state.touched = {}; state.celebrated = false;
+  buzz(18);
+});
+$('saveBtn').addEventListener('click', savePng);
+$('listBtn').addEventListener('click', function () {
+  overlay.classList.remove('shown'); overlay.innerHTML = '';
+  gameScreen.classList.remove('active');
+  renderSelect();
+  selectScreen.classList.add('active');
+});
+
+function updateUndoBtn() { $('undoBtn').disabled = state.undo.length === 0; }
+
+// Save = flatten line-art SVG over the painted canvas into a PNG.
+function savePng() {
+  if (!state.scene) return;
+  var out = document.createElement('canvas');
+  out.width = VBW * 2; out.height = VBH * 2;
+  var octx = out.getContext('2d');
+  octx.fillStyle = '#ffffff'; octx.fillRect(0, 0, out.width, out.height);
+  octx.drawImage(canvas, 0, 0, out.width, out.height);   // painted colors
+  var clone = linesSvg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  var xml = new XMLSerializer().serializeToString(clone);
+  var svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+  var url = URL.createObjectURL(svgBlob);
+  var img = new Image();
+  img.onload = function () {
+    octx.drawImage(img, 0, 0, out.width, out.height);
+    URL.revokeObjectURL(url);
+    out.toBlob(function (blob) {
+      if (!blob) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
+      var a = document.createElement('a');
+      var u = URL.createObjectURL(blob);
+      a.href = u; a.download = 'ระบายสี-' + state.scene.id + '.png';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 1500);
+      flashOverlay('บันทึกแล้ว! 💾', 1100);
+      buzz([30, 20, 30]);
+    }, 'image/png');
+  };
+  img.onerror = function () { flashOverlay('บันทึกไม่ได้ 😢', 1200); URL.revokeObjectURL(url); };
+  img.src = url;
+}
+
+// ============================================================================
+// OVERLAY + CONFETTI + PROGRESS
+// ============================================================================
+function flashOverlay(text, ms) {
+  overlay.classList.add('shown');
+  overlay.innerHTML = '<div class="msg">' + text + '</div>';
+  setTimeout(function () { overlay.classList.remove('shown'); overlay.innerHTML = ''; }, ms);
+}
+function celebrate(n) {
+  var colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (var i = 0; i < n; i++) {
+    var c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.7 + 's';
+    c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    (function (el) { setTimeout(function () { el.remove(); }, 5000); })(c);
+  }
+}
+function saveProgress() {
+  if (!state.scene) return;
+  var p = loadProgress();
+  p[state.scene.id] = (p[state.scene.id] || 0) + 1;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch (e) {}
+}
+
+// ============================================================================
+// EVENTS / INIT
+// ============================================================================
+var resizeT = 0;
+window.addEventListener('resize', function () {
+  if (!gameScreen.classList.contains('active')) return;
+  clearTimeout(resizeT); resizeT = setTimeout(function () { fitCanvas(false); }, 150);
+});
+window.addEventListener('orientationchange', function () {
+  if (!gameScreen.classList.contains('active')) return;
+  clearTimeout(resizeT); resizeT = setTimeout(function () { fitCanvas(false); }, 250);
+});
+var lastTouchEnd = 0;
+document.addEventListener('touchend', function (e) {
+  var now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+renderPalette();
+renderSelect();
+</script>
+</body>
+</html>
