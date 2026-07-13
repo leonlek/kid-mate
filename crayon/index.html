@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🖍️ สมุดระบายสี — เกมสำหรับเด็ก</title>
-<meta name="description" content="สมุดภาพระบายสีเทียนซีนใหญ่เต็มจอ ระบายเหมือนจริง มีปากกาตามนิ้ว รถไฟข้ามสะพาน ลอดใต้สะพาน สับราง อุโมงค์ บ้าน ทะเล">
+<meta name="description" content="สมุดภาพระบายสีเทียนซีนใหญ่เต็มจอ ระบายเหมือนจริง มีปากกาตามนิ้ว สัตว์ รถไฟ ช้าง ปลา ไดโนเสาร์ อวกาศ ฟาร์ม บ้าน ทะเล ทั้งแนวตั้งและแนวนอน">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -99,6 +99,13 @@
     position: absolute; top: 6px; right: 8px; font-size: 22px;
     filter: drop-shadow(0 1px 0 rgba(0,0,0,0.15));
   }
+  .lgrid .cat-header {
+    grid-column: 1 / -1;
+    font-family: 'Itim', cursive; font-size: 22px;
+    color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
+    margin: 16px 4px 0; letter-spacing: 0.5px;
+  }
+  .lgrid .cat-header:first-child { margin-top: 4px; }
 
   /* ============================ GAME SCREEN ============================ */
   #gameScreen { padding: env(safe-area-inset-top) 0 0; }
@@ -274,7 +281,7 @@ function makeTrain(pfx, ox, oy, s) {
 // ============================================================================
 var SCENES = [
   {
-    id: 'train-cross', name: '🚂 ข้ามสะพาน',
+    id: 'train-cross', name: '🚂 ข้ามสะพาน', cat: 'train',
     regions: [].concat([
       rect('sky', 0, 0, 800, 900),
       circ('sun', 662, 150, 82),
@@ -292,7 +299,7 @@ var SCENES = [
     ], makeTrain('t_', 150, 430, 0.95))
   },
   {
-    id: 'train-under', name: '🌉 ลอดใต้สะพาน',
+    id: 'train-under', name: '🌉 ลอดใต้สะพาน', cat: 'train',
     regions: [].concat([
       rect('sky', 0, 0, 800, 1200),
       circ('sun', 120, 148, 74),
@@ -308,7 +315,7 @@ var SCENES = [
     ], makeTrain('u_', 214, 548, 0.78))
   },
   {
-    id: 'train-switch', name: '🔀 สับราง',
+    id: 'train-switch', name: '🔀 สับราง', cat: 'train',
     regions: [].concat([
       rect('sky', 0, 0, 800, 1200),
       circ('sun', 682, 140, 76),
@@ -325,7 +332,7 @@ var SCENES = [
     ], makeTrain('s_', 246, 540, 0.9))
   },
   {
-    id: 'train-tunnel', name: '⛰️ เข้าอุโมงค์',
+    id: 'train-tunnel', name: '⛰️ เข้าอุโมงค์', cat: 'train',
     regions: [
       rect('sky', 0, 0, 800, 1200),
       circ('sun', 150, 138, 72),
@@ -346,7 +353,147 @@ var SCENES = [
     ]
   },
   {
-    id: 'house-garden', name: '🏡 บ้านในสวน',
+    id: 'cat', name: '🐱 แมวเหมียว', cat: 'animal',
+    regions: [
+      rect('bg', 0, 0, 800, 1200),
+      rect('floor', 0, 1000, 800, 200),
+      pathR('tail', 'M560,930 Q720,900 700,730 Q694,640 620,662 Q580,678 610,748 Q636,860 500,910 Z'),
+      elli('body', 400, 880, 205, 160),
+      elli('belly', 400, 912, 116, 122),
+      elli('pawL', 300, 1000, 64, 40),
+      elli('pawR', 500, 1000, 64, 40),
+      circ('head', 400, 520, 192),
+      pathR('earL', 'M262,398 L214,238 L388,352 Z'),
+      pathR('earR', 'M538,398 L586,238 L412,352 Z'),
+      pathR('earLin', 'M285,378 L258,286 L356,350 Z'),
+      pathR('earRin', 'M515,378 L542,286 L444,350 Z'),
+      elli('eyeL', 332, 500, 36, 48),
+      elli('eyeR', 468, 500, 36, 48),
+      pathR('nose', 'M372,566 L428,566 L400,600 Z'),
+      circ('pupilL', 332, 504, 14, { noClick: true, fill: '#2d3436' }),
+      circ('pupilR', 468, 504, 14, { noClick: true, fill: '#2d3436' }),
+      line('mouth', 'M400,600 Q400,640 362,650 M400,600 Q400,640 438,650', 5),
+      line('whiskL', 'M300,566 L172,548 M300,592 L174,604', 5),
+      line('whiskR', 'M500,566 L628,548 M500,592 L626,604', 5),
+      line('stripeH', 'M360,344 Q400,362 440,344', 6)
+    ]
+  },
+  {
+    id: 'dog', name: '🐶 หมาน้อย', cat: 'animal',
+    regions: [
+      rect('bg', 0, 0, 800, 1200),
+      rect('floor', 0, 1000, 800, 200),
+      pathR('tail', 'M580,900 Q700,860 720,760 Q724,720 690,730 Q676,782 640,822 Q600,860 540,882 Z'),
+      elli('body', 400, 920, 205, 150),
+      elli('pawL', 320, 1010, 66, 42),
+      elli('pawR', 480, 1010, 66, 42),
+      elli('head', 400, 500, 190, 180),
+      elli('patch', 300, 470, 72, 66),
+      pathR('earL', 'M250,420 Q176,436 190,610 Q214,700 300,662 Q312,540 312,432 Z'),
+      pathR('earR', 'M550,420 Q624,436 610,610 Q586,700 500,662 Q488,540 488,432 Z'),
+      elli('snout', 400, 585, 95, 72),
+      elli('nose', 400, 548, 36, 28),
+      pathR('tongue', 'M372,626 Q400,700 428,626 L428,660 Q400,712 372,660 Z'),
+      circ('eyeL', 334, 466, 24),
+      circ('eyeR', 466, 466, 24),
+      pathR('collar', 'M252,662 Q400,722 548,662 L548,702 Q400,762 252,702 Z'),
+      circ('tag', 400, 712, 18),
+      circ('pupilL', 334, 470, 11, { noClick: true, fill: '#2d3436' }),
+      circ('pupilR', 466, 470, 11, { noClick: true, fill: '#2d3436' })
+    ]
+  },
+  {
+    id: 'fish-sea', name: '🐠 ใต้ทะเล', cat: 'animal', w: 1200, h: 800,
+    regions: [
+      rect('water', 0, 0, 1200, 800),
+      pathR('sand', 'M0,720 Q160,672 320,720 Q480,768 640,720 Q800,672 960,720 Q1080,754 1200,720 L1200,800 L0,800 Z'),
+      elli('rock1', 500, 760, 70, 40),
+      elli('rock2', 820, 766, 56, 34),
+      pathR('weedL', 'M180,800 Q140,662 190,562 Q150,522 200,472 Q250,522 220,582 Q258,682 240,800 Z'),
+      pathR('weedR', 'M1020,800 Q1060,682 1010,582 Q1060,540 1015,482 Q965,532 1000,600 Q962,690 980,800 Z'),
+      elli('small2', 180, 470, 74, 46),
+      pathR('small2Tail', 'M112,470 L52,436 L52,504 Z'),
+      elli('small1', 980, 200, 86, 54),
+      pathR('small1Tail', 'M1062,200 L1132,158 L1132,242 Z'),
+      pathR('fishTail', 'M780,380 L960,250 L960,510 Z'),
+      elli('fishBody', 560, 380, 240, 150),
+      pathR('finTop', 'M520,236 L470,150 L602,222 Z'),
+      pathR('finBot', 'M520,524 L470,610 L602,538 Z'),
+      circ('fishEye', 430, 340, 30),
+      circ('bub1', 700, 150, 26), circ('bub2', 760, 92, 18), circ('bub3', 300, 240, 22),
+      circ('pupilBig', 430, 340, 12, { noClick: true, fill: '#2d3436' }),
+      circ('eyeS1', 1000, 190, 9, { noClick: true, fill: '#2d3436' })
+    ]
+  },
+  {
+    id: 'elephant', name: '🐘 ช้าง', cat: 'animal', w: 1200, h: 800,
+    regions: [
+      rect('sky', 0, 0, 1200, 540),
+      circ('sun', 1080, 130, 88),
+      elli('cloud1', 300, 150, 122, 48),
+      rect('grass', 0, 500, 1200, 300),
+      rect('treeTrunk', 120, 360, 44, 180),
+      circ('treeTop', 142, 322, 110),
+      rect('legFL', 560, 560, 60, 190, 8),
+      rect('legFR', 680, 560, 60, 190, 8),
+      rect('legBL', 820, 560, 60, 190, 8),
+      rect('legBR', 930, 560, 60, 190, 8),
+      pathR('tail', 'M1030,440 Q1092,470 1082,562 Q1078,602 1050,592 Q1060,540 1010,500 Z'),
+      elli('body', 760, 450, 280, 180),
+      elli('head', 420, 430, 180, 170),
+      elli('ear', 350, 408, 128, 150),
+      pathR('trunk', 'M270,460 Q150,520 180,662 Q200,760 300,730 Q332,700 302,662 Q272,602 322,542 Q360,502 330,462 Z'),
+      pathR('tusk', 'M300,562 Q262,606 246,648 L272,660 Q292,610 326,578 Z'),
+      circ('eye', 432, 400, 16),
+      circ('eyeP', 432, 402, 7, { noClick: true, fill: '#2d3436' })
+    ]
+  },
+  {
+    id: 'butterfly', name: '🦋 ผีเสื้อ', cat: 'animal',
+    regions: [
+      rect('sky', 0, 0, 800, 1200),
+      circ('sun', 120, 140, 74),
+      elli('cloud1', 560, 160, 110, 44),
+      rect('grass', 0, 880, 800, 320),
+      line('stemA', 'M240,1200 L240,1016', 9),
+      circ('flAp1', 240, 954, 30), circ('flAp2', 288, 1000, 30), circ('flAp3', 240, 1046, 30), circ('flAp4', 192, 1000, 30),
+      circ('flAc', 240, 1000, 32),
+      line('stemB', 'M580,1200 L580,1052', 9),
+      circ('flBp1', 580, 988, 28), circ('flBp2', 624, 1030, 28), circ('flBp3', 580, 1072, 28), circ('flBp4', 536, 1030, 28),
+      circ('flBc', 580, 1030, 30),
+      pathR('wingUL', 'M382,470 C240,360 120,392 132,512 C142,600 272,600 384,520 Z'),
+      pathR('wingUR', 'M418,470 C560,360 680,392 668,512 C658,600 528,600 416,520 Z'),
+      pathR('wingLL', 'M384,600 C300,652 222,742 272,822 C322,872 402,800 392,690 Z'),
+      pathR('wingLR', 'M416,600 C500,652 578,742 528,822 C478,872 398,800 408,690 Z'),
+      elli('bBody', 400, 560, 24, 150),
+      circ('spotUL', 250, 482, 34), circ('spotUR', 550, 482, 34),
+      circ('spotLL', 322, 730, 24), circ('spotLR', 478, 730, 24),
+      line('antL', 'M390,432 Q360,372 340,352', 6), line('antR', 'M410,432 Q440,372 460,352', 6)
+    ]
+  },
+  {
+    id: 'dino', name: '🦕 ไดโนเสาร์', cat: 'animal', w: 1200, h: 800,
+    regions: [
+      rect('sky', 0, 0, 1200, 560),
+      circ('sun', 150, 130, 72),
+      elli('cloud1', 420, 140, 122, 46),
+      pathR('volcano', 'M760,560 L940,200 L1120,560 Z'),
+      pathR('crater', 'M866,300 L940,200 L1014,300 Q940,342 866,300 Z'),
+      rect('ground', 0, 520, 1200, 280),
+      rect('palmTrunk', 122, 320, 36, 220),
+      pathR('palmLeaves', 'M140,322 Q42,302 22,242 Q92,272 140,302 Q100,222 142,172 Q184,222 152,302 Q212,272 262,252 Q232,312 140,322 Z'),
+      rect('legFL', 560, 560, 54, 180, 8), rect('legFR', 650, 560, 54, 180, 8),
+      rect('legBL', 760, 560, 54, 180, 8), rect('legBR', 850, 560, 54, 180, 8),
+      pathR('tail', 'M930,470 Q1080,470 1160,560 L1150,600 Q1040,540 900,560 Z'),
+      elli('body', 720, 470, 230, 150),
+      pathR('neck', 'M560,462 Q470,382 440,242 Q432,182 480,182 Q520,192 512,252 Q548,382 640,442 Z'),
+      circ('head', 470, 182, 66),
+      circ('spot1', 700, 442, 30), circ('spot2', 780, 492, 26), circ('spot3', 640, 480, 24),
+      circ('eye', 452, 162, 10, { noClick: true, fill: '#2d3436' })
+    ]
+  },
+  {
+    id: 'house-garden', name: '🏡 บ้านในสวน', cat: 'other',
     regions: [
       rect('sky', 0, 0, 800, 1200),
       circ('sun', 662, 152, 80),
@@ -370,7 +517,7 @@ var SCENES = [
     ]
   },
   {
-    id: 'sea-boat', name: '⛵ ทะเลกว้าง',
+    id: 'sea-boat', name: '⛵ ทะเลกว้าง', cat: 'other',
     regions: [
       rect('sky', 0, 0, 800, 700),
       circ('sun', 650, 150, 82),
@@ -386,12 +533,67 @@ var SCENES = [
       line('bird1', 'M150,330 q22,-22 44,0 q22,-22 44,0', 6),
       line('bird2', 'M520,270 q18,-18 36,0 q18,-18 36,0', 6)
     ]
+  },
+  {
+    id: 'farm', name: '🚜 ฟาร์ม', cat: 'other', w: 1200, h: 800,
+    regions: [
+      rect('sky', 0, 0, 1200, 520),
+      circ('sun', 1080, 120, 84),
+      elli('cloud1', 300, 140, 122, 46),
+      rect('grass', 0, 480, 1200, 320),
+      rect('treeTrunk', 180, 380, 40, 140),
+      circ('treeTop', 200, 340, 96),
+      rect('barnWall', 360, 300, 360, 240),
+      pathR('barnRoof', 'M330,302 L540,170 L750,302 Z'),
+      pathR('hayWin', 'M500,320 L540,290 L580,320 L580,382 L500,382 Z'),
+      rect('barnDoor', 480, 400, 120, 140, 6),
+      rect('siloBody', 740, 260, 90, 280),
+      pathR('siloRoof', 'M736,262 Q785,198 834,262 Z'),
+      pathR('haystack', 'M900,540 Q900,458 990,458 Q1080,458 1080,540 Z'),
+      line('fence', 'M40,520 h300 M70,478 v72 M160,478 v72 M250,478 v72 M40,498 h300', 7),
+      line('doorLine', 'M540,400 v140', 5)
+    ]
+  },
+  {
+    id: 'space', name: '🚀 อวกาศ', cat: 'other',
+    regions: [
+      rect('space', 0, 0, 800, 1200),
+      circ('star1', 120, 160, 20), circ('star2', 680, 220, 24), circ('star3', 210, 430, 16),
+      circ('star4', 650, 540, 18), circ('star5', 120, 780, 20), circ('star6', 700, 880, 16),
+      elli('ring', 560, 320, 180, 44),
+      circ('planet', 560, 300, 120),
+      circ('moon', 180, 260, 86),
+      pathR('rNose', 'M400,640 L470,800 L330,800 Z'),
+      rect('rBody', 330, 800, 140, 240, 12),
+      circ('rWindow', 400, 882, 50),
+      pathR('finL', 'M330,980 L250,1082 L330,1082 Z'),
+      pathR('finR', 'M470,980 L550,1082 L470,1082 Z'),
+      rect('rEngine', 360, 1040, 80, 52),
+      pathR('flame', 'M360,1092 Q360,1180 400,1200 Q440,1180 440,1092 Z'),
+      circ('cr1', 160, 240, 20, { noClick: true, fill: '#2d3436' }),
+      circ('cr2', 214, 292, 14, { noClick: true, fill: '#2d3436' })
+    ]
+  },
+  {
+    id: 'icecream', name: '🍦 ไอศกรีม', cat: 'other',
+    regions: [
+      rect('bg', 0, 0, 800, 1200),
+      pathR('cone', 'M320,640 L480,640 L400,1020 Z'),
+      circ('scoop2', 300, 660, 96),
+      circ('scoop3', 500, 660, 96),
+      circ('scoop1', 400, 560, 140),
+      circ('cherry', 400, 380, 50),
+      circ('spr1', 360, 520, 14), circ('spr2', 440, 540, 14), circ('spr3', 400, 604, 14),
+      circ('spr4', 330, 652, 12), circ('spr5', 470, 652, 12),
+      line('cherryStem', 'M400,332 Q440,270 492,250', 7),
+      line('waffle', 'M360,700 L440,700 M348,760 L452,760 M372,660 L400,780 M428,660 L400,780', 5)
+    ]
   }
 ];
 
-var VBW = 800, VBH = 1200;
-var BRUSH_R = 34, ERASE_R = 50;
+var VBW = 800, VBH = 1200;   // current scene viewBox — set per scene in openScene()
 var PROGRESS_KEY = 'crayon-done-v1';
+var CAT_LABEL = { train: '🚂 รถไฟ', animal: '🐾 สัตว์', other: '🌈 อื่นๆ' };
 
 // ============================================================================
 // STATE + ELEMENTS
@@ -401,11 +603,13 @@ var selectScreen = $('selectScreen'), gameScreen = $('gameScreen');
 var canvas = $('paint'), linesSvg = $('lines'), sheet = $('sheet');
 var ctx = canvas.getContext('2d', { willReadFrequently: true });
 var palette = $('palette'), overlay = $('overlay'), crayon = $('crayon');
+var paperEl = document.querySelector('.paper');
 
 var state = {
   scene: null,
   color: COLORS[0],
   scale: 1,           // vb -> device px multiplier (= canvas.width / VBW)
+  brushR: 34, eraseR: 50, // crayon/eraser radius in vb units (scaled per scene)
   drawing: false,
   pointerId: null,
   region: null,       // region currently being painted
@@ -503,12 +707,20 @@ function renderSelect() {
   var grid = $('levelGrid');
   grid.innerHTML = '';
   var done = loadProgress();
+  var lastCat = null;
   SCENES.forEach(function (sc) {
+    if (sc.cat && sc.cat !== lastCat) {
+      lastCat = sc.cat;
+      var head = document.createElement('div');
+      head.className = 'cat-header';
+      head.textContent = CAT_LABEL[sc.cat] || '';
+      grid.appendChild(head);
+    }
     var card = document.createElement('div');
     card.className = 'lcard';
     var ns = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 1200');
+    svg.setAttribute('viewBox', '0 0 ' + (sc.w || 800) + ' ' + (sc.h || 1200));
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.setAttribute('class', 'preview');
     sc.regions.forEach(function (r) { svg.appendChild(outlineEl(r)); });
@@ -531,6 +743,13 @@ function openScene(sc) {
   state.undo = [];
   state.celebrated = false;
   updateUndoBtn();
+
+  // Per-scene viewBox (portrait 800x1200 by default, landscape 1200x800, ...).
+  VBW = sc.w || 800; VBH = sc.h || 1200;
+  state.brushR = 34 * (VBW / 800);
+  state.eraseR = 50 * (VBW / 800);
+  linesSvg.setAttribute('viewBox', '0 0 ' + VBW + ' ' + VBH);
+  paperEl.style.aspectRatio = VBW + ' / ' + VBH;
 
   // Prepare geometry: own Path2D + an even-odd clip = self minus everything on top.
   var colorable = sc.regions.filter(function (r) { return !r.noClick; });
@@ -610,7 +829,7 @@ function hitRegion(vx, vy) {
 }
 
 function stampAt(vx, vy) {
-  var R = (state.color === ERASE) ? ERASE_R : BRUSH_R;
+  var R = (state.color === ERASE) ? state.eraseR : state.brushR;
   var i, a, dd;
   if (state.color === ERASE) {
     ctx.globalCompositeOperation = 'destination-out';
@@ -638,7 +857,7 @@ function stampAt(vx, vy) {
 function strokeTo(vx, vy) {
   var dx = vx - state.lastX, dy = vy - state.lastY;
   var dist = Math.hypot(dx, dy);
-  var step = BRUSH_R * 0.3;
+  var step = state.brushR * 0.3;
   var n = Math.max(1, Math.floor(dist / step));
   for (var k = 1; k <= n; k++) {
     stampAt(state.lastX + dx * (k / n), state.lastY + dy * (k / n));
