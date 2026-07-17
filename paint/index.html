@@ -181,6 +181,7 @@
       <div class="sep"></div>
       <button class="tbtn" id="eraserBtn" aria-label="ยางลบ">🩹</button>
       <button class="tbtn" id="fillBtn" aria-label="ถังเทสี">🪣</button>
+      <button class="tbtn" id="smokeBtn" aria-label="ควัน">💨</button>
       <button class="tbtn" id="shapesBtn" aria-label="รูปทรง">🔷</button>
       <button class="tbtn" id="stampBtn" aria-label="แสตมป์">⭐</button>
       <div class="sep"></div>
@@ -218,7 +219,7 @@
   var UNDO_MAX      = 8;
 
   // ---- State --------------------------------------------------------------
-  var mode = 'brush';          // brush | eraser | fill | stamp | shape
+  var mode = 'brush';          // brush | eraser | fill | stamp | shape | smoke
   var color = COLORS[0];
   var rainbow = false;
   var sizeIdx = 1;
@@ -334,6 +335,35 @@
     ctx.textBaseline = 'middle';
     ctx.fillText(stamp, x, y);
     ctx.restore();
+  }
+
+  // ---- Smoke / airbrush (soft fluffy cloud puffs) -------------------------
+  // One low-alpha radial puff of the current colour; overlaps build up softly.
+  function drawSmoke(x, y) {
+    var css = rainbow ? 'hsl(' + hue + ',85%,72%)' : color;
+    var d = parseColor(css);
+    var rgb = d[0] + ',' + d[1] + ',' + d[2];
+    var base = SIZES[sizeIdx] * 1.7 + 10;
+    var r = base * (0.75 + Math.random() * 0.5);
+    var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(' + rgb + ',0.30)');
+    g.addColorStop(0.5, 'rgba(' + rgb + ',0.14)');
+    g.addColorStop(1, 'rgba(' + rgb + ',0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    if (rainbow) hue = (hue + 6) % 360;
+  }
+  // Stamp puffs evenly along a drag segment, with a little perpendicular jitter.
+  function smokeSeg(x0, y0, x1, y1) {
+    var dx = x1 - x0, dy = y1 - y0, dist = Math.hypot(dx, dy);
+    var step = Math.max(3, SIZES[sizeIdx] * 0.6 + 3);
+    var jit = SIZES[sizeIdx] * 0.8 + 2;
+    if (dist < step) { drawSmoke(x1, y1); return; }
+    for (var d = 0; d < dist; d += step) {
+      var t = d / dist;
+      drawSmoke(x0 + dx * t + (Math.random() - 0.5) * jit,
+                y0 + dy * t + (Math.random() - 0.5) * jit);
+    }
   }
 
   // ---- Flood fill (scanline) ----------------------------------------------
@@ -554,12 +584,17 @@
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
       return;
     }
-    // brush or eraser
+    // brush, eraser or smoke
     pushUndo();
     drawing = true;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     lastX = p.x; lastY = p.y;
-    drawDot(p.x, p.y);
+    if (mode === 'smoke') {
+      var j = SIZES[sizeIdx];
+      for (var i = 0; i < 3; i++) drawSmoke(p.x + (Math.random() - 0.5) * j, p.y + (Math.random() - 0.5) * j);
+    } else {
+      drawDot(p.x, p.y);
+    }
   });
 
   canvas.addEventListener('pointermove', function (e) {
@@ -575,7 +610,8 @@
     if (!evs || !evs.length) evs = [e];
     for (var k = 0; k < evs.length; k++) {
       var p = pt(evs[k]);
-      drawSeg(lastX, lastY, p.x, p.y);
+      if (mode === 'smoke') smokeSeg(lastX, lastY, p.x, p.y);
+      else drawSeg(lastX, lastY, p.x, p.y);
       lastX = p.x; lastY = p.y;
     }
   });
@@ -683,6 +719,7 @@
 
   var eraserBtn = document.getElementById('eraserBtn');
   var fillBtn   = document.getElementById('fillBtn');
+  var smokeBtn  = document.getElementById('smokeBtn');
   var shapesBtn = document.getElementById('shapesBtn');
   var stampBtn  = document.getElementById('stampBtn');
 
@@ -692,6 +729,7 @@
   function refreshTools() {
     eraserBtn.classList.toggle('active', mode === 'eraser');
     fillBtn.classList.toggle('active', mode === 'fill');
+    smokeBtn.classList.toggle('active', mode === 'smoke');
     shapesBtn.classList.toggle('active', mode === 'shape');
     stampBtn.classList.toggle('active', mode === 'stamp');
   }
@@ -731,6 +769,9 @@
   });
   fillBtn.addEventListener('click', function () {
     mode = 'fill'; closeTray(); refreshTools(); buzz(10);
+  });
+  smokeBtn.addEventListener('click', function () {
+    mode = 'smoke'; closeTray(); refreshTools(); buzz(10);
   });
   stampBtn.addEventListener('click', function () {
     if (mode === 'stamp') { var wasOpen = tray.classList.contains('open'); closeTray(); if (!wasOpen) tray.classList.add('open'); return; }

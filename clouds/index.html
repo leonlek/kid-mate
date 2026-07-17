@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>☁️ ปั้นเมฆ — เกมสำหรับเด็ก</title>
+<meta name="description" content="ลากนิ้วให้ควันฟุ้งเป็นก้อนเมฆนุ่มๆ บนท้องฟ้า เปลี่ยนสีเมฆ เป่าลมพัดเมฆ ทำฝนตก มีเสียงลมนุ่มๆ เล่นเพลินสำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ปั้นเมฆ">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/icon.svg">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --ink: #2d3436; --paper: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    height: 100dvh; overflow: hidden;
+    background: linear-gradient(180deg, #7ec8ff 0%, #a9dbff 45%, #d6f0ff 100%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+  body { display: flex; flex-direction: column; }
+
+  .home {
+    position: fixed; top: 12px; left: 12px; z-index: 30;
+    width: 52px; height: 52px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none;
+    background: var(--paper); border: 4px solid var(--card-border);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .home:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+
+  .hint {
+    position: fixed; top: 18px; left: 0; right: 0; z-index: 20;
+    text-align: center; pointer-events: none;
+    font-family: 'Itim', cursive; font-size: 20px;
+    color: #fff; text-shadow: 0 2px 4px rgba(0,80,150,0.35);
+    transition: opacity .5s; opacity: 1;
+  }
+  .hint.gone { opacity: 0; }
+
+  .stage { flex: 1; min-height: 0; position: relative; }
+  #board { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .toolbar {
+    flex-shrink: 0; background: var(--paper);
+    border-top: 4px solid var(--card-border);
+    box-shadow: 0 -4px 0 rgba(0,0,0,0.05);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 20;
+  }
+  .palette { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .swatch {
+    width: 46px; height: 46px; border-radius: 999px;
+    border: 3px solid rgba(0,0,0,0.12); box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+    cursor: pointer; padding: 0; transition: transform .12s; position: relative;
+  }
+  .swatch:active { transform: scale(0.9); }
+  .swatch.sel { transform: scale(1.14); border-color: var(--ink);
+                box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--brand); }
+  .swatch.rainbow {
+    background: conic-gradient(#ff5757,#ff9f43,#ffd93d,#5bc13a,#20b6b6,#4a90e2,#a259d6,#ff6b9d,#ff5757);
+    font-size: 22px; display: flex; align-items: center; justify-content: center;
+  }
+  .tools { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; }
+  .tbtn {
+    min-width: 62px; height: 60px; padding: 0 12px;
+    border-radius: 18px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); font-size: 28px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.10);
+    transition: transform .12s, box-shadow .12s, background .12s;
+  }
+  .tbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.10); }
+  .tbtn.active { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+
+  @media (max-width: 380px) {
+    .swatch { width: 40px; height: 40px; }
+    .tbtn { min-width: 54px; height: 54px; font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+  <a class="home" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+  <div class="hint" id="hint">ลากนิ้วให้เป็นก้อนเมฆ ☁️</div>
+
+  <div class="stage">
+    <canvas id="board"></canvas>
+  </div>
+
+  <div class="toolbar">
+    <div class="palette" id="palette"></div>
+    <div class="tools">
+      <button class="tbtn" id="windBtn" aria-label="เป่าลม">💨</button>
+      <button class="tbtn" id="rainBtn" aria-label="ฝนตก">🌧️</button>
+      <button class="tbtn" id="clearBtn" aria-label="ล้างท้องฟ้า">🧹</button>
+      <button class="tbtn active" id="soundBtn" aria-label="เสียง">🔊</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Config -------------------------------------------------------------
+  // Pastel cloud colours; white is the natural default.
+  var COLORS = ['#ffffff','#ffc2d6','#ffd8a8','#fff29a','#c3f0c0',
+                '#bcdcff','#e0c3ff','#c4ccd6'];
+  var MAX_PUFFS = 340;         // recycle oldest beyond this (perf cap)
+  var RAIN_MAX = 150;
+
+  // ---- State --------------------------------------------------------------
+  var curColor = COLORS[0];
+  var rainbow = false, rainbowHue = 0;
+  var rainOn = false, soundOn = true;
+
+  var canvas = document.getElementById('board');
+  var ctx = canvas.getContext('2d');
+  var stage = canvas.parentNode;
+  var dpr = 1, W = 0, H = 0, minDim = 1;
+  var skyGrad = null;
+
+  var puffs = [];              // {x,y,r,rMax,vx,vy,life,maxLife,alpha,key,wob,wobSp}
+  var drops = [];              // {x,y,vy,len}
+  var windImpulse = 0;         // decaying sideways gust applied to every puff
+  var windDir = 1;
+  var spriteCache = {};        // colour string -> offscreen soft-puff sprite
+
+  // ---- Audio (generated, no files) ---------------------------------------
+  var actx = null, noiseBuf = null;
+  var rainSrc = null, rainGain = null;
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (actx && actx.state === 'suspended') { try { actx.resume(); } catch (e) {} }
+  }
+  function getNoise() {
+    if (!actx) return null;
+    if (!noiseBuf) {
+      noiseBuf = actx.createBuffer(1, actx.sampleRate * 2, actx.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    return noiseBuf;
+  }
+  // soft airy puff — short filtered noise
+  function sndPoof(freq) {
+    if (!actx || !soundOn) return;
+    var b = getNoise(); if (!b) return;
+    var t = actx.currentTime;
+    var s = actx.createBufferSource(); s.buffer = b; s.loop = true;
+    var lp = actx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(freq || 720, t);
+    lp.frequency.exponentialRampToValueAtTime(300, t + 0.14);
+    var g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    s.connect(lp); lp.connect(g); g.connect(actx.destination);
+    s.start(t); s.stop(t + 0.2);
+  }
+  // longer whoosh for wind / clear
+  function sndWhoosh() {
+    if (!actx || !soundOn) return;
+    var b = getNoise(); if (!b) return;
+    var t = actx.currentTime;
+    var s = actx.createBufferSource(); s.buffer = b; s.loop = true;
+    var bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.8;
+    bp.frequency.setValueAtTime(380, t);
+    bp.frequency.exponentialRampToValueAtTime(1500, t + 0.28);
+    bp.frequency.exponentialRampToValueAtTime(500, t + 0.5);
+    var g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.52);
+    s.connect(bp); bp.connect(g); g.connect(actx.destination);
+    s.start(t); s.stop(t + 0.56);
+  }
+  // ambient rain hiss — a gated looping noise source
+  function ensureRainSound() {
+    if (!actx || rainSrc) return;
+    var b = getNoise(); if (!b) return;
+    rainSrc = actx.createBufferSource(); rainSrc.buffer = b; rainSrc.loop = true;
+    var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600;
+    rainGain = actx.createGain(); rainGain.gain.value = 0.0001;
+    rainSrc.connect(lp); lp.connect(rainGain); rainGain.connect(actx.destination);
+    try { rainSrc.start(); } catch (e) {}
+  }
+  function updateRainSound() {
+    if (!actx) return;
+    ensureRainSound();
+    if (!rainGain) return;
+    var want = (rainOn && soundOn) ? 0.055 : 0.0001;
+    var t = actx.currentTime;
+    try {
+      rainGain.gain.cancelScheduledValues(t);
+      rainGain.gain.setValueAtTime(Math.max(0.0001, rainGain.gain.value), t);
+      rainGain.gain.linearRampToValueAtTime(want, t + 0.25);
+    } catch (e) {}
+  }
+
+  function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+  // ---- Colour / sprite helpers -------------------------------------------
+  function withAlpha(c, a) {
+    if (c.charAt(0) === '#') {
+      var r = parseInt(c.slice(1, 3), 16), g = parseInt(c.slice(3, 5), 16), b = parseInt(c.slice(5, 7), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+    return c.replace('hsl(', 'hsla(').replace(')', ',' + a + ')');
+  }
+  function getSprite(key) {
+    if (spriteCache[key]) return spriteCache[key];
+    var s = document.createElement('canvas'); s.width = 128; s.height = 128;
+    var g = s.getContext('2d');
+    var grd = g.createRadialGradient(64, 64, 0, 64, 64, 62);
+    grd.addColorStop(0, withAlpha(key, 0.95));
+    grd.addColorStop(0.45, withAlpha(key, 0.55));
+    grd.addColorStop(1, withAlpha(key, 0));
+    g.fillStyle = grd;
+    g.beginPath(); g.arc(64, 64, 62, 0, Math.PI * 2); g.fill();
+    spriteCache[key] = s;
+    return s;
+  }
+
+  // ---- Sizing -------------------------------------------------------------
+  function fit() {
+    var r = stage.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    minDim = Math.min(W, H);
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, '#7ec8ff');
+    skyGrad.addColorStop(0.5, '#a9dbff');
+    skyGrad.addColorStop(1, '#d9f2ff');
+  }
+
+  // ---- Emission -----------------------------------------------------------
+  function emitPuff(x, y) {
+    if (puffs.length >= MAX_PUFFS) puffs.shift();
+    var base = 0.045 * minDim;
+    var rMax = base + Math.random() * 0.06 * minDim;
+    var key;
+    if (rainbow) {
+      var h = Math.round(rainbowHue / 10) * 10 % 360;
+      key = 'hsl(' + h + ',85%,' + (84 + ((Math.random() * 6) | 0)) + '%)';
+    } else {
+      key = curColor;
+    }
+    var life = 760 + Math.random() * 280;
+    puffs.push({
+      x: x + (Math.random() - 0.5) * base * 0.7,
+      y: y + (Math.random() - 0.5) * base * 0.7,
+      r: rMax * 0.28, rMax: rMax,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: -0.05 - Math.random() * 0.12,
+      life: life, maxLife: life, alpha: 0,
+      key: key,
+      wob: Math.random() * 6.28, wobSp: 0.008 + Math.random() * 0.012
+    });
+  }
+
+  var lastPoof = 0;
+  function maybePoof() {
+    var now = (window.performance && performance.now) ? performance.now() : 0;
+    if (now - lastPoof > 85) {
+      sndPoof(560 + Math.random() * 320);
+      lastPoof = now;
+    }
+  }
+
+  // ---- Pointer interaction (multi-touch) ---------------------------------
+  var pointers = {};   // id -> {x,y,acc}
+  function rel(e) { var r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    ensureAudio();
+    hideHint();
+    var p = rel(e);
+    pointers[e.pointerId] = { x: p.x, y: p.y, acc: 0 };
+    for (var i = 0; i < 5; i++) emitPuff(p.x, p.y);   // instant little cloud
+    maybePoof(); buzz(10);
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    var pt = pointers[e.pointerId];
+    if (!pt) return;
+    e.preventDefault();
+    var p = rel(e);
+    var step = 0.03 * minDim;
+    var dx = p.x - pt.x, dy = p.y - pt.y, dist = Math.hypot(dx, dy);
+    pt.acc += dist;
+    var emitted = false;
+    while (pt.acc >= step) {
+      emitPuff(p.x, p.y);
+      pt.acc -= step;
+      emitted = true;
+    }
+    pt.x = p.x; pt.y = p.y;
+    if (emitted) { maybePoof(); buzz(4); }
+  });
+
+  function release(e) { delete pointers[e.pointerId]; }
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('lostpointercapture', release);
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- Physics + rain -----------------------------------------------------
+  function step() {
+    for (var i = puffs.length - 1; i >= 0; i--) {
+      var pf = puffs[i];
+      pf.r += (pf.rMax - pf.r) * 0.14;
+      pf.wob += pf.wobSp;
+      pf.vx += Math.sin(pf.wob) * 0.006;
+      pf.vx *= 0.98;
+      pf.x += pf.vx + windImpulse;
+      pf.y += pf.vy;
+      pf.life--;
+      var age = pf.maxLife - pf.life;
+      var ai = age < 14 ? age / 14 : 1;
+      var fo = pf.life < 150 ? pf.life / 150 : 1;
+      pf.alpha = 0.6 * ai * fo;
+      if (pf.life <= 0) puffs.splice(i, 1);
+    }
+    windImpulse *= 0.93;
+    if (Math.abs(windImpulse) < 0.02) windImpulse = 0;
+
+    // rain falls from wherever there are clouds
+    if (rainOn && puffs.length) {
+      for (var k = 0; k < 2 && drops.length < RAIN_MAX; k++) {
+        var src = puffs[(Math.random() * puffs.length) | 0];
+        if (src.r > 0.04 * minDim && src.y < H * 0.82 && Math.random() < 0.6) {
+          drops.push({
+            x: src.x + (Math.random() - 0.5) * src.r,
+            y: src.y + src.r * 0.3,
+            vy: 3 + Math.random() * 2,
+            len: 10 + Math.random() * 8
+          });
+        }
+      }
+    }
+    for (var d = drops.length - 1; d >= 0; d--) {
+      var dr = drops[d];
+      dr.vy += 0.25; dr.y += dr.vy;
+      if (dr.y - dr.len > H) drops.splice(d, 1);
+    }
+  }
+
+  // ---- Render -------------------------------------------------------------
+  function draw() {
+    ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+
+    // soft sun glow (dims when raining)
+    var sunG = ctx.createRadialGradient(W * 0.82, H * 0.14, 0, W * 0.82, H * 0.14, minDim * 0.55);
+    sunG.addColorStop(0, 'rgba(255,247,205,' + (rainOn ? 0.14 : 0.5) + ')');
+    sunG.addColorStop(1, 'rgba(255,247,205,0)');
+    ctx.fillStyle = sunG; ctx.fillRect(0, 0, W, H);
+
+    // clouds
+    for (var i = 0; i < puffs.length; i++) {
+      var pf = puffs[i];
+      if (pf.alpha <= 0) continue;
+      ctx.globalAlpha = pf.alpha;
+      ctx.drawImage(getSprite(pf.key), pf.x - pf.r, pf.y - pf.r, pf.r * 2, pf.r * 2);
+    }
+    ctx.globalAlpha = 1;
+
+    // rain
+    if (drops.length) {
+      ctx.strokeStyle = 'rgba(140,180,235,0.72)';
+      ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (var d = 0; d < drops.length; d++) {
+        var dr = drops[d];
+        ctx.moveTo(dr.x, dr.y);
+        ctx.lineTo(dr.x, dr.y + dr.len);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // ---- Actions ------------------------------------------------------------
+  function gustWind() {
+    ensureAudio();
+    windDir = -windDir;
+    windImpulse = windDir * 6;
+    sndWhoosh(); buzz(14);
+  }
+  function clearSky() {
+    ensureAudio();
+    for (var i = 0; i < puffs.length; i++) {
+      var pf = puffs[i];
+      if (pf.life > 18) pf.life = 18;
+      if (pf.maxLife > 18) pf.maxLife = Math.max(pf.maxLife, pf.life);
+      pf.vy -= 0.5; pf.vx += (Math.random() - 0.5) * 2;
+    }
+    drops.length = 0;
+    windImpulse = windDir * 4;
+    sndWhoosh(); buzz(16);
+  }
+
+  // ---- UI build -----------------------------------------------------------
+  var palette = document.getElementById('palette');
+  var swatchEls = [];
+  COLORS.forEach(function (c, i) {
+    var b = document.createElement('button');
+    b.className = 'swatch' + (i === 0 ? ' sel' : '');
+    b.style.background = c;
+    b.setAttribute('aria-label', 'สีเมฆ');
+    b.addEventListener('click', function () {
+      rainbow = false; curColor = c;
+      swatchEls.forEach(function (s) { s.classList.remove('sel'); });
+      rainbowEl.classList.remove('sel'); b.classList.add('sel');
+      buzz(8);
+    });
+    palette.appendChild(b); swatchEls.push(b);
+  });
+  var rainbowEl = document.createElement('button');
+  rainbowEl.className = 'swatch rainbow'; rainbowEl.textContent = '🌈';
+  rainbowEl.setAttribute('aria-label', 'เมฆสายรุ้ง');
+  rainbowEl.addEventListener('click', function () {
+    rainbow = true;
+    swatchEls.forEach(function (s) { s.classList.remove('sel'); });
+    rainbowEl.classList.add('sel'); buzz(8);
+  });
+  palette.appendChild(rainbowEl);
+
+  document.getElementById('windBtn').addEventListener('click', gustWind);
+  document.getElementById('clearBtn').addEventListener('click', clearSky);
+
+  var rainBtn = document.getElementById('rainBtn');
+  rainBtn.addEventListener('click', function () {
+    ensureAudio();
+    rainOn = !rainOn;
+    rainBtn.classList.toggle('active', rainOn);
+    updateRainSound();
+    buzz(10);
+  });
+
+  var soundBtn = document.getElementById('soundBtn');
+  soundBtn.addEventListener('click', function () {
+    soundOn = !soundOn;
+    soundBtn.classList.toggle('active', soundOn);
+    soundBtn.textContent = soundOn ? '🔊' : '🔇';
+    updateRainSound();
+    if (soundOn) { ensureAudio(); sndPoof(700); }
+    buzz(8);
+  });
+
+  var hintEl = document.getElementById('hint');
+  var hintGone = false;
+  function hideHint() {
+    if (hintGone) return;
+    hintGone = true; hintEl.classList.add('gone');
+    setTimeout(function () { if (hintEl.parentNode) hintEl.parentNode.removeChild(hintEl); }, 600);
+  }
+
+  // ---- Loop ---------------------------------------------------------------
+  function frame() {
+    if (rainbow) rainbowHue = (rainbowHue + 1.5) % 360;
+    step();
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  fit();
+  requestAnimationFrame(frame);
+
+  var rt = 0;
+  window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(fit, 150); });
+  window.addEventListener('orientationchange', function () { clearTimeout(rt); rt = setTimeout(fit, 250); });
+})();
+</script>
+</body>
+</html>
