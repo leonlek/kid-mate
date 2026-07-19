@@ -1,6 +1,8 @@
-# เกมเด็ก (Kid Games Hub) — CLAUDE.md
+# คิดส์เล่น (Kid Games Hub) — CLAUDE.md
 
-Working name. Pick a real Thai name for the hub before the first public deploy. Each mini-game keeps its own sub-name (e.g. "แข่งความเร็ว").
+Hub name is **คิดส์เล่น** ("KidsLen" — a play on คิด/Kids + เล่น). Applied to page
+titles, manifest `name`/`short_name`, the OG share card, and the hero. Each
+mini-game keeps its own sub-name (e.g. "แข่งความเร็ว", "ปั้นเมฆ").
 
 ---
 
@@ -213,7 +215,7 @@ The drifting `☁️ ☁️     ☁️` cloud strip is part of the brand — kee
 - ✅ PWA manifest + service worker (offline, "Add to Home Screen")
 - ✅ Hub-level app icon
 - ⏳ Deploy to a static host (GitHub Pages / Cloudflare Pages / Netlify)
-- ⏳ Pick a real Thai name for the hub (updates manifest `name` + page titles)
+- ✅ Pick a real Thai name for the hub — **คิดส์เล่น** (updated manifest `name`, page titles, OG card)
 - ⏳ Pick a domain
 
 ### Phase 2 — Sensory polish
@@ -244,7 +246,7 @@ Still no accounts, still no sync, still no backend.
 
 ## 10. Decisions Still Open
 
-1. **Hub name.** Placeholder is "เกมเด็ก". Apiwat's past projects use short Thai names (TongPang, BaanJam, PanGee, LinkPang, KepKrob). Candidates for this: `SanookKids`, `LenKhaewKan`, `NgenLen`, or something punchy. Needed before domain / manifest `name` field.
+1. ~~**Hub name.**~~ **DECIDED: คิดส์เล่น** (KidsLen). Applied across titles, manifest, OG card, hero.
 2. **Domain.** Cloudflare Pages + a custom `.in.th`/`.com` is ~200 THB/yr.
 3. **Hub icon artwork.** Current SVG is a 🎮 emoji on pink — placeholder. A commissioned flat vector icon would help brand recognition on home screens once kids start installing.
 4. **Second game pick.** See Phase 3 list — which one is a parent / child most excited about?
