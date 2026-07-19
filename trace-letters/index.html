@@ -838,5 +838,20 @@ document.addEventListener('touchend', (e) => {
 renderPalette();
 renderSelect();
 </script>
+<script>
+/* Auto-update: reload once a newly deployed service worker takes control. */
+(function () {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+  var done = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (done) return; done = true; location.reload();
+  });
+  function check() { navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); }).catch(function () {}); }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+  window.addEventListener('focus', check);
+  setInterval(check, 60000);
+})();
+</script>
+
 </body>
 </html>

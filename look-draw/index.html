@@ -110,6 +110,9 @@
   .pcard:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.10); }
   .pcard svg { width: 100%; height: auto; display: block; border-radius: 12px; }
   .pcard .pn { font-family: 'Itim', cursive; font-size: 15px; text-align: center; color: var(--ink); margin-top: 4px; }
+  .rimg img, .refbig .box img, .pcard img { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .pcard.photo { border-color: var(--brand); background: #fff7fb; }
+  .pcard .pphoto { font-size: 52px; line-height: 1; padding: 20px 0 10px; text-align: center; }
   @media (min-width: 560px) { .pgrid { grid-template-columns: repeat(4, 1fr); } }
 
   /* Bottom toolbar */
@@ -245,6 +248,8 @@
     </div>
     <div class="pgrid" id="pgrid"></div>
   </div>
+
+  <input type="file" accept="image/*" id="photoInput" style="display:none">
 
   <div class="toast" id="toast">บันทึกแล้ว!</div>
 
@@ -785,6 +790,20 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    ctx.restore();
+    if (current && current.photo) drawTracePhoto();   // a faint photo to trace over
+  }
+  // Draw the chosen photo faded (contain-fit) so the child can trace it.
+  function drawTracePhoto() {
+    var img = current && current.photo;
+    if (!img || !img.width) return;
+    var cw = canvas.width, ch = canvas.height;
+    var sc = Math.min(cw / img.width, ch / img.height);
+    var dw = img.width * sc, dh = img.height * sc;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 0.25;
+    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
     ctx.restore();
   }
 
@@ -1397,6 +1416,41 @@
 
   function svgMarkup(s) { return '<svg viewBox="0 0 100 100">' + s.svg + '</svg>'; }
 
+  // "Use my own photo" — take a picture or pick from the gallery, trace over it.
+  var photoInput = document.getElementById('photoInput');
+  var lastPhotoURL = null;
+  var photoCard = document.createElement('button');
+  photoCard.className = 'pcard photo';
+  photoCard.innerHTML = '<div class="pphoto">📷</div><div class="pn">รูปของฉัน</div>';
+  photoCard.addEventListener('click', function () { photoInput.click(); });
+  pgrid.appendChild(photoCard);
+
+  photoInput.addEventListener('change', function () {
+    var f = photoInput.files && photoInput.files[0];
+    photoInput.value = '';
+    if (!f) return;
+    var url = URL.createObjectURL(f);
+    var img = new Image();
+    img.onload = function () {
+      if (lastPhotoURL) { try { URL.revokeObjectURL(lastPhotoURL); } catch (e) {} }
+      lastPhotoURL = url;
+      setPhotoSubject(img, url);
+    };
+    img.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} };
+    img.src = url;
+  });
+  function setPhotoSubject(img, url) {
+    current = { name: 'รูปของฉัน', photo: img };
+    var tag = '<img src="' + url + '" alt="">';
+    rimg.innerHTML = tag; rlabel.textContent = 'รูปของฉัน';
+    bigbox.innerHTML = tag; biglabel.textContent = 'รูปของฉัน';
+    refcard.classList.remove('hide');
+    pushUndo();
+    clearCanvas();
+    closePicker();
+    buzz(12);
+  }
+
   SUBJECTS.forEach(function (s) {
     var card = document.createElement('button');
     card.className = 'pcard';
@@ -1445,5 +1499,20 @@
   });
 })();
 </script>
+<script>
+/* Auto-update: reload once a newly deployed service worker takes control. */
+(function () {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+  var done = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (done) return; done = true; location.reload();
+  });
+  function check() { navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); }).catch(function () {}); }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+  window.addEventListener('focus', check);
+  setInterval(check, 60000);
+})();
+</script>
+
 </body>
 </html>

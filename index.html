@@ -686,9 +686,23 @@
     });
   })();
 
+  // Service worker + auto-update: when a new version is deployed, pick it up and
+  // reload once the new worker takes control — so an open tab / installed PWA
+  // refreshes itself instead of showing a stale cache.
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => { /* ignore — hub still works online */ });
+    if (navigator.serviceWorker.controller) {          // already controlled → a change means an update
+      var swReloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (swReloaded) return; swReloaded = true; location.reload();
+      });
+    }
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        function check() { reg.update().catch(function () {}); }
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+        window.addEventListener('focus', check);
+        setInterval(check, 60000);                     // poll for a new deploy every minute
+      }).catch(function () { /* ignore — hub still works online */ });
     });
   }
 </script>
