@@ -49,6 +49,7 @@
   }
   .fab:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
   .home { top: calc(10px + env(safe-area-inset-top)); left: 12px; }
+  .back { top: calc(10px + env(safe-area-inset-top)); left: 72px; }
 
   /* ---- Select screen ---- */
   #selectScreen { overflow-y: auto; display: none; }
@@ -134,6 +135,7 @@
 </head>
 <body>
   <a class="fab home" href="../" id="homeBtn" aria-label="กลับหน้าหลัก">🏠</a>
+  <button class="fab back" id="menuBtn" aria-label="เลือกโหมด" style="display:none">⬅️</button>
 
   <!-- ============ SELECT ============ -->
   <section id="selectScreen" class="screen active">
@@ -164,6 +166,7 @@
     <div class="toolbar" id="toolbar">
       <button class="tbtn sel" id="tStraight" aria-label="รางตรง">━</button>
       <button class="tbtn" id="tCurve" aria-label="รางโค้ง">╭</button>
+      <button class="tbtn" id="tJunction" aria-label="ทางแยก">┳</button>
       <button class="tbtn" id="tSwitch" aria-label="ที่สับราง">🔀</button>
       <button class="tbtn" id="tCross" aria-label="สะพานข้ามราง">🌉</button>
       <button class="tbtn" id="tStation" aria-label="สถานี">🚉</button>
@@ -171,7 +174,6 @@
       <div class="sep"></div>
       <button class="tbtn run" id="runBtn">▶ วิ่ง!</button>
       <button class="tbtn" id="resetBtn" aria-label="เริ่มใหม่">🔄</button>
-      <button class="tbtn" id="backBtn" aria-label="เลือกด่านใหม่">📋</button>
     </div>
   </section>
 
@@ -196,7 +198,7 @@
   function rotSide(s, r) { return (s + r) % 4; }
   // base openings at rot 0
   var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3],
-               station: [1, 3], 'switch': [3, 1, 2] };   // switch = T: trunk W-E + branch S
+               station: [1, 3], 'switch': [3, 1, 2], junction: [3, 1, 2] };  // T: trunk W-E + branch S
   function openings(type, rot) { return BASE[type].map(function (s) { return rotSide(s, rot); }); }
   function hasOpen(cell, side) {
     if (!cell || !cell.type) return false;
@@ -285,6 +287,7 @@
     stopTrain();
     $('selectScreen').classList.remove('active');
     $('gameScreen').classList.add('active');
+    $('menuBtn').style.display = '';
     $('nextBtn').style.display = (S.mode === 'puzzle') ? '' : 'none';
     requestAnimationFrame(function () { fit(); render(); });
   }
@@ -372,6 +375,7 @@
   function drawTrack(x, y, cell) {
     if (cell.type === 'cross') { drawOverpass(x, y, cell); return; }
     if (cell.type === 'switch') { drawSwitch(x, y, cell); return; }
+    if (cell.type === 'junction') { drawJunction(x, y, cell); return; }
     connections(cell.type, cell.rot).forEach(function (cn) {
       drawSeg(centerline(x, y, cn[0], cn[1], 12), cell.water);
     });
@@ -414,6 +418,13 @@
     ctx.beginPath(); ctx.moveTo(cx, cyy); ctx.lineTo(cx + (ae[0] - cx) * 0.55, cyy + (ae[1] - cyy) * 0.55); ctx.stroke();
     ctx.beginPath(); ctx.arc(cx, cyy, s * 0.09, 0, Math.PI * 2); ctx.fillStyle = '#2ecc40'; ctx.fill();
     ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+  function drawJunction(x, y, cell) {            // passive fork/merge (ทางแยก 1→2)
+    var s = S.cell, o = openings('junction', cell.rot);
+    drawSeg(centerline(x, y, o[0], o[1], 12), cell.water);   // trunk
+    drawSeg(halfLine(x, y, o[2], 6), cell.water);            // branch
+    var cx = x * s + s / 2, cy = y * s + s / 2;
+    ctx.beginPath(); ctx.arc(cx, cy, s * 0.08, 0, Math.PI * 2); ctx.fillStyle = '#5a5a5a'; ctx.fill();
   }
   function drawStationStop(x, y) {               // little station house (top-left corner)
     var s = S.cell, ox = x * s, oy = y * s;
@@ -502,6 +513,7 @@
       var outs = openings(cell.type, cell.rot).filter(function (o) { return o !== entry; });
       var out;
       if (cell.type === 'cross' || cell.type === 'station') out = opp(entry);   // straight through
+      else if (cell.type === 'junction') out = hasOpen(cell, opp(entry)) ? opp(entry) : outs[0];  // fork: straight, else branch
       else if (cell.type === 'switch') {
         var be = (entry - cell.rot + 4) % 4;                 // base entry (W=3 trunk, E=1, S=2 branch)
         var bx = (be === 3) ? (cell.sw ? 2 : 1) : 3;         // W -> E(straight) or S(branch); E/S -> W
@@ -645,8 +657,8 @@
   }
 
   // ---- Tools wiring -------------------------------------------------------
-  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), 'switch': $('tSwitch'),
-                   cross: $('tCross'), station: $('tStation'), erase: $('tErase') };
+  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), junction: $('tJunction'),
+                   'switch': $('tSwitch'), cross: $('tCross'), station: $('tStation'), erase: $('tErase') };
   function selTool(t) {
     S.tool = t;
     Object.keys(toolBtns).forEach(function (k) { toolBtns[k].classList.toggle('sel', k === t); });
@@ -660,7 +672,7 @@
     if (S.mode === 'puzzle') startPuzzle(S.levelIdx); else startSandbox();
     buzz(12);
   });
-  $('backBtn').addEventListener('click', backToSelect);
+  $('menuBtn').addEventListener('click', backToSelect);
   $('selBtn').addEventListener('click', function () { $('winOverlay').classList.remove('shown'); backToSelect(); });
   $('nextBtn').addEventListener('click', function () {
     $('winOverlay').classList.remove('shown');
@@ -668,6 +680,7 @@
   });
   function backToSelect() {
     stopTrain();
+    $('menuBtn').style.display = 'none';
     $('gameScreen').classList.remove('active');
     $('selectScreen').classList.add('active');
     renderLevels();
