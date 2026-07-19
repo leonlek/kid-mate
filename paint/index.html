@@ -203,14 +203,15 @@
                 '#5bc0eb','#4a90e2','#1e3a8a','#7b5cff','#a259d6','#ff6b9d','#b06b3f','#95a5a6','#cfd8dc','#ffffff'];
   var STAMPS = ['⭐','❤️','🌸','🦋','🐶','🐱','🚗','🌈','🎈','🌞','🍎','🐠'];
   var SHAPES = [
-    { id: 'circle',   label: 'วงกลม' },     { id: 'square',   label: 'สี่เหลี่ยม' },
-    { id: 'triangle', label: 'สามเหลี่ยม' }, { id: 'diamond',  label: 'ข้าวหลามตัด' },
-    { id: 'pentagon', label: 'ห้าเหลี่ยม' }, { id: 'hexagon',  label: 'หกเหลี่ยม' },
-    { id: 'star',     label: 'ดาว' },        { id: 'heart',    label: 'หัวใจ' },
-    { id: 'arrow',    label: 'ลูกศร' },       { id: 'plus',     label: 'กากบาท' },
-    { id: 'bolt',     label: 'สายฟ้า' },      { id: 'crescent', label: 'พระจันทร์' },
-    { id: 'cloud',    label: 'เมฆ' },         { id: 'flower',   label: 'ดอกไม้' },
-    { id: 'line',     label: 'เส้นตรง' }
+    { id: 'circle',    label: 'วงกลม' },      { id: 'square',    label: 'สี่เหลี่ยม' },
+    { id: 'roundrect', label: 'สี่เหลี่ยมมน' }, { id: 'triangle',  label: 'สามเหลี่ยม' },
+    { id: 'diamond',   label: 'ข้าวหลามตัด' }, { id: 'pentagon',  label: 'ห้าเหลี่ยม' },
+    { id: 'hexagon',   label: 'หกเหลี่ยม' },    { id: 'star',      label: 'ดาว' },
+    { id: 'heart',     label: 'หัวใจ' },        { id: 'arrow',     label: 'ลูกศร' },
+    { id: 'uturn',     label: 'ลูกศรกลับรถ' },  { id: 'plus',      label: 'กากบาท' },
+    { id: 'bolt',      label: 'สายฟ้า' },       { id: 'crescent',  label: 'พระจันทร์' },
+    { id: 'cloud',     label: 'เมฆ' },          { id: 'flower',    label: 'ดอกไม้' },
+    { id: 'line',      label: 'เส้นตรง' }
   ];
   var SIZES         = [8, 18, 38];    // brush widths (css px)
   var SIZE_DOTS     = [12, 22, 34];   // visual dot sizes in the picker
@@ -526,6 +527,36 @@
     }
     c.moveTo(cx + R * 0.3, cy); c.arc(cx, cy, R * 0.3, 0, Math.PI * 2);
   }
+  function roundRectPath(c, b) {      // rounded rectangle
+    var rr = Math.min(b.w, b.h) * 0.22;
+    c.beginPath();
+    c.moveTo(b.x + rr, b.y);
+    c.arcTo(b.x + b.w, b.y,        b.x + b.w, b.y + b.h, rr);
+    c.arcTo(b.x + b.w, b.y + b.h,  b.x,       b.y + b.h, rr);
+    c.arcTo(b.x,       b.y + b.h,  b.x,       b.y,       rr);
+    c.arcTo(b.x,       b.y,        b.x + b.w, b.y,       rr);
+    c.closePath();
+  }
+  function uturnPath(c, b) {          // U-turn arrow: tail up-right, arrowhead down-left
+    function X(n) { return b.x + n * b.w; }
+    function Y(n) { return b.y + n * b.h; }
+    var cx = 0.5, cyT = 0.34, Ro = 0.30, Ri = 0.08, N = 14, i, t;
+    c.beginPath();
+    c.moveTo(X(0.58), Y(0.86));                        // right arm bottom, inner
+    c.lineTo(X(0.58), Y(cyT));
+    for (i = 0; i <= N; i++) { t = Math.PI * i / N;    // inner bend: right -> top -> left
+      c.lineTo(X(cx + Ri * Math.cos(t)), Y(cyT - Ri * Math.sin(t))); }
+    c.lineTo(X(0.42), Y(0.62));                        // down the left arm (inner)
+    c.lineTo(X(0.48), Y(0.62));                        // arrowhead inner corner
+    c.lineTo(X(0.31), Y(0.92));                        // arrow tip
+    c.lineTo(X(0.14), Y(0.62));                        // arrowhead outer corner
+    c.lineTo(X(0.20), Y(0.62));
+    c.lineTo(X(0.20), Y(cyT));                         // up the left arm (outer)
+    for (i = 0; i <= N; i++) { t = Math.PI * (1 - i / N); // outer bend: left -> top -> right
+      c.lineTo(X(cx + Ro * Math.cos(t)), Y(cyT - Ro * Math.sin(t))); }
+    c.lineTo(X(0.80), Y(0.86));                        // down the right arm (outer)
+    c.closePath();
+  }
   function drawLine(c, x0, y0, x1, y1, lw, col) {
     c.save();
     c.lineCap = 'round'; c.lineWidth = lw; c.strokeStyle = col;
@@ -542,13 +573,15 @@
         c.beginPath();
         c.ellipse(b.x + b.w / 2, b.y + b.h / 2, Math.max(1, b.w / 2), Math.max(1, b.h / 2), 0, 0, Math.PI * 2);
         break;
-      case 'square':   c.beginPath(); c.rect(b.x, b.y, b.w, b.h); break;
-      case 'triangle': pathPoly(c, P_TRI, b); break;
+      case 'square':    c.beginPath(); c.rect(b.x, b.y, b.w, b.h); break;
+      case 'roundrect': roundRectPath(c, b); break;
+      case 'triangle':  pathPoly(c, P_TRI, b); break;
       case 'diamond':  pathPoly(c, P_DIAMOND, b); break;
       case 'pentagon': pathPoly(c, regPts(5), b); break;
       case 'hexagon':  pathPoly(c, regPts(6), b); break;
       case 'star':     pathPoly(c, starPts(5), b); break;
       case 'arrow':    pathPoly(c, P_ARROW, b); break;
+      case 'uturn':    uturnPath(c, b); break;
       case 'plus':     pathPoly(c, P_PLUS, b); break;
       case 'bolt':     pathPoly(c, P_BOLT, b); break;
       case 'heart':    heartPath(c, b); break;

@@ -697,6 +697,44 @@ function outlineEl(r) {
   return el;
 }
 
+// Build clean line-art: each shape's outline is hidden where a shape drawn on top
+// of it (a later colorable region) covers it — proper hidden-line removal, so the
+// picture reads like a tidy colouring page instead of overlapping full outlines.
+var NS_SVG = 'http://www.w3.org/2000/svg';
+function buildLineArt(target, regions, vbw, vbh, idPrefix) {
+  target.innerHTML = '';
+  var defs = document.createElementNS(NS_SVG, 'defs');
+  target.appendChild(defs);
+  regions.forEach(function (r, idx) {
+    var el = outlineEl(r);
+    if (!r.noClick) {
+      var occ = [];
+      for (var j = idx + 1; j < regions.length; j++) { if (!regions[j].noClick) occ.push(regions[j]); }
+      if (occ.length) {
+        var mid = 'occ_' + idPrefix + '_' + idx;
+        var mask = document.createElementNS(NS_SVG, 'mask');
+        mask.setAttribute('id', mid);
+        mask.setAttribute('maskUnits', 'userSpaceOnUse');
+        mask.setAttribute('x', 0); mask.setAttribute('y', 0);
+        mask.setAttribute('width', vbw); mask.setAttribute('height', vbh);
+        var bg = document.createElementNS(NS_SVG, 'rect');   // show everything by default
+        bg.setAttribute('x', 0); bg.setAttribute('y', 0);
+        bg.setAttribute('width', vbw); bg.setAttribute('height', vbh);
+        bg.setAttribute('fill', '#fff');
+        mask.appendChild(bg);
+        occ.forEach(function (o) {                            // knock out the covered parts
+          var s = createShapeEl(o);
+          s.setAttribute('fill', '#000'); s.setAttribute('stroke', 'none');
+          mask.appendChild(s);
+        });
+        defs.appendChild(mask);
+        el.setAttribute('mask', 'url(#' + mid + ')');
+      }
+    }
+    target.appendChild(el);
+  });
+}
+
 // ============================================================================
 // SELECT SCREEN
 // ============================================================================
@@ -763,9 +801,8 @@ function openScene(sc) {
   });
   state._colorable = colorable;
 
-  // Build the black line-art overlay.
-  linesSvg.innerHTML = '';
-  sc.regions.forEach(function (r) { linesSvg.appendChild(outlineEl(r)); });
+  // Build the black line-art overlay (with hidden-line removal so it looks tidy).
+  buildLineArt(linesSvg, sc.regions, VBW, VBH, 'g');
 
   selectScreen.classList.remove('active');
   gameScreen.classList.add('active');
