@@ -643,7 +643,7 @@
   // ---- Config -------------------------------------------------------------
   var PAPER  = '#ffffff';
   var COLORS = ['#2d3436','#ff5757','#ff9f43','#ffc7a8','#ffd93d','#5bc13a','#20b6b6',
-                '#5bc0eb','#4a90e2','#7b5cff','#a259d6','#ff6b9d','#b06b3f','#95a5a6','#cfd8dc','#ffffff'];
+                '#5bc0eb','#4a90e2','#1e3a8a','#7b5cff','#a259d6','#ff6b9d','#b06b3f','#95a5a6','#cfd8dc','#ffffff'];
   var STAMPS = ['⭐','❤️','🌸','🦋','🐶','🐱','🚗','🌈','🎈','🌞','🍎','🐠'];
   var SHAPES = [
     { id: 'circle',   label: 'วงกลม' },     { id: 'square',   label: 'สี่เหลี่ยม' },
@@ -659,7 +659,7 @@
   var SIZE_DOTS     = [12, 22, 34];
   var STAMP_SIZE    = [40, 66, 96];
   var SHAPE_DEFAULT = [64, 120, 190];
-  var UNDO_MAX      = 8;
+  var UNDO_MAX      = 50;            // deep history so you can undo back to blank
 
   // ---- State --------------------------------------------------------------
   var mode = 'brush';          // brush | eraser | fill | stamp | shape
@@ -714,23 +714,60 @@
       ctx.restore();
     }
     canvasRect = canvas.getBoundingClientRect();
+    for (var u = 0; u < undoStack.length; u++) {
+      undoStack[u].dead = true;
+      if (undoStack[u].url) URL.revokeObjectURL(undoStack[u].url);
+    }
     undoStack = [];
     updateUndoBtn();
   }
 
-  // ---- Undo ---------------------------------------------------------------
+  // ---- Undo (async-compressed history — rewinds to the blank page) --------
+  // Each entry is a PNG blob-url of the canvas before an action. toBlob() snapshots
+  // the bitmap at call time and encodes off the critical path, so 50 steps stay
+  // cheap in memory and capturing one never blocks a brush stroke.
+  var undoSeq = 0;
   function pushUndo() {
-    try { undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height)); } catch (e) { return; }
-    if (undoStack.length > UNDO_MAX) undoStack.shift();
+    var entry = { url: null, dead: false };
+    undoStack.push(entry);
+    while (undoStack.length > UNDO_MAX) {
+      var old = undoStack.shift();
+      old.dead = true;
+      if (old.url) URL.revokeObjectURL(old.url);
+    }
     updateUndoBtn();
+    try {
+      canvas.toBlob(function (blob) {
+        if (!blob || entry.dead) return;
+        entry.url = URL.createObjectURL(blob);
+      }, 'image/png');
+    } catch (e) {}
+  }
+  function drawUndoURL(url, revoke) {
+    var my = ++undoSeq;
+    var img = new Image();
+    img.onload = function () {
+      if (my === undoSeq) {
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      if (revoke) URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  }
+  function restoreUndo(entry) {
+    var tries = 0;
+    (function go() {
+      if (entry.url) { drawUndoURL(entry.url, true); return; }
+      if (tries++ > 24) return;
+      setTimeout(go, 16);
+    })();
   }
   function undo() {
     if (!undoStack.length) return;
-    var img = undoStack.pop();
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.putImageData(img, 0, 0);
-    ctx.restore();
+    restoreUndo(undoStack.pop());
     updateUndoBtn();
     buzz(10);
   }
@@ -1203,14 +1240,38 @@
     buzz(15);
   });
 
+  // Save that works on iPad: build the file synchronously inside the tap so iOS
+  // keeps the user gesture, then offer the share sheet ("Save Image" → Photos).
   document.getElementById('saveBtn').addEventListener('click', function () {
     var url;
-    try { url = canvas.toDataURL('image/png'); } catch (e) { return; }
-    var a = document.createElement('a');
-    a.href = url; a.download = (current ? current.name : 'ดูแล้ววาด') + '.png';
-    document.body.appendChild(a); a.click(); a.remove();
-    showToast(); buzz(20);
+    try { url = canvas.toDataURL('image/png'); } catch (e) { showToast(); return; }
+    buzz(20);
+    var name = (current ? current.name : 'ดูแล้ววาด') + '.png';
+    var file = dataURLtoFile(url, name);
+    if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+      navigator.share({ files: [file] }).then(function () {
+        showToast();
+      }, function (err) {
+        if (err && err.name === 'AbortError') return;
+        downloadURL(url, name); showToast();
+      });
+      return;
+    }
+    downloadURL(url, name); showToast();
   });
+  function dataURLtoFile(durl, fname) {
+    try {
+      var arr = durl.split(','), mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/png';
+      var bstr = atob(arr[1]), n = bstr.length, u8 = new Uint8Array(n);
+      while (n--) u8[n] = bstr.charCodeAt(n);
+      return new File([u8], fname, { type: mime });
+    } catch (e) { return null; }
+  }
+  function downloadURL(url, fname) {
+    var a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
 
   var toast = document.getElementById('toast'), toastT = 0;
   function showToast() {
