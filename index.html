@@ -232,6 +232,21 @@
     z-index: 2;
   }
 
+  .fav-btn {
+    position: absolute; bottom: 6px; right: 6px; z-index: 3;
+    width: 34px; height: 34px; border-radius: 999px; border: none; padding: 0;
+    background: rgba(255,255,255,0.9); cursor: pointer; font-size: 17px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.12); transition: transform .12s;
+  }
+  .fav-btn:active { transform: scale(0.85); }
+  .favsec .section-header { color: #d68a00; }
+  .favsec .section-header .heart { -webkit-text-fill-color: initial; }
+
+  @media (max-width: 480px) {
+    .fav-btn { width: 28px; height: 28px; font-size: 14px; bottom: 4px; right: 4px; }
+  }
+
   .credits-footer {
     margin-top: 36px;
     text-align: center;
@@ -262,6 +277,11 @@
       <div class="tagline">ฝึก EF<span class="dot">·</span>ฝึกทักษะ<span class="dot">·</span>ฝึกจินตนาการ</div>
       <p>เลือกหมวดที่อยากเล่น</p>
     </header>
+
+    <section class="favsec" id="favSection" style="display:none">
+      <h2 class="section-header">⭐ เกมโปรด</h2>
+      <div class="games" id="favGames"></div>
+    </section>
 
     <nav class="catbar" id="catbar" aria-label="เลือกหมวดเกม">
       <button class="chip active" data-cat="all">🎮 ทั้งหมด</button>
@@ -702,6 +722,53 @@
     chips.forEach(function (c) {
       c.addEventListener('click', function () { selectCat(c.getAttribute('data-cat'), c); });
     });
+  })();
+
+  // Favourites — tap the heart to pin a game to the ⭐ เกมโปรด row at the top.
+  (function () {
+    var KEY = 'kidslen-favs';
+    function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(favs)); } catch (e) {} }
+    var favs = load();
+    var favSection = document.getElementById('favSection'), favGames = document.getElementById('favGames');
+    var byHref = {};
+    Array.prototype.slice.call(document.querySelectorAll('.catsec .game-card')).forEach(function (c) {
+      byHref[c.getAttribute('href')] = c; addHeart(c);
+    });
+    function isFav(h) { return favs.indexOf(h) >= 0; }
+    function addHeart(card) {
+      if (card.querySelector('.fav-btn')) return;
+      var b = document.createElement('button');
+      b.className = 'fav-btn'; b.type = 'button'; b.setAttribute('aria-label', 'เกมโปรด');
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        toggle(card.getAttribute('href'));
+      });
+      card.appendChild(b); refreshHeart(card);
+    }
+    function refreshHeart(card) {
+      var b = card.querySelector('.fav-btn');
+      if (b) b.textContent = isFav(card.getAttribute('href')) ? '❤️' : '🤍';
+    }
+    function toggle(h) {
+      var i = favs.indexOf(h);
+      if (i >= 0) favs.splice(i, 1); else favs.push(h);
+      save(); renderFavs();
+      Array.prototype.slice.call(document.querySelectorAll('.game-card')).forEach(refreshHeart);
+    }
+    function renderFavs() {
+      favGames.innerHTML = '';
+      var shown = favs.filter(function (h) { return byHref[h]; });
+      if (!shown.length) { favSection.style.display = 'none'; return; }
+      favSection.style.display = '';
+      shown.forEach(function (h) {
+        var clone = byHref[h].cloneNode(true);
+        var old = clone.querySelector('.fav-btn'); if (old) old.remove();
+        addHeart(clone);
+        favGames.appendChild(clone);
+      });
+    }
+    renderFavs();
   })();
 
   // Service worker + auto-update: when a new version is deployed, offer a

@@ -87,9 +87,9 @@
   /* ---- Game screen ---- */
   #gameScreen { padding: env(safe-area-inset-top) 0 0; }
   .topbar { flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
-            gap: 10px; padding: 8px 66px; }
-  .topbar .info { font-family: 'Itim', cursive; font-size: 20px; color: var(--brand-dark); }
-  .stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 6px 8px; }
+            gap: 10px; padding: 3px 62px; }
+  .topbar .info { font-family: 'Itim', cursive; font-size: 19px; color: var(--brand-dark); }
+  .stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 2px 4px; }
   #board { display: block; background: #eaf6d8; border-radius: 18px;
            box-shadow: 0 6px 0 rgba(0,0,0,0.10); touch-action: none; }
 
@@ -164,7 +164,9 @@
     <div class="toolbar" id="toolbar">
       <button class="tbtn sel" id="tStraight" aria-label="รางตรง">━</button>
       <button class="tbtn" id="tCurve" aria-label="รางโค้ง">╭</button>
-      <button class="tbtn" id="tCross" aria-label="รางแยก">✚</button>
+      <button class="tbtn" id="tSwitch" aria-label="ที่สับราง">🔀</button>
+      <button class="tbtn" id="tCross" aria-label="สะพานข้ามราง">🌉</button>
+      <button class="tbtn" id="tStation" aria-label="สถานี">🚉</button>
       <button class="tbtn" id="tErase" aria-label="ลบราง">🧽</button>
       <div class="sep"></div>
       <button class="tbtn run" id="runBtn">▶ วิ่ง!</button>
@@ -193,7 +195,8 @@
   function opp(s) { return (s + 2) % 4; }
   function rotSide(s, r) { return (s + r) % 4; }
   // base openings at rot 0
-  var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3] };
+  var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3],
+               station: [1, 3], 'switch': [3, 1, 2] };   // switch = T: trunk W-E + branch S
   function openings(type, rot) { return BASE[type].map(function (s) { return rotSide(s, rot); }); }
   function hasOpen(cell, side) {
     if (!cell || !cell.type) return false;
@@ -288,10 +291,10 @@
 
   // ---- Sizing -------------------------------------------------------------
   function fit() {
-    var stage = canvas.parentNode, pad = 16;
+    var stage = canvas.parentNode, pad = 8;
     var availW = stage.clientWidth - pad, availH = stage.clientHeight - pad;
     var cell = Math.floor(Math.min(availW / S.cols, availH / S.rows));
-    cell = Math.max(34, Math.min(cell, 96));
+    cell = Math.max(38, Math.min(cell, 200));
     S.cell = cell;
     S.dpr = window.devicePixelRatio || 1;
     var w = cell * S.cols, h = cell * S.rows;
@@ -367,22 +370,58 @@
   }
 
   function drawTrack(x, y, cell) {
-    var s = S.cell;
+    if (cell.type === 'cross') { drawOverpass(x, y, cell); return; }
+    if (cell.type === 'switch') { drawSwitch(x, y, cell); return; }
     connections(cell.type, cell.rot).forEach(function (cn) {
-      var pts = centerline(x, y, cn[0], cn[1], 12);
-      if (cell.water) drawBridge(pts, s);
-      // ties
-      ctx.strokeStyle = '#b5763b'; ctx.lineWidth = Math.max(2, s * 0.07); ctx.lineCap = 'butt';
-      for (var i = 1; i < pts.length; i += 2) {
-        var p = pts[i], q = pts[Math.min(i + 1, pts.length - 1)], pr = pts[i - 1];
-        var tx = q[0] - pr[0], ty = q[1] - pr[1], tl = Math.hypot(tx, ty) || 1;
-        var nx = -ty / tl, ny = tx / tl, tw = s * 0.2;
-        ctx.beginPath(); ctx.moveTo(p[0] - nx * tw, p[1] - ny * tw); ctx.lineTo(p[0] + nx * tw, p[1] + ny * tw); ctx.stroke();
-      }
-      // two rails
-      var gap = s * 0.15;
-      drawRail(pts, gap); drawRail(pts, -gap);
+      drawSeg(centerline(x, y, cn[0], cn[1], 12), cell.water);
     });
+    if (cell.type === 'station') drawStationStop(x, y);
+  }
+  function drawSeg(pts, water) {                 // ties + two rails along a polyline
+    var s = S.cell;
+    if (water) drawBridge(pts, s);
+    ctx.strokeStyle = '#b5763b'; ctx.lineWidth = Math.max(2, s * 0.07); ctx.lineCap = 'butt';
+    for (var i = 1; i < pts.length; i += 2) {
+      var p = pts[i], q = pts[Math.min(i + 1, pts.length - 1)], pr = pts[i - 1];
+      var tx = q[0] - pr[0], ty = q[1] - pr[1], tl = Math.hypot(tx, ty) || 1;
+      var nx = -ty / tl, ny = tx / tl, tw = s * 0.2;
+      ctx.beginPath(); ctx.moveTo(p[0] - nx * tw, p[1] - ny * tw); ctx.lineTo(p[0] + nx * tw, p[1] + ny * tw); ctx.stroke();
+    }
+    var gap = s * 0.15; drawRail(pts, gap); drawRail(pts, -gap);
+  }
+  function halfLine(x, y, side, n) {             // center -> edge midpoint
+    var s = S.cell, cx = x * s + s / 2, cy = y * s + s / 2, e = edgeMid(x, y, side), pts = [];
+    n = n || 6; for (var i = 0; i <= n; i++) { var t = i / n; pts.push([cx + (e[0] - cx) * t, cy + (e[1] - cy) * t]); }
+    return pts;
+  }
+  function drawOverpass(x, y, cell) {            // one line raised over the other (bridge)
+    var s = S.cell, ox = x * s, cy = y * s + s / 2;
+    drawSeg(centerline(x, y, 0, 2, 12), cell.water);           // lower line (N-S)
+    ctx.fillStyle = 'rgba(0,0,0,0.14)'; roundRect(ox - 1, cy - s * 0.16, s + 2, s * 0.42, s * 0.06); ctx.fill();
+    ctx.fillStyle = '#c9a06a';                                 // support posts
+    [0.16, 0.84].forEach(function (fx) { ctx.fillRect(ox + fx * s - s * 0.04, cy - s * 0.18, s * 0.08, s * 0.36); });
+    ctx.fillStyle = '#e8c48f'; roundRect(ox - 1, cy - s * 0.22, s + 2, s * 0.44, s * 0.07); ctx.fill();  // deck
+    ctx.strokeStyle = '#c79a5c'; ctx.lineWidth = Math.max(1.5, s * 0.03); ctx.strokeRect(ox, cy - s * 0.22, s, s * 0.44);
+    drawSeg(centerline(x, y, 1, 3, 12), false);                // upper rails (E-W)
+  }
+  function drawSwitch(x, y, cell) {              // T-junction with a switch lever (สับราง)
+    var s = S.cell, o = openings('switch', cell.rot);
+    drawSeg(centerline(x, y, o[0], o[1], 12), cell.water);     // trunk
+    drawSeg(halfLine(x, y, o[2], 6), cell.water);              // branch stub
+    var active = ((cell.sw ? 2 : 1) + cell.rot) % 4;           // active exit for a trunk-in train
+    var cx = x * s + s / 2, cyy = y * s + s / 2, ae = edgeMid(x, y, active);
+    ctx.strokeStyle = '#2ecc40'; ctx.lineWidth = Math.max(3, s * 0.11); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx, cyy); ctx.lineTo(cx + (ae[0] - cx) * 0.55, cyy + (ae[1] - cyy) * 0.55); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cyy, s * 0.09, 0, Math.PI * 2); ctx.fillStyle = '#2ecc40'; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+  function drawStationStop(x, y) {               // little station house (top-left corner)
+    var s = S.cell, ox = x * s, oy = y * s;
+    ctx.fillStyle = '#f4a261'; roundRect(ox + s * 0.08, oy + s * 0.22, s * 0.34, s * 0.22, s * 0.04); ctx.fill();
+    ctx.fillStyle = '#c0392b'; ctx.beginPath();
+    ctx.moveTo(ox + s * 0.05, oy + s * 0.24); ctx.lineTo(ox + s * 0.25, oy + s * 0.10);
+    ctx.lineTo(ox + s * 0.45, oy + s * 0.24); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff3d6'; ctx.fillRect(ox + s * 0.22, oy + s * 0.30, s * 0.06, s * 0.10);
   }
   function drawRail(pts, off) {
     ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = Math.max(1.6, S.cell * 0.045);
@@ -426,9 +465,12 @@
     var cell = S.grid[c.y][c.x];
     if (cell.fixed) return;
     if (S.tool === 'erase') { cell.type = null; buzz(6); sndClack(); render(); return; }
-    if (!cell.type) { cell.type = S.tool; cell.rot = 0; sndClack(); buzz(8); }
-    else if (cell.type === S.tool || true) {     // tapping any placed piece rotates it
-      var n = (cell.type === 'straight') ? 2 : (cell.type === 'cross' ? 1 : 4);
+    if (!cell.type) { cell.type = S.tool; cell.rot = 0; cell.sw = 0; sndClack(); buzz(8); }
+    else if (cell.type === 'switch') {           // tap a switch: flip it (สับราง); every 2nd tap rotates
+      cell.sw = cell.sw ? 0 : 1; if (cell.sw === 0) cell.rot = (cell.rot + 1) % 4; sndRot(); buzz(6);
+    }
+    else {                                       // tapping any placed piece rotates it
+      var n = (cell.type === 'straight' || cell.type === 'station') ? 2 : (cell.type === 'cross' ? 1 : 4);
       cell.rot = (cell.rot + 1) % n; sndRot(); buzz(5);
     }
     render();
@@ -459,8 +501,12 @@
       if (!cell.type || !hasOpen(cell, entry)) break;
       var outs = openings(cell.type, cell.rot).filter(function (o) { return o !== entry; });
       var out;
-      if (cell.type === 'cross') out = opp(entry);
-      else out = outs[0];
+      if (cell.type === 'cross' || cell.type === 'station') out = opp(entry);   // straight through
+      else if (cell.type === 'switch') {
+        var be = (entry - cell.rot + 4) % 4;                 // base entry (W=3 trunk, E=1, S=2 branch)
+        var bx = (be === 3) ? (cell.sw ? 2 : 1) : 3;         // W -> E(straight) or S(branch); E/S -> W
+        out = (bx + cell.rot) % 4;
+      } else out = outs[0];
       if (out === undefined) break;
       var key = nx + ',' + ny + ',' + entry;
       if (seen[key]) { looped = true; break; }
@@ -500,9 +546,17 @@
       if (!S.running) return;
       if (t0 === null) t0 = ts;
       var dt = Math.min(0.05, (ts - t0) / 1000); t0 = ts;
+      if (S.anim.pause && ts < S.anim.pause) { render(); S.anim.raf = requestAnimationFrame(frame); return; }
       dist += speed * dt;
       // chuff sound rhythm
       chuffTimer += dt; if (chuffTimer > 0.28) { chuffTimer = 0; sndChuff(); }
+      // station stop: brief pause + whistle when the loco reaches a station cell
+      var lead = ptAt(tr.pts, tr.looped ? ((dist % len) + len) % len : Math.min(dist, len));
+      var scx = Math.floor(lead.x / S.cell), scy = Math.floor(lead.y / S.cell);
+      if (scx >= 0 && scy >= 0 && scx < S.cols && scy < S.rows && S.grid[scy][scx].type === 'station') {
+        var skey = scx + ',' + scy;
+        if (skey !== S.anim.lastStation) { S.anim.lastStation = skey; sndWhistle(); S.anim.pause = ts + 650; }
+      } else { S.anim.lastStation = null; }
       if (dist >= len) {
         if (tr.looped) { dist -= len; }
         else if (!arrived) {
@@ -591,7 +645,8 @@
   }
 
   // ---- Tools wiring -------------------------------------------------------
-  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), cross: $('tCross'), erase: $('tErase') };
+  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), 'switch': $('tSwitch'),
+                   cross: $('tCross'), station: $('tStation'), erase: $('tErase') };
   function selTool(t) {
     S.tool = t;
     Object.keys(toolBtns).forEach(function (k) { toolBtns[k].classList.toggle('sel', k === t); });
