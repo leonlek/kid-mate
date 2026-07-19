@@ -318,11 +318,12 @@
     };
     img.src = url;
   }
-  function restoreEntry(entry) {                 // tolerate a not-yet-encoded blob
+  function restoreEntry(entry) {                 // wait patiently for the blob to encode
     var tries = 0;
     (function go() {
+      if (entry.dead) return;
       if (entry.url) { drawURL(entry.url, true); return; }
-      if (tries++ > 24) return;
+      if (tries++ > 300) return;
       setTimeout(go, 16);
     })();
   }
