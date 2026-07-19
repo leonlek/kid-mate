@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🚗 ต่อถนน — คิดส์เล่น</title>
+<meta name="description" content="ต่อถนน วางถนน หมุนถนน ทำสี่แยกและวงเวียน ให้รถวิ่งจากบ้านถึงจุดหมาย มีด่านปริศนาและโหมดสร้างเมืองอิสระ วางบ้าน ต้นไม้ สะพาน ฝึกวางแผนและมิติสัมพันธ์">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ต่อถนน">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-3: #b5e8ff; --grass-1: #7ed957;
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --paper: #fffef9; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif; color: var(--ink);
+    height: 100dvh; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 18% 8%, #fff9c4 0%, transparent 48%),
+      radial-gradient(ellipse at 86% 14%, #ffcfd2 0%, transparent 42%),
+      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  .screen { display: none; height: 100dvh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  .fab {
+    position: fixed; z-index: 60; width: 50px; height: 50px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink);
+    background: var(--paper); border: 4px solid var(--card-border);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12); cursor: pointer; padding: 0; font-family: inherit;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .fab:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .home { top: calc(10px + env(safe-area-inset-top)); left: 12px; }
+  .back { top: calc(10px + env(safe-area-inset-top)); left: 72px; }
+
+  #selectScreen { overflow-y: auto; display: none; }
+  #selectScreen.active { display: block; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 16px 16px 40px; }
+  .hero { text-align: center; padding: 16px 10px 4px; }
+  .hero h1 { font-family: 'Itim', cursive; font-size: clamp(34px, 8vw, 56px); margin: 0;
+             color: var(--brand-dark); text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08); }
+  .hero p { font-size: clamp(15px, 3.2vw, 19px); margin: 6px 0 0; color: #555; font-weight: 500; }
+
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0 8px; }
+  .mode-card {
+    background: var(--card); border: 4px solid var(--card-border); border-radius: 22px;
+    padding: 18px 12px; text-align: center; cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08); transition: transform .12s, box-shadow .12s, border-color .12s;
+  }
+  .mode-card:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.08); }
+  .mode-card.sel { border-color: var(--brand); }
+  .mode-card .me { font-size: 54px; line-height: 1; }
+  .mode-card .mt { font-family: 'Itim', cursive; font-size: 24px; color: var(--brand-dark); margin-top: 6px; }
+  .mode-card .md { font-size: 13px; color: #666; margin-top: 2px; }
+
+  .lgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 12px; margin-top: 8px; }
+  .lcard {
+    background: var(--card); border: 4px solid var(--card-border); border-radius: 18px;
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.07); position: relative;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .lcard:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
+  .lcard .ln { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); }
+  .lcard .done-star { position: absolute; top: 4px; right: 6px; font-size: 20px; }
+  .section-title { font-family: 'Itim', cursive; font-size: 22px; color: var(--brand-dark);
+                   text-shadow: 2px 2px 0 #fff; margin: 20px 4px 6px; }
+
+  #gameScreen { padding: env(safe-area-inset-top) 0 0; }
+  .topbar { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 3px 62px; }
+  .topbar .info { font-family: 'Itim', cursive; font-size: 19px; color: var(--brand-dark); }
+  .stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 2px 4px; }
+  #board { display: block; background: #eaf6d8; border-radius: 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.10); touch-action: none; }
+
+  .toolbar {
+    flex: 0 0 auto; background: var(--paper); border-top: 4px solid var(--card-border);
+    box-shadow: 0 -4px 0 rgba(0,0,0,0.05); padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;
+  }
+  .tbtn {
+    min-width: 58px; height: 58px; padding: 0 10px; border-radius: 16px;
+    border: 3px solid var(--card-border); background: #fff; color: var(--ink);
+    font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.10); transition: transform .12s, box-shadow .12s, background .12s; font-family: inherit;
+  }
+  .tbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.10); }
+  .tbtn.sel { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .tbtn.run { background: var(--gold); border-color: #e0b800; min-width: 92px; font-family: 'Itim', cursive; font-size: 22px; }
+  .tbtn.run.running { background: #ff8f43; border-color: #e06a1a; color: #fff; }
+  .tbtn.hide { display: none; }
+  .sep { width: 3px; height: 40px; background: var(--card-border); border-radius: 3px; }
+
+  .overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.28); }
+  .overlay.shown { display: flex; }
+  .win-card { background: var(--card); border: 5px solid var(--gold); border-radius: 28px; padding: 26px 30px; text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,0.15); max-width: 86%; }
+  .win-card .we { font-size: 66px; }
+  .win-card .wt { font-family: 'Itim', cursive; font-size: 34px; color: var(--brand-dark); margin: 4px 0 14px; }
+  .big-btn { display: block; width: 100%; margin: 8px 0 0; padding: 12px; border: none; cursor: pointer; font-family: 'Itim', cursive; font-size: 22px; color: #fff; background: var(--brand); border-radius: 999px; box-shadow: 0 5px 0 var(--brand-dark); }
+  .big-btn:active { transform: translateY(2px); box-shadow: 0 3px 0 var(--brand-dark); }
+  .big-btn.secondary { background: #b7c4cf; box-shadow: 0 5px 0 #8a97a3; }
+
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 120; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(112vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+  <a class="fab home" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+  <button class="fab back" id="menuBtn" aria-label="เลือกโหมด" style="display:none">⬅️</button>
+
+  <section id="selectScreen" class="screen active">
+    <div class="wrap">
+      <div class="hero">
+        <h1>🚗 ต่อถนน</h1>
+        <p>วางถนน ต่อสะพาน ให้รถวิ่งจากบ้านถึงจุดหมาย</p>
+      </div>
+      <div class="modes">
+        <div class="mode-card" id="modePuzzle">
+          <div class="me">🧩</div><div class="mt">ด่านปริศนา</div>
+          <div class="md">ต่อถนนให้รถถึงจุดหมาย</div>
+        </div>
+        <div class="mode-card" id="modeSandbox">
+          <div class="me">🏙️</div><div class="mt">สร้างเมือง</div>
+          <div class="md">วางถนน บ้าน ต้นไม้ อิสระ</div>
+        </div>
+      </div>
+      <div class="section-title" id="levelTitle" style="display:none">เลือกด่าน</div>
+      <div class="lgrid" id="levelGrid" style="display:none"></div>
+    </div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="topbar"><div class="info" id="infoText">ด่าน 1</div></div>
+    <div class="stage"><canvas id="board"></canvas></div>
+    <div class="toolbar" id="toolbar">
+      <button class="tbtn sel" id="tStraight" aria-label="ถนนตรง">━</button>
+      <button class="tbtn" id="tCurve" aria-label="ถนนโค้ง">╭</button>
+      <button class="tbtn" id="tCross" aria-label="สี่แยก">✚</button>
+      <button class="tbtn" id="tJunction" aria-label="สามแยก">┳</button>
+      <button class="tbtn deco" id="tHouse" aria-label="บ้าน">🏠</button>
+      <button class="tbtn deco" id="tTree" aria-label="ต้นไม้">🌳</button>
+      <button class="tbtn" id="tErase" aria-label="ลบ">🧽</button>
+      <div class="sep"></div>
+      <button class="tbtn run" id="runBtn">▶ ขับ!</button>
+      <button class="tbtn" id="resetBtn" aria-label="เริ่มใหม่">🔄</button>
+    </div>
+  </section>
+
+  <div class="overlay" id="winOverlay">
+    <div class="win-card">
+      <div class="we">🎉</div>
+      <div class="wt" id="winText">รถถึงแล้ว!</div>
+      <button class="big-btn" id="nextBtn">ด่านต่อไป ➡️</button>
+      <button class="big-btn secondary" id="selBtn">เลือกด่านอื่น</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  var DV = [[0,-1],[1,0],[0,1],[-1,0]];
+  function opp(s) { return (s + 2) % 4; }
+  function rotSide(s, r) { return (s + r) % 4; }
+  var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3], junction: [3, 1, 2] };
+  function openings(type, rot) { return BASE[type].map(function (s) { return rotSide(s, rot); }); }
+  function hasOpen(cell, side) { return !!cell && !!cell.type && openings(cell.type, cell.rot).indexOf(side) >= 0; }
+  function connections(type, rot) {
+    if (type === 'cross') return [[rotSide(1, rot), rotSide(3, rot)], [rotSide(0, rot), rotSide(2, rot)]];
+    var o = openings(type, rot); return [[o[0], o[1]]];
+  }
+
+  var LEVELS = [
+    { c: 4, r: 3, a: { x: 0, y: 1, d: 1 }, b: { x: 3, y: 1, d: 3 }, water: [] },
+    { c: 5, r: 4, a: { x: 0, y: 0, d: 1 }, b: { x: 4, y: 3, d: 3 }, water: [] },
+    { c: 5, r: 4, a: { x: 0, y: 3, d: 1 }, b: { x: 4, y: 0, d: 3 }, water: [[2,1],[2,2]] },
+    { c: 6, r: 5, a: { x: 0, y: 2, d: 1 }, b: { x: 5, y: 2, d: 3 }, water: [[2,0],[2,1],[2,2],[2,3],[2,4]] },
+    { c: 6, r: 5, a: { x: 2, y: 0, d: 2 }, b: { x: 3, y: 4, d: 0 }, water: [[0,2],[1,2],[4,2],[5,2]] },
+    { c: 6, r: 6, a: { x: 0, y: 0, d: 1 }, b: { x: 5, y: 5, d: 3 }, water: [[3,1],[3,2],[3,3],[3,4]] }
+  ];
+
+  var canvas = $('board'), ctx = canvas.getContext('2d');
+  var S = { mode: 'puzzle', levelIdx: 0, cols: 4, rows: 3, cell: 40, dpr: 1,
+            grid: [], a: null, b: null, tool: 'straight', running: false, anim: null, cleared: loadCleared() };
+
+  function blankGrid(c, r) {
+    var g = [];
+    for (var y = 0; y < r; y++) { g[y] = []; for (var x = 0; x < c; x++) g[y][x] = { type: null, rot: 0, water: false, deco: null }; }
+    return g;
+  }
+
+  // ---- Audio --------------------------------------------------------------
+  var actx = null, engineTimer = 0;
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (actx && actx.state === 'suspended') { try { actx.resume(); } catch (e) {} }
+  }
+  function tone(freq, dur, type, gain, slide) {
+    if (!actx) return;
+    var t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain || 0.2, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + 0.03);
+  }
+  function sndClack() { tone(240, 0.07, 'square', 0.14, 180); }
+  function sndRot() { tone(520, 0.06, 'triangle', 0.12, 640); }
+  function sndEngine() { tone(90, 0.14, 'sawtooth', 0.06, 82); }
+  function sndBeep() { tone(660, 0.12, 'square', 0.16); setTimeout(function(){ tone(660, 0.12, 'square', 0.14); }, 150); }
+  function sndWin() { [523,659,784,1047].forEach(function (f, i) { setTimeout(function () { tone(f, 0.22, 'triangle', 0.2); }, i * 130); }); }
+  function sndNope() { tone(200, 0.2, 'sine', 0.14, 130); }
+  function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+  function loadCleared() { try { return JSON.parse(localStorage.getItem('road-cleared') || '{}'); } catch (e) { return {}; } }
+  function saveCleared() { try { localStorage.setItem('road-cleared', JSON.stringify(S.cleared)); } catch (e) {} }
+
+  function startPuzzle(idx) {
+    S.mode = 'puzzle'; S.levelIdx = idx;
+    var L = LEVELS[idx];
+    S.cols = L.c; S.rows = L.r; S.grid = blankGrid(L.c, L.r);
+    (L.water || []).forEach(function (w) { S.grid[w[1]][w[0]].water = true; });
+    S.a = { x: L.a.x, y: L.a.y, d: L.a.d }; S.b = { x: L.b.x, y: L.b.y, d: L.b.d };
+    $('infoText').textContent = 'ด่าน ' + (idx + 1);
+    enterGame();
+  }
+  function startSandbox() {
+    S.mode = 'sandbox'; S.cols = 7; S.rows = 7; S.grid = blankGrid(7, 7);
+    for (var y = 0; y < 7; y++) S.grid[y][3].water = true;
+    S.a = { x: 0, y: 3, d: 1 }; S.b = null;
+    $('infoText').textContent = '🏙️ สร้างเมือง';
+    enterGame();
+  }
+  function enterGame() {
+    stopCar();
+    $('selectScreen').classList.remove('active');
+    $('gameScreen').classList.add('active');
+    $('menuBtn').style.display = '';
+    $('nextBtn').style.display = (S.mode === 'puzzle') ? '' : 'none';
+    // house/tree only in the city sandbox
+    var show = (S.mode === 'sandbox');
+    [$('tHouse'), $('tTree')].forEach(function (b) { b.classList.toggle('hide', !show); });
+    if (!show && (S.tool === 'house' || S.tool === 'tree')) selTool('straight');
+    requestAnimationFrame(function () { fit(); render(); });
+  }
+
+  function fit() {
+    var stage = canvas.parentNode, pad = 8;
+    var availW = stage.clientWidth - pad, availH = stage.clientHeight - pad;
+    var cell = Math.floor(Math.min(availW / S.cols, availH / S.rows));
+    cell = Math.max(38, Math.min(cell, 200));
+    S.cell = cell; S.dpr = window.devicePixelRatio || 1;
+    var w = cell * S.cols, h = cell * S.rows;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    canvas.width = Math.round(w * S.dpr); canvas.height = Math.round(h * S.dpr);
+    ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+  }
+  function cellAt(px, py) {
+    var r = canvas.getBoundingClientRect();
+    var x = Math.floor((px - r.left) / (r.width / S.cols)), y = Math.floor((py - r.top) / (r.height / S.rows));
+    if (x < 0 || y < 0 || x >= S.cols || y >= S.rows) return null;
+    return { x: x, y: y };
+  }
+  function edgeMid(x, y, side) {
+    var s = S.cell, ox = x * s, oy = y * s;
+    if (side === 0) return [ox + s / 2, oy];
+    if (side === 1) return [ox + s, oy + s / 2];
+    if (side === 2) return [ox + s / 2, oy + s];
+    return [ox, oy + s / 2];
+  }
+  function centerline(x, y, sa, sb, n) {
+    n = n || 10;
+    var s = S.cell, ox = x * s, oy = y * s, cx = ox + s / 2, cy = oy + s / 2;
+    var A = edgeMid(x, y, sa), B = edgeMid(x, y, sb), pts = [];
+    if (opp(sa) === sb) { for (var i = 0; i <= n; i++) { var t = i / n; pts.push([A[0] + (B[0]-A[0])*t, A[1] + (B[1]-A[1])*t]); } return pts; }
+    var corner = [ (sa === 1 || sb === 1) ? ox + s : ((sa === 3 || sb === 3) ? ox : cx),
+                   (sa === 2 || sb === 2) ? oy + s : ((sa === 0 || sb === 0) ? oy : cy) ];
+    var a0 = Math.atan2(A[1]-corner[1], A[0]-corner[0]), a1 = Math.atan2(B[1]-corner[1], B[0]-corner[0]);
+    var d = a1 - a0; while (d > Math.PI) d -= 2*Math.PI; while (d < -Math.PI) d += 2*Math.PI;
+    for (var j = 0; j <= n; j++) { var tt = j / n, ang = a0 + d * tt; pts.push([corner[0] + (s/2)*Math.cos(ang), corner[1] + (s/2)*Math.sin(ang)]); }
+    return pts;
+  }
+
+  // ---- Render -------------------------------------------------------------
+  function render() {
+    var s = S.cell, W = s * S.cols, H = s * S.rows;
+    ctx.clearRect(0, 0, W, H);
+    for (var y = 0; y < S.rows; y++) for (var x = 0; x < S.cols; x++) {
+      var c = S.grid[y][x];
+      ctx.fillStyle = c.water ? '#7ec8ff' : '#cdeeb0';
+      ctx.fillRect(x*s, y*s, s, s);
+      if (c.water) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = Math.max(1.5, s*0.03);
+        for (var k = 0; k < 2; k++) { ctx.beginPath(); var wy = y*s + s*(0.35 + k*0.32);
+          ctx.moveTo(x*s + s*0.2, wy); ctx.quadraticCurveTo(x*s + s*0.5, wy - s*0.08, x*s + s*0.8, wy); ctx.stroke(); }
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.07)'; ctx.lineWidth = 1; ctx.strokeRect(x*s+0.5, y*s+0.5, s, s);
+    }
+    for (y = 0; y < S.rows; y++) for (x = 0; x < S.cols; x++) {
+      var cc = S.grid[y][x];
+      if (cc.type) drawRoad(x, y, cc);
+      if (cc.deco) drawDeco(x, y, cc.deco);
+    }
+    if (S.a) drawMarker(S.a, '#3fa64d', '🏠');
+    if (S.b) drawMarker(S.b, '#e23b3b', '🏁');
+    if (S.running && S.anim) drawCar();
+  }
+  function strokePts(pts) { ctx.beginPath(); pts.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.stroke(); }
+  function drawRoadSeg(pts, water) {
+    var s = S.cell;
+    if (water) { ctx.strokeStyle = '#d9b382'; ctx.lineWidth = s*0.66; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; strokePts(pts); }
+    ctx.strokeStyle = '#7c8794'; ctx.lineWidth = s*0.52; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; strokePts(pts);   // asphalt
+    ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = Math.max(2, s*0.045); ctx.setLineDash([s*0.16, s*0.13]); strokePts(pts); ctx.setLineDash([]);  // centre line
+  }
+  function drawRoad(x, y, cell) {
+    if (cell.type === 'cross') {
+      drawRoadSeg(centerline(x, y, 0, 2, 10), cell.water);
+      drawRoadSeg(centerline(x, y, 1, 3, 10), cell.water);
+      var s = S.cell; ctx.fillStyle = '#8d97a3'; ctx.beginPath(); ctx.arc(x*s+s/2, y*s+s/2, s*0.26, 0, Math.PI*2); ctx.fill();
+      return;
+    }
+    if (cell.type === 'junction') {
+      var o = openings('junction', cell.rot);
+      drawRoadSeg(centerline(x, y, o[0], o[1], 10), cell.water);
+      drawRoadSeg(halfLine(x, y, o[2], 6), cell.water);
+      return;
+    }
+    connections(cell.type, cell.rot).forEach(function (cn) { drawRoadSeg(centerline(x, y, cn[0], cn[1], 10), cell.water); });
+  }
+  function halfLine(x, y, side, n) {
+    var s = S.cell, cx = x*s+s/2, cy = y*s+s/2, e = edgeMid(x, y, side), pts = [];
+    n = n || 6; for (var i = 0; i <= n; i++) { var t = i/n; pts.push([cx + (e[0]-cx)*t, cy + (e[1]-cy)*t]); }
+    return pts;
+  }
+  function drawDeco(x, y, kind) {
+    var s = S.cell;
+    ctx.font = Math.round(s * 0.62) + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(kind === 'tree' ? '🌳' : '🏠', x*s + s/2, y*s + s*0.54);
+  }
+  function drawMarker(st, col, emoji) {
+    var s = S.cell, cx = st.x*s + s/2, cy = st.y*s + s/2, R = s*0.34;
+    var em = edgeMid(st.x, st.y, st.d);
+    ctx.strokeStyle = '#7c8794'; ctx.lineWidth = Math.max(2, s*0.16); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(em[0], em[1]); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.fillStyle = col; ctx.fill();
+    ctx.lineWidth = Math.max(2, s*0.05); ctx.strokeStyle = '#fff'; ctx.stroke();
+    ctx.font = Math.round(s * 0.4) + "px 'Apple Color Emoji','Segoe UI Emoji',serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, cx, cy + 1);
+  }
+
+  // ---- Pointer ------------------------------------------------------------
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); ensureAudio();
+    if (S.running) stopCar();
+    var c = cellAt(e.clientX, e.clientY); if (!c) return;
+    if (isMarker(c.x, c.y)) return;
+    var cell = S.grid[c.y][c.x];
+    if (S.tool === 'erase') { cell.type = null; cell.deco = null; buzz(6); sndClack(); render(); return; }
+    if (S.tool === 'house' || S.tool === 'tree') {
+      if (cell.water) return;
+      cell.type = null; cell.deco = (cell.deco === S.tool) ? null : S.tool; buzz(8); sndClack(); render(); return;
+    }
+    // a road tool
+    cell.deco = null;
+    if (!cell.type) { cell.type = S.tool; cell.rot = 0; sndClack(); buzz(8); }
+    else { var n = (cell.type === 'straight') ? 2 : (cell.type === 'cross' ? 1 : 4); cell.rot = (cell.rot + 1) % n; sndRot(); buzz(5); }
+    render();
+  });
+  function isMarker(x, y) { return (S.a && S.a.x === x && S.a.y === y) || (S.b && S.b.x === x && S.b.y === y); }
+
+  function tracePath() {
+    var pts = [], reachedB = false, looped = false;
+    if (!S.a) return { pts: pts, reachedB: reachedB, looped: looped };
+    var s = S.cell;
+    pts.push([S.a.x*s+s/2, S.a.y*s+s/2]); pts.push(edgeMid(S.a.x, S.a.y, S.a.d));
+    var cx = S.a.x, cy = S.a.y, exitDir = S.a.d, steps = 0, seen = {};
+    while (steps++ < 400) {
+      var nx = cx + DV[exitDir][0], ny = cy + DV[exitDir][1];
+      if (nx < 0 || ny < 0 || nx >= S.cols || ny >= S.rows) break;
+      var entry = opp(exitDir);
+      if (S.b && nx === S.b.x && ny === S.b.y) {
+        if (entry === S.b.d) { pts.push(edgeMid(nx, ny, entry)); pts.push([nx*s+s/2, ny*s+s/2]); reachedB = true; } break;
+      }
+      if (nx === S.a.x && ny === S.a.y) { looped = true; break; }
+      var cell = S.grid[ny][nx];
+      if (!cell.type || !hasOpen(cell, entry)) break;
+      var outs = openings(cell.type, cell.rot).filter(function (o) { return o !== entry; });
+      var out;
+      if (cell.type === 'cross') out = opp(entry);
+      else if (cell.type === 'junction') out = hasOpen(cell, opp(entry)) ? opp(entry) : outs[0];
+      else out = outs[0];
+      if (out === undefined) break;
+      var key = nx + ',' + ny + ',' + entry; if (seen[key]) { looped = true; break; } seen[key] = 1;
+      var cl = centerline(nx, ny, entry, out, 10);
+      for (var i = 0; i < cl.length; i++) pts.push(cl[i]);
+      cx = nx; cy = ny; exitDir = out;
+    }
+    return { pts: pts, reachedB: reachedB, looped: looped };
+  }
+
+  function polyLen(pts) { var L = 0; for (var i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]); return L; }
+  function ptAt(pts, dist) {
+    for (var i = 1; i < pts.length; i++) {
+      var seg = Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]);
+      if (dist <= seg) { var t = seg ? dist/seg : 0;
+        return { x: pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t, y: pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t, a: Math.atan2(pts[i][1]-pts[i-1][1], pts[i][0]-pts[i-1][0]) }; }
+      dist -= seg;
+    }
+    var n = pts.length - 1;
+    return { x: pts[n][0], y: pts[n][1], a: Math.atan2(pts[n][1]-pts[n-1][1], pts[n][0]-pts[n-1][0]) };
+  }
+  function runCar() {
+    ensureAudio();
+    if (S.running) { stopCar(); return; }
+    var tr = tracePath();
+    if (tr.pts.length < 3) { sndNope(); buzz(20); flashInfo('ต่อถนนก่อนนะ'); return; }
+    var len = polyLen(tr.pts);
+    S.running = true; $('runBtn').classList.add('running'); $('runBtn').textContent = '■ หยุด';
+    sndBeep(); buzz(30);
+    var speed = Math.max(75, S.cell * 2.6), t0 = null, dist = 0, arrived = false;
+    S.anim = { pts: tr.pts, len: len, dist: 0, looped: tr.looped };
+    function frame(ts) {
+      if (!S.running) return;
+      if (t0 === null) t0 = ts;
+      var dt = Math.min(0.05, (ts - t0) / 1000); t0 = ts;
+      dist += speed * dt;
+      engineTimer += dt; if (engineTimer > 0.16) { engineTimer = 0; sndEngine(); }
+      if (dist >= len) {
+        if (tr.looped) { dist -= len; }
+        else if (!arrived) { arrived = true; S.anim.dist = len; render(); stopCar();
+          if (tr.reachedB && S.mode === 'puzzle') onWin(); else sndBeep(); return; }
+      }
+      S.anim.dist = dist; render(); S.anim.raf = requestAnimationFrame(frame);
+    }
+    S.anim.raf = requestAnimationFrame(frame);
+  }
+  function stopCar() {
+    S.running = false;
+    if (S.anim && S.anim.raf) cancelAnimationFrame(S.anim.raf);
+    S.anim = null;
+    var rb = $('runBtn'); if (rb) { rb.classList.remove('running'); rb.textContent = '▶ ขับ!'; }
+  }
+  function drawCar() {
+    var pts = S.anim.pts, d = S.anim.dist, s = S.cell;
+    var dm = S.anim.looped ? ((d % S.anim.len) + S.anim.len) % S.anim.len : Math.min(d, S.anim.len);
+    var p = ptAt(pts, dm);
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+    var w = s*0.52, h = s*0.32;
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; roundRect(-w/2, -h/2 + s*0.05, w, h, s*0.09); ctx.fill();
+    ctx.fillStyle = '#e23b3b'; roundRect(-w/2, -h/2, w, h, s*0.10); ctx.fill();
+    ctx.fillStyle = '#bfe3ff'; roundRect(w*0.04, -h*0.34, w*0.30, h*0.68, s*0.04); ctx.fill();   // windshield (front)
+    ctx.fillStyle = '#fff4b0'; ctx.beginPath(); ctx.arc(w*0.44, -h*0.28, s*0.05, 0, Math.PI*2); ctx.arc(w*0.44, h*0.28, s*0.05, 0, Math.PI*2); ctx.fill();  // headlights
+    ctx.restore();
+  }
+  function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function onWin() {
+    S.cleared[S.levelIdx] = 1; saveCleared();
+    sndWin(); buzz([30,40,30]); confetti();
+    $('winText').textContent = 'รถถึงจุดหมาย! 🚗';
+    $('nextBtn').style.display = (S.levelIdx + 1 < LEVELS.length) ? '' : 'none';
+    setTimeout(function () { $('winOverlay').classList.add('shown'); }, 500);
+  }
+  function confetti() {
+    var cols = ['#ff6b9d','#ffd93d','#7ed957','#4a90e2','#a259d6','#ff9f43'];
+    for (var i = 0; i < 40; i++) {
+      var dd = document.createElement('div'); dd.className = 'confetti';
+      dd.style.left = Math.random()*100 + 'vw'; dd.style.background = cols[i % cols.length];
+      dd.style.animationDuration = (1.6 + Math.random()*1.4) + 's'; dd.style.animationDelay = (Math.random()*0.3) + 's';
+      document.body.appendChild(dd); setTimeout(function (el) { return function () { el.remove(); }; }(dd), 3200);
+    }
+  }
+  var flashT = 0;
+  function flashInfo(msg) {
+    var el = $('infoText'); el.textContent = msg;
+    clearTimeout(flashT); flashT = setTimeout(function () { el.textContent = S.mode === 'sandbox' ? '🏙️ สร้างเมือง' : ('ด่าน ' + (S.levelIdx + 1)); }, 1400);
+  }
+
+  function renderLevels() {
+    var g = $('levelGrid'); g.innerHTML = '';
+    LEVELS.forEach(function (L, i) {
+      var d = document.createElement('div'); d.className = 'lcard';
+      d.innerHTML = '<div class="ln">' + (i+1) + '</div>' + (S.cleared[i] ? '<div class="done-star">⭐</div>' : '');
+      d.addEventListener('click', function () { ensureAudio(); startPuzzle(i); });
+      g.appendChild(d);
+    });
+  }
+  function showLevels(show) { $('levelTitle').style.display = show ? '' : 'none'; $('levelGrid').style.display = show ? '' : 'none'; $('modePuzzle').classList.toggle('sel', show); }
+
+  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), cross: $('tCross'), junction: $('tJunction'),
+                   house: $('tHouse'), tree: $('tTree'), erase: $('tErase') };
+  function selTool(t) {
+    S.tool = t;
+    Object.keys(toolBtns).forEach(function (k) { toolBtns[k].classList.toggle('sel', k === t); });
+    buzz(6);
+  }
+  Object.keys(toolBtns).forEach(function (k) { toolBtns[k].addEventListener('click', function () { selTool(k); }); });
+
+  $('runBtn').addEventListener('click', runCar);
+  $('resetBtn').addEventListener('click', function () { stopCar(); if (S.mode === 'puzzle') startPuzzle(S.levelIdx); else startSandbox(); buzz(12); });
+  $('menuBtn').addEventListener('click', backToSelect);
+  $('selBtn').addEventListener('click', function () { $('winOverlay').classList.remove('shown'); backToSelect(); });
+  $('nextBtn').addEventListener('click', function () { $('winOverlay').classList.remove('shown'); if (S.levelIdx + 1 < LEVELS.length) startPuzzle(S.levelIdx + 1); else backToSelect(); });
+  function backToSelect() { stopCar(); $('menuBtn').style.display = 'none'; $('gameScreen').classList.remove('active'); $('selectScreen').classList.add('active'); renderLevels(); }
+
+  $('modePuzzle').addEventListener('click', function () { ensureAudio(); showLevels(true); renderLevels(); });
+  $('modeSandbox').addEventListener('click', function () { ensureAudio(); startSandbox(); });
+
+  renderLevels();
+  var rt = 0;
+  window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if ($('gameScreen').classList.contains('active')) { stopCar(); fit(); render(); } }, 150); });
+  window.addEventListener('orientationchange', function () { clearTimeout(rt); rt = setTimeout(function () { if ($('gameScreen').classList.contains('active')) { stopCar(); fit(); render(); } }, 250); });
+})();
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+</body></html>
