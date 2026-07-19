@@ -568,17 +568,47 @@ document.addEventListener('touchend', (e) => {
 newRound(true);
 </script>
 <script>
-/* Auto-update: reload once a newly deployed service worker takes control. */
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
 (function () {
-  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
-  var done = false;
-  navigator.serviceWorker.addEventListener('controllerchange', function () {
-    if (done) return; done = true; location.reload();
-  });
-  function check() { navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); }).catch(function () {}); }
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
-  window.addEventListener('focus', check);
-  setInterval(check, 60000);
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
 })();
 </script>
 

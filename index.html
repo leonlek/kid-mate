@@ -686,23 +686,47 @@
     });
   })();
 
-  // Service worker + auto-update: when a new version is deployed, pick it up and
-  // reload once the new worker takes control — so an open tab / installed PWA
-  // refreshes itself instead of showing a stale cache.
+  // Service worker + auto-update: when a new version is deployed, offer a
+  // "tap to update" pill instead of reloading on its own. The new SW waits until
+  // the user taps (the page posts skipWaiting), then the page reloads once.
   if ('serviceWorker' in navigator) {
-    if (navigator.serviceWorker.controller) {          // already controlled → a change means an update
-      var swReloaded = false;
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-        if (swReloaded) return; swReloaded = true; location.reload();
+    var sw = navigator.serviceWorker, swReloading = false, swShown = false;
+    if (sw.controller) {
+      sw.addEventListener('controllerchange', function () {
+        if (swReloading) return; swReloading = true; location.reload();
       });
     }
+    var swOffer = function (worker) {
+      if (swShown || !worker || !sw.controller) return;
+      swShown = true;
+      var st = document.createElement('style');
+      st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+      document.head.appendChild(st);
+      var b = document.createElement('button');
+      b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+      b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+        + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+        + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+        + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+      b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+      document.body.appendChild(b);
+    };
+    var swTrack = function (w) {
+      if (!w) return;
+      if (w.state === 'installed') { swOffer(w); return; }
+      w.addEventListener('statechange', function () { if (w.state === 'installed') swOffer(w); });
+    };
+    var swWatch = function (reg) {
+      if (reg.waiting) swOffer(reg.waiting);
+      swTrack(reg.installing);
+      reg.addEventListener('updatefound', function () { swTrack(reg.installing); });
+      function check() { reg.update().catch(function () {}); }
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+      window.addEventListener('focus', check);
+      setInterval(check, 60000);                       // poll for a new deploy every minute
+    };
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').then(function (reg) {
-        function check() { reg.update().catch(function () {}); }
-        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
-        window.addEventListener('focus', check);
-        setInterval(check, 60000);                     // poll for a new deploy every minute
-      }).catch(function () { /* ignore — hub still works online */ });
+      sw.register('sw.js').then(swWatch).catch(function () { /* ignore — hub still works online */ });
     });
   }
 </script>

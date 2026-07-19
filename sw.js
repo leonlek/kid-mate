@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v74';
+const CACHE = 'kid-games-v75';
 const SHELL = [
   './',
   './index.html',
@@ -104,9 +104,14 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())
-  );
+  // Precache the new shells but do NOT skipWaiting — the new version waits until
+  // the user taps "update" (the page then posts skipWaiting). Avoids yanking the
+  // page out from under a child mid-drawing.
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'skipWaiting') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
