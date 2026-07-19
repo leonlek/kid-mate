@@ -167,6 +167,7 @@
       <button class="tbtn sel" id="tStraight" aria-label="รางตรง">━</button>
       <button class="tbtn" id="tCurve" aria-label="รางโค้ง">╭</button>
       <button class="tbtn" id="tJunction" aria-label="ทางแยก">┳</button>
+      <button class="tbtn" id="tWye" aria-label="ทางแยกตัว Y">Y</button>
       <button class="tbtn" id="tSwitch" aria-label="ที่สับราง">🔀</button>
       <button class="tbtn" id="tCross" aria-label="สะพานข้ามราง">🌉</button>
       <button class="tbtn" id="tStation" aria-label="สถานี">🚉</button>
@@ -197,8 +198,8 @@
   function opp(s) { return (s + 2) % 4; }
   function rotSide(s, r) { return (s + r) % 4; }
   // base openings at rot 0
-  var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3],
-               station: [1, 3], 'switch': [3, 1, 2], junction: [3, 1, 2] };  // T: trunk W-E + branch S
+  var BASE = { straight: [1, 3], curve: [0, 1], cross: [0, 1, 2, 3], station: [1, 3],
+               'switch': [3, 1, 2], junction: [3, 1, 2], wye: [1, 3, 2] };  // wye = Y: stem S -> arms E,W
   function openings(type, rot) { return BASE[type].map(function (s) { return rotSide(s, rot); }); }
   function hasOpen(cell, side) {
     if (!cell || !cell.type) return false;
@@ -376,6 +377,7 @@
     if (cell.type === 'cross') { drawOverpass(x, y, cell); return; }
     if (cell.type === 'switch') { drawSwitch(x, y, cell); return; }
     if (cell.type === 'junction') { drawJunction(x, y, cell); return; }
+    if (cell.type === 'wye') { drawWye(x, y, cell); return; }
     connections(cell.type, cell.rot).forEach(function (cn) {
       drawSeg(centerline(x, y, cn[0], cn[1], 12), cell.water);
     });
@@ -418,6 +420,13 @@
     ctx.beginPath(); ctx.moveTo(cx, cyy); ctx.lineTo(cx + (ae[0] - cx) * 0.55, cyy + (ae[1] - cyy) * 0.55); ctx.stroke();
     ctx.beginPath(); ctx.arc(cx, cyy, s * 0.09, 0, Math.PI * 2); ctx.fillStyle = '#2ecc40'; ctx.fill();
     ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+  function drawWye(x, y, cell) {                 // Y-fork: stem forks into two curved arms
+    var s = S.cell, stem = (2 + cell.rot) % 4, aE = (1 + cell.rot) % 4, aW = (3 + cell.rot) % 4;
+    drawSeg(centerline(x, y, stem, aE, 12), cell.water);
+    drawSeg(centerline(x, y, stem, aW, 12), cell.water);
+    var m = edgeMid(x, y, stem);
+    ctx.beginPath(); ctx.arc(m[0], m[1], s * 0.07, 0, Math.PI * 2); ctx.fillStyle = '#5a5a5a'; ctx.fill();
   }
   function drawJunction(x, y, cell) {            // passive fork/merge (ทางแยก 1→2)
     var s = S.cell, o = openings('junction', cell.rot);
@@ -514,6 +523,7 @@
       var out;
       if (cell.type === 'cross' || cell.type === 'station') out = opp(entry);   // straight through
       else if (cell.type === 'junction') out = hasOpen(cell, opp(entry)) ? opp(entry) : outs[0];  // fork: straight, else branch
+      else if (cell.type === 'wye') { var stem = (2 + cell.rot) % 4; out = (entry === stem) ? outs[0] : stem; }  // Y-fork
       else if (cell.type === 'switch') {
         var be = (entry - cell.rot + 4) % 4;                 // base entry (W=3 trunk, E=1, S=2 branch)
         var bx = (be === 3) ? (cell.sw ? 2 : 1) : 3;         // W -> E(straight) or S(branch); E/S -> W
@@ -657,7 +667,7 @@
   }
 
   // ---- Tools wiring -------------------------------------------------------
-  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), junction: $('tJunction'),
+  var toolBtns = { straight: $('tStraight'), curve: $('tCurve'), junction: $('tJunction'), wye: $('tWye'),
                    'switch': $('tSwitch'), cross: $('tCross'), station: $('tStation'), erase: $('tErase') };
   function selTool(t) {
     S.tool = t;
