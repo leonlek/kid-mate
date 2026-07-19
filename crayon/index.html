@@ -239,7 +239,7 @@
 // ============================================================================
 var COLORS = [
   '#ff6b9d', '#ff5757', '#ff914d', '#ffd93d', '#7ed957',
-  '#5bc0eb', '#3498db', '#9b59b6', '#8b5a2b', '#2d3436'
+  '#5bc0eb', '#3498db', '#1e3a8a', '#9b59b6', '#8b5a2b', '#2d3436'
 ];
 var ERASE = '__erase__';
 
@@ -740,7 +740,7 @@ function renderSelect() {
 function openScene(sc) {
   state.scene = sc;
   state.touched = {};
-  state.undo = [];
+  resetUndo();
   state.celebrated = false;
   updateUndoBtn();
 
@@ -803,7 +803,7 @@ function fitCanvas(fresh) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
   }
-  state.undo = []; updateUndoBtn();
+  resetUndo(); updateUndoBtn();
 }
 
 // ============================================================================
@@ -865,12 +865,54 @@ function strokeTo(vx, vy) {
   state.lastX = vx; state.lastY = vy;
 }
 
+// Undo history (compressed): each entry is a PNG blob-url of the canvas plus the
+// touched-region map. toBlob() encodes off the critical path so capturing a step
+// never blocks colouring, and 50 steps stay cheap — enough to rewind to blank.
+var undoSeq = 0;
 function pushUndo() {
-  var img;
-  try { img = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (e) { return; }
-  state.undo.push({ img: img, touched: Object.assign({}, state.touched) });
-  if (state.undo.length > 8) state.undo.shift();
+  var entry = { url: null, dead: false, touched: Object.assign({}, state.touched) };
+  state.undo.push(entry);
+  while (state.undo.length > 50) {
+    var old = state.undo.shift();
+    old.dead = true;
+    if (old.url) URL.revokeObjectURL(old.url);
+  }
   updateUndoBtn();
+  try {
+    canvas.toBlob(function (blob) {
+      if (!blob || entry.dead) return;
+      entry.url = URL.createObjectURL(blob);
+    }, 'image/png');
+  } catch (e) {}
+}
+function drawUndoURL(url, revoke) {
+  var my = ++undoSeq;
+  var img = new Image();
+  img.onload = function () {
+    if (my === undoSeq) {
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+    if (revoke) URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+function restoreUndo(entry) {
+  var tries = 0;
+  (function go() {
+    if (entry.url) { drawUndoURL(entry.url, true); return; }
+    if (tries++ > 24) return;
+    setTimeout(go, 16);
+  })();
+}
+function resetUndo() {
+  for (var i = 0; i < state.undo.length; i++) {
+    state.undo[i].dead = true;
+    if (state.undo[i].url) URL.revokeObjectURL(state.undo[i].url);
+  }
+  state.undo = [];
 }
 
 // ---- Pointer handlers ----
@@ -1007,11 +1049,9 @@ function selectColor(c, el) {
 $('undoBtn').addEventListener('click', function () {
   var last = state.undo.pop();
   if (!last) { updateUndoBtn(); return; }
-  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.putImageData(last.img, 0, 0);
-  ctx.restore();
-  state.touched = last.touched;
+  state.touched = last.touched || {};
   state.celebrated = false;
+  restoreUndo(last);
   updateUndoBtn(); buzz(10);
 });
 $('clearBtn').addEventListener('click', function () {
@@ -1049,19 +1089,37 @@ function savePng() {
   img.onload = function () {
     octx.drawImage(img, 0, 0, out.width, out.height);
     URL.revokeObjectURL(url);
-    out.toBlob(function (blob) {
-      if (!blob) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
-      var a = document.createElement('a');
-      var u = URL.createObjectURL(blob);
-      a.href = u; a.download = 'ระบายสี-' + state.scene.id + '.png';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(u); }, 1500);
-      flashOverlay('บันทึกแล้ว! 💾', 1100);
-      buzz([30, 20, 30]);
-    }, 'image/png');
+    exportImage(out, 'ระบายสี-' + state.scene.id + '.png');
   };
   img.onerror = function () { flashOverlay('บันทึกไม่ได้ 😢', 1200); URL.revokeObjectURL(url); };
   img.src = url;
+}
+// Save that works on iPad: hand the PNG to the share sheet ("Save Image" → Photos),
+// falling back to a direct download where sharing files isn't supported.
+function exportImage(cvs, filename) {
+  var url;
+  try { url = cvs.toDataURL('image/png'); } catch (e) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
+  var file = null;
+  try {
+    var arr = url.split(','), mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/png';
+    var bstr = atob(arr[1]), n = bstr.length, u8 = new Uint8Array(n);
+    while (n--) u8[n] = bstr.charCodeAt(n);
+    file = new File([u8], filename, { type: mime });
+  } catch (e) {}
+  function done() { flashOverlay('บันทึกแล้ว! 💾', 1100); buzz([30, 20, 30]); }
+  if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+    navigator.share({ files: [file] }).then(done, function (err) {
+      if (err && err.name === 'AbortError') return;
+      dlURL(url, filename); done();
+    });
+    return;
+  }
+  dlURL(url, filename); done();
+}
+function dlURL(url, filename) {
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 // ============================================================================

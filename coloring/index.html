@@ -478,6 +478,7 @@ const COLORS = [
   '#7ed957',  // green
   '#5bc0eb',  // light blue
   '#3498db',  // blue
+  '#1e3a8a',  // navy
   '#9b59b6',  // purple
   '#a0522d',  // brown
   '#2c3e50',  // dark
@@ -1406,23 +1407,37 @@ function savePng() {
     ctx.fillRect(0, 0, SIZE, SIZE);
     ctx.drawImage(img, 0, 0, SIZE, SIZE);
     URL.revokeObjectURL(url);
-    canvas.toBlob((blob) => {
-      if (!blob) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
-      const a = document.createElement('a');
-      const objUrl = URL.createObjectURL(blob);
-      a.href = objUrl;
-      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-      a.download = `regaiy-see-${state.picture.id}-${ts}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1500);
-      flashOverlay('บันทึกแล้ว! 💾', 1100, 'win');
-      buzz([30, 20, 30]);
-    }, 'image/png');
+    exportImage(canvas, `regaiy-see-${state.picture.id}.png`);
   };
   img.onerror = () => { flashOverlay('บันทึกไม่ได้ 😢', 1200); URL.revokeObjectURL(url); };
   img.src = url;
+}
+// Save that works on iPad: hand the PNG to the share sheet ("Save Image" → Photos),
+// falling back to a direct download where sharing files isn't supported.
+function exportImage(cvs, filename) {
+  let url;
+  try { url = cvs.toDataURL('image/png'); } catch (e) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
+  let file = null;
+  try {
+    const arr = url.split(','), mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/png';
+    const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
+    while (n--) u8[n] = bstr.charCodeAt(n);
+    file = new File([u8], filename, { type: mime });
+  } catch (e) {}
+  const done = () => { flashOverlay('บันทึกแล้ว! 💾', 1100, 'win'); buzz([30, 20, 30]); };
+  if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+    navigator.share({ files: [file] }).then(done, (err) => {
+      if (err && err.name === 'AbortError') return;
+      dlURL(url, filename); done();
+    });
+    return;
+  }
+  dlURL(url, filename); done();
+}
+function dlURL(url, filename) {
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 $('doneBtn').addEventListener('click', () => {

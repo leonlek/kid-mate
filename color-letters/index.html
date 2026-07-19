@@ -321,7 +321,7 @@ const ALL = [].concat(THAI, ENG, NUM);
 // 10 crayon colors + eraser
 const COLORS = [
   '#ff6b9d', '#e74c3c', '#ff914d', '#f1c40f', '#7ed957',
-  '#5bc0eb', '#3498db', '#9b59b6', '#a0522d', '#2c3e50',
+  '#5bc0eb', '#3498db', '#1e3a8a', '#9b59b6', '#a0522d', '#2c3e50',
 ];
 
 const R = 1000;          // canvas buffer resolution
@@ -764,18 +764,35 @@ function savePng() {
   o.fillStyle = '#ffffff';
   o.fillRect(0, 0, R, R);
   o.drawImage(view, 0, 0);
-  out.toBlob((blob) => {
-    if (!blob) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.href = url;
-    const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    a.download = `rabai-akson-${state.ch}-${ts}.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-    flashOverlay('บันทึกแล้ว! 💾', 1100, 'win');
-    buzz([30, 20, 30]);
-  }, 'image/png');
+  exportImage(out, `rabai-akson-${state.ch}.png`);
+}
+// Save that works on iPad: build the file synchronously inside the tap so iOS
+// keeps the user gesture, then offer the share sheet ("Save Image" → Photos).
+// Falls back to a direct download where sharing files isn't supported.
+function exportImage(cvs, filename) {
+  let url;
+  try { url = cvs.toDataURL('image/png'); } catch (e) { flashOverlay('บันทึกไม่ได้ 😢', 1200); return; }
+  let file = null;
+  try {
+    const arr = url.split(','), mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/png';
+    const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
+    while (n--) u8[n] = bstr.charCodeAt(n);
+    file = new File([u8], filename, { type: mime });
+  } catch (e) {}
+  const done = () => { flashOverlay('บันทึกแล้ว! 💾', 1100, 'win'); buzz([30, 20, 30]); };
+  if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+    navigator.share({ files: [file] }).then(done, (err) => {
+      if (err && err.name === 'AbortError') return;
+      dlURL(url, filename); done();
+    });
+    return;
+  }
+  dlURL(url, filename); done();
+}
+function dlURL(url, filename) {
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 // ============================================================================
