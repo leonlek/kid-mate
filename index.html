@@ -813,10 +813,13 @@
       if (reg.waiting) swOffer(reg.waiting);
       swTrack(reg.installing);
       reg.addEventListener('updatefound', function () { swTrack(reg.installing); });
+      // Check for a new deploy only when the app is brought back to the
+      // foreground — the moment a fresh version actually matters. No polling
+      // timer: this app deploys rarely and mid-session updates aren't worth
+      // waking the radio every minute (iOS standalone suspends the timer anyway).
       function check() { reg.update().catch(function () {}); }
       document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
       window.addEventListener('focus', check);
-      setInterval(check, 60000);                       // poll for a new deploy every minute
     };
     window.addEventListener('load', function () {
       sw.register('sw.js').then(swWatch).catch(function () { /* ignore — hub still works online */ });

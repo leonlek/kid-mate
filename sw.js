@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v83';
+const CACHE = 'kid-games-v84';
 const SHELL = [
   './',
   './index.html',
@@ -133,6 +133,37 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
+  // HTML navigations (the hub + each game shell) are NETWORK-FIRST so a fresh
+  // deploy shows up on the next online launch — WITHOUT waiting for the SW
+  // version dance to activate. iOS standalone PWAs update the SW unreliably, so
+  // we can't hinge "the new version" on activation alone. Offline / a stalled
+  // network falls back to the cached shell, so it still works with no signal.
+  const isHTML = req.mode === 'navigate'
+    || (req.headers.get('accept') || '').includes('text/html');
+  if (isHTML) {
+    event.respondWith(new Promise((resolve) => {
+      var settled = false;
+      var done = function (r) { if (!settled && r) { settled = true; resolve(r); } };
+      // Don't let a slow phone network hang the page: after 3.5s serve cache.
+      var timer = setTimeout(function () {
+        caches.match(req).then(done);
+      }, 3500);
+      fetch(req).then(function (res) {
+        clearTimeout(timer);
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
+        done(res);
+      }).catch(function () {
+        clearTimeout(timer);
+        caches.match(req).then(function (c) {
+          done(c || caches.match('./index.html'));
+        });
+      });
+    }));
+    return;
+  }
+
+  // Everything else (fonts, icons, manifest) stays cache-first for speed.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
