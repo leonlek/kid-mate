@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>🐶 เลี้ยงหมาแมว — คิดส์เล่น</title>
-<meta name="description" content="เกมเลี้ยงสัตว์น่ารัก ให้อาหาร อาบน้ำ เล่น สำหรับเด็กไทย">
+<title>🐶 เลี้ยงสัตว์น้อย — คิดส์เล่น</title>
+<meta name="description" content="เกมเลี้ยงสัตว์น่ารัก 12 ตัว ให้อาหาร อาบน้ำ เล่นด้วย ดูแลตอนไม่สบาย สำหรับเด็กไทย">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -75,32 +75,37 @@
   .picker {
     position: fixed; inset: 0;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 22px;
-    padding: 20px;
+    align-items: center;
+    gap: 14px;
+    padding: calc(74px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
     z-index: 10;
     background: linear-gradient(180deg, #fff5da 0%, #ffe2ec 100%);
+    overflow-y: auto;
+    touch-action: pan-y;
   }
   .picker.hidden { display: none; }
   .picker h1 {
     font-family: 'Itim', cursive;
-    font-size: 44px;
+    font-size: 40px;
     color: var(--brand-dark);
     text-shadow: 3px 3px 0 #fff;
-    margin: 0 0 4px;
+    margin: 0;
     text-align: center;
   }
   .pet-pick-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    max-width: 380px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 460px;
+    padding-bottom: 10px;
   }
   .pet-pick {
+    position: relative;
     background: #fff;
     border: 4px solid var(--brand);
-    border-radius: 24px;
-    padding: 12px;
+    border-radius: 22px;
+    padding: 10px 6px 8px;
     text-align: center;
     cursor: pointer;
     box-shadow: 0 5px 0 var(--brand-dark);
@@ -108,23 +113,30 @@
   }
   .pet-pick:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
   .pet-pick .emoji {
-    font-size: 80px;
-    line-height: 1;
+    font-size: 58px;
+    line-height: 1.1;
     animation: pickBob 2.4s ease-in-out infinite;
   }
-  .pet-pick:nth-child(2) .emoji { animation-delay: 0.3s; }
-  .pet-pick:nth-child(3) .emoji { animation-delay: 0.6s; }
-  .pet-pick:nth-child(4) .emoji { animation-delay: 0.9s; }
   @keyframes pickBob {
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(-6px); }
   }
   .pet-pick .name {
     font-family: 'Itim', cursive;
-    font-size: 28px;
+    font-size: 20px;
     color: var(--brand-dark);
-    margin-top: 4px;
+    margin-top: 2px;
+    line-height: 1.1;
   }
+  .pet-pick .grown-tag {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--gold); color: #7a5200;
+    font-family: 'Itim', cursive; font-size: 14px;
+    padding: 1px 10px; border-radius: 999px;
+    border: 2px solid #fff;
+    white-space: nowrap;
+  }
+  .pet-pick .acc-tag { position: absolute; top: 4px; right: 6px; font-size: 20px; }
 
   /* ===== Scene ===== */
   .scene {
@@ -135,7 +147,7 @@
   }
   .scene.on { display: block; }
 
-  /* Room background */
+  /* Room background — colours come from the pet's theme */
   .room {
     position: absolute; inset: 0;
     background:
@@ -148,15 +160,25 @@
     background: var(--shelf);
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
+  /* Night overlay — sits above the room deco, below the pet */
+  .room::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(24,28,96,0.5), rgba(24,28,96,0.28));
+    opacity: 0; transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+  .scene.night .room::after { opacity: 1; }
   .room .deco {
     position: absolute;
     font-size: 40px;
   }
-  .deco.frame { top: 30px; left: 30px; }
+  /* clears the 🏠 button, which sits at the same corner */
+  .deco.frame { top: calc(80px + env(safe-area-inset-top)); left: 22px; }
   .deco.plant { top: 20%; right: 24px; font-size: 56px; }
   .deco.window { top: 40px; left: 50%; transform: translateX(-50%); font-size: 80px; }
 
-  /* Hearts */
+  /* Hearts + bonus stars */
   .hearts {
     position: absolute;
     top: calc(72px + env(safe-area-inset-top));
@@ -180,6 +202,7 @@
     opacity: 1;
     animation: heartPop .5s ease;
   }
+  .heart.star { filter: none; opacity: 1; animation: heartPop .5s ease; }
   @keyframes heartPop {
     0% { transform: scale(0.4); }
     60% { transform: scale(1.35); }
@@ -191,13 +214,30 @@
     position: absolute;
     left: 50%; top: 52%;
     transform: translate(-50%, -50%);
-    font-size: 160px;
     line-height: 1;
     z-index: 20;
-    filter: drop-shadow(0 8px 0 rgba(0,0,0,0.18));
     animation: petIdle 3s ease-in-out infinite;
     pointer-events: none;
   }
+  .pet-emoji {
+    display: block;
+    font-size: 160px;
+    line-height: 1;
+    filter: drop-shadow(0 8px 0 rgba(0,0,0,0.18));
+    transition: font-size .6s ease;
+  }
+  .pet.grown .pet-emoji { font-size: 196px; }
+  .acc {
+    position: absolute;
+    left: 50%; top: -2%;
+    transform: translateX(-50%) rotate(-12deg);
+    font-size: 58px;
+    line-height: 1;
+    filter: drop-shadow(0 3px 0 rgba(0,0,0,0.15));
+  }
+  .acc:empty { display: none; }
+  /* grown-up emoji are side-on animals facing left — the head is not centred */
+  .pet.grown .acc { left: 32%; top: -6%; }
   @keyframes petIdle {
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
     50%      { transform: translate(-50%, -52%) scale(1.02); }
@@ -212,6 +252,19 @@
   @keyframes petEat {
     0%, 100% { transform: translate(-50%, -50%) scale(1, 1); }
     50%      { transform: translate(-50%, -50%) scale(1.05, 0.95); }
+  }
+  .pet.shiver { animation: petShiver .3s linear infinite; }
+  @keyframes petShiver {
+    0%, 100% { transform: translate(-50%, -50%) rotate(-2deg); }
+    50%      { transform: translate(-51%, -50%) rotate(2deg); }
+  }
+  .pet.sick .pet-emoji { filter: grayscale(0.55) drop-shadow(0 8px 0 rgba(0,0,0,0.18)); }
+  .pet.growing { animation: petGrow 1.6s ease; }
+  @keyframes petGrow {
+    0%   { transform: translate(-50%, -50%) scale(1); }
+    35%  { transform: translate(-50%, -54%) scale(0.9) rotate(-8deg); }
+    70%  { transform: translate(-50%, -56%) scale(1.28) rotate(8deg); }
+    100% { transform: translate(-50%, -50%) scale(1); }
   }
 
   /* Thought bubble */
@@ -257,6 +310,9 @@
     50%      { transform: translateX(-50%) translateY(-6px); }
   }
   .thought.hidden { display: none; }
+  .thought.alert { border-color: #ff9f43; box-shadow: 0 5px 0 #e07b1c; }
+  .thought.alert::after { border-color: #ff9f43; border-top: none; border-left: none; box-shadow: 0 3px 0 #e07b1c; }
+  .thought.alert::before { border-color: #ff9f43; }
 
   /* Floating effect emojis */
   .effect {
@@ -270,6 +326,100 @@
     0% { opacity: 0; transform: translateY(0) scale(0.5); }
     25% { opacity: 1; transform: translateY(-20px) scale(1.1); }
     100% { opacity: 0; transform: translateY(-100px) scale(1); }
+  }
+
+  /* ===== Events ===== */
+  .mess {
+    position: absolute;
+    font-size: 56px;
+    z-index: 22;
+    transform: translate(-50%, -50%);
+    animation: messIn .4s ease;
+  }
+  @keyframes messIn {
+    0% { transform: translate(-50%, -50%) scale(0); }
+    70% { transform: translate(-50%, -50%) scale(1.25); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+  .mess.gone { animation: messOut .4s ease forwards; }
+  @keyframes messOut {
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  }
+
+  .raindrop {
+    position: absolute;
+    top: -8%;
+    font-size: 26px;
+    z-index: 24;
+    pointer-events: none;
+    animation: rainFall linear infinite;
+  }
+  @keyframes rainFall {
+    from { transform: translateY(0); opacity: 0; }
+    10%  { opacity: 1; }
+    to   { transform: translateY(115vh); opacity: 1; }
+  }
+
+  .butterfly {
+    position: absolute;
+    font-size: 46px;
+    padding: 12px;
+    z-index: 40;
+    cursor: pointer;
+    pointer-events: auto;
+    animation: flit 9s linear forwards, flitWing .4s ease-in-out infinite;
+  }
+  @keyframes flit {
+    0%   { left: -12%; top: 62%; }
+    25%  { left: 28%;  top: 30%; }
+    50%  { left: 56%;  top: 68%; }
+    75%  { left: 82%;  top: 26%; }
+    100% { left: 114%; top: 52%; }
+  }
+  @keyframes flitWing {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50%      { transform: rotate(10deg) scale(1.08); }
+  }
+
+  .parcel {
+    position: absolute;
+    bottom: 24%; left: 50%;
+    font-size: 84px;
+    z-index: 40;
+    cursor: pointer;
+    transform: translateX(-50%);
+    animation: parcelIn .6s ease, parcelWob 1.1s ease-in-out .6s infinite;
+  }
+  @keyframes parcelIn {
+    from { transform: translate(240px, 0) rotate(60deg); }
+    to   { transform: translateX(-50%) rotate(0); }
+  }
+  @keyframes parcelWob {
+    0%, 100% { transform: translateX(-50%) rotate(-5deg); }
+    50%      { transform: translateX(-50%) rotate(5deg); }
+  }
+
+  .friend {
+    position: absolute;
+    top: 56%; font-size: 104px;
+    z-index: 21;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 6px 0 rgba(0,0,0,0.15));
+    animation: friendWalk 1.2s ease forwards, friendHop .5s ease-in-out 1.2s infinite;
+  }
+  @keyframes friendWalk {
+    from { left: 122%; }
+    to   { left: 80%; }
+  }
+  @keyframes friendHop {
+    0%, 100% { transform: translate(-50%, -50%) rotate(-4deg); }
+    50%      { transform: translate(-50%, -58%) rotate(4deg); }
+  }
+  .friend.leaving { animation: friendLeave 1.1s ease forwards; }
+  @keyframes friendLeave {
+    from { left: 80%; }
+    to   { left: 128%; }
   }
 
   /* Item tray */
@@ -296,6 +446,29 @@
     touch-action: none;
     will-change: transform;
     user-select: none;
+  }
+  @media (max-width: 430px) {
+    .item { width: 60px; height: 60px; font-size: 33px; border-radius: 15px; }
+    .tray { gap: 6px; }
+    .pet-emoji { font-size: 130px; }
+    .pet.grown .pet-emoji { font-size: 160px; }
+    .acc { font-size: 48px; }
+  }
+  .item.event {
+    border-color: #ff9f43;
+    box-shadow: 0 4px 0 #e07b1c;
+    animation: itemPop .4s ease;
+  }
+  @keyframes itemPop {
+    0% { transform: scale(0) rotate(-30deg); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .item.hint { animation: itemHint .7s ease 2; }
+  @keyframes itemHint {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    30% { transform: translateY(-10px) rotate(-8deg); }
+    60% { transform: translateY(-10px) rotate(8deg); }
   }
   .item.dragging {
     cursor: grabbing;
@@ -337,8 +510,15 @@
     margin: 12px 0 8px;
     text-shadow: 3px 3px 0 #fff;
   }
-  .celebrate .stars-row { font-size: 50px; letter-spacing: 6px; margin: 8px 0 16px; }
+  .celebrate .stars-row { font-size: 44px; letter-spacing: 4px; margin: 8px 0 10px; }
   .celebrate p { font-size: 22px; color: #555; margin: 0 0 20px; }
+  .grow-note {
+    font-family: 'Itim', cursive; font-size: 30px; color: #b8860b;
+    background: #fff6cf; border: 3px solid var(--gold);
+    border-radius: 999px; padding: 4px 22px; margin: 0 0 14px;
+    display: none;
+  }
+  .grow-note.on { display: block; }
   .btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
   .big-btn {
     background: var(--brand); color: #fff; border: none;
@@ -365,16 +545,19 @@
 
 <!-- Game scene -->
 <div class="scene" id="scene">
-  <div class="room">
-    <div class="deco frame">🖼️</div>
-    <div class="deco plant">🪴</div>
-    <div class="deco window">🪟</div>
+  <div class="room" id="room">
+    <div class="deco frame" id="decoA">🖼️</div>
+    <div class="deco plant" id="decoB">🪴</div>
+    <div class="deco window" id="decoC">🪟</div>
   </div>
   <div class="hearts" id="hearts"></div>
   <div class="thought hidden" id="thought">
     <span id="thoughtEmoji">🍖</span>
   </div>
-  <div class="pet" id="pet">🐶</div>
+  <div class="pet" id="pet">
+    <span class="pet-emoji" id="petEmoji">🐶</span>
+    <span class="acc" id="petAcc"></span>
+  </div>
   <div class="tray" id="tray"></div>
 </div>
 
@@ -382,7 +565,8 @@
 <div class="celebrate" id="celebrate">
   <div class="celebrate-emoji" id="celEmoji">🎉</div>
   <h2 id="celTitle">เก่งมาก!</h2>
-  <div class="stars-row">⭐⭐⭐⭐⭐</div>
+  <div class="stars-row" id="celStars">⭐⭐⭐⭐⭐</div>
+  <div class="grow-note" id="celGrow">🎊 น้องโตขึ้นแล้ว!</div>
   <p id="celText">ดูแล<span id="celPet">น้องหมา</span>ครบทุกอย่างแล้ว</p>
   <div class="btn-row">
     <button class="big-btn" id="celAgain">เล่นอีก</button>
@@ -392,96 +576,187 @@
 
 <script>
 // ============ DATA ============
+// Each pet owns its five needs outright (id + bubble emoji + Thai line + the
+// tray item that satisfies it), so a fish can ask for clean water while a dog
+// asks for a bath without the engine knowing anything about either.
+
+const ROOM = { wall: '#ffe9d6', floor: '#f5d6a8', shelf: '#c08e5e', deco: ['🖼️', '🪴', '🪟'] };
+
+function need(id, bubble, thai, item, effect, action, say) {
+  return { id: id, bubble: bubble, thai: thai, item: item, effect: effect, action: action, say: say };
+}
 
 const PETS = [
   {
-    id: 'dog',
-    emoji: '🐶',
-    name: 'น้องหมา',
-    happyEmoji: '🐕',
-    foodIcon: '🍖',
-    toyIcon: '🎾',
-    cleanIcon: '🧼',
-    sleepIcon: '🛏️',
-    waterIcon: '💧',
-    items: [
-      { id: 'food', emoji: '🍖', need: 'hungry', effect: '😋', action: 'eat', say: 'อ่ำๆ' },
-      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
-      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
-      { id: 'toy', emoji: '🎾', need: 'play', effect: '✨', action: 'happy', say: 'สนุกจัง' },
-      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    id: 'dog', emoji: '🐶', adult: '🐕', name: 'น้องหมา', happyEmoji: '🐕',
+    needs: [
+      need('food',  '🍖', 'หิวแล้ว',        '🍖', '😋', 'eat',   'อ่ำๆ อร่อยจัง'),
+      need('water', '💧', 'กระหายน้ำ',      '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🫧', 'อยากอาบน้ำ',     '🧼', '🫧', 'happy', 'สะอาดแล้ว'),
+      need('play',  '🎾', 'อยากเล่นบอล',    '🎾', '✨', 'happy', 'สนุกจัง'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',    '🛏️', '💤', 'eat',   'หลับสบาย'),
     ],
-    needLabels: {
-      hungry: '🍖', thirsty: '💧', dirty: '🫧', play: '🎾', sleepy: '💤',
-    },
   },
   {
-    id: 'cat',
-    emoji: '🐱',
-    name: 'น้องแมว',
-    happyEmoji: '😻',
-    items: [
-      { id: 'food', emoji: '🐟', need: 'hungry', effect: '😋', action: 'eat', say: 'อร่อย' },
-      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
-      { id: 'comb', emoji: '🪮', need: 'dirty', effect: '✨', action: 'happy', say: 'ขนสวย' },
-      { id: 'toy', emoji: '🧶', need: 'play', effect: '✨', action: 'happy', say: 'เล่นบอลขน' },
-      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    id: 'cat', emoji: '🐱', adult: '🐈', name: 'น้องแมว', happyEmoji: '😻',
+    needs: [
+      need('food',  '🐟', 'หิวแล้ว',        '🐟', '😋', 'eat',   'อร่อยมาก'),
+      need('water', '💧', 'กระหายน้ำ',      '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🪮', 'อยากหวีขน',      '🪮', '✨', 'happy', 'ขนสวยเชียว'),
+      need('play',  '🧶', 'อยากเล่นไหมพรม', '🧶', '✨', 'happy', 'เล่นบอลขน'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',    '🛏️', '💤', 'eat',   'หลับสบาย'),
     ],
-    needLabels: {
-      hungry: '🐟', thirsty: '💧', dirty: '🪮', play: '🧶', sleepy: '💤',
-    },
   },
   {
-    id: 'rabbit',
-    emoji: '🐰',
-    name: 'น้องกระต่าย',
-    happyEmoji: '🐇',
-    items: [
-      { id: 'food', emoji: '🥕', need: 'hungry', effect: '😋', action: 'eat', say: 'กรอบๆ' },
-      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
-      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
-      { id: 'toy', emoji: '🥎', need: 'play', effect: '✨', action: 'happy', say: 'กระโดดด' },
-      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    id: 'rabbit', emoji: '🐰', adult: '🐇', name: 'น้องกระต่าย', happyEmoji: '🐇',
+    needs: [
+      need('food',  '🥕', 'หิวแล้ว',      '🥕', '😋', 'eat',   'กรอบๆ อร่อย'),
+      need('water', '💧', 'กระหายน้ำ',    '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🫧', 'อยากอาบน้ำ',   '🧼', '🫧', 'happy', 'สะอาดแล้ว'),
+      need('play',  '🥎', 'อยากเล่นบอล',  '🥎', '✨', 'happy', 'กระโดดโลดเต้น'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',  '🛏️', '💤', 'eat',   'หลับสบาย'),
     ],
-    needLabels: {
-      hungry: '🥕', thirsty: '💧', dirty: '🫧', play: '🥎', sleepy: '💤',
-    },
   },
   {
-    id: 'hamster',
-    emoji: '🐹',
-    name: 'น้องแฮมสเตอร์',
-    happyEmoji: '🐹',
-    items: [
-      { id: 'food', emoji: '🌻', need: 'hungry', effect: '😋', action: 'eat', say: 'อร่อย' },
-      { id: 'water', emoji: '💧', need: 'thirsty', effect: '💦', action: 'eat', say: 'ดื่มน้ำ' },
-      { id: 'soap', emoji: '🧼', need: 'dirty', effect: '🫧', action: 'happy', say: 'สะอาดแล้ว' },
-      { id: 'toy', emoji: '🎡', need: 'play', effect: '✨', action: 'happy', say: 'วิ่งสนุก' },
-      { id: 'bed', emoji: '🛏️', need: 'sleepy', effect: '💤', action: 'eat', say: 'หลับสบาย' },
+    id: 'hamster', emoji: '🐹', name: 'น้องแฮมสเตอร์', happyEmoji: '🐹',
+    theme: { wall: '#fff2d6', floor: '#e6c88f', shelf: '#b08040', deco: ['🌰', '🌾', '🪟'] },
+    needs: [
+      need('food',  '🌻', 'หิวแล้ว',        '🌻', '😋', 'eat',   'อร่อยจัง'),
+      need('water', '💧', 'กระหายน้ำ',      '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🫧', 'อยากอาบน้ำ',     '🧼', '🫧', 'happy', 'สะอาดแล้ว'),
+      need('play',  '🎡', 'อยากวิ่งในวงล้อ', '🎡', '✨', 'happy', 'วิ่งสนุกมาก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',    '🛏️', '💤', 'eat',   'หลับสบาย'),
     ],
-    needLabels: {
-      hungry: '🌻', thirsty: '💧', dirty: '🫧', play: '🎡', sleepy: '💤',
-    },
+  },
+  {
+    id: 'elephant', emoji: '🐘', name: 'น้องช้าง', happyEmoji: '🐘',
+    theme: { wall: '#cfeeff', floor: '#bfe08a', shelf: '#8fbe57', deco: ['🌳', '🌴', '☀️'] },
+    needs: [
+      need('food',  '🍌', 'หิวกล้วย',      '🍌', '😋', 'eat',   'อร่อยมาก'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำเยอะเลย'),
+      need('bath',  '🚿', 'อยากอาบน้ำ',    '🚿', '💦', 'happy', 'พ่นน้ำสนุก'),
+      need('play',  '⚽', 'อยากเตะบอล',    '⚽', '✨', 'happy', 'เตะบอลเก่ง'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '🛏️', '💤', 'eat',   'หลับสบาย'),
+    ],
+  },
+  {
+    id: 'fish', emoji: '🐠', name: 'น้องปลา', happyEmoji: '🐠',
+    theme: { wall: '#a8e6ff', floor: '#ffe9a8', shelf: '#e0c774', deco: ['🐚', '🌿', '🫧'] },
+    needs: [
+      need('food',  '🍤', 'หิวแล้ว',        '🍤', '😋', 'eat',   'อร่อยจัง'),
+      need('water', '🚰', 'น้ำขุ่น อยากได้น้ำใหม่', '🚰', '💦', 'happy', 'น้ำใสแล้ว'),
+      need('bath',  '🧽', 'อยากให้ขัดตู้',  '🧽', '✨', 'happy', 'ตู้สะอาดเอี่ยม'),
+      need('play',  '🫧', 'อยากเล่นฟองน้ำ', '🫧', '✨', 'happy', 'ฟองสนุกจัง'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',    '🌿', '💤', 'eat',   'นอนในสาหร่าย'),
+    ],
+  },
+  {
+    id: 'bird', emoji: '🐦', adult: '🦜', name: 'น้องนก', happyEmoji: '🦜',
+    theme: { wall: '#e6f7d6', floor: '#d3b98a', shelf: '#a98b55', deco: ['🌿', '🎐', '🪟'] },
+    needs: [
+      need('food',  '🥜', 'หิวถั่ว',       '🥜', '😋', 'eat',   'จิ๊บๆ อร่อย'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🚿', 'อยากอาบน้ำ',    '🚿', '🫧', 'happy', 'ขนสะอาดแล้ว'),
+      need('play',  '🔔', 'อยากเล่นกระดิ่ง', '🔔', '✨', 'happy', 'กริ๊งๆ สนุก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '🛏️', '💤', 'eat',   'หลับสบาย'),
+    ],
+  },
+  {
+    id: 'penguin', emoji: '🐧', name: 'น้องเพนกวิน', happyEmoji: '🐧',
+    theme: { wall: '#dff3ff', floor: '#ffffff', shelf: '#bcdcf0', deco: ['❄️', '⛄', '🏔️'] },
+    needs: [
+      need('food',  '🐟', 'หิวปลา',        '🐟', '😋', 'eat',   'อร่อยมาก'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🚿', 'อยากอาบน้ำ',    '🚿', '🫧', 'happy', 'สะอาดแล้ว'),
+      need('play',  '🛷', 'อยากไถลเล่น',   '🛷', '✨', 'happy', 'ไถลสนุกมาก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '🛏️', '💤', 'eat',   'หลับสบาย'),
+    ],
+  },
+  {
+    id: 'pig', emoji: '🐷', adult: '🐖', name: 'น้องหมู', happyEmoji: '🐖',
+    theme: { wall: '#ffeede', floor: '#d8b98b', shelf: '#a8834f', deco: ['🌾', '🚜', '🪣'] },
+    needs: [
+      need('food',  '🌽', 'หิวข้าวโพด',   '🌽', '😋', 'eat',   'อ่ำๆ อร่อย'),
+      need('water', '💧', 'กระหายน้ำ',    '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🧼', 'เลอะโคลนแล้ว', '🧼', '🫧', 'happy', 'สะอาดแล้ว'),
+      need('play',  '🪀', 'อยากเล่นโยโย่', '🪀', '✨', 'happy', 'สนุกจัง'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',  '🛏️', '💤', 'eat',   'หลับสบาย'),
+    ],
+  },
+  {
+    id: 'turtle', emoji: '🐢', name: 'น้องเต่า', happyEmoji: '🐢',
+    theme: { wall: '#d9f7e6', floor: '#f2e3b0', shelf: '#cbb474', deco: ['🪨', '🌿', '🐚'] },
+    needs: [
+      need('food',  '🥬', 'หิวผัก',        '🥬', '😋', 'eat',   'กรุบๆ อร่อย'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🧽', 'อยากให้ขัดกระดอง', '🧽', '✨', 'happy', 'กระดองเงาเลย'),
+      need('play',  '🌊', 'อยากลงว่ายน้ำ', '🌊', '💦', 'happy', 'ว่ายน้ำสนุก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '🛏️', '💤', 'eat',   'หลับสบาย'),
+    ],
+  },
+  {
+    id: 'unicorn', emoji: '🦄', name: 'น้องยูนิคอร์น', happyEmoji: '🦄',
+    theme: { wall: '#ffe6f7', floor: '#ffd0e8', shelf: '#f0a8cd', deco: ['🌈', '✨', '🏰'] },
+    needs: [
+      need('food',  '🍎', 'หิวแอปเปิ้ล',   '🍎', '😋', 'eat',   'อร่อยจัง'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🪮', 'อยากหวีแผงคอ',  '🪮', '✨', 'happy', 'สวยมากเลย'),
+      need('play',  '🌈', 'อยากวิ่งบนสายรุ้ง', '🌈', '✨', 'happy', 'วิ่งสนุกมาก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '☁️', '💤', 'eat',   'นอนบนก้อนเมฆ'),
+    ],
+  },
+  {
+    id: 'dragon', emoji: '🐲', adult: '🐉', name: 'น้องมังกร', happyEmoji: '🐉',
+    theme: { wall: '#e7dccf', floor: '#a89684', shelf: '#7b6a58', deco: ['🪨', '💎', '🔥'] },
+    needs: [
+      need('food',  '🍗', 'หิวมากเลย',     '🍗', '😋', 'eat',   'อ่ำๆ อร่อย'),
+      need('water', '💧', 'กระหายน้ำ',     '💧', '💦', 'eat',   'ดื่มน้ำ ชื่นใจ'),
+      need('bath',  '🛁', 'อยากแช่น้ำ',    '🛁', '🫧', 'happy', 'สบายตัวแล้ว'),
+      need('play',  '🔥', 'อยากพ่นไฟเล่น', '🔥', '✨', 'happy', 'พ่นไฟเก่งมาก'),
+      need('sleep', '💤', 'ง่วงนอนแล้ว',   '💎', '💤', 'eat',   'นอนบนกองสมบัติ'),
+    ],
   },
 ];
 
-const NEED_NAMES = {
-  hungry: 'หิว',
-  thirsty: 'กระหายน้ำ',
-  dirty: 'สกปรก',
-  play: 'อยากเล่น',
-  sleepy: 'ง่วงนอน',
-};
+// Random moments that break up the five-need loop. `item` events park the
+// queue until the child drags the right thing; the rest resolve on a tap or
+// on their own timer, so nothing can ever get stuck.
+const EVENTS = [
+  {
+    id: 'mess', kind: 'item', bubble: '🧹', item: '🧹',
+    line: 'อุ๊ย! เลอะแล้ว ช่วยกวาดหน่อย', done: 'สะอาดแล้ว ขอบคุณ', effect: '✨',
+  },
+  {
+    id: 'rain', kind: 'item', bubble: '☂️', item: '☂️',
+    line: 'ฝนตกแล้ว หนาวจัง เอาร่มมาให้หน่อย', done: 'อุ่นแล้ว ขอบคุณ', effect: '💗',
+  },
+  {
+    id: 'sick', kind: 'item', bubble: '💊', item: '💊',
+    line: 'น้องไม่สบาย เอายามาให้หน่อย', done: 'หายแล้ว สบายดี', effect: '💗',
+  },
+  { id: 'butterfly', kind: 'tap', line: 'มีผีเสื้อบินมา แตะจับสิ', done: 'จับได้แล้ว' },
+  { id: 'parcel', kind: 'tap', line: 'มีพัสดุมาส่ง แตะเปิดเลย', done: 'ได้ของใหม่' },
+  { id: 'friend', kind: 'auto', line: 'มีเพื่อนมาเยี่ยม', done: 'เล่นด้วยกันสนุกจัง' },
+];
+
+const ACCESSORIES = ['🎀', '🎩', '🕶️', '👑', '🧣', '🎓', '🌺'];
+const GROW_AT = 3;          // rounds of care before the pet grows up
+const EVENT_CHANCE = 0.4;   // per gap between needs
+const MAX_EVENTS = 2;       // per round, so a session never drags on
 
 // ============ STATE ============
 
 const picker = document.getElementById('picker');
 const petPickGrid = document.getElementById('petPickGrid');
 const scene = document.getElementById('scene');
+const room = document.getElementById('room');
+const decoEls = [document.getElementById('decoA'), document.getElementById('decoB'), document.getElementById('decoC')];
 const heartsEl = document.getElementById('hearts');
 const thoughtEl = document.getElementById('thought');
 const thoughtEmojiEl = document.getElementById('thoughtEmoji');
 const petEl = document.getElementById('pet');
+const petEmojiEl = document.getElementById('petEmoji');
+const petAccEl = document.getElementById('petAcc');
 const trayEl = document.getElementById('tray');
 const changePetBtn = document.getElementById('changePet');
 const celebrate = document.getElementById('celebrate');
@@ -489,39 +764,123 @@ const celAgain = document.getElementById('celAgain');
 const celChange = document.getElementById('celChange');
 const celEmoji = document.getElementById('celEmoji');
 const celPet = document.getElementById('celPet');
+const celStars = document.getElementById('celStars');
+const celGrow = document.getElementById('celGrow');
+
+const SAVE_KEY = 'kidslen-petcare';
 
 let currentPet = null;
 let needsQueue = [];
 let heartsFilled = 0;
+let bonusStars = 0;
+let eventsUsed = 0;
+let activeEvent = null;   // the event waiting on the child, if any
+let dropTarget = null;    // element the item has to be dropped on
+let hintTimer = null;
+let eventTimer = null;
+let friendTimer = null;   // heart-puff interval while a friend is visiting
+let flowTimer = null;     // the one pending "what happens next" step
+let roundOver = false;
+let raining = false;
+let grewThisRound = false;
+
+function loadSave() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveState(s) {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch (e) {}
+}
+function petData(id) {
+  const s = loadSave();
+  return s[id] || { r: 0, a: '' };
+}
+function setPetData(id, data) {
+  const s = loadSave();
+  s[id] = data;
+  saveState(s);
+}
 
 // ============ PICKER ============
 
 function buildPicker() {
   petPickGrid.innerHTML = '';
   PETS.forEach(p => {
+    const d = petData(p.id);
+    const grown = d.r >= GROW_AT;
     const card = document.createElement('div');
     card.className = 'pet-pick';
-    card.innerHTML = `<div class="emoji">${p.emoji}</div><div class="name">${p.name}</div>`;
+    card.innerHTML =
+      (grown ? '<div class="grown-tag">โตแล้ว</div>' : '') +
+      (d.a ? '<div class="acc-tag">' + d.a + '</div>' : '') +
+      '<div class="emoji">' + (grown && p.adult ? p.adult : p.emoji) + '</div>' +
+      // drop the "น้อง" prefix on the card — long names broke mid-word
+      '<div class="name">' + p.name.replace('น้อง', '') + '</div>';
+    card.querySelector('.emoji').style.animationDelay = (PETS.indexOf(p) % 4) * 0.3 + 's';
     card.addEventListener('click', () => startPet(p));
     petPickGrid.appendChild(card);
   });
 }
 
+function openPicker() {
+  clearEvents();
+  scene.classList.remove('on');
+  celebrate.classList.remove('on');
+  changePetBtn.classList.remove('on');
+  buildPicker();
+  picker.classList.remove('hidden');
+}
+
+// ============ ROUND ============
+
 function startPet(pet) {
   currentPet = pet;
   picker.classList.add('hidden');
   scene.classList.add('on');
+  raining = false;
+  scene.classList.remove('night');
   changePetBtn.classList.add('on');
   celebrate.classList.remove('on');
+  celGrow.classList.remove('on');
 
-  petEl.textContent = pet.emoji;
+  clearEvents();
+  applyTheme(pet);
+
+  const d = petData(pet.id);
+  petEmojiEl.textContent = (d.r >= GROW_AT && pet.adult) ? pet.adult : pet.emoji;
+  petEl.classList.toggle('grown', d.r >= GROW_AT);
+  petAccEl.textContent = d.a || '';
+
   heartsFilled = 0;
+  bonusStars = 0;
+  eventsUsed = 0;
+  grewThisRound = false;
+  roundOver = false;
   buildHearts();
   buildTray();
-  // Build random queue of needs (each need once)
-  const allNeeds = ['hungry', 'thirsty', 'dirty', 'play', 'sleepy'];
-  needsQueue = [...allNeeds].sort(() => Math.random() - 0.5);
+
+  needsQueue = pet.needs.map(n => n.id).sort(() => Math.random() - 0.5);
   showNextNeed();
+}
+
+function applyTheme(pet) {
+  const t = pet.theme || ROOM;
+  room.style.setProperty('--wall', t.wall);
+  room.style.setProperty('--floor', t.floor);
+  room.style.setProperty('--shelf', t.shelf);
+  document.body.style.background = t.wall;
+  decoEls.forEach((el, i) => { el.textContent = t.deco[i]; });
+  refreshDeco();
+}
+
+// The middle decoration doubles as the sky: rain cloud > moon > the pet's own.
+function setNight(on) {
+  scene.classList.toggle('night', on);
+  refreshDeco();
+}
+function refreshDeco() {
+  const t = (currentPet && currentPet.theme) || ROOM;
+  decoEls[1].textContent = raining ? '🌧️'
+    : (scene.classList.contains('night') ? '🌙' : t.deco[1]);
 }
 
 function buildHearts() {
@@ -536,35 +895,58 @@ function buildHearts() {
 
 function buildTray() {
   trayEl.innerHTML = '';
-  // shuffle items each session
-  const items = [...currentPet.items].sort(() => Math.random() - 0.5);
-  items.forEach(it => {
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.dataset.itemId = it.id;
-    el.dataset.need = it.need;
-    el.textContent = it.emoji;
-    trayEl.appendChild(el);
-    attachItemDrag(el, it);
+  const items = currentPet.needs.slice().sort(() => Math.random() - 0.5);
+  items.forEach(n => {
+    addTrayItem({ need: n.id, emoji: n.item, effect: n.effect, action: n.action, say: n.say });
   });
 }
 
+function addTrayItem(item, isEvent) {
+  const el = document.createElement('div');
+  el.className = 'item' + (isEvent ? ' event' : '');
+  el.dataset.need = item.need;
+  el.textContent = item.emoji;
+  trayEl.appendChild(el);
+  attachItemDrag(el, item);
+  return el;
+}
+
+function currentNeedId() {
+  if (activeEvent) return 'event:' + activeEvent.id;
+  return needsQueue[0];
+}
+
 function showNextNeed() {
-  if (needsQueue.length === 0) {
-    finishCelebration();
-    return;
-  }
-  const need = needsQueue[0];
-  thoughtEmojiEl.textContent = currentPet.needLabels[need];
+  if (needsQueue.length === 0) { finishRound(); return; }
+  const id = needsQueue[0];
+  const n = currentPet.needs.find(x => x.id === id);
+  dropTarget = petEl;
+  thoughtEl.classList.remove('alert');
+  thoughtEmojiEl.textContent = n.bubble;
   thoughtEl.classList.remove('hidden');
-  speak(currentPet.name + ' ' + NEED_NAMES[need]);
+  speak(currentPet.name + ' ' + n.thai);
+  armHint(n.item);
+  // The sleep need turns the room to night; it stays dark until the next round.
+  if (id === 'sleep') {
+    scene.dataset.bedtime = '1';
+    setTimeout(() => setNight(true), 400);
+  }
+}
+
+// Wiggle the right item if nothing happens for a while — a non-reader's hint.
+function armHint(emoji) {
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => {
+    const el = Array.prototype.slice.call(trayEl.children).find(c => c.textContent === emoji);
+    if (el) { el.classList.add('hint'); setTimeout(() => el.classList.remove('hint'), 1500); }
+    armHint(emoji);
+  }, 6000);
 }
 
 function attachItemDrag(el, item) {
   let dragging = false;
   let homeX = 0, homeY = 0;
   let sx = 0, sy = 0;
-  let cx = 0, cy = 0;
 
   el.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -573,7 +955,6 @@ function attachItemDrag(el, item) {
     const r = el.getBoundingClientRect();
     homeX = r.left; homeY = r.top;
     sx = e.clientX; sy = e.clientY;
-    // make absolute on body to drag freely
     el.style.position = 'fixed';
     el.style.left = homeX + 'px';
     el.style.top = homeY + 'px';
@@ -584,9 +965,8 @@ function attachItemDrag(el, item) {
 
   el.addEventListener('pointermove', (e) => {
     if (!dragging) return;
-    cx = e.clientX; cy = e.clientY;
-    el.style.left = (homeX + (cx - sx)) + 'px';
-    el.style.top = (homeY + (cy - sy)) + 'px';
+    el.style.left = (homeX + (e.clientX - sx)) + 'px';
+    el.style.top = (homeY + (e.clientY - sy)) + 'px';
   });
 
   function end(e) {
@@ -595,24 +975,20 @@ function attachItemDrag(el, item) {
     el.classList.remove('dragging');
     try { el.releasePointerCapture(e.pointerId); } catch (_) {}
 
-    // Check overlap with pet
-    const petR = petEl.getBoundingClientRect();
-    const itemR = el.getBoundingClientRect();
-    const overlap = !(itemR.right < petR.left || itemR.left > petR.right || itemR.bottom < petR.top || itemR.top > petR.bottom);
+    const target = dropTarget || petEl;
+    const tr = target.getBoundingClientRect();
+    const ir = el.getBoundingClientRect();
+    const overlap = !(ir.right < tr.left || ir.left > tr.right || ir.bottom < tr.top || ir.top > tr.bottom);
 
-    const currentNeed = needsQueue[0];
-
-    if (overlap && item.need === currentNeed) {
-      // correct! consume item briefly then return
-      satisfy(item);
-      // hide item briefly
-      el.style.opacity = '0';
-      setTimeout(() => {
-        resetItemPosition(el);
-        el.style.opacity = '1';
-      }, 800);
+    if (overlap && item.need === currentNeedId()) {
+      if (activeEvent) {
+        resolveItemEvent(item, el);
+      } else {
+        satisfy(item);
+        el.style.opacity = '0';
+        setTimeout(() => { resetItemPosition(el); el.style.opacity = '1'; }, 800);
+      }
     } else if (overlap) {
-      // wrong item — bounce
       el.classList.add('wrong');
       setTimeout(() => el.classList.remove('wrong'), 350);
       resetItemPosition(el);
@@ -636,26 +1012,237 @@ function resetItemPosition(el) {
 }
 
 function satisfy(item) {
+  clearTimeout(hintTimer);
   needsQueue.shift();
   heartsFilled++;
   const hearts = heartsEl.querySelectorAll('.heart');
-  if (hearts[heartsFilled - 1]) {
-    hearts[heartsFilled - 1].classList.add('on');
-  }
-  // pet action animation
+  if (hearts[heartsFilled - 1]) hearts[heartsFilled - 1].classList.add('on');
+
   petEl.classList.remove('happy', 'eat');
   void petEl.offsetWidth;
   petEl.classList.add(item.action);
-  // effect emoji on pet
   showEffect(item.effect);
   vibrate([20, 30, 40]);
   popConfetti(window.innerWidth / 2, window.innerHeight * 0.52);
   speak(item.say);
 
-  setTimeout(() => {
+  clearTimeout(flowTimer);
+  flowTimer = setTimeout(() => {
     petEl.classList.remove('happy', 'eat');
-    showNextNeed();
+    afterNeed();
   }, 1000);
+}
+
+// ============ EVENTS ============
+
+function afterNeed() {
+  if (needsQueue.length === 0) { finishRound(); return; }
+  if (eventsUsed < MAX_EVENTS && Math.random() < EVENT_CHANCE) {
+    eventsUsed++;
+    startEvent(EVENTS[Math.floor(Math.random() * EVENTS.length)]);
+    return;
+  }
+  showNextNeed();
+}
+
+function startEvent(ev) {
+  clearTimeout(hintTimer);
+  activeEvent = ev;
+  thoughtEl.classList.add('hidden');
+  vibrate([12, 40, 12]);
+  speak(ev.line);
+
+  if (ev.kind === 'item') {
+    const item = { need: 'event:' + ev.id, emoji: ev.item, effect: ev.effect, action: 'happy', say: ev.done };
+    const el = addTrayItem(item, true);
+    el.dataset.eventItem = '1';
+    thoughtEmojiEl.textContent = ev.bubble;
+    thoughtEl.classList.remove('hidden');
+    thoughtEl.classList.add('alert');
+    dropTarget = petEl;
+    if (ev.id === 'mess') dropTarget = spawnMess();
+    if (ev.id === 'rain') startRain();
+    if (ev.id === 'sick') petEl.classList.add('sick');
+    armHint(ev.item);
+    return;
+  }
+  if (ev.id === 'butterfly') return spawnButterfly();
+  if (ev.id === 'parcel') return spawnParcel();
+  if (ev.id === 'friend') return spawnFriend();
+}
+
+function resolveItemEvent(item, el) {
+  const ev = activeEvent;
+  clearTimeout(hintTimer);
+  thoughtEl.classList.add('hidden');
+  thoughtEl.classList.remove('alert');
+  el.remove();
+
+  if (ev.id === 'mess' && dropTarget) {
+    dropTarget.classList.add('gone');
+    const gone = dropTarget;
+    setTimeout(() => gone.remove(), 400);
+  }
+  if (ev.id === 'rain') stopRain();
+  if (ev.id === 'sick') petEl.classList.remove('sick');
+  dropTarget = petEl;
+
+  awardStar();
+  petEl.classList.remove('happy', 'eat');
+  void petEl.offsetWidth;
+  petEl.classList.add('happy');
+  showEffect(ev.effect || '✨');
+  popConfetti(window.innerWidth / 2, window.innerHeight * 0.5);
+  vibrate([20, 30, 40]);
+  speak(ev.done);
+  resumeAfter(1000);
+}
+
+function endTapEvent(node, delay) {
+  if (node) node.remove();
+  resumeAfter(delay || 600);
+}
+
+// Stay "in the event" until the resume actually runs, so a drop landing in the
+// gap can't advance the queue a second time alongside the pending step.
+function resumeAfter(ms) {
+  clearTimeout(flowTimer);
+  flowTimer = setTimeout(() => {
+    activeEvent = null;
+    petEl.classList.remove('happy');
+    showNextNeed();
+  }, ms);
+}
+
+function spawnMess() {
+  const m = document.createElement('div');
+  m.className = 'mess event-node';
+  m.textContent = '💩';
+  m.style.left = (25 + Math.random() * 50) + '%';
+  m.style.top = (74 + Math.random() * 10) + '%';
+  scene.appendChild(m);
+  return m;
+}
+
+function startRain() {
+  raining = true;
+  setNight(true);
+  petEl.classList.add('shiver');
+  for (let i = 0; i < 14; i++) {
+    const d = document.createElement('div');
+    d.className = 'raindrop event-node';
+    d.textContent = '💧';
+    d.style.left = (Math.random() * 100) + '%';
+    d.style.animationDuration = (1.1 + Math.random() * 0.9) + 's';
+    d.style.animationDelay = (Math.random() * 1.5) + 's';
+    scene.appendChild(d);
+  }
+}
+function stopRain() {
+  raining = false;
+  petEl.classList.remove('shiver');
+  // Keep the room dark only if it is actually bedtime.
+  setNight(!!scene.dataset.bedtime);
+  Array.prototype.slice.call(scene.querySelectorAll('.raindrop')).forEach(d => d.remove());
+  showEffect('☂️');
+}
+
+function spawnButterfly() {
+  const b = document.createElement('div');
+  b.className = 'butterfly event-node';
+  b.textContent = '🦋';
+  scene.appendChild(b);
+  let caught = false;
+  b.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (caught) return;
+    caught = true;
+    clearTimeout(eventTimer);
+    awardStar();
+    popConfetti(b.getBoundingClientRect().left, b.getBoundingClientRect().top);
+    showEffect('🦋');
+    petEl.classList.add('happy');
+    setTimeout(() => petEl.classList.remove('happy'), 800);
+    vibrate([20, 30, 40]);
+    speak('จับได้แล้ว เก่งมาก');
+    endTapEvent(b, 900);
+  });
+  eventTimer = setTimeout(() => { if (!caught) endTapEvent(b, 300); }, 9000);
+}
+
+function spawnParcel() {
+  const p = document.createElement('div');
+  p.className = 'parcel event-node';
+  p.textContent = '📦';
+  scene.appendChild(p);
+  let opened = false;
+  function open() {
+    if (opened) return;
+    opened = true;
+    clearTimeout(eventTimer);
+    const acc = ACCESSORIES[Math.floor(Math.random() * ACCESSORIES.length)];
+    const d = petData(currentPet.id);
+    d.a = acc;
+    setPetData(currentPet.id, d);
+    petAccEl.textContent = acc;
+    p.textContent = '🎁';
+    awardStar();
+    showEffect(acc);
+    popConfetti(window.innerWidth / 2, window.innerHeight * 0.6);
+    petEl.classList.add('happy');
+    setTimeout(() => petEl.classList.remove('happy'), 800);
+    vibrate([20, 30, 40]);
+    speak('ได้ของใหม่ ใส่ให้' + currentPet.name + 'แล้ว');
+    endTapEvent(p, 1000);
+  }
+  p.addEventListener('pointerdown', (e) => { e.preventDefault(); open(); });
+  eventTimer = setTimeout(open, 8000);   // opens itself so nobody gets stuck
+}
+
+function spawnFriend() {
+  const others = PETS.filter(p => p.id !== currentPet.id);
+  const other = others[Math.floor(Math.random() * others.length)];
+  const f = document.createElement('div');
+  f.className = 'friend event-node';
+  f.textContent = other.emoji;
+  scene.appendChild(f);
+  petEl.classList.add('happy');
+  setTimeout(() => petEl.classList.remove('happy'), 800);
+  clearInterval(friendTimer);
+  friendTimer = setInterval(() => showEffect('💗'), 900);
+  f.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    showEffect('💗');
+    popConfetti(f.getBoundingClientRect().left + 40, f.getBoundingClientRect().top + 40);
+    vibrate(20);
+  });
+  eventTimer = setTimeout(() => {
+    clearInterval(friendTimer);
+    f.classList.add('leaving');
+    speak(other.name + 'กลับบ้านแล้ว บ๊ายบาย');
+    eventTimer = setTimeout(() => endTapEvent(f, 200), 1100);
+  }, 4000);
+}
+
+function awardStar() {
+  bonusStars++;
+  const s = document.createElement('div');
+  s.className = 'heart star';
+  s.textContent = '⭐';
+  heartsEl.appendChild(s);
+}
+
+function clearEvents() {
+  clearTimeout(eventTimer);
+  clearTimeout(hintTimer);
+  clearTimeout(flowTimer);
+  clearInterval(friendTimer);
+  activeEvent = null;
+  dropTarget = petEl;
+  delete scene.dataset.bedtime;
+  petEl.classList.remove('shiver', 'sick', 'happy', 'eat', 'growing');
+  thoughtEl.classList.remove('alert');
+  Array.prototype.slice.call(scene.querySelectorAll('.event-node')).forEach(n => n.remove());
 }
 
 function showEffect(emoji) {
@@ -669,38 +1256,60 @@ function showEffect(emoji) {
   setTimeout(() => eff.remove(), 1500);
 }
 
-function finishCelebration() {
-  thoughtEl.classList.add('hidden');
-  petEl.textContent = currentPet.happyEmoji || currentPet.emoji;
-  petEl.classList.add('happy');
-  celEmoji.textContent = currentPet.emoji;
-  celPet.textContent = currentPet.name;
-  speak('เก่งมาก ดูแล' + currentPet.name + 'ครบแล้ว');
+// ============ FINISH + GROWING UP ============
 
-  setTimeout(() => {
-    celebrate.classList.add('on');
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    for (let i = 0; i < 30; i++) {
-      setTimeout(() => popConfetti(cx + (Math.random() - 0.5) * 200, cy - 100 + Math.random() * 100), i * 30);
-    }
-  }, 800);
+function finishRound() {
+  if (roundOver) return;   // only ever end a round once
+  roundOver = true;
+  clearTimeout(hintTimer);
+  thoughtEl.classList.add('hidden');
+
+  const d = petData(currentPet.id);
+  const wasGrown = d.r >= GROW_AT;
+  d.r = (d.r || 0) + 1;
+  setPetData(currentPet.id, d);
+  grewThisRound = !wasGrown && d.r >= GROW_AT;
+
+  if (grewThisRound) {
+    growUp(() => showCelebration());
+  } else {
+    petEmojiEl.textContent = (d.r >= GROW_AT && currentPet.adult) ? currentPet.adult : currentPet.happyEmoji || currentPet.emoji;
+    petEl.classList.add('happy');
+    speak('เก่งมาก ดูแล' + currentPet.name + 'ครบแล้ว');
+    clearTimeout(flowTimer);
+    flowTimer = setTimeout(showCelebration, 900);
+  }
 }
 
-celAgain.addEventListener('click', () => {
-  startPet(currentPet);
-});
-celChange.addEventListener('click', () => {
-  celebrate.classList.remove('on');
-  scene.classList.remove('on');
-  changePetBtn.classList.remove('on');
-  picker.classList.remove('hidden');
-});
-changePetBtn.addEventListener('click', () => {
-  scene.classList.remove('on');
-  changePetBtn.classList.remove('on');
-  picker.classList.remove('hidden');
-});
+function growUp(done) {
+  speak('น้องโตขึ้นแล้ว เก่งมาก');
+  petEl.classList.add('growing');
+  for (let i = 0; i < 10; i++) setTimeout(() => showEffect('✨'), i * 120);
+  setTimeout(() => {
+    petEmojiEl.textContent = currentPet.adult || currentPet.happyEmoji || currentPet.emoji;
+    petEl.classList.add('grown');
+    vibrate([30, 40, 30, 40, 60]);
+  }, 700);
+  clearTimeout(flowTimer);
+  flowTimer = setTimeout(() => { petEl.classList.remove('growing'); done(); }, 1900);
+}
+
+function showCelebration() {
+  celEmoji.textContent = petEmojiEl.textContent;
+  celPet.textContent = currentPet.name;
+  celStars.textContent = '❤️❤️❤️❤️❤️' + (bonusStars ? ' ' + '⭐'.repeat(Math.min(bonusStars, 4)) : '');
+  celGrow.classList.toggle('on', grewThisRound);
+  celebrate.classList.add('on');
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => popConfetti(cx + (Math.random() - 0.5) * 200, cy - 100 + Math.random() * 100), i * 30);
+  }
+}
+
+celAgain.addEventListener('click', () => startPet(currentPet));
+celChange.addEventListener('click', openPicker);
+changePetBtn.addEventListener('click', openPicker);
 
 // ============ HELPERS ============
 
@@ -781,7 +1390,6 @@ buildPicker();
     function check() { reg.update().catch(function () {}); }
     document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
     window.addEventListener('focus', check);
-    setInterval(check, 60000);
   }
   sw.getRegistration().then(watch).catch(function () {});
 })();

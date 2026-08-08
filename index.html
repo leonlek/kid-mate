@@ -43,10 +43,12 @@
     --ink: #2d3436;
     --card: #ffffff;
     --card-border: #ffd6e4;
-    --badge-young: #ffd93d;
-    --badge-young-ink: #8a5e00;
-    --badge-old: #a78bfa;
-    --badge-old-ink: #3d2185;
+    /* Age colour coding — warm (little) → cool (older). Card tint stays very
+       light (L~96%) so the pink brand and the emoji still read on top. */
+    --a3-bg: #fffbeb; --a3-line: #ffd93d; --a3-ink: #7a5200;
+    --a4-bg: #f1fbef; --a4-line: #7ed957; --a4-ink: #1e5c2a;
+    --a5-bg: #eef7ff; --a5-line: #4fc3f7; --a5-ink: #0b4a66;
+    --a6-bg: #f5f1ff; --a6-line: #a78bfa; --a6-ink: #3d2185;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -120,6 +122,15 @@
   .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
   .chip.active { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
 
+  /* Age filter row — the chips carry the same colours as the cards, so the
+     row doubles as the legend for the card tints. */
+  .agebar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 4px 14px; }
+  .agebar .chip { font-size: 17px; }
+  .chip.age-small { background: var(--a3-bg); border-color: var(--a3-line); color: var(--a3-ink); }
+  .chip.age-big   { background: var(--a5-bg); border-color: var(--a5-line); color: var(--a5-ink); }
+  .chip.age-small.active { background: var(--a3-line); border-color: #e0b400; color: var(--a3-ink); }
+  .chip.age-big.active   { background: var(--a5-line); border-color: #2196c9; color: var(--a5-ink); }
+
   .section-header {
     font-family: 'Itim', cursive;
     font-size: clamp(28px, 6vw, 38px);
@@ -179,7 +190,13 @@
     transform: translateY(3px);
     box-shadow: 0 3px 0 rgba(0,0,0,0.08);
   }
-  .game-card:hover { border-color: var(--brand); }
+  /* Keep the age border colour on hover — ring in brand pink instead. */
+  .game-card:hover { box-shadow: 0 6px 0 rgba(0,0,0,0.08), 0 0 0 3px rgba(255,107,157,0.45); }
+
+  .game-card.a3 { background: var(--a3-bg); border-color: var(--a3-line); }
+  .game-card.a4 { background: var(--a4-bg); border-color: var(--a4-line); }
+  .game-card.a5 { background: var(--a5-bg); border-color: var(--a5-line); }
+  .game-card.a6 { background: var(--a6-bg); border-color: var(--a6-line); }
 
   .age-badge {
     position: absolute;
@@ -190,9 +207,12 @@
     border-radius: 999px;
     z-index: 2;
     font-weight: 500;
+    border: 2px solid rgba(255,255,255,0.9);
   }
-  .age-badge.young { background: var(--badge-young); color: var(--badge-young-ink); }
-  .age-badge.old   { background: var(--badge-old);   color: var(--badge-old-ink); }
+  .a3 .age-badge { background: var(--a3-line); color: var(--a3-ink); }
+  .a4 .age-badge { background: var(--a4-line); color: var(--a4-ink); }
+  .a5 .age-badge { background: var(--a5-line); color: var(--a5-ink); }
+  .a6 .age-badge { background: var(--a6-line); color: var(--a6-ink); }
 
   .game-emoji {
     font-size: 96px;
@@ -258,7 +278,9 @@
   @media (max-width: 480px) {
     .hub { padding: 30px 10px 60px; }
     .chip { font-size: 15px; padding: 9px 12px; border-width: 2px; }
+    .agebar .chip { font-size: 15px; }
     .catbar { gap: 6px; }
+    .agebar { gap: 6px; margin-bottom: 10px; }
     .games { gap: 10px; }
     .game-card { padding: 14px 6px 12px; border-width: 3px; border-radius: 20px; }
     .game-emoji { font-size: 52px; }
@@ -295,53 +317,59 @@
       <button class="chip" data-cat="fun">⚡ ว่องไว &amp; สนุก</button>
     </nav>
 
+    <nav class="agebar" id="agebar" aria-label="เลือกช่วงอายุ">
+      <button class="chip active" data-age="all">🎈 ทุกวัย</button>
+      <button class="chip age-small" data-age="small">👶 3-4 ขวบ</button>
+      <button class="chip age-big" data-age="big">🧒 5-6 ขวบ</button>
+    </nav>
+
     <!-- 🎨 วาด & ระบายสี -->
     <section class="catsec" data-cat="draw">
       <h2 class="section-header">🎨 วาด &amp; ระบายสี <span class="pill">6 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./paint/">
+        <a class="game-card a3" href="./paint/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🖌️</div>
           <div class="game-title">วาดรูป</div>
           <div class="game-desc">กระดานวาดอิสระ จานสี แปรงสายรุ้ง ควัน แสตมป์ เทสี รูปทรง</div>
         </a>
 
-        <a class="game-card" href="./draw-along/">
+        <a class="game-card a3" href="./draw-along/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🎨</div>
           <div class="game-title">วาดตามรอย</div>
           <div class="game-desc">หัดวาดรูปทีละเส้น แล้วระบายสี สัตว์ ยานพาหนะ และอื่นๆ</div>
         </a>
 
-        <a class="game-card" href="./look-draw/">
+        <a class="game-card a6" href="./look-draw/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">6+</span>
+          <span class="age-badge">6+</span>
           <div class="game-emoji">👀</div>
           <div class="game-title">ดูแล้ววาด</div>
           <div class="game-desc">ดูรูปตัวอย่างมุมจอ แล้ววาดเองตามแบบ บ้าน รถไฟ สะพาน และอื่นๆ</div>
         </a>
 
-        <a class="game-card" href="./crayon/">
+        <a class="game-card a3" href="./crayon/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🖍️</div>
           <div class="game-title">สมุดระบายสี</div>
           <div class="game-desc">ลากสีเทียนระบายเองในเส้น ภาพใหญ่เต็มจอ สัตว์ รถไฟ และอีกเพียบ</div>
         </a>
 
-        <a class="game-card" href="./coloring/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./coloring/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🎨</div>
           <div class="game-title">แตะเติมสี</div>
           <div class="game-desc">แตะช่องให้สีเต็มเลย ง่ายสำหรับเด็กเล็ก</div>
         </a>
 
-        <a class="game-card" href="./color-letters/">
+        <a class="game-card a3" href="./color-letters/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🖍️</div>
           <div class="game-title">ระบายตัวอักษร</div>
           <div class="game-desc">ลากนิ้วค่อยๆ ระบาย ก-ฮ A-Z และตัวเลข</div>
@@ -355,25 +383,25 @@
       <h2 class="section-header">🫧 เล่นสัมผัส <span class="pill">3 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./clouds/">
+        <a class="game-card a3" href="./clouds/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">☁️</div>
           <div class="game-title">ปั้นเมฆ</div>
           <div class="game-desc">ลากนิ้วให้ควันฟุ้งเป็นก้อนเมฆนุ่มๆ เปลี่ยนสี เป่าลม ทำฝนตก มีเสียง</div>
         </a>
 
-        <a class="game-card" href="./slime/">
+        <a class="game-card a3" href="./slime/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🫠</div>
           <div class="game-title">สไลม์</div>
           <div class="game-desc">ก้อนสไลม์เด้งดึ๋ง จิ้ม บีบ เปลี่ยนสี โรยกากเพชร มีเสียงน่ารัก</div>
         </a>
 
-        <a class="game-card" href="./dough/">
+        <a class="game-card a3" href="./dough/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🍪</div>
           <div class="game-title">ดินน้ำมัน</div>
           <div class="game-desc">กดพิมพ์คุกกี้ โรยเม็ดน้ำตาล คลึงเป็นเส้นงู กดให้เด้ง มีเสียง</div>
@@ -387,30 +415,30 @@
       <h2 class="section-header">🧸 เล่นสมมติ <span class="pill">4 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./pet-care/">
+        <a class="game-card a3" href="./pet-care/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🐶</div>
           <div class="game-title">เลี้ยงสัตว์น้อย</div>
-          <div class="game-desc">ให้อาหาร อาบน้ำ เล่นด้วย หมา แมว กระต่าย แฮมสเตอร์</div>
+          <div class="game-desc">สัตว์ 12 ตัว ให้อาหาร อาบน้ำ เล่นด้วย ดูแลตอนไม่สบาย เลี้ยงจนโต</div>
         </a>
 
-        <a class="game-card" href="./my-kitchen/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./my-kitchen/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🍳</div>
           <div class="game-title">ครัวของหนู</div>
           <div class="game-desc">ตอกไข่ ปอกกล้วย ทำแพนเค้ก คุกกี้ ซูชิ</div>
         </a>
 
-        <a class="game-card" href="./dress-up/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./dress-up/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">👗</div>
           <div class="game-title">แต่งตัวตุ๊กตา</div>
           <div class="game-desc">เลือกผม เสื้อ กระโปรง หมวก แต่งตุ๊กตาให้น่ารัก</div>
         </a>
 
-        <a class="game-card" href="./flower-garden/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./flower-garden/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🌸</div>
           <div class="game-title">สวนดอกไม้</div>
           <div class="game-desc">ปลูกเมล็ดและดูดอกไม้บาน เก็บส่งผีเสื้อบินไป</div>
@@ -424,54 +452,54 @@
       <h2 class="section-header">🔤 ตัวเลข ตัวอักษร &amp; สี <span class="pill">7 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./number-pop/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./number-pop/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🎈</div>
           <div class="game-title">ป๊อปลูกโป่ง</div>
           <div class="game-desc">ป๊อปลูกโป่งตามลำดับเลข ฝึกการนับ</div>
         </a>
 
-        <a class="game-card" href="./alphabet-pop/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./alphabet-pop/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🔤</div>
           <div class="game-title">ป๊อปตัวอักษร</div>
           <div class="game-desc">ป๊อปลูกโป่งตามลำดับ ก-ฮ และ A-Z</div>
         </a>
 
-        <a class="game-card" href="./trace-letters/">
+        <a class="game-card a4" href="./trace-letters/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">4+</span>
+          <span class="age-badge">4+</span>
           <div class="game-emoji">✏️</div>
           <div class="game-title">เขียนตามรอย</div>
           <div class="game-desc">ลากนิ้วตามรอยประ ตัวเลขและ A-Z ฝึกก่อนหัดเขียน</div>
         </a>
 
-        <a class="game-card" href="./write-cjk/">
+        <a class="game-card a5" href="./write-cjk/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">5+</span>
+          <span class="age-badge">5+</span>
           <div class="game-emoji">✍️</div>
           <div class="game-title">เขียนจีน-ญี่ปุ่น</div>
           <div class="game-desc">ลากนิ้วเขียนตัวอักษรจีน-ญี่ปุ่น เลข คำภาพ ฮิรางานะ พร้อมคำอ่าน</div>
         </a>
 
-        <a class="game-card" href="./color-pick/">
+        <a class="game-card a3" href="./color-pick/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🌈</div>
           <div class="game-title">เลือกสีที่บอก</div>
           <div class="game-desc">แตะลูกโป่ง จับคู่ดอกไม้ ฝึกรู้จักสี</div>
         </a>
 
-        <a class="game-card" href="./color-mix/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./color-mix/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🧪</div>
           <div class="game-title">ผสมสี</div>
           <div class="game-desc">หยดสีลงในขวด เรียนรู้สูตรผสมสี</div>
         </a>
 
-        <a class="game-card" href="./shape-sort/">
+        <a class="game-card a3" href="./shape-sort/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🔷</div>
           <div class="game-title">แตะตามรูปร่าง</div>
           <div class="game-desc">ลากรูปทรงใส่ช่องที่ตรงกัน ฝึกรู้จักรูปทรง</div>
@@ -485,60 +513,60 @@
       <h2 class="section-header">🧠 ความจำ &amp; สังเกต <span class="pill">8 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./memory-match/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./memory-match/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🃏</div>
           <div class="game-title">จับคู่ภาพ</div>
           <div class="game-desc">พลิกการ์ดหาคู่เหมือน ฝึกความจำ</div>
         </a>
 
-        <a class="game-card" href="./whats-missing/">
+        <a class="game-card a3" href="./whats-missing/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🙈</div>
           <div class="game-title">อะไรหายไป</div>
           <div class="game-desc">จำของบนถาด แล้วทายว่าอะไรหายไป ฝึกความจำ</div>
         </a>
 
-        <a class="game-card" href="./whats-different/">
+        <a class="game-card a5" href="./whats-different/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">5+</span>
+          <span class="age-badge">5+</span>
           <div class="game-emoji">✨</div>
           <div class="game-title">อะไรเปลี่ยนไป</div>
           <div class="game-desc">จำภาพแล้วหาจุดที่เปลี่ยน ฝึกการสังเกต</div>
         </a>
 
-        <a class="game-card" href="./shadow-match/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./shadow-match/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">👤</div>
           <div class="game-title">เงาตรงไหน</div>
           <div class="game-desc">หาภาพที่ตรงกับเงา ฝึกการสังเกต</div>
         </a>
 
-        <a class="game-card" href="./find-it/">
+        <a class="game-card a3" href="./find-it/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🔍</div>
           <div class="game-title">หาให้เจอ</div>
           <div class="game-desc">หาภาพที่กำหนดในกองของรกๆ ฝึกสมาธิและสายตา</div>
         </a>
 
-        <a class="game-card" href="./cup-shuffle/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./cup-shuffle/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🥤</div>
           <div class="game-title">อยู่ไหน</div>
           <div class="game-desc">หาของใต้ถ้วยที่สับ ฝึกสายตาและความจำ</div>
         </a>
 
-        <a class="game-card" href="./arrange-pic/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./arrange-pic/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🖼️</div>
           <div class="game-title">เรียงภาพ</div>
           <div class="game-desc">ลากภาพไปวางในช่องที่ถูก ฝึกการสังเกต</div>
         </a>
 
-        <a class="game-card" href="./follow-me/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./follow-me/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🎵</div>
           <div class="game-title">จำตามฉัน</div>
           <div class="game-desc">ดูเสียงและสีแล้วทำตาม ฝึกความจำในใจ</div>
@@ -552,67 +580,67 @@
       <h2 class="section-header">🧩 เขาวงกต &amp; ต่อภาพ <span class="pill">9 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./road/">
+        <a class="game-card a5" href="./road/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">5+</span>
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🚗</div>
           <div class="game-title">ต่อถนน</div>
           <div class="game-desc">วางถนน ต่อสะพาน ให้รถวิ่งถึงจุดหมาย มีด่านและโหมดสร้างเมือง</div>
         </a>
 
-        <a class="game-card" href="./train-track/">
+        <a class="game-card a5" href="./train-track/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">5+</span>
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🚂</div>
           <div class="game-title">ต่อรางรถไฟ</div>
           <div class="game-desc">วางราง ต่อสะพาน ให้รถไฟวิ่งถึงปลายทาง มีด่านและโหมดสร้างอิสระ</div>
         </a>
 
-        <a class="game-card" href="./finger-maze/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./finger-maze/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🐭</div>
           <div class="game-title">ตามทางหนู</div>
           <div class="game-desc">ลากนิ้วตามเส้นพาหนูไปหาชีส</div>
         </a>
 
-        <a class="game-card" href="./maze/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./maze/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🌀</div>
           <div class="game-title">เขาวงกต</div>
           <div class="game-desc">พาตัวละครหาทางออก สุ่มใหม่ทุกครั้ง</div>
         </a>
 
-        <a class="game-card" href="./jigsaw/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./jigsaw/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🧩</div>
           <div class="game-title">จิ๊กซอว์</div>
           <div class="game-desc">ตัวต่อจิ๊กซอว์จริง 6 ภาพ ฝึกมือและตา</div>
         </a>
 
-        <a class="game-card" href="./tangram/">
+        <a class="game-card a6" href="./tangram/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">6+</span>
+          <span class="age-badge">6+</span>
           <div class="game-emoji">🔺</div>
           <div class="game-title">ต่อรูปทรง</div>
           <div class="game-desc">ลากชิ้นรูปทรงต่อเป็นภาพ ฝึกมิติสัมพันธ์</div>
         </a>
 
-        <a class="game-card" href="./push-box/">
-          <span class="age-badge old">6+</span>
+        <a class="game-card a6" href="./push-box/">
+          <span class="age-badge">6+</span>
           <div class="game-emoji">📦</div>
           <div class="game-title">ดันกล่อง</div>
           <div class="game-desc">ดันกล่องไปวางบนจุด ฝึกการวางแผน</div>
         </a>
 
-        <a class="game-card" href="./pipe-flow/">
-          <span class="age-badge old">6+</span>
+        <a class="game-card a6" href="./pipe-flow/">
+          <span class="age-badge">6+</span>
           <div class="game-emoji">💧</div>
           <div class="game-title">ต่อท่อน้ำ</div>
           <div class="game-desc">หมุนท่อให้น้ำไหลถึงปลายทาง</div>
         </a>
 
-        <a class="game-card" href="./slide-unlock/">
-          <span class="age-badge old">6+</span>
+        <a class="game-card a6" href="./slide-unlock/">
+          <span class="age-badge">6+</span>
           <div class="game-emoji">🚗</div>
           <div class="game-title">เลื่อนปลดล็อค</div>
           <div class="game-desc">เลื่อนรถให้รถแดงออกได้ ฝึกการวางแผน</div>
@@ -626,47 +654,47 @@
       <h2 class="section-header">💡 คิด &amp; ตรรกะ <span class="pill">6 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./size-order/">
+        <a class="game-card a3" href="./size-order/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">3+</span>
+          <span class="age-badge">3+</span>
           <div class="game-emoji">📏</div>
           <div class="game-title">เรียงเล็กใหญ่</div>
           <div class="game-desc">แตะเรียงจากเล็กไปใหญ่ ฝึกการเปรียบเทียบ</div>
         </a>
 
-        <a class="game-card" href="./whats-next/">
+        <a class="game-card a4" href="./whats-next/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">4+</span>
+          <span class="age-badge">4+</span>
           <div class="game-emoji">🔁</div>
           <div class="game-title">อะไรต่อไป</div>
           <div class="game-desc">ดูแบบซ้ำแล้วเลือกตัวถัดไป ฝึกตรรกะ</div>
         </a>
 
-        <a class="game-card" href="./sequence-it/">
+        <a class="game-card a5" href="./sequence-it/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge old">5+</span>
+          <span class="age-badge">5+</span>
           <div class="game-emoji">📖</div>
           <div class="game-title">เรียงเหตุการณ์</div>
           <div class="game-desc">ลากภาพเรียงตามลำดับเวลา ฝึกเหตุและผล</div>
         </a>
 
-        <a class="game-card" href="./sort-rule/">
-          <span class="age-badge old">5+</span>
+        <a class="game-card a5" href="./sort-rule/">
+          <span class="age-badge">5+</span>
           <div class="game-emoji">🎴</div>
           <div class="game-title">เรียงตามกฎ</div>
           <div class="game-desc">ลากการ์ดเข้าถัง กฎสลับกลางทาง</div>
         </a>
 
-        <a class="game-card" href="./odd-one-out/">
+        <a class="game-card a4" href="./odd-one-out/">
           <span class="new-tag">ใหม่!</span>
-          <span class="age-badge young">4+</span>
+          <span class="age-badge">4+</span>
           <div class="game-emoji">🧐</div>
           <div class="game-title">อันไหนไม่เข้าพวก</div>
           <div class="game-desc">หาตัวที่ไม่เข้าพวก ฝึกการจัดหมวดหมู่</div>
         </a>
 
-        <a class="game-card" href="./balance/">
-          <span class="age-badge old">6+</span>
+        <a class="game-card a6" href="./balance/">
+          <span class="age-badge">6+</span>
           <div class="game-emoji">⚖️</div>
           <div class="game-title">ตาชั่งสมดุล</div>
           <div class="game-desc">วางผลไม้ให้สองข้างเท่ากัน ฝึกตรรกะ</div>
@@ -680,29 +708,29 @@
       <h2 class="section-header">⚡ ว่องไว &amp; สนุก <span class="pill">4 เกม</span></h2>
       <div class="games">
 
-        <a class="game-card" href="./catch-stars/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./catch-stars/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🌟</div>
           <div class="game-title">จับดาว</div>
           <div class="game-desc">รับดาวที่ตกจากฟ้า หลบดาวร้าย</div>
         </a>
 
-        <a class="game-card" href="./quick-tap/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./quick-tap/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🎯</div>
           <div class="game-title">จับเร็วๆ</div>
           <div class="game-desc">แตะให้ถูก ห้ามแตะผิด ฝึกสมาธิและไหวพริบ</div>
         </a>
 
-        <a class="game-card" href="./animal-race/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./animal-race/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🏁</div>
           <div class="game-title">แข่งความเร็ว</div>
           <div class="game-desc">สัตว์ รถ เครื่องบิน อะไรเร็วที่สุด?</div>
         </a>
 
-        <a class="game-card" href="./animal-piano/">
-          <span class="age-badge young">3+</span>
+        <a class="game-card a3" href="./animal-piano/">
+          <span class="age-badge">3+</span>
           <div class="game-emoji">🎹</div>
           <div class="game-title">เปียโนสัตว์</div>
           <div class="game-desc">แตะสัตว์ให้เป็นโน้ตดนตรี เล่นเพลงตามได้</div>
@@ -717,18 +745,52 @@
   </main>
 
 <script>
-  // Category sub-menu: chips filter which category sections are shown.
+  // Sub-menus: the category chips pick which sections show, the age chips hide
+  // individual cards. Both filters apply at once, so one shared render pass.
   (function () {
-    var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
-    var secs = Array.prototype.slice.call(document.querySelectorAll('.catsec'));
-    function selectCat(cat, el) {
-      chips.forEach(function (c) { c.classList.toggle('active', c === el); });
-      secs.forEach(function (s) {
-        s.style.display = (cat === 'all' || s.getAttribute('data-cat') === cat) ? '' : 'none';
-      });
+    var list = function (sel, root) {
+      return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+    };
+    var catChips = list('.catbar .chip');
+    var ageChips = list('.agebar .chip');
+    var secs = list('.catsec');
+    var favSec = document.getElementById('favSection');
+    var cat = 'all', age = 'all';
+
+    function ageOK(card) {
+      if (age === 'all') return true;
+      if (age === 'small') return card.classList.contains('a3') || card.classList.contains('a4');
+      return card.classList.contains('a5') || card.classList.contains('a6');
     }
-    chips.forEach(function (c) {
-      c.addEventListener('click', function () { selectCat(c.getAttribute('data-cat'), c); });
+    function apply() {
+      list('.game-card').forEach(function (c) { c.style.display = ageOK(c) ? '' : 'none'; });
+      secs.forEach(function (s) {
+        var n = list('.game-card', s).filter(ageOK).length;
+        var pill = s.querySelector('.pill');
+        if (pill) pill.textContent = n + ' เกม';
+        var catOK = (cat === 'all' || s.getAttribute('data-cat') === cat);
+        s.style.display = (catOK && n > 0) ? '' : 'none';
+      });
+      if (favSec) {
+        var fn = list('.game-card', favSec).filter(ageOK).length;
+        favSec.style.display = (favSec.dataset.empty || !fn) ? 'none' : '';
+      }
+    }
+    window.__applyFilters = apply;
+
+    catChips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        cat = c.getAttribute('data-cat');
+        catChips.forEach(function (o) { o.classList.toggle('active', o === c); });
+        apply();
+      });
+    });
+    ageChips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        age = c.getAttribute('data-age');
+        ageChips.forEach(function (o) { o.classList.toggle('active', o === c); });
+        apply();
+      });
     });
   })();
 
@@ -767,14 +829,21 @@
     function renderFavs() {
       favGames.innerHTML = '';
       var shown = favs.filter(function (h) { return byHref[h]; });
-      if (!shown.length) { favSection.style.display = 'none'; return; }
+      // `data-empty` lets the age filter know whether the row has anything at
+      // all — it owns the actual display flag.
+      if (!shown.length) {
+        favSection.dataset.empty = '1'; favSection.style.display = 'none'; return;
+      }
+      delete favSection.dataset.empty;
       favSection.style.display = '';
       shown.forEach(function (h) {
         var clone = byHref[h].cloneNode(true);
         var old = clone.querySelector('.fav-btn'); if (old) old.remove();
+        clone.style.display = '';
         addHeart(clone);
         favGames.appendChild(clone);
       });
+      if (window.__applyFilters) window.__applyFilters();
     }
     renderFavs();
   })();
