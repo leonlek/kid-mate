@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v85';
+const CACHE = 'kid-games-v86';
 const SHELL = [
   './',
   './index.html',
@@ -132,6 +132,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
+
+  // Analytics beacon: never cache, never intercept. Cache-first would pin an old
+  // beacon.min.js forever, and an offline miss must fail silently (no counts) —
+  // not poison the cache with an error response.
+  if (req.url.indexOf('cloudflareinsights.com') !== -1) return;
 
   // HTML navigations (the hub + each game shell) are NETWORK-FIRST so a fresh
   // deploy shows up on the next online launch — WITHOUT waiting for the SW

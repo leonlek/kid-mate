@@ -47,7 +47,10 @@ mini-game keeps its own sub-name (e.g. "แข่งความเร็ว", "
 - **No TypeScript, no build step, no bundler** (Vite, webpack, Parcel, esbuild). Everything runs straight from the filesystem / static host.
 - **No Expo / React Native.** The earlier plan to port to native is cancelled.
 - **No npm / package.json.** If you think you need one, stop and reconsider.
-- **No analytics or tracking.** Audience is children; zero third-party network calls beyond Google Fonts.
+- **No tracking analytics.** Audience is children. The only third-party network calls
+  allowed are Google Fonts and the **Cloudflare Web Analytics** beacon
+  (`static.cloudflareinsights.com`) — cookieless, no PII, no cross-site identifier,
+  pageviews only. Do not add anything that profiles a visitor (GA, Meta pixel, etc.).
 
 If a feature request seems to need any of the above, push back — almost always there's a 20-line vanilla alternative.
 
@@ -86,7 +89,8 @@ When you add a game (e.g. `memory-match`):
 4. **Add the 🏠 home button** linking to `../` (see `animal-race/index.html` for the pattern — fixed top-left, 52 px, pink border).
 5. **Add a card in the hub `index.html`** (`.games` grid) — big emoji, Thai title, one-sentence description.
 6. **Update `sw.js`'s `SHELL` array** — add `./<game-id>/` and `./<game-id>/index.html`. Bump the `CACHE` constant (e.g. `kid-games-v2`) so old caches evict.
-7. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
+7. **Copy the Cloudflare Web Analytics beacon `<script>`** from any existing page into the new one, just before `</body>` — without it the game never shows up in the pageview report (see Phase 5 in section 9).
+8. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
 
 Keep each game under ~1500 lines of HTML. If a game grows beyond that, split it into `<game-id>/index.html` + `<game-id>/game.js` + `<game-id>/styles.css`. Still no bundler.
 
@@ -237,8 +241,19 @@ The drifting `☁️ ☁️     ☁️` cloud strip is part of the brand — kee
 - Whatever Phase 3 game ships: more levels / variations
 
 ### Phase 5 — Only if usage justifies it
-- Simple no-cookie pageview counter (Plausible/Umami) to see what's getting played
+- ✅ Simple no-cookie pageview counter — **Cloudflare Web Analytics** (see below)
 - Cross-game "ชนะแล้วกี่ครั้ง" badge in localStorage
+
+**Analytics setup (Cloudflare Web Analytics)**: a one-line beacon `<script>` sits right
+before `</body>` in the hub and **every** game page. Because each game is its own URL,
+the per-path pageview report doubles as "which game gets played most". Rules:
+- **A new game must get the beacon snippet too** — copy it from any existing page,
+  otherwise that game is invisible in the report.
+- The SW skips any `cloudflareinsights.com` request (see the guard in `sw.js`'s fetch
+  handler) — cache-first would pin a stale beacon forever.
+- Offline / installed-PWA sessions can't send a beacon, so counts read slightly low.
+- Hostname registered: `leonlek.github.io`. **Moving to a custom domain means adding
+  that hostname in the Cloudflare dashboard** — the token stays the same.
 
 Still no accounts, still no sync, still no backend.
 
