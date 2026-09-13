@@ -116,6 +116,75 @@
     color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
   }
 
+  /* Own photos: take / pick a photo, saved on this device, then choose 1★–7★ */
+  .photo-box { margin: 4px 0 8px; }
+  .photo-box .lgroup { margin: 0 0 10px; }
+  .photo-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .pbtn {
+    position: relative; overflow: hidden;
+    font-family: 'Itim', cursive; font-size: 24px; line-height: 1;
+    min-height: 64px; padding: 18px 26px;
+    border: 4px solid #fff; border-radius: 999px;
+    background: var(--brand); color: #fff; text-shadow: 2px 2px 0 var(--brand-dark);
+    box-shadow: 0 6px 0 var(--brand-dark); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .pbtn:nth-child(2) { background: #5bc0eb; box-shadow: 0 6px 0 #2f93bf; text-shadow: 2px 2px 0 #2f93bf; }
+  .pbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .vh-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .pgrid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+    margin: 16px 0 0;
+  }
+  .pgrid:empty, .pgrid[hidden], .ppanel[hidden] { display: none; }
+  .pcard {
+    position: relative; aspect-ratio: 1; padding: 0; cursor: pointer;
+    border: 4px solid var(--card-border); border-radius: 20px; overflow: hidden;
+    background: #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
+    transition: transform .15s, border-color .15s;
+  }
+  .pcard img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .pcard:active { transform: scale(0.95); }
+  .pcard.sel { border-color: var(--brand); animation: pop .4s ease; }
+  .pdel {
+    position: absolute; top: 4px; right: 4px; width: 36px; height: 36px;
+    border-radius: 50%; border: 2px solid #fff; background: rgba(45,52,54,0.7);
+    color: #fff; font-size: 16px; line-height: 1; padding: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ppanel {
+    margin: 14px 0 0; padding: 14px;
+    background: rgba(255,255,255,0.7); border: 3px dashed var(--brand); border-radius: 24px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .ppanel-img {
+    width: 150px; height: 150px; object-fit: cover; flex-shrink: 0;
+    border: 4px solid #fff; border-radius: 18px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+  }
+  .tgrid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tbtn {
+    min-height: 64px; padding: 8px 4px; cursor: pointer;
+    border: 3px solid var(--card-border); border-radius: 18px; background: #fff;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.07); font-family: 'Mitr', sans-serif; color: #777;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    transition: transform .12s, border-color .12s;
+  }
+  .tbtn:hover { border-color: var(--brand); }
+  .tbtn:active { transform: scale(0.94); }
+  .tbtn .tstars { font-size: 13px; line-height: 1.15; white-space: nowrap; }
+  .tbtn .tsub { font-size: 15px; font-weight: 600; color: var(--brand-dark); }
+  @media (max-width: 600px) {
+    .pgrid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .ppanel { flex-direction: column; }
+    .ppanel-img { width: 120px; height: 120px; }
+    .tgrid { width: 100%; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  }
+  @media (max-width: 480px) {
+    .pbtn { font-size: 20px; padding: 16px 18px; }
+    .tbtn .tstars { font-size: 11px; }
+  }
+
   /* Game */
   #gameScreen.active {
     display: flex; flex-direction: column;
@@ -443,6 +512,19 @@
         <li><span class="howto-icon">🏆</span> ต่อให้ครบทุกชิ้น!</li>
       </ul>
     </header>
+
+    <div class="photo-box">
+      <h2 class="lgroup">📷 รูปของหนู</h2>
+      <div class="photo-actions">
+        <label class="pbtn">📷 ถ่ายรูป<input id="camInput" class="vh-input" type="file" accept="image/*" capture="environment"></label>
+        <label class="pbtn">🖼️ เลือกจากคลังรูป<input id="libInput" class="vh-input" type="file" accept="image/*"></label>
+      </div>
+      <div id="photoGrid" class="pgrid"></div>
+      <div id="photoPanel" class="ppanel" hidden>
+        <img id="photoPanelImg" class="ppanel-img" alt="">
+        <div id="tierGrid" class="tgrid"></div>
+      </div>
+    </div>
 
     <div id="levelGrid" class="lgrid"></div>
   </section>
@@ -3927,13 +4009,14 @@ function startGame(level) {
   board.innerHTML = '';
   tray.innerHTML = '';
 
-  const def = SCENES_SVG[level.scene];
-  const { svg, cols, rows } = def;
+  // Photo levels carry their own def ({ url, cols, rows }); built-in levels use an SVG scene
+  const def = level.def || SCENES_SVG[level.scene];
+  const { cols, rows } = def;
   state.scene = def;
   state.total = cols * rows;
 
   state.edges = makeEdges(cols, rows);
-  state.sceneDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  state.sceneDataUrl = def.url || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(def.svg));
 
   $('placedCount').textContent = '0';
   $('placedTotal').textContent = state.total;
@@ -4295,6 +4378,172 @@ function celebrate(n) {
     setTimeout(() => c.remove(), 5000);
   }
 }
+
+// OWN PHOTOS — stay on this device (IndexedDB); nothing is uploaded.
+// Every photo can be played at any tier; it's centre-cropped to that tier's cols:rows.
+const PHOTO_TIERS = [
+  { stars: 1, cols: 2, rows: 2, parMisses: 1 },
+  { stars: 2, cols: 3, rows: 3, parMisses: 3 },
+  { stars: 3, cols: 4, rows: 3, parMisses: 5 },
+  { stars: 4, cols: 4, rows: 4, parMisses: 6 },
+  { stars: 5, cols: 5, rows: 4, parMisses: 8 },
+  { stars: 6, cols: 6, rows: 5, parMisses: 12 },
+  { stars: 7, cols: 7, rows: 6, parMisses: 16 },
+];
+const PHOTO_MAX = 6;        // newest kept, oldest evicted
+const PHOTO_LONG_SIDE = 1600;
+
+const photoDB = (() => {
+  let dbp = null;
+  function open() {
+    if (!dbp) dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('jigsaw-photos', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('photos', { keyPath: 'id' });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  function tx(mode, fn) {
+    return open().then(db => new Promise((res, rej) => {
+      const t = db.transaction('photos', mode);
+      const out = fn(t.objectStore('photos'));
+      t.oncomplete = () => res(out && out.result);
+      t.onerror = () => rej(t.error);
+    }));
+  }
+  return {
+    all: () => tx('readonly', s => s.getAll()).then(list => (list || []).sort((a, b) => b.t - a.t)),
+    put: (p) => tx('readwrite', s => s.put(p)),
+    del: (id) => tx('readwrite', s => s.delete(id)),
+  };
+})();
+
+const photo = { list: [], urls: new Map(), selId: null, playUrl: null };
+
+function loadImage(src) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = src;
+  });
+}
+function canvasBlob(cv) {
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/jpeg', 0.86));
+}
+
+// Downscale the picked file once, then keep it
+async function importPhoto(file) {
+  if (!file) return;
+  const src = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(src);
+    const k = Math.min(1, PHOTO_LONG_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(img.naturalWidth * k);
+    cv.height = Math.round(img.naturalHeight * k);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    const p = { id: 'p' + Date.now(), t: Date.now(), blob: await canvasBlob(cv) };
+    await photoDB.put(p);
+    const all = await photoDB.all();
+    for (const old of all.slice(PHOTO_MAX)) await photoDB.del(old.id);
+    await renderPhotos();
+    selectPhoto(p.id);
+    buzz(20);
+  } catch (e) {
+    console.warn('photo import failed', e); // e.g. undecodable format — stay silent
+  } finally {
+    URL.revokeObjectURL(src);
+  }
+}
+
+function photoUrl(p) {
+  if (!photo.urls.has(p.id)) photo.urls.set(p.id, URL.createObjectURL(p.blob));
+  return photo.urls.get(p.id);
+}
+
+async function renderPhotos() {
+  try { photo.list = await photoDB.all(); } catch (e) { photo.list = []; }
+  const ids = new Set(photo.list.map(p => p.id));
+  for (const [id, url] of photo.urls) if (!ids.has(id)) { URL.revokeObjectURL(url); photo.urls.delete(id); }
+  if (!ids.has(photo.selId)) selectPhoto(null);
+
+  const grid = $('photoGrid');
+  grid.innerHTML = '';
+  for (const p of photo.list) {
+    const c = document.createElement('div');
+    c.className = 'pcard' + (p.id === photo.selId ? ' sel' : '');
+    c.innerHTML = `<img alt="" src="${photoUrl(p)}"><button class="pdel" type="button" aria-label="ลบรูป">✕</button>`;
+    c.addEventListener('click', () => { buzz(15); selectPhoto(photo.selId === p.id ? null : p.id); });
+    c.querySelector('.pdel').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try { await photoDB.del(p.id); } catch (_) {}
+      renderPhotos();
+    });
+    grid.appendChild(c);
+  }
+}
+
+// Tapping a photo opens the tier picker under the grid; tapping it again closes it
+function selectPhoto(id) {
+  photo.selId = id;
+  for (const c of $('photoGrid').children) c.classList.remove('sel');
+  const idx = photo.list.findIndex(p => p.id === id);
+  if (idx >= 0) $('photoGrid').children[idx].classList.add('sel');
+  const panel = $('photoPanel');
+  panel.hidden = idx < 0;
+  if (idx < 0) return;
+  $('photoPanelImg').src = photoUrl(photo.list[idx]);
+  panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function renderTiers() {
+  const g = $('tierGrid');
+  g.innerHTML = '';
+  for (const tier of PHOTO_TIERS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tbtn';
+    b.innerHTML = `<span class="tstars">${'⭐'.repeat(tier.stars)}</span><span class="tsub">${tier.cols * tier.rows} ชิ้น</span>`;
+    b.addEventListener('click', () => { ensureAudio(); startPhotoGame(tier); });
+    g.appendChild(b);
+  }
+}
+
+// Centre-crop the saved photo to the tier's aspect, then play it like any level
+async function startPhotoGame(tier) {
+  const p = photo.list.find(x => x.id === photo.selId);
+  if (!p) return;
+  try {
+    const img = await loadImage(photoUrl(p));
+    const aspect = tier.cols / tier.rows;
+    let sw = img.naturalWidth, sh = sw / aspect;
+    if (sh > img.naturalHeight) { sh = img.naturalHeight; sw = sh * aspect; }
+    const sx = (img.naturalWidth - sw) / 2, sy = (img.naturalHeight - sh) / 2;
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(Math.min(sw, 1200));
+    cv.height = Math.round(cv.width / aspect);
+    cv.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+    const blob = await canvasBlob(cv);
+    if (photo.playUrl) URL.revokeObjectURL(photo.playUrl);
+    photo.playUrl = URL.createObjectURL(blob);
+    startGame({
+      id: 'photo', stars: tier.stars, name: 'รูปของหนู', parMisses: tier.parMisses,
+      def: { url: photo.playUrl, cols: tier.cols, rows: tier.rows },
+    });
+  } catch (e) {
+    console.warn('photo game failed', e);
+  }
+}
+
+for (const id of ['camInput', 'libInput']) {
+  const inp = $(id);
+  inp.addEventListener('click', () => ensureAudio());
+  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.value = ''; importPhoto(f); });
+}
+renderTiers();
+if (window.indexedDB) renderPhotos(); else $('photoGrid').hidden = true;
 
 // EVENTS
 $('backBtn').addEventListener('click', () => { abortGame(); renderLevels(); showScreen('select'); });
