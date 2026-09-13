@@ -162,6 +162,11 @@
     gap: 18px;
     margin-top: 4px;
   }
+  /* Landscape iPad / desktop: 4 columns at about the same card size */
+  @media (min-width: 1000px) {
+    .hub { max-width: 980px; }
+    .games { grid-template-columns: repeat(4, 1fr); }
+  }
 
   .game-card {
     display: flex;
@@ -215,11 +220,32 @@
   .a6 .age-badge { background: var(--a6-line); color: var(--a6-ink); }
 
   .game-emoji {
+    position: relative;
     font-size: 96px;
     line-height: 1;
     filter: drop-shadow(3px 4px 0 rgba(0,0,0,0.12));
     animation: float 3s ease-in-out infinite;
   }
+  /* Letter tag over an emoji (e.g. ระบายตัวอักษร) — tells non-readers it's about letters */
+  .emoji-letters {
+    position: absolute; left: -22%; bottom: -4%;
+    font-family: 'Itim', cursive; font-size: 0.34em; line-height: 1;
+    padding: 0.1em 0.24em 0.06em; white-space: nowrap;
+    background: #fff; border: 3px solid var(--brand); border-radius: 999px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+    transform: rotate(-8deg);
+  }
+  /* Bottom-right variant for emoji whose tip points bottom-left (🖍️) */
+  .emoji-letters.br { left: auto; right: -34%; bottom: -8%; transform: rotate(6deg); }
+  .emoji-letters b { font-weight: normal; }
+  /* A short row of small emoji (pattern / shapes) in the same 1-emoji box */
+  .game-emoji.emoji-row {
+    display: flex; align-items: center; justify-content: center; gap: 2px;
+    height: 96px; font-size: 40px; white-space: nowrap;
+  }
+  .emoji-letters b:nth-child(1) { color: #e54b82; }
+  .emoji-letters b:nth-child(2) { color: #2980b9; }
+  .emoji-letters b:nth-child(3) { color: #27ae60; }
   @keyframes float {
     0%, 100% { transform: translateY(0) rotate(-3deg); }
     50%      { transform: translateY(-8px) rotate(3deg); }
@@ -284,6 +310,8 @@
     .games { gap: 10px; }
     .game-card { padding: 14px 6px 12px; border-width: 3px; border-radius: 20px; }
     .game-emoji { font-size: 52px; }
+    .emoji-letters { border-width: 2px; box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+    .game-emoji.emoji-row { height: 52px; font-size: 22px; gap: 1px; }
     .game-title { font-size: 18px; margin-top: 4px; }
     .game-desc { display: none; }
     .age-badge { font-size: 12px; padding: 2px 8px; top: 4px; right: 4px; }
@@ -339,7 +367,7 @@
         <a class="game-card a3" href="./draw-along/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">3+</span>
-          <div class="game-emoji">🎨</div>
+          <div class="game-emoji">🖊️</div>
           <div class="game-title">วาดตามรอย</div>
           <div class="game-desc">หัดวาดรูปทีละเส้น แล้วระบายสี สัตว์ ยานพาหนะ และอื่นๆ</div>
         </a>
@@ -362,7 +390,7 @@
 
         <a class="game-card a3" href="./coloring/">
           <span class="age-badge">3+</span>
-          <div class="game-emoji">🎨</div>
+          <div class="game-emoji">🪣</div>
           <div class="game-title">แตะเติมสี</div>
           <div class="game-desc">แตะช่องให้สีเต็มเลย ง่ายสำหรับเด็กเล็ก</div>
         </a>
@@ -370,7 +398,7 @@
         <a class="game-card a3" href="./color-letters/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">3+</span>
-          <div class="game-emoji">🖍️</div>
+          <div class="game-emoji">🖍️<span class="emoji-letters br"><b>ก</b><b>ข</b><b>ค</b></span></div>
           <div class="game-title">ระบายตัวอักษร</div>
           <div class="game-desc">ลากนิ้วค่อยๆ ระบาย ก-ฮ A-Z และตัวเลข</div>
         </a>
@@ -454,14 +482,14 @@
 
         <a class="game-card a3" href="./number-pop/">
           <span class="age-badge">3+</span>
-          <div class="game-emoji">🎈</div>
+          <div class="game-emoji">🎈<span class="emoji-letters"><b>1</b><b>2</b><b>3</b></span></div>
           <div class="game-title">ป๊อปลูกโป่ง</div>
           <div class="game-desc">ป๊อปลูกโป่งตามลำดับเลข ฝึกการนับ</div>
         </a>
 
         <a class="game-card a5" href="./alphabet-pop/">
           <span class="age-badge">5+</span>
-          <div class="game-emoji">🔤</div>
+          <div class="game-emoji">🎈<span class="emoji-letters"><b>ก</b><b>A</b></span></div>
           <div class="game-title">ป๊อปตัวอักษร</div>
           <div class="game-desc">ป๊อปลูกโป่งตามลำดับ ก-ฮ และ A-Z</div>
         </a>
@@ -500,7 +528,7 @@
         <a class="game-card a3" href="./shape-sort/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">3+</span>
-          <div class="game-emoji">🔷</div>
+          <div class="game-emoji emoji-row">🟥⭐🔵</div>
           <div class="game-title">แตะตามรูปร่าง</div>
           <div class="game-desc">ลากรูปทรงใส่ช่องที่ตรงกัน ฝึกรู้จักรูปทรง</div>
         </a>
@@ -531,7 +559,7 @@
         <a class="game-card a5" href="./whats-different/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">5+</span>
-          <div class="game-emoji">✨</div>
+          <div class="game-emoji">🕵️</div>
           <div class="game-title">อะไรเปลี่ยนไป</div>
           <div class="game-desc">จำภาพแล้วหาจุดที่เปลี่ยน ฝึกการสังเกต</div>
         </a>
@@ -583,7 +611,7 @@
         <a class="game-card a5" href="./road/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">5+</span>
-          <div class="game-emoji">🚗</div>
+          <div class="game-emoji">🚧</div>
           <div class="game-title">ต่อถนน</div>
           <div class="game-desc">วางถนน ต่อสะพาน ให้รถวิ่งถึงจุดหมาย มีด่านและโหมดสร้างเมือง</div>
         </a>
@@ -614,7 +642,7 @@
           <span class="age-badge">5+</span>
           <div class="game-emoji">🧩</div>
           <div class="game-title">จิ๊กซอว์</div>
-          <div class="game-desc">ตัวต่อจิ๊กซอว์จริง 25 ภาพ 4–30 ชิ้น ฝึกมือและตา</div>
+          <div class="game-desc">ตัวต่อจิ๊กซอว์จริง 40 ภาพ 4–42 ชิ้น ฝึกมือและตา</div>
         </a>
 
         <a class="game-card a6" href="./tangram/">
@@ -665,7 +693,7 @@
         <a class="game-card a4" href="./whats-next/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">4+</span>
-          <div class="game-emoji">🔁</div>
+          <div class="game-emoji emoji-row">🔴🟡🔴❓</div>
           <div class="game-title">อะไรต่อไป</div>
           <div class="game-desc">ดูแบบซ้ำแล้วเลือกตัวถัดไป ฝึกตรรกะ</div>
         </a>
@@ -673,14 +701,14 @@
         <a class="game-card a5" href="./sequence-it/">
           <span class="new-tag">ใหม่!</span>
           <span class="age-badge">5+</span>
-          <div class="game-emoji">📖</div>
+          <div class="game-emoji">🐣</div>
           <div class="game-title">เรียงเหตุการณ์</div>
           <div class="game-desc">ลากภาพเรียงตามลำดับเวลา ฝึกเหตุและผล</div>
         </a>
 
         <a class="game-card a5" href="./sort-rule/">
           <span class="age-badge">5+</span>
-          <div class="game-emoji">🎴</div>
+          <div class="game-emoji">🧺</div>
           <div class="game-title">เรียงตามกฎ</div>
           <div class="game-desc">ลากการ์ดเข้าถัง กฎสลับกลางทาง</div>
         </a>
