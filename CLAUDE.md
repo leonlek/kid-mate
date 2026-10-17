@@ -122,6 +122,10 @@ Valid `cat`: `wild`, `farm`, `bird`, `water`, `dino`, `fantasy`, `vehicle`, `air
 
 Tap-to-fill coloring. **80 pictures** live in `coloring/pictures.js` (data only; `index.html` is the engine). Each picture = `add(id, name, category, anim, level, regions)`; level 1/2/3 = ⭐ age 3-4 / 5-6 / 7-8 (filter chips on the select screen). Regions draw back→front, each with its own outline, so a front shape hides the outline behind it — build animals by overlapping shapes, never as loose floating blobs. Paintable regions should be ≥ ~70 units wide (lv1) / ~40 (lv2-3) on the 800×800 canvas; smaller details (eyes, lines) use `dot()/ln()/ringd()` decor (`noClick`). Adding a picture = one `add(...)` call; bump `CACHE` in `sw.js`.
 
+### สมุดระบายสี (`/crayon/`)
+
+Scribble-with-crayon scenes (portrait 800×1200). 47 scenes: 13 hand-written in `crayon/index.html` + 34 generated into `crayon/scenes.js` from the coloring game's drawings (`node tools/gen_crayon_scenes.js` — edit `coloring/pictures.js` or the LIST in the script, then re-run; never hand-edit scenes.js). Regions under ~46 units don't have to be touched to finish. Size button cycles 3 crayon widths; ⭐ level is derived from the paintable-region count.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
