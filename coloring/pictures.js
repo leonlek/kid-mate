@@ -21,7 +21,8 @@ const CATEGORIES = [
   { id: 'misc',     label: '🏠 อื่นๆ' },
 ];
 function add(id, name, category, anim, level, regions) {
-  PICTURES.push({ id, name, regions });
+  const i = PICTURES.findIndex(x => x.id === id);
+  if (i >= 0) PICTURES[i] = { id, name, regions }; else PICTURES.push({ id, name, regions });
   PICTURE_META[id] = { category, anim, level };
 }
 // Region builders
@@ -73,165 +74,36 @@ function band(id, cx, cy, rx, ry, x1, x2) {
 }
 const ed = (cx, cy, rx, ry) => ({ id: 'd' + (++_dn), shape: 'ellipse', cx, cy, rx, ry, fill: INK, noClick: true });
 const wheel = (id, cx, cy, r) => [c(id, cx, cy, r), ringd(cx, cy, Math.round(r * 0.42))];
-add('butterfly', '🦋 ผีเสื้อ', 'animals', 'fly', 2, [
-      { id: 'body',      shape: 'ellipse', cx: 400, cy: 400, rx: 30, ry: 130, fill: '#fff' },
-      { id: 'left-up',   shape: 'path',
-        d: 'M 380 320 C 240 220 120 240 120 360 C 120 470 250 470 380 380 Z', fill: '#fff' },
-      { id: 'right-up',  shape: 'path',
-        d: 'M 420 320 C 560 220 680 240 680 360 C 680 470 550 470 420 380 Z', fill: '#fff' },
-      { id: 'left-low',  shape: 'path',
-        d: 'M 380 410 C 280 460 200 540 240 620 C 280 680 380 620 380 510 Z', fill: '#fff' },
-      { id: 'right-low', shape: 'path',
-        d: 'M 420 410 C 520 460 600 540 560 620 C 520 680 420 620 420 510 Z', fill: '#fff' },
-      { id: 'antenna-l', shape: 'path',
-        d: 'M 388 290 Q 360 240 340 220', fill: 'none', stroke: '#2d3436', strokeWidth: 6, noFill: true, noClick: true },
-      { id: 'antenna-r', shape: 'path',
-        d: 'M 412 290 Q 440 240 460 220', fill: 'none', stroke: '#2d3436', strokeWidth: 6, noFill: true, noClick: true },
-    ]);
-add('car', '🚗 รถยนต์', 'vehicles', 'drive', 2, [
-      { id: 'body',  shape: 'path', d: 'M 120 480 L 180 380 L 280 360 L 520 360 L 620 380 L 680 480 L 680 560 L 120 560 Z', fill: '#fff' },
-      { id: 'window-l', shape: 'path', d: 'M 200 380 L 270 380 L 290 460 L 200 460 Z', fill: '#fff' },
-      { id: 'window-r', shape: 'path', d: 'M 600 380 L 530 380 L 510 460 L 600 460 Z', fill: '#fff' },
-      { id: 'window-c', shape: 'path', d: 'M 290 380 L 510 380 L 510 460 L 290 460 Z', fill: '#fff' },
-      { id: 'wheel-l', shape: 'circle', cx: 220, cy: 580, r: 60, fill: '#fff' },
-      { id: 'wheel-r', shape: 'circle', cx: 580, cy: 580, r: 60, fill: '#fff' },
-      { id: 'hub-l',  shape: 'circle', cx: 220, cy: 580, r: 24, fill: '#fff' },
-      { id: 'hub-r',  shape: 'circle', cx: 580, cy: 580, r: 24, fill: '#fff' },
-      { id: 'headlight', shape: 'circle', cx: 670, cy: 500, r: 14, fill: '#fff' },
-    ]);
-add('icecream', '🍦 ไอติม', 'food', 'wiggle', 2, [
-      { id: 'cone', shape: 'path', d: 'M 320 460 L 480 460 L 400 740 Z', fill: '#fff' },
-      { id: 'scoop-top', shape: 'circle', cx: 400, cy: 320, r: 130, fill: '#fff' },
-      { id: 'scoop-l', shape: 'circle', cx: 330, cy: 420, r: 90, fill: '#fff' },
-      { id: 'scoop-r', shape: 'circle', cx: 470, cy: 420, r: 90, fill: '#fff' },
-      { id: 'cherry', shape: 'circle', cx: 400, cy: 190, r: 40, fill: '#fff' },
-      { id: 'cherry-stem', shape: 'path', d: 'M 400 150 Q 430 100 470 80', fill: 'none', stroke: '#2d3436', strokeWidth: 6, noFill: true, noClick: true },
-    ]);
-add('cake', '🎂 เค้ก', 'food', 'glow', 3, [
-      { id: 'plate', shape: 'ellipse', cx: 400, cy: 700, rx: 280, ry: 30, fill: '#fff' },
-      { id: 'tier-bottom', shape: 'path', d: 'M 200 540 L 600 540 L 600 700 L 200 700 Z', fill: '#fff' },
-      { id: 'tier-top', shape: 'path', d: 'M 270 420 L 530 420 L 530 540 L 270 540 Z', fill: '#fff' },
-      { id: 'frosting-bottom', shape: 'path', d: 'M 200 540 Q 250 510 300 540 Q 350 510 400 540 Q 450 510 500 540 Q 550 510 600 540 L 600 560 L 200 560 Z', fill: '#fff' },
-      { id: 'frosting-top', shape: 'path', d: 'M 270 420 Q 320 395 370 420 Q 420 395 470 420 Q 510 395 530 420 L 530 440 L 270 440 Z', fill: '#fff' },
-      { id: 'candle-l', shape: 'path', d: 'M 348 330 L 348 420 L 372 420 L 372 330 Z', fill: '#fff' },
-      { id: 'candle-c', shape: 'path', d: 'M 388 310 L 388 420 L 412 420 L 412 310 Z', fill: '#fff' },
-      { id: 'candle-r', shape: 'path', d: 'M 428 330 L 428 420 L 452 420 L 452 330 Z', fill: '#fff' },
-      { id: 'flame-l', shape: 'ellipse', cx: 360, cy: 310, rx: 12, ry: 22, fill: '#fff' },
-      { id: 'flame-c', shape: 'ellipse', cx: 400, cy: 290, rx: 12, ry: 22, fill: '#fff' },
-      { id: 'flame-r', shape: 'ellipse', cx: 440, cy: 310, rx: 12, ry: 22, fill: '#fff' },
-    ]);
-add('pizza', '🍕 พิซซ่า', 'food', 'spin', 2, [
-      { id: 'crust', shape: 'path', d: 'M 400 160 L 680 660 L 120 660 Z', fill: '#fff' },
-      { id: 'sauce', shape: 'path', d: 'M 400 230 L 630 630 L 170 630 Z', fill: '#fff' },
-      { id: 'cheese-top', shape: 'circle', cx: 400, cy: 320, r: 32, fill: '#fff' },
-      { id: 'pepper-1', shape: 'circle', cx: 350, cy: 420, r: 40, fill: '#fff' },
-      { id: 'pepper-2', shape: 'circle', cx: 450, cy: 420, r: 40, fill: '#fff' },
-      { id: 'mushroom-1', shape: 'circle', cx: 310, cy: 540, r: 38, fill: '#fff' },
-      { id: 'mushroom-2', shape: 'circle', cx: 400, cy: 540, r: 38, fill: '#fff' },
-      { id: 'mushroom-3', shape: 'circle', cx: 490, cy: 540, r: 38, fill: '#fff' },
-    ]);
-add('train', '🚂 รถไฟ', 'vehicles', 'drive', 2, [
-      { id: 'engine-body', shape: 'path', d: 'M 140 360 L 440 360 L 440 540 L 140 540 Z', fill: '#fff' },
-      { id: 'cab', shape: 'path', d: 'M 440 280 L 660 280 L 660 540 L 440 540 Z', fill: '#fff' },
-      { id: 'cab-window', shape: 'path', d: 'M 480 320 L 620 320 L 620 420 L 480 420 Z', fill: '#fff' },
-      { id: 'chimney', shape: 'path', d: 'M 220 260 L 290 260 L 290 360 L 220 360 Z', fill: '#fff' },
-      { id: 'smoke-1', shape: 'circle', cx: 240, cy: 200, r: 35, fill: '#fff' },
-      { id: 'smoke-2', shape: 'circle', cx: 310, cy: 160, r: 45, fill: '#fff' },
-      { id: 'smoke-3', shape: 'circle', cx: 400, cy: 130, r: 50, fill: '#fff' },
-      { id: 'wheel-1', shape: 'circle', cx: 220, cy: 600, r: 55, fill: '#fff' },
-      { id: 'wheel-2', shape: 'circle', cx: 380, cy: 600, r: 55, fill: '#fff' },
-      { id: 'wheel-3', shape: 'circle', cx: 560, cy: 600, r: 55, fill: '#fff' },
-      { id: 'headlight', shape: 'circle', cx: 165, cy: 460, r: 22, fill: '#fff' },
-    ]);
-add('rocket', '🚀 จรวด', 'vehicles', 'launch', 2, [
-      { id: 'nose', shape: 'path', d: 'M 400 100 L 480 280 L 320 280 Z', fill: '#fff' },
-      { id: 'body', shape: 'path', d: 'M 320 280 L 480 280 L 480 580 L 320 580 Z', fill: '#fff' },
-      { id: 'window', shape: 'circle', cx: 400, cy: 360, r: 50, fill: '#fff' },
-      { id: 'fin-l', shape: 'path', d: 'M 320 480 L 240 600 L 320 600 Z', fill: '#fff' },
-      { id: 'fin-r', shape: 'path', d: 'M 480 480 L 560 600 L 480 600 Z', fill: '#fff' },
-      { id: 'engine', shape: 'path', d: 'M 350 580 L 450 580 L 450 660 L 350 660 Z', fill: '#fff' },
-      { id: 'flame-out', shape: 'path', d: 'M 350 660 Q 350 740 400 760 Q 450 740 450 660 Z', fill: '#fff' },
-      { id: 'flame-in', shape: 'path', d: 'M 380 700 Q 380 750 400 770 Q 420 750 420 700 Z', fill: '#fff' },
-      { id: 'star-1', shape: 'circle', cx: 160, cy: 200, r: 14, fill: '#fff' },
-      { id: 'star-2', shape: 'circle', cx: 640, cy: 280, r: 18, fill: '#fff' },
-      { id: 'star-3', shape: 'circle', cx: 700, cy: 480, r: 14, fill: '#fff' },
-    ]);
-add('boat', '⛵ เรือใบ', 'vehicles', 'sway', 2, [
-      { id: 'hull', shape: 'path', d: 'M 120 540 L 680 540 L 600 660 L 200 660 Z', fill: '#fff' },
-      { id: 'mast', shape: 'path', d: 'M 393 180 L 407 180 L 407 540 L 393 540 Z', fill: '#fff' },
-      { id: 'sail-big', shape: 'path', d: 'M 407 180 L 407 520 L 600 520 Z', fill: '#fff' },
-      { id: 'sail-small', shape: 'path', d: 'M 393 220 L 393 520 L 230 520 Z', fill: '#fff' },
-      { id: 'flag', shape: 'path', d: 'M 407 180 L 470 200 L 407 220 Z', fill: '#fff' },
-      { id: 'wave', shape: 'path', d: 'M 60 700 Q 140 670 220 700 Q 300 730 380 700 Q 460 670 540 700 Q 620 730 700 700 L 740 700 L 740 740 L 60 740 Z', fill: '#fff' },
-      { id: 'sun', shape: 'circle', cx: 660, cy: 160, r: 50, fill: '#fff' },
-    ]);
-add('penguin', '🐧 เพนกวิน', 'animals', 'waddle', 2, [
-      { id: 'body', shape: 'ellipse', cx: 400, cy: 440, rx: 180, ry: 240, fill: '#fff' },
-      { id: 'belly', shape: 'ellipse', cx: 400, cy: 470, rx: 110, ry: 180, fill: '#fff' },
-      { id: 'eye-l', shape: 'circle', cx: 360, cy: 280, r: 16, fill: '#fff' },
-      { id: 'eye-r', shape: 'circle', cx: 440, cy: 280, r: 16, fill: '#fff' },
-      { id: 'beak', shape: 'path', d: 'M 380 320 L 420 320 L 400 360 Z', fill: '#fff' },
-      { id: 'wing-l', shape: 'ellipse', cx: 230, cy: 480, rx: 40, ry: 100, fill: '#fff' },
-      { id: 'wing-r', shape: 'ellipse', cx: 570, cy: 480, rx: 40, ry: 100, fill: '#fff' },
-      { id: 'foot-l', shape: 'ellipse', cx: 340, cy: 700, rx: 50, ry: 20, fill: '#fff' },
-      { id: 'foot-r', shape: 'ellipse', cx: 460, cy: 700, rx: 50, ry: 20, fill: '#fff' },
-    ]);
-add('robot', '🤖 หุ่นยนต์', 'misc', 'wiggle', 3, [
-      { id: 'antenna', shape: 'path', d: 'M 395 70 L 405 70 L 405 170 L 395 170 Z', fill: '#fff' },
-      { id: 'antenna-ball', shape: 'circle', cx: 400, cy: 55, r: 22, fill: '#fff' },
-      { id: 'head', shape: 'path', d: 'M 280 180 L 520 180 L 520 380 L 280 380 Z', fill: '#fff' },
-      { id: 'eye-l', shape: 'circle', cx: 340, cy: 260, r: 28, fill: '#fff' },
-      { id: 'eye-r', shape: 'circle', cx: 460, cy: 260, r: 28, fill: '#fff' },
-      { id: 'mouth', shape: 'path', d: 'M 340 320 L 460 320 L 460 350 L 340 350 Z', fill: '#fff' },
-      { id: 'body', shape: 'path', d: 'M 240 400 L 560 400 L 560 600 L 240 600 Z', fill: '#fff' },
-      { id: 'btn-1', shape: 'circle', cx: 340, cy: 470, r: 22, fill: '#fff' },
-      { id: 'btn-2', shape: 'circle', cx: 400, cy: 470, r: 22, fill: '#fff' },
-      { id: 'btn-3', shape: 'circle', cx: 460, cy: 470, r: 22, fill: '#fff' },
-      { id: 'arm-l', shape: 'path', d: 'M 240 420 L 130 420 L 130 540 L 240 540 Z', fill: '#fff' },
-      { id: 'arm-r', shape: 'path', d: 'M 560 420 L 670 420 L 670 540 L 560 540 Z', fill: '#fff' },
-      { id: 'leg-l', shape: 'path', d: 'M 280 600 L 280 740 L 360 740 L 360 600 Z', fill: '#fff' },
-      { id: 'leg-r', shape: 'path', d: 'M 440 600 L 440 740 L 520 740 L 520 600 Z', fill: '#fff' },
-    ]);
-add('sun', '☀️ ดวงอาทิตย์', 'nature', 'spin', 2, [
-      { id: 'disc', shape: 'circle', cx: 400, cy: 400, r: 160, fill: '#fff' },
-      { id: 'ray-n', shape: 'path', d: 'M 400 100 L 380 200 L 420 200 Z', fill: '#fff' },
-      { id: 'ray-s', shape: 'path', d: 'M 400 700 L 380 600 L 420 600 Z', fill: '#fff' },
-      { id: 'ray-w', shape: 'path', d: 'M 100 400 L 200 380 L 200 420 Z', fill: '#fff' },
-      { id: 'ray-e', shape: 'path', d: 'M 700 400 L 600 380 L 600 420 Z', fill: '#fff' },
-      { id: 'ray-nw', shape: 'path', d: 'M 180 180 L 250 240 L 220 270 Z', fill: '#fff' },
-      { id: 'ray-ne', shape: 'path', d: 'M 620 180 L 550 240 L 580 270 Z', fill: '#fff' },
-      { id: 'ray-sw', shape: 'path', d: 'M 180 620 L 250 560 L 220 530 Z', fill: '#fff' },
-      { id: 'ray-se', shape: 'path', d: 'M 620 620 L 550 560 L 580 530 Z', fill: '#fff' },
-      { id: 'eye-l', shape: 'circle', cx: 350, cy: 370, r: 16, fill: '#fff' },
-      { id: 'eye-r', shape: 'circle', cx: 450, cy: 370, r: 16, fill: '#fff' },
-      { id: 'smile', shape: 'path', d: 'M 340 440 Q 400 500 460 440 L 460 460 Q 400 525 340 460 Z', fill: '#fff' },
-    ]);
-add('rainbow', '🌈 สายรุ้ง', 'nature', 'shimmer', 2, [
-      { id: 'arc-1', shape: 'path', d: 'M 100 600 A 300 300 0 0 1 700 600 L 660 600 A 260 260 0 0 0 140 600 Z', fill: '#fff' },
-      { id: 'arc-2', shape: 'path', d: 'M 140 600 A 260 260 0 0 1 660 600 L 620 600 A 220 220 0 0 0 180 600 Z', fill: '#fff' },
-      { id: 'arc-3', shape: 'path', d: 'M 180 600 A 220 220 0 0 1 620 600 L 580 600 A 180 180 0 0 0 220 600 Z', fill: '#fff' },
-      { id: 'arc-4', shape: 'path', d: 'M 220 600 A 180 180 0 0 1 580 600 L 540 600 A 140 140 0 0 0 260 600 Z', fill: '#fff' },
-      { id: 'arc-5', shape: 'path', d: 'M 260 600 A 140 140 0 0 1 540 600 L 500 600 A 100 100 0 0 0 300 600 Z', fill: '#fff' },
-      { id: 'cloud-l-a', shape: 'circle', cx: 120, cy: 620, r: 40, fill: '#fff' },
-      { id: 'cloud-l-b', shape: 'circle', cx: 170, cy: 600, r: 50, fill: '#fff' },
-      { id: 'cloud-l-c', shape: 'circle', cx: 80, cy: 640, r: 30, fill: '#fff' },
-      { id: 'cloud-r-a', shape: 'circle', cx: 680, cy: 620, r: 40, fill: '#fff' },
-      { id: 'cloud-r-b', shape: 'circle', cx: 630, cy: 600, r: 50, fill: '#fff' },
-      { id: 'cloud-r-c', shape: 'circle', cx: 720, cy: 640, r: 30, fill: '#fff' },
-    ]);
 
-// Tiny details of the older drawings → decor (too small for a child's finger)
-function decorize(pid, ids) {
-  const pic = PICTURES.find(x => x.id === pid);
-  for (const r of pic.regions) if (ids.includes(r.id)) r.noClick = true;
+// ---- pilot helpers ----
+const hl = (cx, cy, r) => ({ id: 'd' + (++_dn), shape: 'circle', cx, cy, r, fill: W, noClick: true, strokeWidth: 0.1 });
+// Big cartoon eye: white ring, dark pupil, highlight
+const eye = (cx, cy, r) => [ringd(cx, cy, r), dot(cx + r * 0.1, cy + r * 0.1, r * 0.62), hl(cx + r * 0.32, cy - r * 0.25, r * 0.22)];
+const nose = (cx, cy, w) => dk(`M ${cx - w} ${cy} Q ${cx} ${cy - w * 0.5} ${cx + w} ${cy} Q ${cx + w * 0.5} ${cy + w * 0.9} ${cx} ${cy + w} Q ${cx - w * 0.5} ${cy + w * 0.9} ${cx - w} ${cy} Z`);
+
+
+// Circle with scalloped (bumpy) edge — manes, flowers, clouds
+function scallop(id, cx, cy, R, n, bump) {
+  const pt = (r, a) => [Math.round(cx + r * Math.cos(a)), Math.round(cy + r * Math.sin(a))];
+  let d = '';
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, am = (a0 + a1) / 2;
+    const A = pt(R, a0), B = pt(R, a1), Cc = pt(R + bump * 2, am);
+    if (i === 0) d += `M ${A[0]} ${A[1]} `;
+    d += `Q ${Cc[0]} ${Cc[1]} ${B[0]} ${B[1]} `;
+  }
+  return p(id, d + 'Z');
 }
-decorize('car', ['headlight']);
-decorize('cake', ['candle-l', 'candle-c', 'candle-r', 'flame-l', 'flame-c', 'flame-r']);
-decorize('rocket', ['star-1', 'star-2', 'star-3']);
-decorize('boat', ['mast']);
-decorize('robot', ['antenna', 'mouth']);
-decorize('sun', ['eye-l', 'eye-r']);
-decorize('penguin', ['eye-l', 'eye-r']);
+const cloud = (id, cx, cy, s = 1) => p(id, `M ${cx - 80 * s} ${cy + 30 * s} C ${cx - 125 * s} ${cy + 30 * s} ${cx - 125 * s} ${cy - 30 * s} ${cx - 70 * s} ${cy - 30 * s} C ${cx - 65 * s} ${cy - 80 * s} ${cx - 5 * s} ${cy - 85 * s} ${cx + 10 * s} ${cy - 40 * s} C ${cx + 50 * s} ${cy - 70 * s} ${cx + 105 * s} ${cy - 35 * s} ${cx + 85 * s} ${cy + 5 * s} C ${cx + 125 * s} ${cy + 10 * s} ${cx + 115 * s} ${cy + 30 * s} ${cx + 80 * s} ${cy + 30 * s} Z`);
+
+// Pointed petal in local coords (base at origin, tip up), rotated by `a` degrees and placed at (ox,oy)
+function petalPath(ox, oy, a, h, w) {
+  const r = a * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+  const T = (x, y) => `${Math.round(ox + x * cs - y * sn)} ${Math.round(oy + x * sn + y * cs)}`;
+  return `M ${T(0, 0)} C ${T(-w, -h * 0.3)} ${T(-w * 0.6, -h * 0.82)} ${T(0, -h)} C ${T(w * 0.6, -h * 0.82)} ${T(w, -h * 0.3)} ${T(0, 0)} Z`;
+}
+const petal = (id, ox, oy, a, h, w) => p(id, petalPath(ox, oy, a, h, w));
+
 // ===================== LEVEL 1 — age 3-4 (few, big regions) =====================
 add('apple', '🍎 แอปเปิล', 'food', 'bounce', 1, [
   p('body', 'M 400 290 C 300 220 150 270 160 430 C 170 590 290 710 400 665 C 510 710 630 590 640 430 C 650 270 500 220 400 290 Z'),
@@ -263,30 +135,6 @@ add('umbrella', '☂️ ร่ม', 'misc', 'sway', 1, [
   p('u4', 'M 400 120 L 545 420 Q 618 380 690 420 Q 660 160 400 120 Z'),
   drop('rain1', 160, 590), drop('rain2', 640, 580), drop('rain3', 540, 710),
 ]);
-add('goldfish', '🐠 ปลาทอง', 'sea', 'swim', 1, [
-  p('tail', 'M 560 400 C 640 330 710 300 740 240 C 770 350 770 450 740 560 C 710 490 640 470 560 400 Z'),
-  p('fin-top', 'M 320 260 C 340 170 440 140 520 200 C 450 215 400 240 370 280 Z'),
-  e('body', 400, 410, 215, 170),
-  e('belly', 420, 480, 130, 60),
-  p('fin-side', 'M 380 400 C 450 380 520 420 540 470 C 480 500 420 470 380 400 Z'),
-  dot(270, 370, 16), ln('M 330 320 Q 305 400 330 480', 6), ln('M 195 430 Q 215 445 240 435', 5),
-]);
-add('pig', '🐷 หมู', 'animals', 'wiggle', 1, [
-  p('ear-l', 'M 230 270 L 180 110 C 270 110 350 170 370 235 Z'),
-  p('ear-r', 'M 570 270 L 620 110 C 530 110 450 170 430 235 Z'),
-  c('head', 400, 420, 240),
-  e('snout', 400, 500, 105, 80),
-  dot(375, 500, 14), dot(425, 500, 14), ...eyes(310, 490, 380, 16),
-]);
-add('duck', '🦆 เป็ด', 'animals', 'waddle', 1, [
-  e('pond', 400, 700, 340, 70),
-  p('tail', 'M 200 480 L 90 390 C 80 470 100 560 170 600 Z'),
-  e('body', 390, 540, 230, 165),
-  e('wing', 370, 540, 120, 75),
-  c('head', 520, 310, 125),
-  p('beak', 'M 620 290 L 770 335 L 620 385 Z'),
-  dot(555, 285, 14),
-]);
 add('beachball', '🏖️ ลูกบอลชายหาด', 'sport', 'bounce', 1, [
   pie('w1', 400, 400, 320, -90, -30), pie('w2', 400, 400, 320, -30, 30), pie('w3', 400, 400, 320, 30, 90),
   pie('w4', 400, 400, 320, 90, 150), pie('w5', 400, 400, 320, 150, 210), pie('w6', 400, 400, 320, 210, 270),
@@ -317,12 +165,6 @@ add('cupcake', '🧁 คัพเค้ก', 'food', 'glow', 1, [
   c('cherry', 400, 160, 55),
   ln('M 330 470 L 345 690', 5), ln('M 400 475 L 400 695', 5), ln('M 470 470 L 455 690', 5),
 ]);
-add('chick', '🐥 ลูกเจี๊ยบ', 'animals', 'hop', 1, [
-  c('sun', 670, 130, 75), e('grass', 400, 750, 400, 45),
-  c('chick', 400, 400, 170),
-  p('shell', 'M 205 560 L 255 500 L 310 565 L 360 500 L 410 565 L 460 500 L 515 565 L 555 500 L 600 560 C 625 690 520 750 400 750 C 280 750 175 690 205 560 Z'),
-  ...eyes(345, 455, 345, 14), dk('M 375 385 L 425 385 L 400 425 Z'), ln('M 400 230 Q 380 190 410 170', 8),
-]);
 add('mushroom', '🍄 เห็ด', 'nature', 'glow', 1, [
   e('ground', 400, 745, 330, 45),
   p('stem', 'M 320 440 L 310 705 Q 400 745 490 705 L 480 440 Z'),
@@ -330,222 +172,8 @@ add('mushroom', '🍄 เห็ด', 'nature', 'glow', 1, [
   c('s1', 290, 290, 62), c('s2', 480, 230, 55), c('s3', 580, 370, 50),
   ...eyes(365, 435, 570, 11), smile(400, 610, 28),
 ]);
+
 // ===================== LEVEL 2 — age 5-6 =====================
-add('cat', '🐱 แมว', 'animals', 'wiggle', 2, [
-  p('tail', 'M 560 650 C 700 660 730 540 690 470 C 760 520 770 700 600 735 Z'),
-  e('body', 400, 635, 185, 150),
-  p('ear-l', 'M 235 290 L 205 100 L 365 195 Z'), p('ear-r', 'M 565 290 L 595 100 L 435 195 Z'),
-  c('head', 400, 375, 200),
-  e('muzzle', 400, 450, 85, 60),
-  e('paw-l', 320, 745, 70, 38), e('paw-r', 480, 745, 70, 38),
-  ...eyes(325, 475, 350, 17), dk('M 380 420 L 420 420 L 400 445 Z'),
-  ln('M 400 445 Q 380 475 355 465', 5), ln('M 400 445 Q 420 475 445 465', 5),
-  ln('M 270 440 L 150 420', 5), ln('M 270 465 L 150 480', 5), ln('M 530 440 L 650 420', 5), ln('M 530 465 L 650 480', 5),
-  ln('M 360 200 L 365 240', 8), ln('M 400 190 L 400 235', 8), ln('M 440 200 L 435 240', 8),
-]);
-add('dog', '🐶 หมา', 'animals', 'wiggle', 2, [
-  e('body', 400, 650, 175, 140),
-  p('ear-l', 'M 240 240 C 120 230 100 400 150 500 C 240 490 285 390 290 290 Z'),
-  p('ear-r', 'M 560 240 C 680 230 700 400 650 500 C 560 490 515 390 510 290 Z'),
-  e('head', 400, 365, 175, 165),
-  c('patch', 485, 320, 55),
-  e('muzzle', 400, 450, 105, 80),
-  p('tongue', 'M 365 505 L 435 505 L 435 580 Q 400 620 365 580 Z'),
-  e('paw-l', 330, 765, 65, 30), e('paw-r', 470, 765, 65, 30),
-  ...eyes(330, 470, 345, 17), ed(400, 440, 34, 24), ln('M 400 460 L 400 505', 5),
-  ln('M 400 505 Q 370 520 345 495', 5), ln('M 400 505 Q 430 520 455 495', 5),
-]);
-add('rabbit', '🐰 กระต่าย', 'animals', 'hop', 2, [
-  e('ear-l', 320, 170, 68, 160), e('ear-r', 480, 170, 68, 160),
-  e('in-l', 320, 185, 34, 105), e('in-r', 480, 185, 34, 105),
-  c('tail', 625, 680, 55),
-  e('body', 400, 620, 195, 160),
-  e('belly', 400, 640, 115, 105),
-  e('head', 400, 395, 165, 140),
-  e('foot-l', 290, 750, 90, 38), e('foot-r', 510, 750, 90, 38),
-  ...eyes(335, 465, 380, 16), dk('M 380 425 L 420 425 L 400 450 Z'), ln('M 400 450 L 400 470', 5),
-  ln('M 400 470 Q 375 490 355 470', 5), ln('M 400 470 Q 425 490 445 470', 5),
-]);
-add('dino', '🦕 ไดโนเสาร์คอยาว', 'wild', 'bounce', 3, [
-  p('tail', 'M 580 500 C 660 510 730 480 775 420 C 775 530 700 610 585 610 Z'),
-  rc('leg-1', 250, 590, 90, 170, 38), rc('leg-2', 350, 600, 90, 160, 38), rc('leg-3', 470, 600, 90, 160, 38), rc('leg-4', 570, 590, 90, 170, 38),
-  poly('plate-1', [[330, 350], [375, 260], [420, 345]]), poly('plate-2', [[420, 340], [470, 255], [515, 345]]), poly('plate-3', [[510, 350], [555, 275], [595, 360]]),
-  e('body', 420, 500, 250, 150),
-  p('neck', 'M 230 500 C 180 380 170 280 190 190 L 300 185 C 290 290 320 380 370 450 Z'),
-  e('head', 235, 150, 110, 70),
-  dot(200, 135, 14), ln('M 150 170 Q 180 190 215 175', 5),
-  c('spot-1', 400, 500, 38), c('spot-2', 500, 540, 34),
-]);
-add('unicorn', '🦄 ยูนิคอร์น', 'animals', 'glow', 2, [
-  p('tail', 'M 640 440 C 740 450 790 560 730 700 C 690 640 710 560 635 520 Z'),
-  rc('leg-1', 280, 570, 62, 185, 28), rc('leg-2', 370, 580, 62, 175, 28), rc('leg-3', 500, 580, 62, 175, 28), rc('leg-4', 590, 570, 62, 185, 28),
-  e('body', 450, 490, 230, 135),
-  p('mane', 'M 300 150 C 200 200 190 330 230 470 L 330 470 C 300 360 320 260 370 200 Z'),
-  p('neck', 'M 270 480 C 250 370 255 280 290 200 L 400 240 C 380 310 400 400 440 480 Z'),
-  p('head', 'M 150 190 C 150 120 240 100 320 125 C 380 150 390 230 340 270 C 290 300 190 290 150 230 Z'),
-  poly('horn', [[215, 125], [255, 15], [295, 120]]),
-  poly('ear', [[300, 125], [345, 65], [365, 145]]),
-  dot(255, 180, 13), ln('M 160 235 Q 190 255 225 245', 5),
-]);
-add('elephant', '🐘 ช้าง', 'wild', 'bounce', 2, [
-  rc('leg-1', 290, 570, 100, 190, 40), rc('leg-2', 400, 585, 100, 175, 40), rc('leg-3', 520, 585, 100, 175, 40), rc('leg-4', 620, 570, 100, 190, 40),
-  e('body', 480, 470, 250, 180),
-  c('head', 220, 380, 135),
-  p('trunk', 'M 125 430 C 70 520 60 620 100 710 C 135 740 185 715 170 675 C 140 600 160 530 205 480 Z'),
-  e('ear', 315, 365, 90, 135),
-  p('tusk', 'M 160 500 C 105 520 85 560 100 600 C 130 565 165 545 195 520 Z'),
-  dot(215, 345, 14), ln('M 725 420 Q 780 470 760 560', 8),
-]);
-add('turtle', '🐢 เต่า', 'animals', 'bounce', 2, [
-  e('leg-1', 340, 610, 65, 55), e('leg-2', 590, 610, 65, 55), p('tail', 'M 730 540 L 790 600 L 715 580 Z'),
-  p('neck', 'M 230 480 L 150 380 L 270 400 Z'),
-  c('head', 150, 400, 85),
-  p('shell', 'M 200 540 C 190 290 320 210 470 210 C 620 210 740 300 730 540 Z'),
-  c('hex-c', 465, 380, 80), c('hex-l', 320, 440, 62), c('hex-r', 615, 440, 62), c('hex-t', 465, 255, 38),
-  rc('rim', 190, 530, 560, 70, 35),
-  dot(125, 385, 12), smile(150, 435, 22),
-]);
-add('lotus', '🪷 ดอกบัว', 'thai', 'glow', 2, [
-  e('pond', 400, 715, 360, 60),
-  p('out-l', 'M 400 600 C 220 630 90 530 60 420 C 170 440 330 490 400 600 Z'),
-  p('out-r', 'M 400 600 C 580 630 710 530 740 420 C 630 440 470 490 400 600 Z'),
-  p('mid-l', 'M 400 590 C 250 570 130 420 170 270 C 280 320 360 430 400 590 Z'),
-  p('mid-r', 'M 400 590 C 550 570 670 420 630 270 C 520 320 440 430 400 590 Z'),
-  p('mid', 'M 400 150 C 285 290 285 450 400 590 C 515 450 515 290 400 150 Z'),
-  e('pad-l', 130, 700, 100, 36), e('pad-r', 670, 700, 100, 36),
-]);
-add('fruits', '🍇 ผลไม้', 'food', 'bounce', 2, [
-  c('apple', 150, 290, 105), p('apple-leaf', 'M 150 190 C 170 130 230 120 255 145 C 230 195 190 205 150 190 Z'),
-  c('orange', 650, 290, 105),
-  c('g1', 350, 200, 45), c('g2', 450, 200, 45), c('g3', 300, 290, 45), c('g4', 400, 290, 45), c('g5', 500, 290, 45), c('g6', 350, 380, 45), c('g7', 450, 380, 45), c('g8', 400, 465, 45),
-  ln('M 400 160 Q 410 100 450 80', 10),
-  p('banana', 'M 100 570 C 180 730 440 790 700 610 C 725 570 705 540 690 535 C 560 640 340 640 190 505 C 140 505 95 530 100 570 Z'),
-  ln('M 150 295 L 150 260', 5),
-]);
-add('firetruck', '🚒 รถดับเพลิง', 'vehicles', 'drive', 2, [
-  rc('box', 80, 390, 400, 170, 15),
-  rc('ladder', 100, 300, 350, 68, 12),
-  rc('cab', 480, 340, 230, 220, 30),
-  rc('cab-win', 520, 370, 150, 95, 14),
-  rc('siren', 570, 285, 90, 50, 20),
-  ...wheel('wheel-1', 210, 590, 80), ...wheel('wheel-2', 590, 590, 80),
-  ln('M 150 300 L 150 368', 6), ln('M 220 300 L 220 368', 6), ln('M 290 300 L 290 368', 6), ln('M 360 300 L 360 368', 6),
-  rc('bumper', 690, 520, 50, 40, 10),
-]);
-add('tuktuk', '🛺 ตุ๊กตุ๊ก', 'thai', 'drive', 2, [
-  ln('M 230 350 L 230 290', 10), ln('M 590 350 L 590 290', 10),
-  p('roof', 'M 170 300 Q 400 210 630 300 L 610 355 L 190 355 Z'),
-  rc('cabin', 210, 355, 390, 150, 10),
-  rc('windshield', 235, 380, 150, 100, 10), rc('seat', 415, 385, 160, 105, 18),
-  p('body', 'M 160 500 L 620 500 L 645 565 L 150 565 Z'),
-  c('light', 175, 535, 34),
-  ...wheel('wheel-f', 235, 625, 72), ...wheel('wheel-b', 525, 625, 72),
-  poly('flag', [[400, 215], [480, 170], [480, 250]]),
-]);
-add('lambo', '🏎️ รถแลมโบ', 'vehicles', 'drive', 2, [
-  p('body', 'M 60 560 C 60 510 90 495 150 485 L 330 425 C 400 395 500 395 570 425 L 720 480 C 765 495 775 530 765 565 L 60 570 Z'),
-  p('window', 'M 345 440 C 410 405 480 405 545 440 L 490 485 L 335 485 Z'),
-  p('door', 'M 320 495 L 510 495 L 520 555 L 310 555 Z'),
-  p('spoiler', 'M 55 440 L 130 440 L 120 480 L 55 485 Z'),
-  ...wheel('wheel-f', 205, 590, 72), ...wheel('wheel-r', 610, 590, 72),
-  dk('M 700 500 L 745 505 L 740 525 L 695 520 Z'),
-]);
-add('ferrari', '🏎️ รถเฟอร์รารี่', 'vehicles', 'drive', 2, [
-  p('body', 'M 65 565 C 60 500 130 480 205 470 C 265 410 340 395 420 400 C 520 405 580 445 620 475 C 710 485 765 510 760 565 Z'),
-  p('window', 'M 285 465 C 320 425 380 415 430 420 C 490 425 535 445 565 475 Z'),
-  ln('M 95 535 L 745 535', 12), ln('M 440 495 L 520 495', 10), ln('M 440 515 L 520 515', 10),
-  ...wheel('wheel-f', 215, 590, 72), ...wheel('wheel-r', 610, 590, 72),
-  dk('M 690 500 L 745 515 L 735 535 L 685 525 Z'),
-]);
-add('f1car', '🏁 รถแข่งเอฟวัน', 'vehicles', 'drive', 2, [
-  p('rwing', 'M 650 380 L 770 380 L 770 450 L 650 450 Z'),
-  rc('rpost', 690, 450, 40, 80, 8),
-  p('nose', 'M 40 545 L 260 505 L 260 575 L 40 578 Z'),
-  p('body', 'M 230 470 L 560 450 L 650 520 L 650 585 L 230 585 Z'),
-  p('cover', 'M 440 455 L 580 450 L 640 520 L 440 520 Z'),
-  c('helmet', 400, 440, 48),
-  p('fwing', 'M 20 575 L 150 575 L 150 620 L 20 620 Z'),
-  ...wheel('wheel-f', 195, 600, 78), ...wheel('wheel-r', 575, 590, 98),
-  ln('M 345 440 L 455 440', 6),
-]);
-add('porsche', '🚗 รถกลม', 'vehicles', 'drive', 2, [
-  p('body', 'M 75 565 C 55 485 130 465 180 455 C 230 360 340 340 440 345 C 545 350 605 405 645 455 C 725 465 755 510 745 565 Z'),
-  p('window', 'M 250 455 C 285 390 355 375 430 380 C 505 385 540 425 575 455 Z'),
-  p('door', 'M 400 470 L 560 470 L 560 540 L 400 540 Z'),
-  rc('bumper', 70, 530, 85, 40, 14),
-  ...wheel('wheel-f', 205, 590, 72), ...wheel('wheel-r', 610, 590, 72),
-  dk('M 655 485 L 705 490 L 700 515 L 650 510 Z'), ln('M 395 470 L 395 560', 5),
-]);
-add('fish', '🐟 ปลา', 'sea', 'swim', 2, [
-  p('tail', 'M 580 400 C 650 320 720 300 745 235 C 775 350 775 450 745 565 C 715 490 650 470 580 400 Z'),
-  p('fin-top', 'M 280 270 C 300 170 430 140 520 210 C 450 215 390 240 340 285 Z'),
-  p('fin-bot', 'M 330 540 C 340 610 410 650 470 640 C 450 600 430 570 410 540 Z'),
-  e('body', 380, 410, 225, 160),
-  band('stripe-1', 380, 410, 225, 160, 330, 380), band('stripe-2', 380, 410, 225, 160, 430, 480),
-  p('gill', 'M 250 330 C 220 380 220 440 250 490 C 285 440 285 380 250 330 Z'),
-  ringd(195, 370, 26), dot(195, 370, 11),
-  c('bub-1', 130, 250, 42), c('bub-2', 80, 160, 30),
-]);
-add('house', '🏠 บ้าน', 'misc', 'bounce', 2, [
-  c('sun', 690, 130, 70), e('ground', 400, 740, 400, 55),
-  rc('chimney', 495, 220, 75, 150),
-  rc('wall', 220, 380, 360, 310),
-  poly('roof', [[170, 395], [400, 190], [630, 395]]),
-  rc('door', 350, 520, 100, 170, 12), dot(425, 610, 9),
-  rc('win-l', 255, 430, 85, 85, 8), rc('win-r', 465, 430, 85, 85, 8),
-  ln('M 297 430 L 297 515', 5), ln('M 255 472 L 340 472', 5), ln('M 507 430 L 507 515', 5), ln('M 465 472 L 550 472', 5),
-  c('bush-l', 160, 690, 50), c('bush-r', 650, 690, 50),
-]);
-add('flower', '🌼 ดอกไม้', 'nature', 'glow', 2, [
-  e('ground', 400, 755, 330, 38),
-  p('stem', 'M 380 450 Q 380 600 380 750 L 420 750 Q 420 600 420 450 Z'),
-  p('leaf-l', 'M 380 600 Q 250 570 215 670 Q 320 680 380 640 Z'),
-  p('leaf-r', 'M 420 620 Q 550 590 585 690 Q 480 700 420 660 Z'),
-  c('petal-1', 400, 230, 90), c('petal-2', 515, 305, 90), c('petal-3', 515, 440, 90),
-  c('petal-4', 400, 515, 90), c('petal-5', 285, 440, 90), c('petal-6', 285, 305, 90),
-  c('center', 400, 372, 78),
-  ...eyes(375, 425, 360, 9), smile(400, 392, 20),
-]);
-add('lion', '🦁 สิงโต', 'wild', 'wiggle', 1, [
-  c('ear-l', 240, 175, 65), c('ear-r', 560, 175, 65),
-  c('mane', 400, 410, 290),
-  e('face', 400, 440, 175, 165),
-  e('muzzle', 400, 520, 100, 70),
-  ...eyes(335, 465, 400, 17), dk('M 370 470 L 430 470 L 400 505 Z'),
-  ln('M 400 505 L 400 530', 5), ln('M 400 530 Q 370 560 345 540', 5), ln('M 400 530 Q 430 560 455 540', 5),
-]);
-add('monkey', '🐵 ลิง', 'wild', 'bounce', 2, [
-  p('tail', 'M 560 690 C 700 690 760 600 710 510 C 790 560 800 730 590 770 Z'),
-  e('body', 400, 690, 170, 100),
-  c('ear-l', 190, 400, 75), c('ear-r', 610, 400, 75),
-  c('head', 400, 380, 195),
-  e('face', 400, 435, 140, 120),
-  e('muzzle', 400, 500, 80, 55),
-  p('banana', 'M 600 640 C 640 700 720 720 780 690 C 790 670 780 660 770 660 C 720 685 665 670 635 620 Z'),
-  ...eyes(340, 460, 410, 15), ed(400, 490, 18, 12), smile(400, 520, 30),
-]);
-add('owl', '🦉 นกฮูก', 'animals', 'wiggle', 2, [
-  rc('branch', 50, 705, 700, 55, 27),
-  p('tuft-l', 'M 240 210 L 210 100 L 330 160 Z'), p('tuft-r', 'M 560 210 L 590 100 L 470 160 Z'),
-  e('body', 400, 450, 200, 270),
-  p('wing-l', 'M 215 380 C 110 440 120 640 205 710 C 260 630 270 500 250 410 Z'),
-  p('wing-r', 'M 585 380 C 690 440 680 640 595 710 C 540 630 530 500 550 410 Z'),
-  e('belly', 400, 560, 125, 150),
-  c('eye-l', 320, 340, 82), c('eye-r', 480, 340, 82),
-  dot(320, 340, 30), dot(480, 340, 30),
-  p('beak', 'M 365 395 L 435 395 L 400 475 Z'),
-  e('foot-l', 330, 710, 55, 25), e('foot-r', 470, 710, 55, 25),
-]);
-add('bee', '🐝 ผึ้ง', 'animals', 'fly', 2, [
-  p('wing-1', 'M 330 320 C 250 190 320 70 400 110 C 430 190 410 260 380 330 Z'),
-  p('wing-2', 'M 410 320 C 440 200 540 130 600 170 C 600 260 500 320 430 340 Z'),
-  poly('sting', [[110, 470], [20, 500], [110, 520]]),
-  e('body', 330, 480, 230, 165),
-  band('stripe-1', 330, 480, 230, 165, 250, 320), band('stripe-2', 330, 480, 230, 165, 390, 460),
-  c('head', 600, 470, 100),
-  dot(630, 445, 14), smile(615, 505, 28),
-  ln('M 560 385 Q 540 330 500 320', 6), ln('M 640 385 Q 660 330 700 330', 6),
-]);
 add('ladybug', '🐞 เต่าทอง', 'animals', 'hop', 2, [
   e('head', 400, 190, 125, 90),
   p('shell-l', 'M 400 190 C 250 190 150 300 150 440 C 150 580 250 700 400 700 Z'),
@@ -553,94 +181,8 @@ add('ladybug', '🐞 เต่าทอง', 'animals', 'hop', 2, [
   c('spot-1', 280, 340, 48), c('spot-2', 520, 340, 48), c('spot-3', 270, 520, 52), c('spot-4', 530, 520, 52),
   ...eyes(360, 440, 175, 14), ln('M 350 110 Q 320 60 280 60', 6), ln('M 450 110 Q 480 60 520 60', 6),
 ]);
-add('frog', '🐸 กบ', 'animals', 'hop', 2, [
-  e('pad', 400, 745, 340, 42),
-  e('foot-l', 175, 700, 95, 42), e('foot-r', 625, 700, 95, 42),
-  e('body', 400, 570, 240, 180),
-  e('belly', 400, 630, 130, 90),
-  e('head', 400, 400, 225, 155),
-  c('eye-l', 290, 270, 82), c('eye-r', 510, 270, 82),
-  dot(290, 275, 28), dot(510, 275, 28),
-  ln('M 215 440 Q 400 560 585 440', 7), dot(370, 380, 7), dot(430, 380, 7),
-]);
-add('cow', '🐮 วัว', 'animals', 'wiggle', 2, [
-  p('horn-l', 'M 285 250 C 235 210 215 150 235 100 C 290 135 330 190 340 245 Z'),
-  p('horn-r', 'M 515 250 C 565 210 585 150 565 100 C 510 135 470 190 460 245 Z'),
-  e('ear-l', 175, 340, 95, 50), e('ear-r', 625, 340, 95, 50),
-  e('head', 400, 400, 190, 215),
-  c('patch-l', 300, 310, 60), c('patch-r', 520, 280, 55),
-  e('muzzle', 400, 570, 140, 95),
-  ...eyes(325, 475, 380, 16), ed(355, 570, 17, 24), ed(445, 570, 17, 24),
-]);
-add('bear', '🐻 หมี', 'wild', 'wiggle', 2, [
-  e('body', 400, 690, 235, 105),
-  c('ear-l', 235, 195, 80), c('ear-r', 565, 195, 80),
-  c('in-l', 235, 200, 40), c('in-r', 565, 200, 40),
-  c('head', 400, 400, 215),
-  e('muzzle', 400, 480, 115, 90),
-  e('belly', 400, 710, 135, 75),
-  ...eyes(325, 475, 360, 17), ed(400, 450, 38, 26), ln('M 400 475 L 400 510', 5),
-  ln('M 400 510 Q 365 535 340 510', 5), ln('M 400 510 Q 435 535 460 510', 5),
-]);
-add('crab', '🦀 ปู', 'sea', 'waddle', 2, [
-  ln('M 220 540 L 120 600 L 100 690', 16), ln('M 250 590 L 170 670 L 160 750', 16), ln('M 580 540 L 680 600 L 700 690', 16), ln('M 550 590 L 630 670 L 640 750', 16),
-  ln('M 270 430 Q 170 380 150 300', 22), ln('M 530 430 Q 630 380 650 300', 22),
-  c('claw-l', 140, 235, 100), c('claw-r', 660, 235, 100),
-  dk('M 80 120 L 135 215 L 40 205 Z'), dk('M 720 120 L 665 215 L 760 205 Z'),
-  e('body', 400, 500, 235, 160),
-  ln('M 340 360 L 335 300', 8), ln('M 460 360 L 465 300', 8),
-  c('eye-l', 335, 270, 38), c('eye-r', 465, 270, 38), dot(335, 272, 14), dot(465, 272, 14),
-  smile(400, 480, 55),
-]);
-add('octopus', '🐙 หมึกยักษ์', 'sea', 'sway', 2, [
-  p('t1', 'M 230 400 C 130 500 100 620 150 710 C 200 775 280 735 260 655 C 245 580 290 500 330 430 Z'),
-  p('t2', 'M 330 430 C 300 550 320 650 350 720 C 390 780 470 750 450 690 C 425 620 430 540 450 430 Z'),
-  p('t3', 'M 470 430 C 490 550 480 650 455 720 C 480 780 560 780 560 700 C 550 620 560 540 570 430 Z'),
-  p('t4', 'M 570 400 C 670 500 700 620 650 710 C 600 775 520 735 540 655 C 555 580 510 500 470 430 Z'),
-  e('head', 400, 300, 215, 215),
-  ringd(325, 300, 38), ringd(475, 300, 38), dot(325, 305, 18), dot(475, 305, 18),
-  smile(400, 400, 45), c('cheek-l', 235, 380, 36), c('cheek-r', 565, 380, 36),
-]);
-add('whale', '🐳 วาฬ', 'sea', 'swim', 2, [
-  p('tail', 'M 600 450 C 690 430 740 370 725 280 C 790 320 795 420 745 480 C 795 530 785 610 715 650 C 735 570 685 510 600 500 Z'),
-  e('body', 370, 480, 305, 195),
-  e('belly', 360, 575, 235, 85),
-  p('fin', 'M 330 560 C 360 650 440 690 500 670 C 480 615 430 570 390 540 Z'),
-  dot(185, 430, 15), ln('M 110 520 Q 180 570 260 540', 7),
-  ln('M 330 285 L 330 195', 12), drop('spray-1', 255, 140), drop('spray-2', 330, 95), drop('spray-3', 405, 140),
-  p('sea', 'M 20 725 Q 120 690 220 725 Q 320 760 420 725 Q 520 690 620 725 Q 700 750 780 725 L 780 790 L 20 790 Z'),
-]);
-add('jellyfish', '🪼 แมงกะพรุน', 'sea', 'swim', 1, [
-  ln('M 270 410 Q 230 500 280 570 Q 320 640 270 720', 14), ln('M 350 430 Q 320 520 360 590 Q 395 660 350 750', 14),
-  ln('M 450 430 Q 480 520 440 590 Q 405 660 450 750', 14), ln('M 530 410 Q 570 500 520 570 Q 480 640 530 720', 14),
-  p('dome', 'M 150 420 C 150 100 650 100 650 420 Q 590 465 525 420 Q 462 470 400 420 Q 338 470 275 420 Q 210 465 150 420 Z'),
-  c('spot-1', 300, 270, 55), c('spot-2', 500, 270, 55), c('spot-3', 400, 190, 45),
-  ...eyes(340, 460, 340, 12), smile(400, 365, 28),
-]);
+
 // ===================== LEVEL 3 + more scenes =====================
-add('castle', '🏰 ปราสาท', 'misc', 'glow', 3, [
-  c('sun', 690, 110, 65), e('ground', 400, 752, 390, 42),
-  rc('wall', 220, 450, 360, 250),
-  rc('tower-l', 120, 330, 140, 370), rc('tower-r', 540, 330, 140, 370),
-  rc('keep', 300, 250, 200, 450),
-  poly('roof-l', [[105, 335], [190, 190], [275, 335]]), poly('roof-r', [[525, 335], [610, 190], [695, 335]]),
-  poly('roof-c', [[285, 255], [400, 100], [515, 255]]),
-  p('gate', 'M 340 700 L 340 570 Q 400 490 460 570 L 460 700 Z'),
-  rc('win-c', 365, 330, 70, 100, 35), rc('win-l', 165, 420, 55, 90, 27), rc('win-r', 580, 420, 55, 90, 27),
-  ln('M 400 100 L 400 30', 6), poly('flag', [[403, 30], [490, 58], [403, 86]]),
-  ln('M 250 480 L 250 520', 6), ln('M 550 480 L 550 520', 6),
-]);
-add('farm', '🚜 ฟาร์ม', 'misc', 'bounce', 3, [
-  c('sun', 690, 110, 65), e('cloud', 400, 130, 110, 42),
-  rc('field', 0, 600, 800, 200),
-  rc('barn', 90, 380, 310, 230),
-  p('barn-roof', 'M 70 395 L 150 270 L 340 270 L 420 395 Z'),
-  rc('door', 195, 470, 100, 140, 6), ln('M 195 470 L 295 610', 6), ln('M 295 470 L 195 610', 6),
-  rc('silo', 440, 310, 110, 300), p('silo-top', 'M 440 315 C 440 220 550 220 550 315 Z'),
-  rc('trunk', 640, 440, 44, 170), c('crown', 662, 380, 95),
-  rc('fence-1', 40, 640, 60, 110, 8), rc('fence-2', 140, 640, 60, 110, 8), rc('fence-3', 240, 640, 60, 110, 8),
-  c('hay', 560, 700, 55),
-]);
 add('undersea', '🌊 ใต้ทะเล', 'sea', 'swim', 3, [
   e('sand', 400, 758, 390, 40),
   p('weed-1', 'M 110 790 C 60 690 160 610 110 510 C 80 450 130 390 120 330 L 175 340 C 185 400 135 450 165 510 C 215 600 115 700 175 790 Z'),
@@ -661,78 +203,6 @@ add('space', '🚀 อวกาศ', 'nature', 'spin', 2, [
   c('earth', 270, 640, 130),
   e('saucer', 600, 610, 130, 42), p('dome', 'M 520 600 C 520 520 680 520 680 600 Z'), dot(600, 565, 20),
   dot(130, 200, 10), dot(190, 270, 8), dot(240, 590, 12), dot(320, 690, 10),
-]);
-add('pavilion', '🛖 ศาลาไทย', 'thai', 'glow', 3, [
-  e('pond', 400, 750, 380, 40),
-  rc('floor', 110, 660, 580, 60, 6),
-  rc('wall', 230, 470, 340, 190),
-  rc('post-1', 140, 470, 48, 195), rc('post-2', 235, 470, 48, 195), rc('post-3', 517, 470, 48, 195), rc('post-4', 612, 470, 48, 195),
-  p('roof-main', 'M 70 430 C 230 425 330 360 400 240 C 470 360 570 425 730 430 L 690 485 L 110 485 Z'),
-  p('roof-top', 'M 290 270 C 350 250 385 190 400 80 C 415 190 450 250 510 270 L 490 310 L 310 310 Z'),
-  poly('gable', [[330, 400], [470, 400], [400, 300]]),
-  rc('step-1', 340, 715, 120, 40, 8),
-  c('lotus', 130, 760, 28),
-  ln('M 70 430 Q 40 400 60 370', 8), ln('M 730 430 Q 760 400 740 370', 8),
-]);
-add('krathong', '🪷 กระทงลอยน้ำ', 'thai', 'sway', 2, [
-  c('moon', 650, 140, 72),
-  e('water', 400, 735, 390, 48),
-  e('base', 400, 625, 310, 105),
-  p('pl-l', 'M 400 570 C 270 570 170 480 200 370 C 290 410 360 470 400 570 Z'),
-  p('pl-r', 'M 400 570 C 530 570 630 480 600 370 C 510 410 440 470 400 570 Z'),
-  p('pl-c', 'M 400 570 C 330 480 330 350 400 250 C 470 350 470 480 400 570 Z'),
-  rc('candle', 375, 175, 50, 110, 8), p('flame', 'M 400 40 C 450 100 450 150 400 172 C 350 150 350 100 400 40 Z'),
-  ln('M 250 640 L 250 700', 6), ln('M 550 640 L 550 700', 6),
-]);
-add('kite', '🪁 ว่าว', 'thai', 'fly', 1, [
-  poly('k1', [[400, 60], [620, 330], [400, 330]]), poly('k2', [[620, 330], [400, 600], [400, 330]]),
-  poly('k3', [[400, 600], [180, 330], [400, 330]]), poly('k4', [[180, 330], [400, 60], [400, 330]]),
-  ln('M 400 600 Q 330 650 400 690 Q 470 730 400 790', 6),
-  dk('M 365 655 L 365 690 L 395 672 Z'), dk('M 435 700 L 435 735 L 405 717 Z'),
-]);
-add('police', '🚓 รถตำรวจ', 'jobs', 'drive', 2, [
-  p('body', 'M 70 570 L 70 490 Q 80 450 150 440 L 250 400 Q 300 350 370 350 L 500 350 Q 570 360 610 430 L 690 450 Q 740 470 740 520 L 740 570 Z'),
-  rc('win-1', 290, 385, 100, 62, 8), rc('win-2', 410, 385, 100, 62, 8),
-  rc('siren', 380, 295, 90, 56, 20),
-  rc('door', 300, 470, 200, 80, 10),
-  ...wheel('wheel-1', 210, 590, 75), ...wheel('wheel-2', 590, 590, 75),
-  ln('M 70 520 L 740 520', 10), dot(715, 500, 14),
-]);
-add('ambulance', '🚑 รถพยาบาล', 'jobs', 'drive', 2, [
-  rc('box', 80, 320, 410, 250, 25),
-  p('cab', 'M 490 380 L 600 380 Q 650 400 690 470 L 715 570 L 490 570 Z'),
-  p('cab-win', 'M 520 405 L 595 405 Q 630 420 655 470 L 520 470 Z'),
-  poly('cross', [[255, 365], [325, 365], [325, 405], [365, 405], [365, 475], [325, 475], [325, 515], [255, 515], [255, 475], [215, 475], [215, 405], [255, 405]]),
-  rc('siren', 250, 275, 90, 50, 20),
-  ...wheel('wheel-1', 200, 590, 78), ...wheel('wheel-2', 590, 590, 78),
-]);
-add('airplane', '✈️ เครื่องบิน', 'vehicles', 'fly', 2, [
-  e('cloud-1', 150, 650, 120, 48), e('cloud-2', 640, 160, 130, 52),
-  p('wing-b', 'M 430 380 L 520 380 L 480 250 L 410 250 Z'),
-  p('tail', 'M 130 395 L 80 240 L 190 240 L 240 395 Z'),
-  rc('body', 80, 370, 640, 110, 55),
-  p('cockpit', 'M 610 385 Q 690 380 705 425 L 610 425 Z'),
-  p('wing', 'M 310 440 L 480 440 L 400 640 L 290 640 Z'),
-  ringd(220, 425, 26), ringd(300, 425, 26), ringd(380, 425, 26), ringd(460, 425, 26), ringd(540, 425, 26),
-  ln('M 100 455 L 700 455', 8),
-]);
-add('helicopter', '🚁 เฮลิคอปเตอร์', 'vehicles', 'fly', 2, [
-  e('cloud-1', 130, 650, 110, 42), e('cloud-2', 660, 200, 110, 42),
-  ln('M 110 290 L 610 290', 14), ln('M 360 290 L 360 340', 14),
-  p('tail', 'M 520 440 L 730 400 L 755 450 L 520 520 Z'),
-  poly('fin', [[690, 405], [735, 310], [790, 325], [750, 445]]),
-  e('body', 350, 470, 205, 135),
-  p('window', 'M 200 430 Q 230 380 310 390 L 310 480 L 180 490 Z'),
-  ln('M 150 640 L 560 640', 14), ln('M 270 590 L 270 640', 12), ln('M 450 590 L 450 640', 12),
-  c('door', 430, 470, 55),
-]);
-add('tractor', '🚜 รถแทรกเตอร์', 'jobs', 'drive', 2, [
-  c('sun', 670, 120, 65), e('ground', 400, 755, 390, 38),
-  rc('hood', 430, 400, 280, 135, 22),
-  rc('cab', 170, 250, 270, 310, 28),
-  rc('cab-win', 205, 285, 200, 150, 15),
-  ln('M 660 400 L 660 290', 22),
-  ...wheel('wheel-b', 270, 590, 150), ...wheel('wheel-f', 630, 640, 95),
 ]);
 {
   const pent = (cx, cy, R, rot) => Array.from({ length: 5 }, (_, i) => { const a = (rot + i * 72) * Math.PI / 180; return [Math.round(cx + R * Math.cos(a)), Math.round(cy + R * Math.sin(a))]; });
@@ -782,23 +252,6 @@ add('tent', '⛺ เต็นท์ตั้งแคมป์', 'nature', 'wigg
   ln('M 640 720 L 720 690', 14), ln('M 720 720 L 640 690', 14),
   p('flame', 'M 680 670 C 640 620 650 570 690 520 C 700 570 750 580 735 640 C 730 660 710 670 680 670 Z'),
 ]);
-add('lighthouse', '🗼 ประภาคาร', 'misc', 'shimmer', 2, [
-  poly('beam-l', [[345, 245], [30, 150], [30, 340]]), poly('beam-r', [[455, 245], [770, 150], [770, 340]]),
-  e('rock', 400, 745, 320, 55),
-  p('tower', 'M 320 740 L 350 280 L 450 280 L 480 740 Z'),
-  poly('stripe-1', [[339, 440], [461, 440], [466, 520], [334, 520]]), poly('stripe-2', [[328, 600], [472, 600], [477, 680], [323, 680]]),
-  rc('lamp', 340, 195, 120, 85, 10), poly('roof', [[325, 200], [400, 115], [475, 200]]),
-  ln('M 330 285 L 470 285', 12),
-  p('wave', 'M 20 740 Q 90 710 160 740 Q 230 770 300 740 L 300 790 L 20 790 Z'),
-  rc('window', 375, 340, 50, 70, 25),
-]);
-add('hotair', '🎈 บอลลูนลอยฟ้า', 'vehicles', 'launch', 1, [
-  e('cloud-1', 130, 680, 115, 44), e('cloud-2', 680, 720, 105, 40),
-  p('balloon', 'M 400 55 C 130 55 130 410 320 530 L 480 530 C 670 410 670 55 400 55 Z'),
-  p('panel', 'M 400 55 C 290 120 285 430 335 530 L 465 530 C 515 430 510 120 400 55 Z'),
-  rc('basket', 335, 650, 130, 95, 14),
-  ln('M 320 530 L 345 650', 6), ln('M 480 530 L 455 650', 6), ln('M 400 530 L 400 650', 6),
-]);
 add('watermelon', '🍉 แตงโม', 'food', 'wiggle', 1, [
   e('plate', 400, 700, 340, 48),
   p('rind', 'M 70 330 A 330 330 0 0 0 730 330 Z'),
@@ -818,3 +271,742 @@ add('pumpkin', '🎃 ฟักทอง', 'food', 'wiggle', 1, [
   dk('M 320 410 L 370 410 L 345 460 Z'), dk('M 430 410 L 480 410 L 455 460 Z'),
   ln('M 310 540 Q 400 610 490 540', 8),
 ]);
+
+add('cat', '🐱 แมว', 'animals', 'wiggle', 2, [
+  p('tail', 'M 545 650 C 640 675 735 635 735 545 C 735 495 700 470 668 482 C 705 505 695 560 645 590 C 610 608 570 600 545 590 Z'),
+  p('body', 'M 400 340 C 285 340 218 450 218 565 C 218 685 292 745 400 745 C 508 745 582 685 582 565 C 582 450 515 340 400 340 Z'),
+  e('belly', 400, 625, 92, 108),
+  p('leg-l', 'M 336 596 C 336 562 398 562 398 596 C 398 645 398 695 398 728 C 398 765 338 765 334 728 C 332 700 332 650 336 596 Z'),
+  p('leg-r', 'M 464 596 C 464 562 402 562 402 596 C 402 645 402 695 402 728 C 402 765 462 765 466 728 C 468 700 468 650 464 596 Z'),
+  p('ear-l', 'M 222 285 C 205 210 208 150 232 98 C 285 112 345 150 375 200 Z'),
+  p('ear-r', 'M 578 285 C 595 210 592 150 568 98 C 515 112 455 150 425 200 Z'),
+  p('in-l', 'M 243 235 C 240 190 242 155 250 130 C 282 142 315 168 335 195 Z'),
+  p('in-r', 'M 557 235 C 560 190 558 155 550 130 C 518 142 485 168 465 195 Z'),
+  p('head', 'M 400 178 C 300 178 218 218 198 302 C 172 322 162 362 192 398 C 182 424 202 464 247 464 C 292 502 342 508 400 508 C 458 508 508 502 553 464 C 598 464 618 424 608 398 C 638 362 628 322 602 302 C 582 218 500 178 400 178 Z'),
+  e('muzzle', 400, 432, 78, 52),
+  ...eye(322, 355, 34), ...eye(478, 355, 34),
+  nose(400, 410, 17), ln('M 400 428 L 400 448', 6), ln('M 400 448 Q 392 470 360 468', 6), ln('M 400 448 Q 408 470 440 468', 6),
+  ln('M 235 420 L 120 400', 5), ln('M 238 440 L 120 450', 5), ln('M 565 420 L 680 400', 5), ln('M 562 440 L 680 450', 5),
+  ln('M 372 205 Q 376 238 368 262', 8), ln('M 400 200 L 400 245', 8), ln('M 428 205 Q 424 238 432 262', 8),
+  ln('M 358 735 L 358 760', 5), ln('M 374 738 L 374 762', 5), ln('M 426 738 L 426 762', 5), ln('M 442 735 L 442 760', 5),
+]);
+
+// ---------- elephant ----------
+const elephantBase = () => [
+  ln('M 668 420 Q 715 460 700 545', 9),
+  p('body', 'M 250 345 C 330 285 540 285 625 345 C 690 395 700 500 668 580 L 658 700 C 658 740 566 740 566 700 L 556 612 C 500 628 420 628 366 612 L 356 700 C 356 740 264 740 264 700 L 250 592 C 205 540 205 400 250 345 Z'),
+  p('head', 'M 212 268 C 132 248 72 308 72 398 C 72 498 142 558 222 548 C 292 538 322 468 322 388 C 322 318 282 283 212 268 Z'),
+];
+const elephantFace = () => [
+  p('ear', 'M 290 270 C 355 188 462 212 452 318 C 447 398 382 452 318 432 C 292 382 282 322 290 270 Z'),
+  p('ear-in', 'M 320 290 C 365 235 425 250 420 320 C 415 370 375 405 335 392 C 318 360 314 320 320 290 Z'),
+  p('trunk', 'M 108 448 C 48 468 22 538 42 608 C 54 658 122 666 130 620 C 135 590 102 583 102 546 C 102 518 137 503 167 478 Z'),
+  ...eye(196, 372, 26), ln('M 160 340 Q 190 322 222 332', 7), ln('M 100 548 L 128 560', 5),
+  ln('M 70 640 Q 90 652 110 640', 5),
+];
+const toes = [[290, 712], [330, 712], [592, 712], [632, 712]].map(([x, y]) => ln(`M ${x - 12} ${y} Q ${x} ${y - 10} ${x + 12} ${y}`, 5));
+add('elephant', '🐘 ช้าง', 'wild', 'bounce', 2, [
+  ...elephantBase(),
+  p('blanket', 'M 345 312 C 420 292 500 294 565 316 L 545 405 C 490 388 420 388 360 405 Z'),
+  ...elephantFace(), ...toes,
+  ln('M 380 330 L 372 380', 5), ln('M 455 322 L 455 378', 5), ln('M 520 330 L 530 378', 5),
+]);
+add('thai-elephant', '🐘 ช้างไทย', 'thai', 'bounce', 3, [
+  ...elephantBase(),
+  p('blanket', 'M 318 305 C 410 280 510 284 592 312 L 612 470 Q 595 500 576 470 Q 558 500 540 470 Q 522 500 504 470 Q 486 500 468 470 Q 450 500 432 470 Q 414 500 396 470 Q 378 500 360 470 Q 342 500 330 470 Z'),
+  p('blanket-in', 'M 350 335 C 420 318 505 320 568 340 L 580 430 C 510 415 420 415 345 432 Z'),
+  ...elephantFace(),
+  p('cap', 'M 148 292 C 148 242 190 214 238 220 C 270 224 286 254 282 292 Z'),
+  poly('cap-top', [[186, 222], [212, 140], [238, 220]]),
+  c('jewel', 214, 270, 16),
+  ln('M 345 440 Q 345 480 330 495', 5), ln('M 540 470 L 540 500', 5),
+  ...[[310, 640], [610, 640]].map(([x, y]) => p('ring' + x, `M ${x - 44} ${y} L ${x + 44} ${y} L ${x + 44} ${y + 32} L ${x - 44} ${y + 32} Z`)),
+  ...toes,
+  c('dot1', 395, 372, 17), c('dot2', 465, 368, 17), c('dot3', 530, 376, 17),
+]);
+
+// ---------- dolphin ----------
+add('dolphin', '🐬 โลมา', 'sea', 'swim', 2, [
+  p('wave-b', 'M 20 640 Q 110 600 200 640 Q 290 680 380 640 Q 470 600 560 640 Q 650 680 740 640 L 780 650 L 780 790 L 20 790 Z'),
+  p('fluke', 'M 150 300 C 120 300 70 285 45 240 C 95 230 130 245 155 270 C 175 240 215 225 265 232 C 245 265 215 295 160 305 Z'),
+  p('dorsal', 'M 410 292 C 440 240 490 215 545 212 C 525 245 525 270 545 292 Z'),
+  p('body', 'M 750 445 C 725 430 700 430 685 420 C 680 360 630 300 540 285 C 440 270 330 300 250 330 C 200 350 170 330 150 290 C 140 320 150 350 180 380 C 240 430 330 490 440 520 C 540 545 640 510 690 470 C 710 478 735 470 750 445 Z'),
+  p('belly', 'M 235 428 C 330 470 400 495 470 497 C 560 500 640 490 690 470 C 640 520 540 545 440 520 C 330 492 260 450 235 428 Z'),
+  p('flipper', 'M 470 485 C 440 535 400 570 345 590 C 380 530 410 500 440 480 Z'),
+  ...eye(610, 388, 25), ln('M 748 450 C 715 470 690 462 672 448', 6),
+  c('drop-1', 130, 150, 36), c('drop-2', 250, 100, 30), c('drop-3', 690, 180, 34), c('drop-4', 600, 100, 28),
+  ln('M 130 640 Q 150 600 175 612', 6),
+]);
+// ---------- fire truck ----------
+add('firetruck', '🚒 รถดับเพลิง', 'vehicles', 'drive', 3, [
+  p('ground', 'M 0 700 L 800 700 L 800 790 L 0 790 Z'),
+  rc('body', 60, 360, 450, 200, 26),
+  rc('ladder', 90, 285, 400, 58, 12),
+  ln('M 135 285 L 135 343', 7), ln('M 185 285 L 185 343', 7), ln('M 235 285 L 235 343', 7), ln('M 285 285 L 285 343', 7), ln('M 335 285 L 335 343', 7), ln('M 385 285 L 385 343', 7), ln('M 435 285 L 435 343', 7),
+  p('cab', 'M 505 335 L 600 335 C 650 335 672 375 692 425 L 728 452 C 745 462 752 478 752 498 L 752 562 L 505 562 Z'),
+  p('win', 'M 535 365 L 595 365 C 625 365 640 388 655 428 L 535 428 Z'),
+  rc('siren', 535, 292, 92, 40, 16),
+  rc('door-1', 95, 395, 100, 120, 12), rc('door-2', 215, 395, 100, 120, 12), c('reel', 400, 455, 58),
+  ringd(400, 455, 26),
+  rc('bumper', 725, 520, 50, 42, 14), c('lamp', 728, 478, 24),
+  ln('M 60 540 L 510 540', 9),
+  c('wheel-1', 215, 585, 82), ringd(215, 585, 34), dot(215, 585, 9),
+  c('wheel-2', 610, 585, 82), ringd(610, 585, 34), dot(610, 585, 9),
+  dot(125, 455, 7), dot(245, 455, 7),
+]);
+// ---------- castle ----------
+// Rectangle with battlement teeth on top. x,y = top-left of the wall line, teeth rise above y.
+function battle(id, x, y, w, h, n, th) {
+  const tw = w / (2 * n + 1); let d = `M ${x} ${y + h} L ${x} ${y - th}`;
+  for (let i = 0; i < n + 1; i++) { const a = x + i * 2 * tw; d += ` L ${a + tw} ${y - th} L ${a + tw} ${y} L ${a + 2 * tw} ${y} L ${a + 2 * tw} ${y - th}`; }
+  return p(id, d.replace(/ L \S+ \S+ L \S+ \S+$/, '') + ` L ${x + w} ${y - th} L ${x + w} ${y + h} Z`);
+}
+add('castle', '🏰 ปราสาท', 'misc', 'glow', 3, [
+  c('sun', 690, 110, 60), e('cloud-1', 285, 110, 85, 34), e('cloud-2', 570, 215, 70, 28),
+  p('hill', 'M 0 700 C 150 660 300 680 400 700 C 520 720 650 650 800 690 L 800 790 L 0 790 Z'),
+  battle('wall', 60, 500, 680, 205, 11, 36),
+  battle('tower-l', 70, 340, 150, 365, 3, 40), battle('tower-r', 580, 340, 150, 365, 3, 40),
+  battle('keep', 290, 270, 220, 435, 3, 40),
+  poly('roof-l', [[110, 300], [145, 180], [180, 300]]), poly('roof-r', [[620, 300], [655, 180], [690, 300]]),
+  poly('roof-k', [[340, 230], [400, 90], [460, 230]]),
+  p('gate', 'M 340 705 L 340 585 C 340 520 460 520 460 585 L 460 705 Z'),
+  rc('win-k', 372, 345, 56, 90, 28), rc('win-l', 120, 410, 50, 80, 25), rc('win-r', 630, 410, 50, 80, 25),
+  poly('flag-l', [[145, 180], [215, 160], [145, 140]]), poly('flag-r', [[655, 180], [725, 160], [655, 140]]), poly('flag-k', [[400, 90], [480, 66], [400, 42]]),
+  ln('M 145 180 L 145 130', 6), ln('M 655 180 L 655 130', 6), ln('M 400 90 L 400 35', 6),
+  p('bridge', 'M 335 705 L 465 705 L 520 780 L 280 780 Z'),
+  ln('M 345 705 L 300 770', 5), ln('M 455 705 L 500 770', 5),
+  ln('M 330 560 L 470 560', 5), ln('M 400 520 L 400 560', 5),
+  ln('M 100 560 L 150 560', 5), ln('M 235 600 L 285 600', 5), ln('M 520 600 L 570 600', 5), ln('M 650 560 L 700 560', 5),
+]);
+
+// ===== Q1: cute animals =====
+const legsFront = (xl, xr, y0, y1) => [
+  p('leg-l', `M ${xl} ${y0 + 30} C ${xl} ${y0 - 4} ${xl + 62} ${y0 - 4} ${xl + 62} ${y0 + 30} C ${xl + 62} ${y0 + 80} ${xl + 62} ${y1 - 36} ${xl + 62} ${y1 - 32} C ${xl + 62} ${y1 + 4} ${xl + 2} ${y1 + 4} ${xl - 2} ${y1 - 32} C ${xl - 4} ${y1 - 60} ${xl - 4} ${y0 + 80} ${xl} ${y0 + 30} Z`),
+  p('leg-r', `M ${xr} ${y0 + 30} C ${xr} ${y0 - 4} ${xr + 62} ${y0 - 4} ${xr + 62} ${y0 + 30} C ${xr + 66} ${y0 + 80} ${xr + 66} ${y1 - 60} ${xr + 64} ${y1 - 32} C ${xr + 60} ${y1 + 4} ${xr} ${y1 + 4} ${xr} ${y1 - 32} C ${xr} ${y1 - 36} ${xr} ${y0 + 80} ${xr} ${y0 + 30} Z`),
+];
+add('dog', '🐶 หมา', 'animals', 'wiggle', 3, [
+  p('tail', 'M 565 665 C 645 665 705 625 705 560 C 705 530 672 525 662 548 C 668 588 622 618 565 622 Z'),
+  p('body', 'M 400 352 C 290 352 225 452 225 562 C 225 682 295 746 400 746 C 505 746 575 682 575 562 C 575 452 510 352 400 352 Z'),
+  e('belly', 400, 632, 88, 100),
+  ...legsFront(338, 400, 590, 735),
+  p('head', 'M 400 172 C 295 172 225 237 225 332 C 225 432 305 497 400 497 C 495 497 575 432 575 332 C 575 237 505 172 400 172 Z'),
+  p('ear-l', 'M 240 232 C 152 214 104 300 120 402 C 130 472 196 492 236 456 C 252 400 254 322 264 252 Z'),
+  p('ear-r', 'M 560 232 C 648 214 696 300 680 402 C 670 472 604 492 564 456 C 548 400 546 322 536 252 Z'),
+  p('patch', 'M 296 300 C 326 268 384 282 388 330 C 391 376 342 396 306 376 C 274 356 278 322 296 300 Z'),
+  p('muzzle', 'M 400 372 C 335 372 305 405 310 445 C 318 490 360 510 400 510 C 440 510 482 490 490 445 C 495 405 465 372 400 372 Z'),
+  p('tongue', 'M 376 470 L 424 470 L 424 512 C 424 540 376 540 376 512 Z'),
+  p('collar', 'M 285 517 Q 400 577 515 517 L 526 552 Q 400 617 274 552 Z'), c('tag', 400, 600, 26),
+  ...eye(334, 322, 27), ...eye(466, 322, 27),
+  ed(400, 405, 32, 22), ln('M 400 422 L 400 452', 6), ln('M 400 452 Q 380 478 352 466', 6), ln('M 400 452 Q 420 478 448 466', 6),
+  ln('M 300 262 Q 320 250 345 258', 6), ln('M 500 262 Q 480 250 455 258', 6),
+]);
+add('pig', '🐷 หมู', 'animals', 'wiggle', 2, [
+  p('mud', 'M 40 730 C 150 700 300 745 430 722 C 560 700 680 745 760 725 L 760 785 L 40 785 Z'),
+  ln('M 660 410 C 715 385 725 450 690 452 C 665 452 668 425 690 430', 8),
+  rc('leg-1', 250, 560, 74, 150, 32), rc('leg-2', 338, 568, 74, 142, 32), rc('leg-3', 500, 568, 74, 142, 32), rc('leg-4', 590, 560, 74, 150, 32),
+  p('body', 'M 250 360 C 330 300 560 300 640 360 C 705 410 700 520 640 575 C 560 610 330 610 250 575 C 190 520 190 410 250 360 Z'),
+  e('spot', 500, 395, 70, 42),
+  p('head', 'M 225 295 C 150 285 95 345 100 425 C 105 505 160 555 235 548 C 305 540 340 475 335 400 C 330 335 290 302 225 295 Z'),
+  p('ear', 'M 240 300 C 252 232 305 205 350 228 C 342 282 308 328 258 340 Z'),
+  e('snout', 118, 460, 62, 52), ed(98, 458, 9, 15), ed(138, 458, 9, 15),
+  c('cheek', 215, 470, 32),
+  ...eye(222, 392, 24), ln('M 190 350 Q 220 335 250 345', 6), ln('M 150 520 Q 185 540 220 520', 6),
+]);
+add('duck', '🦆 เป็ด', 'animals', 'waddle', 2, [
+  p('water', 'M 20 640 Q 110 605 200 640 Q 290 675 380 640 Q 470 605 560 640 Q 650 675 740 640 L 780 650 L 780 790 L 20 790 Z'),
+  p('tail', 'M 190 500 C 150 470 110 410 100 360 C 160 370 215 405 245 450 Z'),
+  e('body', 380, 520, 250, 160),
+  p('wing', 'M 295 480 C 315 415 415 410 470 452 C 485 525 425 580 345 572 C 300 548 285 508 295 480 Z'),
+  p('head', 'M 440 330 C 440 250 500 195 575 200 C 650 205 700 260 695 330 C 690 400 640 440 575 440 C 505 440 440 400 440 330 Z'),
+  p('beak', 'M 670 330 C 720 322 765 340 775 362 C 760 388 715 400 668 385 Z'),
+  ...eye(595, 300, 24), ln('M 700 372 Q 722 378 745 366', 5),
+  c('bub-1', 130, 190, 34), c('bub-2', 80, 270, 26), p('lily', 'M 560 680 C 580 650 650 650 670 680 C 650 705 580 705 560 680 Z'),
+]);
+add('rabbit', '🐰 กระต่าย', 'animals', 'hop', 3, [
+  c('tail', 590, 690, 40),
+  p('ear-l', 'M 322 220 C 270 150 262 62 300 32 C 345 6 388 92 388 220 Z'),
+  p('ear-r', 'M 478 220 C 530 150 538 62 500 32 C 455 6 412 92 412 220 Z'),
+  p('in-l', 'M 326 196 C 296 146 294 90 314 66 C 342 54 362 112 362 200 Z'),
+  p('in-r', 'M 474 196 C 504 146 506 90 486 66 C 458 54 438 112 438 200 Z'),
+  p('body', 'M 400 440 C 290 440 235 530 235 620 C 235 705 300 752 400 752 C 500 752 565 705 565 620 C 565 530 510 440 400 440 Z'),
+  e('belly', 400, 645, 90, 92),
+  p('arm-l', 'M 337 500 C 322 560 326 610 346 636 C 366 642 382 620 382 590 C 382 550 372 520 366 500 Z'),
+  p('arm-r', 'M 463 500 C 478 560 474 610 454 636 C 434 642 418 620 418 590 C 418 550 428 520 434 500 Z'),
+  p('head', 'M 400 168 C 285 168 215 238 218 322 C 222 405 295 468 400 468 C 505 468 578 405 582 322 C 585 238 515 168 400 168 Z'),
+  e('foot-l', 312, 742, 72, 32), e('foot-r', 488, 742, 72, 32),
+  e('muzzle', 400, 392, 62, 44),
+  ...eye(330, 322, 28), ...eye(470, 322, 28),
+  dk('M 384 380 Q 400 370 416 380 Q 410 398 400 402 Q 390 398 384 380 Z'), ln('M 400 400 L 400 418', 5), ln('M 400 418 Q 382 438 362 424', 5), ln('M 400 418 Q 418 438 438 424', 5),
+  rc('teeth', 382, 428, 36, 40, 8),
+  ln('M 245 390 L 160 380', 5), ln('M 248 410 L 160 420', 5), ln('M 555 390 L 640 380', 5), ln('M 552 410 L 640 420', 5),
+]);
+add('cow', '🐮 วัว', 'animals', 'wiggle', 3, [
+  p('neck', 'M 292 500 C 272 600 256 700 250 790 L 550 790 C 544 700 528 600 508 500 Z'),
+  p('spot-n', 'M 300 640 C 280 610 330 590 360 610 C 390 640 350 690 310 680 Z'),
+  p('horn-l', 'M 282 232 C 242 202 226 152 240 106 C 286 126 322 172 332 226 Z'),
+  p('horn-r', 'M 518 232 C 558 202 574 152 560 106 C 514 126 478 172 468 226 Z'),
+  p('ear-l', 'M 244 300 C 172 268 108 298 98 350 C 148 386 214 376 258 346 Z'),
+  p('ear-r', 'M 556 300 C 628 268 692 298 702 350 C 652 386 586 376 542 346 Z'),
+  p('head', 'M 400 190 C 290 190 235 270 245 360 C 252 420 270 470 292 502 C 332 548 468 548 508 502 C 530 470 548 420 555 360 C 565 270 510 190 400 190 Z'),
+  p('spot-h', 'M 400 196 C 336 202 326 262 380 274 C 432 284 474 242 452 204 Z'),
+  p('muzzle', 'M 400 410 C 320 410 272 450 276 500 C 282 548 340 570 400 570 C 460 570 518 548 524 500 C 528 450 480 410 400 410 Z'),
+  p('collar', 'M 270 560 Q 400 622 530 560 L 542 600 Q 400 664 258 600 Z'), c('bell', 400, 650, 32),
+  ...eye(330, 330, 26), ...eye(470, 330, 26),
+  ed(350, 495, 17, 24), ed(450, 495, 17, 24), ln('M 345 535 Q 400 560 455 535', 6),
+]);
+add('frog', '🐸 กบ', 'animals', 'hop', 2, [
+  p('pad', 'M 40 740 C 120 700 280 700 400 720 C 520 700 680 700 760 740 C 700 785 100 785 40 740 Z'),
+  p('foot-l', 'M 215 700 C 140 688 92 718 104 750 C 150 768 245 764 290 738 Z'),
+  p('foot-r', 'M 585 700 C 660 688 708 718 696 750 C 650 768 555 764 510 738 Z'),
+  p('body', 'M 400 330 C 270 330 200 440 200 560 C 200 680 290 742 400 742 C 510 742 600 680 600 560 C 600 440 530 330 400 330 Z'),
+  e('belly', 400, 615, 120, 112),
+  p('arm-l', 'M 255 540 C 215 600 215 655 250 690 C 285 698 305 670 300 640 C 292 600 285 570 285 545 Z'),
+  p('arm-r', 'M 545 540 C 585 600 585 655 550 690 C 515 698 495 670 500 640 C 508 600 515 570 515 545 Z'),
+  p('head', 'M 400 270 C 270 270 190 340 190 420 C 190 480 270 520 400 520 C 530 520 610 480 610 420 C 610 340 530 270 400 270 Z'),
+  c('eye-l', 290, 280, 68), c('eye-r', 510, 280, 68),
+  ...eye(290, 285, 36), ...eye(510, 285, 36),
+  ln('M 235 435 Q 400 545 565 435', 7), dot(372, 380, 7), dot(428, 380, 7),
+  c('cheek-l', 235, 470, 22), c('cheek-r', 565, 470, 22),
+]);
+add('owl', '🦉 นกฮูก', 'animals', 'wiggle', 3, [
+  rc('branch', 40, 700, 720, 58, 29),
+  p('tuft-l', 'M 238 230 L 205 100 L 335 170 Z'), p('tuft-r', 'M 562 230 L 595 100 L 465 170 Z'),
+  p('body', 'M 400 150 C 268 150 205 262 205 400 C 205 560 285 705 400 705 C 515 705 595 560 595 400 C 595 262 532 150 400 150 Z'),
+  p('wing-l', 'M 212 380 C 120 440 125 620 205 700 C 262 625 275 495 252 405 Z'),
+  p('wing-r', 'M 588 380 C 680 440 675 620 595 700 C 538 625 525 495 548 405 Z'),
+  p('belly', 'M 400 470 C 320 470 285 540 292 610 C 300 675 350 700 400 700 C 450 700 500 675 508 610 C 515 540 480 470 400 470 Z'),
+  c('face-l', 322, 330, 88), c('face-r', 478, 330, 88),
+  ...eye(322, 330, 54), ...eye(478, 330, 54),
+  p('beak', 'M 368 392 C 380 384 420 384 432 392 L 400 460 Z'),
+  ln('M 345 520 Q 365 540 385 520', 5), ln('M 415 520 Q 435 540 455 520', 5), ln('M 365 570 Q 385 590 405 570', 5), ln('M 395 570 Q 415 590 435 570', 5), ln('M 345 620 Q 365 640 385 620', 5), ln('M 415 620 Q 435 640 455 620', 5),
+  p('foot-l', 'M 330 700 C 310 722 318 748 346 752 C 372 748 372 722 366 700 Z'), p('foot-r', 'M 470 700 C 490 722 482 748 454 752 C 428 748 428 722 434 700 Z'),
+]);
+
+// ===== Q2: wild + more cute animals =====
+add('lion', '🦁 สิงโต', 'wild', 'wiggle', 2, [
+  c('ear-l', 238, 190, 56), c('ear-r', 562, 190, 56),
+  scallop('mane', 400, 420, 255, 16, 26),
+  c('in-l', 238, 196, 28), c('in-r', 562, 196, 28),
+  p('face', 'M 400 235 C 290 235 232 320 238 410 C 244 500 310 565 400 565 C 490 565 556 500 562 410 C 568 320 510 235 400 235 Z'),
+  p('muzzle', 'M 400 410 C 330 410 295 450 300 495 C 308 540 360 560 400 560 C 440 560 492 540 500 495 C 505 450 470 410 400 410 Z'),
+  ...eye(335, 375, 27), ...eye(465, 375, 27),
+  dk('M 372 435 Q 400 420 428 435 Q 418 465 400 472 Q 382 465 372 435 Z'), ln('M 400 472 L 400 495', 6), ln('M 400 495 Q 380 520 352 508', 6), ln('M 400 495 Q 420 520 448 508', 6),
+  ln('M 295 340 Q 320 325 345 335', 6), ln('M 505 340 Q 480 325 455 335', 6),
+  dot(350, 470, 5), dot(335, 488, 5), dot(450, 470, 5), dot(465, 488, 5),
+]);
+add('monkey', '🐵 ลิง', 'wild', 'bounce', 3, [
+  p('tail', 'M 560 690 C 690 700 760 620 730 520 C 720 480 690 470 675 490 C 700 540 690 600 620 630 Z'),
+  p('body', 'M 400 480 C 290 480 235 560 235 650 C 235 725 300 765 400 765 C 500 765 565 725 565 650 C 565 560 510 480 400 480 Z'),
+  e('belly', 400, 660, 95, 85),
+  p('arm-l', 'M 255 540 C 215 600 225 670 270 700 C 295 705 310 685 305 660 C 300 620 290 580 295 545 Z'),
+  p('arm-r', 'M 545 540 C 585 600 575 670 530 700 C 505 705 490 685 495 660 C 500 620 510 580 505 545 Z'),
+  c('ear-l', 185, 345, 68), c('ear-r', 615, 345, 68), c('ein-l', 185, 345, 38), c('ein-r', 615, 345, 38),
+  c('head', 400, 335, 195),
+  p('face', 'M 400 290 C 335 245 250 285 255 355 C 258 420 305 480 400 515 C 495 480 542 420 545 355 C 550 285 465 245 400 290 Z'),
+  ...eye(345, 355, 26), ...eye(455, 355, 26),
+  e('muzzle', 400, 440, 70, 48), dot(382, 428, 6), dot(418, 428, 6), ln('M 345 470 Q 400 510 455 470', 6),
+  p('banana', 'M 270 690 C 260 730 300 770 360 765 C 420 760 470 720 470 690 C 430 725 340 740 290 680 Z'),
+]);
+add('bear', '🐻 หมี', 'wild', 'wiggle', 3, [
+  p('body', 'M 400 350 C 285 350 220 450 220 565 C 220 685 295 748 400 748 C 505 748 580 685 580 565 C 580 450 515 350 400 350 Z'),
+  e('belly', 400, 625, 100, 105),
+  p('arm-l', 'M 262 455 C 205 505 200 590 250 640 C 280 660 315 640 312 600 C 308 545 290 495 292 458 Z'),
+  p('arm-r', 'M 538 455 C 595 505 600 590 550 640 C 520 660 485 640 488 600 C 492 545 510 495 508 458 Z'),
+  e('foot-l', 318, 740, 75, 36), e('foot-r', 482, 740, 75, 36),
+  c('ear-l', 250, 190, 70), c('ear-r', 550, 190, 70), c('in-l', 250, 195, 36), c('in-r', 550, 195, 36),
+  c('head', 400, 335, 205),
+  e('muzzle', 400, 405, 110, 85),
+  ...eye(325, 305, 26), ...eye(475, 305, 26),
+  ed(400, 372, 38, 26), ln('M 400 398 L 400 430', 6), ln('M 400 430 Q 372 458 345 440', 6), ln('M 400 430 Q 428 458 455 440', 6),
+  ln('M 300 262 Q 322 250 348 258', 6), ln('M 500 262 Q 478 250 452 258', 6),
+  ln('M 285 692 L 285 712', 5), ln('M 318 698 L 318 718', 5), ln('M 482 698 L 482 718', 5), ln('M 515 692 L 515 712', 5),
+]);
+add('penguin', '🐧 เพนกวิน', 'animals', 'waddle', 2, [
+  p('ice', 'M 60 740 C 160 690 640 690 740 740 C 700 790 100 790 60 740 Z'),
+  p('body', 'M 400 120 C 270 120 212 250 212 400 C 212 570 275 715 400 715 C 525 715 588 570 588 400 C 588 250 530 120 400 120 Z'),
+  p('belly', 'M 400 250 C 310 250 268 340 270 440 C 272 570 320 690 400 690 C 480 690 528 570 530 440 C 532 340 490 250 400 250 Z'),
+  p('wing-l', 'M 222 330 C 130 420 130 560 190 640 C 240 610 262 520 255 400 Z'),
+  p('wing-r', 'M 578 330 C 670 420 670 560 610 640 C 560 610 538 520 545 400 Z'),
+  p('foot-l', 'M 300 705 C 255 705 235 735 255 752 C 290 758 345 750 360 722 Z'), p('foot-r', 'M 500 705 C 545 705 565 735 545 752 C 510 758 455 750 440 722 Z'),
+  p('beak', 'M 360 285 C 380 270 420 270 440 285 C 430 320 410 335 400 335 C 390 335 370 320 360 285 Z'),
+  ...eye(335, 235, 24), ...eye(465, 235, 24),
+  c('cheek-l', 300, 300, 26), c('cheek-r', 500, 300, 26),
+]);
+add('chick', '🐥 ลูกเจี๊ยบ', 'animals', 'hop', 2, [
+  p('grass', 'M 0 740 C 100 710 200 740 300 725 C 420 705 520 745 640 725 C 700 715 760 730 800 740 L 800 790 L 0 790 Z'),
+  c('sun', 680, 120, 70),
+  p('body', 'M 400 210 C 270 210 200 310 205 430 C 210 560 290 650 400 650 C 510 650 590 560 595 430 C 600 310 530 210 400 210 Z'),
+  p('wing-l', 'M 218 400 C 150 440 150 520 205 565 C 250 540 262 480 258 420 Z'), p('wing-r', 'M 582 400 C 650 440 650 520 595 565 C 550 540 538 480 542 420 Z'),
+  p('shell', 'M 195 570 L 250 520 L 310 585 L 360 520 L 410 585 L 460 520 L 515 585 L 555 520 L 610 570 C 640 700 540 765 400 765 C 260 765 165 700 195 570 Z'),
+  p('beak', 'M 365 360 C 385 345 415 345 435 360 C 425 395 410 410 400 410 C 390 410 375 395 365 360 Z'),
+  ...eye(335, 325, 26), ...eye(465, 325, 26), c('cheek-l', 290, 390, 30), c('cheek-r', 510, 390, 30),
+  ln('M 400 210 Q 380 150 420 120', 9), ln('M 400 210 Q 430 160 470 160', 9),
+]);
+add('butterfly', '🦋 ผีเสื้อ', 'animals', 'fly', 3, [
+  p('wing-ul', 'M 392 380 C 340 210 160 130 100 240 C 60 340 200 430 392 425 Z'),
+  p('wing-ur', 'M 408 380 C 460 210 640 130 700 240 C 740 340 600 430 408 425 Z'),
+  p('wing-ll', 'M 392 420 C 250 440 160 540 220 625 C 280 695 375 610 392 500 Z'),
+  p('wing-lr', 'M 408 420 C 550 440 640 540 580 625 C 520 695 425 610 408 500 Z'),
+  c('s-ul', 230, 290, 55), c('s-ur', 570, 290, 55), c('s-ll', 290, 560, 38), c('s-lr', 510, 560, 38),
+  e('body', 400, 440, 30, 140),
+  c('head', 400, 285, 38),
+  ln('M 388 258 Q 350 200 310 190', 6), ln('M 412 258 Q 450 200 490 190', 6), dot(310, 190, 8), dot(490, 190, 8),
+  dot(390, 280, 6), dot(410, 280, 6),
+]);
+add('bee', '🐝 ผึ้ง', 'animals', 'fly', 3, [
+  p('wing-1', 'M 310 330 C 240 200 300 90 380 120 C 410 190 400 270 370 340 Z'),
+  p('wing-2', 'M 410 330 C 440 210 540 130 600 170 C 600 260 500 320 430 345 Z'),
+  poly('sting', [[120, 480], [30, 505], [120, 530]]),
+  e('body', 330, 480, 220, 160),
+  band('stripe-1', 330, 480, 220, 160, 240, 310), band('stripe-2', 330, 480, 220, 160, 380, 450),
+  c('head', 590, 470, 105),
+  ...eye(615, 450, 24), c('cheek', 570, 510, 18), ln('M 600 505 Q 625 525 650 505', 6),
+  ln('M 555 372 Q 535 320 500 310', 6), ln('M 625 372 Q 645 320 685 322', 6), dot(500, 310, 9), dot(685, 322, 9),
+  ln('M 150 480 L 210 480', 5),
+]);
+add('turtle', '🐢 เต่า', 'sea', 'bounce', 3, [
+  p('leg-1', 'M 300 560 C 280 610 285 660 330 672 C 375 676 385 640 380 590 Z'), p('leg-2', 'M 560 575 C 545 620 555 665 600 672 C 645 672 650 630 635 585 Z'),
+  p('tail', 'M 735 540 C 765 550 790 575 775 600 C 755 600 735 590 715 575 Z'),
+  p('head', 'M 215 495 C 150 495 100 450 100 395 C 100 340 150 310 195 322 C 235 335 250 380 245 425 C 243 455 235 480 225 498 Z'),
+  p('shell', 'M 185 555 C 185 310 315 215 465 215 C 615 215 745 310 745 555 Z'),
+  poly('hex-c', [[465, 270], [545, 310], [545, 400], [465, 440], [385, 400], [385, 310]]),
+  poly('hex-l', [[330, 380], [380, 405], [380, 480], [330, 505], [280, 480], [280, 405]]),
+  poly('hex-r', [[600, 380], [650, 405], [650, 480], [600, 505], [550, 480], [550, 405]]),
+  rc('rim', 175, 545, 580, 72, 36),
+  ...eye(158, 372, 20), ln('M 118 420 Q 145 438 175 425', 5),
+]);
+add('dino', '🦕 ไดโนเสาร์คอยาว', 'wild', 'bounce', 3, [
+  p('tail', 'M 620 470 C 700 480 760 450 790 400 C 785 500 720 600 625 600 Z'),
+  poly('plate-1', [[318, 392], [352, 322], [392, 380]]), poly('plate-2', [[410, 372], [452, 302], [492, 374]]), poly('plate-3', [[500, 380], [545, 318], [580, 395]]),
+  p('body', 'M 240 480 C 250 395 420 365 520 395 C 590 415 625 465 630 510 L 640 700 C 640 735 560 735 560 700 L 555 612 C 500 626 420 626 365 612 L 360 700 C 360 735 280 735 280 700 L 262 560 C 245 540 238 510 240 480 Z'),
+  p('neck', 'M 250 470 C 200 380 180 260 215 170 L 295 195 C 275 270 295 360 340 420 Z'),
+  p('head', 'M 190 178 C 165 120 198 90 248 98 C 295 106 325 145 302 192 C 280 218 215 228 190 178 Z'),
+  c('spot-1', 450, 480, 40), c('spot-2', 540, 520, 34),
+  ...eye(246, 148, 17), ln('M 215 195 Q 245 212 285 192', 5),
+  ln('M 300 712 Q 320 702 340 712', 5), ln('M 580 712 Q 600 702 620 712', 5),
+]);
+add('whale', '🐳 วาฬ', 'sea', 'swim', 2, [
+  p('sea', 'M 20 700 Q 120 665 220 700 Q 320 735 420 700 Q 520 665 620 700 Q 700 725 780 700 L 780 790 L 20 790 Z'),
+  p('tail', 'M 640 450 C 690 395 740 365 790 375 C 775 420 765 445 735 470 C 765 490 790 520 795 560 C 740 555 700 525 670 495 Z'),
+  p('body', 'M 90 480 C 90 340 215 270 370 275 C 500 280 600 350 660 450 C 640 520 590 620 450 650 C 300 680 90 640 90 480 Z'),
+  p('belly', 'M 120 540 C 200 600 330 640 450 640 C 560 620 620 570 650 500 C 560 540 440 560 330 555 C 240 552 170 545 120 540 Z'),
+  p('fin', 'M 330 520 C 350 580 400 610 445 600 C 435 560 405 525 370 505 Z'),
+  ...eye(185, 440, 24), ln('M 100 520 Q 160 560 235 540', 6),
+  ln('M 330 275 L 330 195', 12), drop('spray-1', 255, 135), drop('spray-2', 330, 85), drop('spray-3', 405, 135),
+]);
+
+// ===== Q3: sea life + unicorn =====
+add('goldfish', '🐠 ปลาทอง', 'sea', 'swim', 2, [
+  p('water', 'M 20 700 Q 120 665 220 700 Q 320 735 420 700 Q 520 665 620 700 Q 700 725 780 700 L 780 790 L 20 790 Z'),
+  p('tail', 'M 560 410 C 620 330 700 290 760 300 C 780 350 760 400 720 430 C 770 460 790 520 770 570 C 700 570 620 500 560 440 Z'),
+  p('fin-top', 'M 320 250 C 350 150 470 120 560 190 C 500 200 440 225 400 265 Z'),
+  p('body', 'M 120 420 C 120 300 240 240 380 250 C 520 260 600 340 600 420 C 600 510 500 590 360 590 C 220 590 120 520 120 420 Z'),
+  p('belly', 'M 190 500 C 260 560 380 585 480 550 C 540 525 575 480 590 440 C 520 500 400 520 300 505 C 250 498 215 495 190 500 Z'),
+  p('fin-side', 'M 330 410 C 400 380 480 410 500 470 C 440 495 370 470 330 410 Z'),
+  p('fin-bot', 'M 330 580 C 340 640 400 665 450 650 C 430 620 415 595 405 580 Z'),
+  ...eye(215, 380, 34), ln('M 140 450 Q 165 470 195 462', 6),
+  p('gill', 'M 275 330 C 245 380 245 440 275 490 C 300 440 300 380 275 330 Z'),
+  c('bub-1', 90, 230, 40), c('bub-2', 160, 140, 30), c('bub-3', 650, 140, 34),
+]);
+add('fish', '🐟 ปลา', 'sea', 'swim', 3, [
+  p('water', 'M 20 710 Q 120 675 220 710 Q 320 745 420 710 Q 520 675 620 710 Q 700 735 780 710 L 780 790 L 20 790 Z'),
+  p('tail', 'M 580 400 C 650 320 720 300 750 235 C 780 350 780 450 750 565 C 720 490 650 480 580 410 Z'),
+  p('fin-top', 'M 270 275 C 290 175 430 140 520 215 C 450 218 390 245 340 290 Z'),
+  p('fin-bot', 'M 330 545 C 340 615 410 655 470 645 C 450 605 430 575 410 545 Z'),
+  e('body', 380, 410, 225, 160),
+  band('stripe-1', 380, 410, 225, 160, 330, 385), band('stripe-2', 380, 410, 225, 160, 435, 490),
+  p('gill', 'M 250 335 C 220 385 220 445 250 495 C 285 445 285 385 250 335 Z'),
+  ...eye(190, 370, 28), ln('M 160 450 Q 185 468 215 460', 6),
+  c('bub-1', 130, 220, 40), c('bub-2', 85, 140, 28),
+  ...[[420, 350], [480, 390], [430, 440], [500, 450]].map(([x, y], i) => c('scale' + i, x + 40, y, 20)),
+]);
+add('octopus', '🐙 หมึกยักษ์', 'sea', 'sway', 3, [
+  p('t1', 'M 235 470 C 170 520 150 600 100 625 C 55 648 40 600 75 585 C 105 570 115 525 165 478 Z'),
+  p('t2', 'M 300 480 C 260 560 270 650 235 700 C 205 745 160 715 185 680 C 215 640 205 590 250 500 Z'),
+  p('t3', 'M 365 485 C 350 570 365 660 345 730 C 335 765 290 755 300 715 C 320 650 305 590 325 495 Z'),
+  p('t4', 'M 435 485 C 450 570 435 660 455 730 C 465 765 510 755 500 715 C 480 650 495 590 475 495 Z'),
+  p('t5', 'M 500 480 C 540 560 530 650 565 700 C 595 745 640 715 615 680 C 585 640 595 590 550 500 Z'),
+  p('t6', 'M 565 470 C 630 520 650 600 700 625 C 745 648 760 600 725 585 C 695 570 685 525 635 478 Z'),
+  p('head', 'M 400 110 C 235 110 150 235 160 360 C 165 435 205 485 250 495 L 550 495 C 595 485 635 435 640 360 C 650 235 565 110 400 110 Z'),
+  ...eye(320, 330, 44), ...eye(480, 330, 44),
+  ln('M 345 420 Q 400 470 455 420', 7), c('cheek-l', 235, 410, 30), c('cheek-r', 565, 410, 30),
+  c('spot-1', 400, 190, 28), c('spot-2', 330, 215, 22), c('spot-3', 470, 215, 22),
+]);
+add('crab', '🦀 ปู', 'sea', 'waddle', 3, [
+  p('sand', 'M 0 745 C 150 705 300 750 440 725 C 580 700 700 750 800 730 L 800 790 L 0 790 Z'),
+  ln('M 210 560 L 110 620 L 90 700', 16), ln('M 250 610 L 175 690 L 165 745', 16), ln('M 590 560 L 690 620 L 710 700', 16), ln('M 550 610 L 625 690 L 635 745', 16),
+  ln('M 265 450 Q 170 420 150 330', 24), ln('M 535 450 Q 630 420 650 330', 24),
+  p('claw-l', 'M 60 300 C 20 220 70 130 140 150 C 175 160 175 200 160 225 C 205 205 245 230 240 275 C 232 340 130 360 60 300 Z'),
+  p('claw-r', 'M 740 300 C 780 220 730 130 660 150 C 625 160 625 200 640 225 C 595 205 555 230 560 275 C 568 340 670 360 740 300 Z'),
+  p('body', 'M 400 330 C 255 330 165 410 170 500 C 175 585 270 640 400 640 C 530 640 625 585 630 500 C 635 410 545 330 400 330 Z'),
+  e('belly', 400, 560, 150, 55),
+  ln('M 350 340 L 345 290', 9), ln('M 450 340 L 455 290', 9),
+  c('eye-l', 342, 262, 40), c('eye-r', 458, 262, 40), dot(342, 266, 17), dot(458, 266, 17), hl(350, 255, 7), hl(466, 255, 7),
+  ln('M 330 470 Q 400 530 470 470', 7), c('cheek-l', 255, 480, 24), c('cheek-r', 545, 480, 24),
+]);
+add('jellyfish', '🪼 แมงกะพรุน', 'sea', 'swim', 2, [
+  ln('M 270 420 Q 230 500 280 570 Q 320 640 270 730', 14), ln('M 350 430 Q 320 520 360 590 Q 395 660 350 760', 14),
+  ln('M 450 430 Q 480 520 440 590 Q 405 660 450 760', 14), ln('M 530 420 Q 570 500 520 570 Q 480 640 530 730', 14),
+  p('dome', 'M 140 430 C 140 110 660 110 660 430 Q 595 480 530 430 Q 465 485 400 430 Q 335 485 270 430 Q 205 480 140 430 Z'),
+  c('spot-1', 280, 250, 52), c('spot-2', 520, 250, 52), c('spot-3', 400, 185, 42),
+  ...eye(335, 340, 28), ...eye(465, 340, 28), ln('M 365 395 Q 400 420 435 395', 6),
+  c('bub-1', 100, 600, 34), c('bub-2', 700, 640, 28),
+]);
+add('unicorn', '🦄 ยูนิคอร์น', 'animals', 'glow', 3, [
+  p('mane-l', 'M 260 230 C 170 250 120 350 145 470 C 160 540 130 600 90 650 C 190 650 260 600 285 520 C 300 430 285 330 260 230 Z'),
+  p('mane-r', 'M 540 230 C 630 250 680 350 655 470 C 640 540 670 600 710 650 C 610 650 540 600 515 520 C 500 430 515 330 540 230 Z'),
+  p('neck', 'M 285 480 C 270 590 255 700 250 790 L 550 790 C 545 700 530 590 515 480 Z'),
+  p('ear-l', 'M 298 210 L 270 110 C 310 120 345 150 358 195 Z'), p('ear-r', 'M 502 210 L 530 110 C 490 120 455 150 442 195 Z'),
+  p('head', 'M 400 175 C 300 175 250 250 255 340 C 258 420 285 480 310 515 C 335 560 465 560 490 515 C 515 480 542 420 545 340 C 550 250 500 175 400 175 Z'),
+  p('forelock', 'M 400 140 C 330 150 300 215 330 290 C 350 235 380 200 420 190 C 450 200 470 240 480 290 C 500 215 470 150 400 140 Z'),
+  p('horn', 'M 370 160 L 400 20 L 430 160 Z'),
+  ln('M 378 130 L 422 112', 5), ln('M 384 95 L 416 80', 5), ln('M 390 62 L 410 52', 5),
+  p('muzzle', 'M 400 430 C 330 430 305 470 312 510 C 322 555 365 568 400 568 C 435 568 478 555 488 510 C 495 470 470 430 400 430 Z'),
+  ...eye(335, 360, 28), ...eye(465, 360, 28),
+  ln('M 300 330 Q 285 320 275 335', 5), ln('M 500 330 Q 515 320 525 335', 5),
+  ed(365, 505, 10, 15), ed(435, 505, 10, 15), ln('M 365 545 Q 400 565 435 545', 6),
+  starShape('star-c', 285, 420, 24, 11),
+]);
+
+// ===== Q4: vehicles =====
+const road = () => p('road', 'M 0 700 L 800 700 L 800 790 L 0 790 Z');
+const wheel2 = (id, cx, cy, r) => [c(id, cx, cy, r), ringd(cx, cy, Math.round(r * 0.5)), dot(cx, cy, Math.round(r * 0.14))];
+add('police', '🚓 รถตำรวจ', 'jobs', 'drive', 3, [
+  road(),
+  rc('siren', 360, 262, 100, 56, 22),
+  p('body', 'M 80 570 L 80 490 C 80 456 100 444 130 438 L 220 420 C 262 352 330 322 400 322 L 500 322 C 562 324 602 352 632 422 L 690 436 C 730 444 746 462 746 498 L 746 570 Z'),
+  p('win-1', 'M 268 420 C 292 368 340 346 392 346 L 392 420 Z'), p('win-2', 'M 416 346 L 494 346 C 534 346 560 376 580 420 L 416 420 Z'),
+  p('stripe', 'M 80 486 L 746 486 L 746 526 L 80 526 Z'),
+  c('lamp', 716, 470, 24), c('tail', 108, 470, 20),
+  ...wheel2('wheel-1', 215, 590, 82), ...wheel2('wheel-2', 610, 590, 82),
+  ln('M 405 422 L 405 570', 6), ln('M 510 540 L 560 540', 6),
+]);
+add('ambulance', '🚑 รถพยาบาล', 'jobs', 'drive', 3, [
+  road(),
+  rc('box', 70, 290, 440, 280, 34),
+  p('cab', 'M 510 350 L 604 350 C 654 350 676 392 696 442 L 730 466 C 746 476 752 492 752 512 L 752 570 L 510 570 Z'),
+  p('cab-win', 'M 538 378 L 598 378 C 628 378 644 402 658 440 L 538 440 Z'),
+  poly('cross', [[250, 335], [320, 335], [320, 375], [362, 375], [362, 445], [320, 445], [320, 485], [250, 485], [250, 445], [208, 445], [208, 375], [250, 375]]),
+  rc('siren', 195, 240, 100, 54, 22), rc('stripe', 70, 505, 440, 36, 0),
+  c('lamp', 730, 500, 22),
+  ...wheel2('wheel-1', 200, 590, 82), ...wheel2('wheel-2', 610, 590, 82),
+  ln('M 280 540 L 280 505', 6),
+]);
+add('car', '🚗 รถยนต์', 'vehicles', 'drive', 2, [
+  road(),
+  p('body', 'M 80 570 L 80 505 C 80 462 112 446 152 440 L 250 420 C 292 350 352 328 422 328 L 522 330 C 582 336 622 382 652 432 L 700 446 C 742 456 756 482 756 522 L 756 570 Z'),
+  p('win-1', 'M 270 420 C 295 372 342 350 394 350 L 394 420 Z'), p('win-2', 'M 420 350 L 500 352 C 540 358 566 388 586 420 L 420 420 Z'),
+  rc('bumper', 70, 520, 60, 42, 14), c('lamp', 728, 486, 24), rc('door', 400, 440, 190, 100, 14),
+  ...wheel2('wheel-1', 215, 592, 82), ...wheel2('wheel-2', 610, 592, 82),
+  ln('M 395 430 L 395 548', 6), dot(415, 465, 7),
+]);
+add('tuktuk', '🛺 ตุ๊กตุ๊ก', 'thai', 'drive', 3, [
+  road(),
+  ln('M 230 360 L 230 470', 12), ln('M 600 360 L 600 470', 12),
+  p('roof', 'M 170 305 C 290 235 530 235 650 305 L 632 362 C 520 335 300 335 188 362 Z'),
+  rc('seat', 330, 372, 270, 100, 20),
+  p('windshield', 'M 205 366 L 310 366 L 310 462 L 188 468 Z'),
+  p('body', 'M 120 575 L 120 525 C 120 486 150 470 190 466 L 650 466 C 692 466 712 494 712 526 L 712 575 Z'),
+  p('stripe', 'M 120 505 L 712 505 L 712 538 L 120 538 Z'),
+  c('lamp', 120, 510, 26),
+  ...wheel2('wheel-f', 195, 605, 64), ...wheel2('wheel-b', 570, 605, 74),
+  poly('flag', [[413, 215], [490, 172], [490, 252]]), ln('M 413 215 L 413 300', 6),
+  ln('M 330 330 L 600 330', 5),
+]);
+add('lambo', '🏎️ รถสปอร์ต', 'vehicles', 'drive', 2, [
+  road(),
+  p('body', 'M 60 575 C 60 530 92 512 146 502 L 326 440 C 400 405 500 402 562 432 L 712 492 C 762 508 776 540 770 578 L 60 580 Z'),
+  p('window', 'M 342 452 C 408 414 480 414 546 446 L 494 494 L 330 494 Z'),
+  p('door', 'M 318 506 L 512 506 L 524 566 L 306 566 Z'),
+  p('spoiler', 'M 52 436 L 140 436 L 128 486 L 52 490 Z'),
+  ...wheel2('wheel-f', 205, 595, 78), ...wheel2('wheel-r', 612, 595, 78),
+  c('lamp', 735, 520, 20), ln('M 100 540 L 300 540', 8),
+]);
+add('ferrari', '🏎️ รถเฟอร์รารี่', 'vehicles', 'drive', 2, [
+  road(),
+  p('body', 'M 62 578 C 56 505 128 484 206 474 C 266 412 342 396 424 402 C 524 408 584 448 626 478 C 716 488 768 514 764 578 Z'),
+  p('window', 'M 280 470 C 318 428 380 418 432 424 C 494 430 540 450 570 478 Z'),
+  p('stripe', 'M 100 516 L 742 516 L 748 560 L 100 560 Z'),
+  ...wheel2('wheel-f', 215, 595, 78), ...wheel2('wheel-r', 612, 595, 78),
+  c('lamp', 738, 520, 20), dk('M 420 486 L 500 486 L 500 504 L 420 504 Z'),
+]);
+add('f1car', '🏁 รถแข่ง F1', 'vehicles', 'drive', 3, [
+  road(),
+  p('rwing', 'M 640 372 L 770 372 L 770 444 L 640 444 Z'), rc('rpost', 690, 444, 40, 90, 8),
+  p('nose', 'M 36 548 L 270 505 L 270 580 L 36 584 Z'),
+  p('body', 'M 230 470 L 560 448 L 660 522 L 660 590 L 230 590 Z'),
+  p('cover', 'M 440 452 L 590 446 L 650 520 L 440 520 Z'),
+  c('helmet', 400, 436, 50), p('visor', 'M 366 428 C 390 410 420 410 440 428 L 440 448 L 366 448 Z'),
+  p('fwing', 'M 16 580 L 160 580 L 160 628 L 16 628 Z'),
+  ...wheel2('wheel-f', 195, 605, 78), ...wheel2('wheel-r', 575, 595, 98),
+  ln('M 280 540 L 600 540', 8),
+]);
+add('porsche', '🚗 รถเต่า', 'vehicles', 'drive', 2, [
+  road(),
+  p('body', 'M 76 575 C 52 488 130 466 182 456 C 232 360 342 338 442 344 C 548 350 610 406 648 456 C 730 466 762 510 750 575 Z'),
+  p('window', 'M 248 456 C 284 390 354 374 430 380 C 506 386 542 426 578 456 Z'),
+  p('door', 'M 398 470 L 566 470 L 566 544 L 398 544 Z'),
+  rc('bumper', 68, 530, 90, 40, 16),
+  ...wheel2('wheel-f', 205, 592, 80), ...wheel2('wheel-r', 612, 592, 80),
+  c('lamp', 700, 498, 24), ln('M 392 470 L 392 560', 6),
+]);
+add('tractor', '🚜 รถแทรกเตอร์', 'jobs', 'drive', 3, [
+  c('sun', 670, 120, 66), p('ground', 'M 0 700 L 800 700 L 800 790 L 0 790 Z'),
+  rc('hood', 430, 400, 290, 140, 26), rc('cab', 160, 250, 280, 310, 30), rc('cab-win', 195, 285, 210, 150, 16),
+  rc('pipe', 640, 300, 34, 110, 14), c('lamp', 718, 450, 24),
+  ...wheel2('wheel-b', 265, 590, 150), ...wheel2('wheel-f', 630, 645, 92),
+  ln('M 430 470 L 720 470', 7),
+]);
+add('train', '🚂 รถไฟ', 'vehicles', 'drive', 3, [
+  cloud('smoke-1', 230, 130, 0.8), cloud('smoke-2', 440, 70, 0.7),
+  p('rail', 'M 0 680 L 800 680 L 800 735 L 0 735 Z'),
+  poly('catcher', [[110, 640], [200, 560], [200, 640]]),
+  rc('boiler', 190, 380, 330, 190, 80),
+  p('funnel', 'M 270 390 L 290 295 C 268 286 268 258 300 252 L 390 252 C 422 258 422 286 400 295 L 420 390 Z'),
+  c('dome', 440, 372, 40),
+  rc('cab', 500, 290, 200, 280, 20), p('cab-roof', 'M 480 290 L 720 290 L 700 245 L 500 245 Z'), rc('cab-win', 535, 330, 130, 110, 14),
+  rc('buffer', 170, 470, 36, 60, 10),
+  c('lamp', 205, 450, 28),
+  ...wheel2('wheel-1', 270, 598, 70), ...wheel2('wheel-2', 410, 598, 70), ...wheel2('wheel-3', 600, 598, 70),
+  ln('M 270 598 L 410 598', 14),
+]);
+add('airplane', '✈️ เครื่องบิน', 'vehicles', 'fly', 2, [
+  cloud('cloud-1', 160, 640, 1), cloud('cloud-2', 630, 160, 0.9),
+  p('wing-b', 'M 430 380 L 530 380 L 480 240 L 400 240 Z'),
+  p('tail', 'M 130 400 L 70 230 L 190 230 L 250 400 Z'),
+  p('body', 'M 90 450 C 90 395 170 370 290 370 L 600 370 C 690 370 748 405 758 450 C 748 495 690 530 600 530 L 290 530 C 170 530 90 505 90 450 Z'),
+  p('cockpit', 'M 620 385 C 690 385 725 410 735 440 L 620 440 Z'),
+  p('wing', 'M 300 470 L 480 470 L 400 660 L 280 660 Z'),
+  ringd(215, 440, 26), ringd(295, 440, 26), ringd(375, 440, 26), ringd(455, 440, 26), ringd(535, 440, 26),
+  ln('M 100 480 L 740 480', 8),
+]);
+add('helicopter', '🚁 เฮลิคอปเตอร์', 'vehicles', 'fly', 2, [
+  cloud('cloud-1', 130, 660, 0.9), cloud('cloud-2', 670, 190, 0.8),
+  ln('M 120 280 L 600 280', 16), ln('M 360 280 L 360 345', 14),
+  p('tail', 'M 520 450 L 735 400 L 765 455 L 520 535 Z'),
+  poly('fin', [[690, 405], [736, 305], [795, 322], [750, 448]]),
+  e('body', 350, 480, 210, 145),
+  p('window', 'M 190 440 C 225 385 310 395 320 400 L 320 490 L 170 500 Z'),
+  c('door', 440, 480, 58),
+  ln('M 150 660 L 570 660', 16), ln('M 260 610 L 260 660', 12), ln('M 460 610 L 460 660', 12),
+  ln('M 118 510 Q 108 532 122 548', 6),
+]);
+add('hotair', '🎈 บอลลูนลอยฟ้า', 'vehicles', 'launch', 2, [
+  cloud('cloud-1', 130, 690, 0.9), cloud('cloud-2', 680, 730, 0.8),
+  e('balloon', 400, 280, 235, 255),
+  band('stripe-1', 400, 280, 235, 255, 210, 300), band('stripe-2', 400, 280, 235, 255, 380, 420), band('stripe-3', 400, 280, 235, 255, 500, 590),
+  poly('skirt', [[262, 480], [538, 480], [470, 535], [330, 535]]),
+  rc('basket', 335, 655, 130, 95, 16),
+  ln('M 330 535 L 345 655', 6), ln('M 470 535 L 455 655', 6), ln('M 400 535 L 400 655', 6),
+  ln('M 400 330 L 400 335', 1),
+]);
+add('boat', '⛵ เรือใบ', 'vehicles', 'sway', 3, [
+  c('sun', 660, 150, 62),
+  p('sea', 'M 0 640 L 800 640 L 800 790 L 0 790 Z'),
+  p('sail-big', 'M 412 150 C 520 250 590 380 610 520 L 412 520 Z'),
+  p('sail-small', 'M 388 210 C 320 300 270 400 250 520 L 388 520 Z'),
+  p('hull', 'M 110 540 L 690 540 C 670 610 620 670 540 670 L 260 670 C 180 670 130 610 110 540 Z'),
+  poly('flag', [[412, 140], [490, 165], [412, 190]]),
+  ln('M 400 140 L 400 540', 20), c('porthole-1', 260, 600, 24), c('porthole-2', 340, 600, 24), c('porthole-3', 420, 600, 24),
+  p('wave-1', 'M 40 700 Q 120 670 200 700 Q 280 730 360 700 Q 440 670 520 700 Q 600 730 680 700 Q 730 685 770 700 L 770 740 L 40 740 Z'),
+  ln('M 560 110 Q 580 90 600 110', 5), ln('M 610 85 Q 630 65 650 85', 5),
+]);
+add('rocket', '🚀 จรวด', 'vehicles', 'launch', 2, [
+  starShape('star-1', 150, 150, 46, 20), starShape('star-2', 660, 250, 40, 17), starShape('star-3', 120, 560, 38, 16), starShape('star-4', 690, 600, 34, 15),
+  p('fin-l', 'M 270 500 C 200 520 170 580 160 650 C 220 640 270 610 290 580 Z'), p('fin-r', 'M 530 500 C 600 520 630 580 640 650 C 580 640 530 610 510 580 Z'),
+  p('flame', 'M 340 640 C 330 720 380 770 400 790 C 420 770 470 720 460 640 Z'),
+  p('body', 'M 400 70 C 500 130 545 260 545 390 L 545 610 L 255 610 L 255 390 C 255 260 300 130 400 70 Z'),
+  c('window', 400, 330, 75), ringd(400, 330, 42),
+  p('fin-c', 'M 350 610 L 450 610 L 435 660 L 365 660 Z'),
+  rc('band', 255, 470, 290, 40, 0),
+]);
+
+// ===== Q5: Thai, places, nature =====
+add('lotus', '🪷 ดอกบัว', 'thai', 'glow', 3, [
+  p('pond', 'M 20 700 Q 120 665 220 700 Q 320 735 420 700 Q 520 665 620 700 Q 700 725 780 700 L 780 790 L 20 790 Z'),
+  e('pad-l', 150, 680, 125, 36), e('pad-r', 650, 680, 125, 36),
+  petal('out-l', 400, 620, -78, 330, 120), petal('out-r', 400, 620, 78, 330, 120),
+  petal('mid-l', 400, 620, -42, 400, 125), petal('mid-r', 400, 620, 42, 400, 125),
+  petal('mid', 400, 620, 0, 440, 125),
+  ln('M 400 600 L 400 300', 5), ln('M 330 590 Q 310 480 260 400', 5), ln('M 470 590 Q 490 480 540 400', 5),
+]);
+add('krathong', '🪷 กระทงลอยน้ำ', 'thai', 'sway', 3, [
+  c('moon', 650, 130, 70), starShape('star-1', 130, 140, 42, 18), starShape('star-2', 300, 90, 34, 15),
+  p('water', 'M 0 700 Q 100 665 200 700 Q 300 735 400 700 Q 500 665 600 700 Q 700 735 800 700 L 800 790 L 0 790 Z'),
+  e('base', 400, 650, 320, 78),
+  petal('pl-l2', 400, 630, -70, 260, 90), petal('pl-r2', 400, 630, 70, 260, 90),
+  petal('pl-l', 400, 630, -35, 330, 95), petal('pl-r', 400, 630, 35, 330, 95),
+  petal('pl-c', 400, 630, 0, 360, 95),
+  rc('candle', 376, 270, 48, 110, 8), p('flame', 'M 400 130 C 450 190 450 240 400 262 C 350 240 350 190 400 130 Z'),
+  ln('M 290 665 L 290 705', 6), ln('M 400 690 L 400 725', 6), ln('M 510 665 L 510 705', 6),
+  ln('M 250 520 L 190 440', 5), dot(190, 440, 8), ln('M 550 520 L 610 440', 5), dot(610, 440, 8),
+]);
+add('kite', '🪁 ว่าว', 'thai', 'fly', 2, [
+  cloud('cloud-1', 150, 700, 0.9), cloud('cloud-2', 660, 120, 0.9),
+  poly('k1', [[400, 40], [640, 300], [400, 300]]), poly('k2', [[640, 300], [400, 560], [400, 300]]),
+  poly('k3', [[400, 560], [160, 300], [400, 300]]), poly('k4', [[160, 300], [400, 40], [400, 300]]),
+  ln('M 400 40 L 400 560', 6), ln('M 160 300 L 640 300', 6),
+  ln('M 400 560 Q 330 610 400 650 Q 470 690 400 750', 6),
+  poly('bow-1', [[345, 610], [400, 628], [345, 650]]), poly('bow-2', [[455, 610], [400, 628], [455, 650]]),
+  poly('bow-3', [[445, 690], [400, 705], [445, 730]]), poly('bow-4', [[355, 690], [400, 705], [355, 730]]),
+]);
+add('pavilion', '🛖 ศาลาไทย', 'thai', 'glow', 3, [
+  p('sky-hill', 'M 0 700 C 150 660 300 690 400 700 C 520 710 650 660 800 695 L 800 790 L 0 790 Z'),
+  e('pond', 400, 748, 360, 36),
+  rc('floor', 110, 650, 580, 60, 8), rc('step', 330, 705, 140, 40, 8),
+  rc('wall', 220, 470, 360, 180),
+  rc('post-1', 140, 470, 52, 185, 6), rc('post-2', 228, 470, 52, 185, 6), rc('post-3', 520, 470, 52, 185, 6), rc('post-4', 608, 470, 52, 185, 6),
+  p('roof-low', 'M 50 480 C 200 475 300 410 400 300 C 500 410 600 475 750 480 L 705 535 L 95 535 Z'),
+  p('roof-up', 'M 275 345 C 340 315 380 245 400 130 C 420 245 460 315 525 345 L 500 385 L 300 385 Z'),
+  poly('gable', [[330, 440], [470, 440], [400, 340]]),
+  ln('M 400 130 L 400 60', 8), ln('M 50 480 Q 25 450 40 420', 9), ln('M 750 480 Q 775 450 760 420', 9),
+  ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => poly('tri' + i, [[110 + i * 80, 536], [150 + i * 80, 536], [130 + i * 80, 572]])),
+]);
+add('house', '🏠 บ้าน', 'misc', 'bounce', 3, [
+  c('sun', 690, 120, 62), cloud('cloud', 250, 130, 0.8),
+  p('hill', 'M 0 640 C 200 600 400 640 600 610 C 700 600 760 615 800 625 L 800 790 L 0 790 Z'),
+  rc('chimney', 520, 230, 80, 150, 8), cloud('smoke', 560, 150, 0.45),
+  rc('wall', 190, 380, 420, 290),
+  poly('roof', [[150, 395], [400, 190], [650, 395]]),
+  p('door', 'M 350 670 L 350 540 C 350 485 450 485 450 540 L 450 670 Z'), dot(430, 600, 8),
+  rc('win-l', 225, 440, 90, 90, 10), rc('win-r', 485, 440, 90, 90, 10),
+  ln('M 270 440 L 270 530', 5), ln('M 225 485 L 315 485', 5), ln('M 530 440 L 530 530', 5), ln('M 485 485 L 575 485', 5),
+  rc('box-l', 215, 535, 110, 36, 6), rc('box-r', 475, 535, 110, 36, 6),
+  p('path', 'M 350 670 L 450 670 L 520 790 L 280 790 Z'),
+  c('bush-l', 140, 670, 52), c('bush-r', 660, 670, 52),
+  p('tree-t', 'M 705 520 C 700 640 700 680 705 700 L 735 700 C 740 680 740 640 735 520 Z'), c('tree-c', 720, 470, 62),
+]);
+add('lighthouse', '🗼 ประภาคาร', 'misc', 'shimmer', 3, [
+  poly('beam-l', [[345, 235], [20, 130], [20, 340]]), poly('beam-r', [[455, 235], [780, 130], [780, 340]]),
+  p('sea', 'M 0 700 Q 100 665 200 700 Q 300 735 400 700 Q 500 665 600 700 Q 700 735 800 700 L 800 790 L 0 790 Z'),
+  e('rock', 400, 735, 300, 50),
+  p('tower', 'M 315 740 L 350 280 L 450 280 L 485 740 Z'),
+  poly('stripe-1', [[338, 410], [462, 410], [466, 500], [334, 500]]), poly('stripe-2', [[329, 590], [471, 590], [476, 680], [324, 680]]),
+  rc('lamp', 335, 190, 130, 90, 12), poly('roof', [[320, 195], [400, 110], [480, 195]]),
+  c('ball', 400, 98, 0.1),
+  ln('M 305 287 L 495 287', 18),
+  rc('door', 372, 660, 56, 80, 28), rc('win', 372, 350, 56, 80, 28),
+  ln('M 120 180 Q 140 160 160 180', 5), ln('M 175 155 Q 195 135 215 155', 5),
+  c('wave-1', 130, 700, 0.1),
+].filter(r => !(r.r === 0.1)));
+add('tent', '⛺ เต็นท์ตั้งแคมป์', 'nature', 'wiggle', 3, [
+  c('moon', 660, 110, 62), starShape('star-1', 140, 120, 46, 20), starShape('star-2', 320, 80, 38, 16), starShape('star-3', 520, 150, 34, 15),
+  p('grass', 'M 0 640 C 150 610 300 650 450 625 C 600 600 700 640 800 620 L 800 790 L 0 790 Z'),
+  poly('pine-1', [[60, 560], [130, 400], [200, 560]]), poly('pine-2', [[45, 640], [130, 460], [215, 640]]), rc('trunk', 110, 640, 40, 70, 4),
+  p('tent', 'M 230 720 L 430 270 L 630 720 Z'),
+  poly('door', [[430, 430], [350, 720], [510, 720]]),
+  ln('M 430 270 L 430 430', 6), poly('flap-l', [[430, 430], [350, 720], [375, 720]]),
+  p('logs', 'M 650 740 L 740 700 L 750 725 L 665 765 Z'),
+  p('flame', 'M 690 700 C 640 650 650 590 700 540 C 710 600 770 610 755 680 C 750 695 725 705 690 700 Z'),
+]);
+add('flower', '🌻 ดอกไม้', 'nature', 'glow', 3, [
+  p('ground', 'M 0 730 C 200 700 400 740 800 715 L 800 790 L 0 790 Z'),
+  p('stem', 'M 380 480 C 385 580 375 680 380 745 L 422 745 C 418 680 428 580 420 480 Z'),
+  p('leaf-l', 'M 385 620 C 280 560 200 590 175 665 C 260 690 340 670 385 650 Z'), p('leaf-r', 'M 418 650 C 520 590 600 620 625 695 C 540 720 460 700 418 680 Z'),
+  ...Array.from({ length: 12 }, (_, i) => petal('pet' + i, 400, 330, i * 30, 200, 52)),
+  c('center', 400, 330, 105),
+  ...eye(365, 320, 18), ...eye(435, 320, 18), ln('M 365 365 Q 400 395 435 365', 6),
+  c('cheek-l', 335, 360, 0.1),
+].filter(r => !(r.r === 0.1)));
+add('tree', '🌳 ต้นไม้', 'nature', 'sway', 3, [
+  c('sun', 690, 120, 60), cloud('cloud', 190, 120, 0.8),
+  p('ground', 'M 0 690 C 150 660 300 700 450 680 C 600 660 700 700 800 680 L 800 790 L 0 790 Z'),
+  p('trunk', 'M 340 710 C 360 640 350 580 330 500 L 470 500 C 450 580 440 640 460 710 Z'),
+  p('branch-l', 'M 360 560 C 310 520 270 490 240 440 L 275 425 C 300 465 335 500 385 520 Z'), p('branch-r', 'M 440 560 C 490 520 530 490 560 440 L 525 425 C 500 465 465 500 415 520 Z'),
+  scallop('crown', 400, 330, 235, 12, 28),
+  c('apple-1', 300, 330, 36), c('apple-2', 480, 270, 36), c('apple-3', 420, 410, 36), c('apple-4', 350, 220, 36),
+  ln('M 345 560 L 360 640', 5), ln('M 420 520 L 415 590', 5),
+]);
+add('robot', '🤖 หุ่นยนต์', 'misc', 'wiggle', 3, [
+  ln('M 400 150 L 400 95', 12), c('antenna', 400, 80, 34),
+  rc('head', 255, 150, 290, 220, 50),
+  rc('ear-l', 215, 225, 40, 70, 12), rc('ear-r', 545, 225, 40, 70, 12),
+  c('eye-l', 335, 245, 52), c('eye-r', 465, 245, 52), dot(335, 245, 24), dot(465, 245, 24), hl(346, 234, 8), hl(476, 234, 8),
+  rc('mouth', 335, 318, 130, 34, 17), ln('M 365 322 L 365 348', 4), ln('M 400 322 L 400 348', 4), ln('M 435 322 L 435 348', 4),
+  rc('neck', 365, 370, 70, 36, 6),
+  rc('body', 240, 405, 320, 230, 36),
+  rc('panel', 290, 440, 220, 100, 18), c('btn-1', 340, 575, 26), c('btn-2', 400, 575, 26), c('btn-3', 460, 575, 26),
+  poly('bolt', [[410, 455], [370, 505], [398, 505], [388, 530], [432, 478], [404, 478]]),
+  p('arm-l', 'M 240 440 C 170 450 135 520 140 590 L 200 590 C 195 545 215 510 240 500 Z'), p('arm-r', 'M 560 440 C 630 450 665 520 660 590 L 600 590 C 605 545 585 510 560 500 Z'),
+  c('hand-l', 170, 620, 38), c('hand-r', 630, 620, 38),
+  rc('leg-l', 280, 635, 90, 110, 14), rc('leg-r', 430, 635, 90, 110, 14),
+  rc('foot-l', 250, 735, 140, 45, 20), rc('foot-r', 410, 735, 140, 45, 20),
+]);
+add('farm', '🚜 ฟาร์ม', 'misc', 'bounce', 3, [
+  c('sun', 690, 110, 62), cloud('cloud', 330, 110, 0.9),
+  p('field', 'M 0 600 C 200 570 400 610 600 585 C 700 575 760 585 800 595 L 800 790 L 0 790 Z'),
+  rc('silo', 470, 280, 120, 320, 8), p('silo-top', 'M 470 285 C 470 190 590 190 590 285 Z'), ln('M 470 380 L 590 380', 6), ln('M 470 470 L 590 470', 6),
+  rc('barn', 90, 370, 340, 240, 6),
+  p('barn-roof', 'M 70 385 L 150 260 L 370 260 L 450 385 Z'),
+  rc('hay', 220, 295, 70, 56, 6),
+  p('door', 'M 170 610 L 170 470 L 350 470 L 350 610 Z'), ln('M 170 470 L 350 610', 6), ln('M 350 470 L 170 610', 6),
+  c('crown', 690, 440, 80), rc('trunk', 672, 500, 36, 120, 6),
+  rc('fence-1', 520, 650, 50, 100, 8), rc('fence-2', 600, 650, 50, 100, 8), rc('fence-3', 680, 650, 50, 100, 8), rc('fence-4', 745, 650, 50, 100, 8),
+  ln('M 510 690 L 800 690', 7), ln('M 510 725 L 800 725', 7),
+  c('bale', 150, 690, 55),
+]);
+
+// ===== Q6: food, sky, misc + faces on the simple lv1 drawings =====
+const arcRing = (id, cx, cy, r0, r1) => p(id, `M ${cx - r1} ${cy} A ${r1} ${r1} 0 0 1 ${cx + r1} ${cy} L ${cx + r0} ${cy} A ${r0} ${r0} 0 0 0 ${cx - r0} ${cy} Z`);
+add('rainbow', '🌈 รุ้งกินน้ำ', 'nature', 'shimmer', 2, [
+  c('sun', 130, 130, 62),
+  arcRing('r1', 400, 560, 285, 340), arcRing('r2', 400, 560, 230, 285), arcRing('r3', 400, 560, 175, 230), arcRing('r4', 400, 560, 120, 175), arcRing('r5', 400, 560, 65, 120),
+  cloud('cloud-l', 140, 600, 1.1), cloud('cloud-r', 660, 600, 1.1),
+  ...eye(100, 590, 14), ...eye(180, 590, 14), smile(140, 618, 18),
+  ...eye(620, 590, 14), ...eye(700, 590, 14), smile(660, 618, 18),
+  cloud('cloud-s', 560, 160, 0.7),
+]);
+add('sun', '☀️ พระอาทิตย์', 'nature', 'spin', 3, [
+  ...Array.from({ length: 12 }, (_, i) => petal('ray' + i, 400, 400, i * 30, 360, 46)),
+  c('sun', 400, 400, 190),
+  c('cheek-l', 290, 440, 34), c('cheek-r', 510, 440, 34),
+  ...eye(335, 370, 28), ...eye(465, 370, 28),
+  ln('M 330 455 Q 400 530 470 455', 8),
+]);
+add('fruits', '🍎 ผลไม้', 'food', 'bounce', 3, [
+  p('ground', 'M 0 720 C 200 690 400 725 800 700 L 800 790 L 0 790 Z'),
+  p('banana', 'M 200 640 C 300 740 540 740 640 610 C 680 560 650 520 620 530 C 560 600 470 650 330 620 C 260 600 220 560 190 570 C 170 580 175 615 200 640 Z'),
+  c('orange', 610, 430, 130), p('o-leaf', 'M 610 300 C 620 260 670 250 700 270 C 685 310 645 320 610 300 Z'),
+  c('apple', 200, 430, 135), p('a-stem', 'M 192 295 C 192 265 202 245 220 229 L 242 241 C 228 255 222 273 222 295 Z'), p('a-leaf', 'M 225 265 C 242 223 290 213 320 233 C 305 273 260 288 225 265 Z'),
+  c('g1', 400, 150, 42), c('g2', 340, 205, 42), c('g3', 460, 205, 42), c('g4', 400, 260, 42), c('g5', 345, 315, 42), c('g6', 455, 315, 42),
+  ln('M 400 108 Q 410 70 450 55', 9),
+  ...eye(160, 425, 18), ...eye(240, 425, 18), smile(200, 470, 26),
+  ...eye(570, 425, 18), ...eye(650, 425, 18), smile(610, 470, 26),
+]);
+add('pizza', '🍕 พิซซ่า', 'food', 'spin', 3, [
+  p('plate', 'M 70 700 C 70 600 700 600 730 700 C 700 770 100 770 70 700 Z'),
+  p('crust', 'M 140 160 C 280 110 520 110 660 160 C 690 190 680 245 640 255 C 500 215 300 215 160 255 C 120 245 110 190 140 160 Z'),
+  p('slice', 'M 160 235 C 300 200 500 200 640 235 L 410 700 C 405 712 395 712 390 700 Z'),
+  c('pep-1', 400, 320, 52), c('pep-2', 300, 280, 40), c('pep-3', 500, 285, 40), c('pep-4', 350, 440, 46), c('pep-5', 460, 480, 40), c('pep-6', 400, 590, 34),
+  p('cheese', 'M 520 400 C 560 400 580 430 560 460 C 545 480 520 470 515 450 C 505 425 505 405 520 400 Z'),
+]);
+add('cake', '🎂 เค้ก', 'food', 'glow', 3, [
+  p('plate', 'M 60 690 C 60 640 740 640 740 690 C 740 760 60 760 60 690 Z'),
+  rc('cake-b', 120, 460, 560, 210, 24), p('drip-b', 'M 120 484 C 120 460 150 450 170 450 L 630 450 C 660 450 680 465 680 484 L 680 500 C 665 520 640 515 630 500 C 620 540 590 540 580 505 C 570 545 535 545 525 505 C 515 540 470 540 460 505 C 450 540 410 540 400 505 C 390 545 350 545 340 505 C 330 540 290 540 280 505 C 270 535 235 535 225 505 C 215 525 185 525 170 505 C 150 520 120 515 120 495 Z'),
+  rc('cake-t', 220, 300, 360, 170, 22), p('drip-t', 'M 220 322 C 220 300 245 292 262 292 L 538 292 C 560 292 580 305 580 322 L 580 340 C 565 365 540 360 530 340 C 520 380 485 380 475 345 C 465 385 425 385 415 345 C 405 380 365 380 355 345 C 345 375 310 375 300 345 C 290 370 260 365 250 345 C 235 358 220 350 220 340 Z'),
+  rc('candle-1', 290, 190, 40, 110, 8), rc('candle-2', 380, 170, 40, 130, 8), rc('candle-3', 470, 190, 40, 110, 8),
+  p('flame-1', 'M 310 90 C 345 135 345 170 310 185 C 275 170 275 135 310 90 Z'), p('flame-2', 'M 400 70 C 435 115 435 150 400 165 C 365 150 365 115 400 70 Z'), p('flame-3', 'M 490 90 C 525 135 525 170 490 185 C 455 170 455 135 490 90 Z'),
+  c('cherry-1', 230, 275, 28), c('cherry-2', 570, 275, 28),
+  ...eye(330, 395, 16), ...eye(470, 395, 16), smile(400, 420, 24),
+].filter(r => !(r.r === 0.1)));
+add('icecream', '🍦 ไอศกรีม', 'food', 'wiggle', 3, [
+  poly('cone', [[250, 440], [550, 440], [400, 780]]),
+  ln('M 300 500 L 470 700', 5), ln('M 500 500 L 330 700', 5), ln('M 275 470 L 530 470', 5),
+  scallop('scoop-b', 400, 390, 175, 9, 20),
+  c('scoop-t', 400, 230, 130),
+  p('drip', 'M 245 470 C 235 520 270 530 280 490 L 300 430 Z'),
+  c('cherry', 400, 80, 46), ln('M 400 40 Q 420 10 455 15', 8),
+  ln('M 340 150 l 20 -14', 8), ln('M 440 170 l 24 10', 8), ln('M 380 280 l 6 24', 8),
+  ...eye(350, 380, 20), ...eye(450, 380, 20), smile(400, 420, 26),
+].filter(r => !(r.id === 'drip')));
+// faces on simple drawings
+function addFace(id, cx, cy, dx, r) {
+  const pic = PICTURES.find(x => x.id === id);
+  if (pic) pic.regions.push(...eye(cx - dx, cy, r), ...eye(cx + dx, cy, r), smile(cx, cy + r * 1.9, r * 1.3));
+}
+addFace('apple', 400, 460, 70, 24);
+addFace('strawberry', 400, 440, 75, 26);
+addFace('heart', 400, 470, 80, 26);
+addFace('cupcake', 400, 560, 55, 20);
+addFace('lolly', 400, 280, 55, 22);
+addFace('balloons', 400, 330, 55, 20);
