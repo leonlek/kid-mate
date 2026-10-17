@@ -118,6 +118,10 @@ Single-file HTML, ~900 lines. Three screens (Select → Race → Results). Imple
 
 Valid `cat`: `wild`, `farm`, `bird`, `water`, `dino`, `fantasy`, `vehicle`, `aircraft`, `other`. Speed range 0.05 (snail) → 28,000 km/h (space shuttle). When adding racers, use real top speeds (Wikipedia max reliable value), preserve the fastest→slowest sort order.
 
+### แตะเติมสี (`/coloring/`)
+
+Tap-to-fill coloring. **80 pictures** live in `coloring/pictures.js` (data only; `index.html` is the engine). Each picture = `add(id, name, category, anim, level, regions)`; level 1/2/3 = ⭐ age 3-4 / 5-6 / 7-8 (filter chips on the select screen). Regions draw back→front, each with its own outline, so a front shape hides the outline behind it — build animals by overlapping shapes, never as loose floating blobs. Paintable regions should be ≥ ~70 units wide (lv1) / ~40 (lv2-3) on the 800×800 canvas; smaller details (eyes, lines) use `dot()/ln()/ringd()` decor (`noClick`). Adding a picture = one `add(...)` call; bump `CACHE` in `sw.js`.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
