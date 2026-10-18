@@ -633,6 +633,31 @@ function buildLineArt(target, regions, vbw, vbh, idPrefix) {
   target.innerHTML = '';
   var defs = document.createElementNS(NS_SVG, 'defs');
   target.appendChild(defs);
+  // Bold outer silhouette: a thick stroke around every paintable shape, masked so it
+  // only shows OUTSIDE the shapes — inner lines stay thin, the outer contour is bold.
+  var hmask = document.createElementNS(NS_SVG, 'mask');
+  hmask.setAttribute('id', 'halo_' + idPrefix);
+  hmask.setAttribute('maskUnits', 'userSpaceOnUse');
+  hmask.setAttribute('x', 0); hmask.setAttribute('y', 0);
+  hmask.setAttribute('width', vbw); hmask.setAttribute('height', vbh);
+  var hbg = document.createElementNS(NS_SVG, 'rect');
+  hbg.setAttribute('x', 0); hbg.setAttribute('y', 0);
+  hbg.setAttribute('width', vbw); hbg.setAttribute('height', vbh);
+  hbg.setAttribute('fill', '#fff');
+  hmask.appendChild(hbg);
+  var halo = document.createElementNS(NS_SVG, 'g');
+  halo.setAttribute('mask', 'url(#halo_' + idPrefix + ')');
+  regions.forEach(function (r) {
+    if (r.noClick) return;
+    var cut = createShapeEl(r); cut.setAttribute('fill', '#000'); cut.setAttribute('stroke', 'none');
+    hmask.appendChild(cut);
+    var h = createShapeEl(r);
+    h.setAttribute('fill', 'none'); h.setAttribute('stroke', '#2d3436');
+    h.setAttribute('stroke-width', 16); h.setAttribute('stroke-linejoin', 'round');
+    halo.appendChild(h);
+  });
+  defs.appendChild(hmask);
+  target.appendChild(halo);
   regions.forEach(function (r, idx) {
     var el = outlineEl(r);
     if (!r.noClick) {
@@ -762,7 +787,7 @@ function openScene(sc) {
     fitCanvas(true);
     // Regions too small for a child's crayon don't have to be touched to finish the picture
     // (measured once the sheet is on screen — getBBox is 0 while display:none).
-    var shapeEls = Array.prototype.filter.call(linesSvg.children, function (el) { return el.tagName !== 'defs'; });
+    var shapeEls = Array.prototype.filter.call(linesSvg.children, function (el) { return el.tagName !== 'defs' && el.tagName !== 'g'; });
     sc.regions.forEach(function (r, i) {
       if (r.noClick) return;
       var b = shapeEls[i].getBBox();

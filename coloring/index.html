@@ -630,6 +630,11 @@ function renderSelect() {
       `;
       c.addEventListener('click', () => { ensureAudio(); openPicture(pic); });
       levelGrid.appendChild(c);
+      // Crop the preview to the drawing so every card shows its picture equally big
+      try {
+        const sv = c.querySelector('svg.preview'), bb = sv.getBBox(), pad = 30;
+        if (bb.width && bb.height) sv.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);
+      } catch (e) {}
     }
   }
 }
@@ -666,6 +671,21 @@ function openPicture(pic) {
   buildCanvas();
   updateUndoBtn();
   showScreen('game');
+  fitPicture();
+}
+
+// Scale + centre each drawing to fill the canvas evenly (some pictures were drawn
+// small or off-centre). Measured after the screen is visible — getBBox is 0 while hidden.
+function fitPicture() {
+  regionsGroup.removeAttribute('transform');
+  let b;
+  try { b = regionsGroup.getBBox(); } catch (e) { return; }
+  if (!b || !b.width || !b.height) return;
+  const s = Math.min(730 / b.width, 730 / b.height, 1.35);
+  const tx = 400 - (b.x + b.width / 2) * s, ty = 400 - (b.y + b.height / 2) * s;
+  const tf = `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) scale(${s.toFixed(3)})`;
+  regionsGroup.setAttribute('transform', tf);
+  outlineGroup.setAttribute('transform', tf);
 }
 
 function clearAnimClasses(svgEl) {
@@ -711,6 +731,19 @@ function updateUndoBtn() {
 function buildCanvas() {
   regionsGroup.innerHTML = '';
   outlineGroup.innerHTML = '';
+  // Bold outer silhouette: every paintable shape is first drawn as a thick dark
+  // stroke. The real regions drawn on top cover all the inner parts, so only the
+  // outer contour stays thick — the classic colouring-book line weight.
+  for (const r of state.picture.regions) {
+    if (r.noClick) continue;
+    const halo = createSvgEl(r);
+    halo.setAttribute('fill', '#2d3436');
+    halo.setAttribute('stroke', '#2d3436');
+    halo.setAttribute('stroke-width', 16);
+    halo.setAttribute('stroke-linejoin', 'round');
+    halo.style.pointerEvents = 'none';
+    regionsGroup.appendChild(halo);
+  }
   // One element per region (fill + its own outline), drawn back→front, so a
   // region in front hides the outline of the one behind it.
   for (const r of state.picture.regions) {
