@@ -90,7 +90,8 @@ When you add a game (e.g. `memory-match`):
 5. **Add a card in the hub `index.html`** (`.games` grid) — big emoji, Thai title, one-sentence description.
 6. **Update `sw.js`'s `SHELL` array** — add `./<game-id>/` and `./<game-id>/index.html`. Bump the `CACHE` constant (e.g. `kid-games-v2`) so old caches evict.
 7. **Copy the Cloudflare Web Analytics beacon `<script>`** from any existing page into the new one, just before `</body>` — without it the game never shows up in the pageview report (see Phase 5 in section 9).
-8. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
+8. **Any game that uses Web Audio must load `../audio-unlock.js` first in `<head>`** (before other scripts). It resumes `suspended`/`interrupted` contexts on every gesture and requests the `playback` audio session so iPad silent mode doesn't mute the game. Add it to every new game; no need to touch the game's own `ensureAudio()`.
+9. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
 
 Keep each game under ~1500 lines of HTML. If a game grows beyond that, split it into `<game-id>/index.html` + `<game-id>/game.js` + `<game-id>/styles.css`. Still no bundler.
 

@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🖍️ สมุดระบายสี — คิดส์เล่น</title>
 <meta name="description" content="สมุดภาพระบายสีเทียนซีนใหญ่เต็มจอ ระบายเหมือนจริง มีปากกาตามนิ้ว สัตว์ รถไฟ ช้าง ปลา ไดโนเสาร์ อวกาศ ฟาร์ม บ้าน ทะเล ทั้งแนวตั้งและแนวนอน">
@@ -553,7 +554,7 @@ function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catc
 // ============================================================================
 var AC = null, noiseBuf = null;
 function ensureAudio() {
-  if (AC) return;
+  if (AC) { if (AC.state !== 'running') { try { AC.resume(); } catch (e) {} } return; }
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     var len = Math.floor(AC.sampleRate * 0.3);
