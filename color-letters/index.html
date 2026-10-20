@@ -18,7 +18,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&family=Mali:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
     --sky-3: #b5e8ff; --grass-1: #7ed957;
@@ -100,7 +100,7 @@
   .gcard:active { transform: scale(0.94) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
   .gcard:hover { border-color: var(--brand); }
   .gcard .glyph {
-    font-family: 'Itim', cursive;
+    font-family: 'Mali', 'Itim', cursive; font-weight: 700;
     font-size: 56px; line-height: 1;
     color: #fff;
     -webkit-text-stroke: 3px var(--brand-dark);
@@ -152,6 +152,13 @@
     .top-bar { margin: 8px 64px 0 64px; }
   }
 
+  .word-line {
+    flex: 0 0 auto; text-align: center;
+    font-family: 'Mitr', sans-serif; font-weight: 600;
+    font-size: clamp(22px, 5vw, 34px); color: var(--ink);
+    margin: 4px 12px 0; line-height: 1.2;
+  }
+  .word-line .em { font-size: 1.3em; vertical-align: -0.1em; margin-right: 6px; }
   .canvas-area {
     flex: 1 1 auto;
     display: flex; align-items: center; justify-content: center;
@@ -290,6 +297,7 @@
         <button class="icon-btn" id="doneBtn" aria-label="เสร็จ"><span aria-hidden="true">✓</span><span class="btn-label">เสร็จ</span></button>
       </div>
     </div>
+    <div class="word-line" id="wordLine"></div>
     <div class="canvas-area">
       <div class="canvas-stage" id="canvasStage">
         <canvas id="paintCanvas" width="1000" height="1000"></canvas>
@@ -401,6 +409,26 @@ const THAI_NAME = {
   'ว':'ว แหวน','ศ':'ศ ศาลา','ษ':'ษ ฤๅษี','ส':'ส เสือ','ห':'ห หีบ','ฬ':'ฬ จุฬา',
   'อ':'อ อ่าง','ฮ':'ฮ นกฮูก',
 };
+// Picture word shown under the letter (emoji + word) — links shape, sound and meaning
+const THAI_EMOJI = {
+  'ก':'🐔','ข':'🥚','ฃ':'🍾','ค':'🐃','ฅ':'🧑','ฆ':'🔔','ง':'🐍','จ':'🍽️','ฉ':'🎵','ช':'🐘','ซ':'⛓️','ฌ':'🌳',
+  'ญ':'👩','ฎ':'👑','ฏ':'🔱','ฐ':'🏛️','ฑ':'👸','ฒ':'👴','ณ':'🙏','ด':'👦','ต':'🐢','ถ':'🛍️','ท':'💂','ธ':'🚩',
+  'น':'🐭','บ':'🍃','ป':'🐟','ผ':'🐝','ฝ':'🫙','พ':'🏵️','ฟ':'🦷','ภ':'⛵','ม':'🐴','ย':'👹','ร':'🚣','ล':'🐒',
+  'ว':'💍','ศ':'🛖','ษ':'🧙','ส':'🐯','ห':'🧰','ฬ':'🪁','อ':'🛁','ฮ':'🦉',
+};
+const ENG_WORD = {
+  A:['🍎','Apple'], B:['⚽','Ball'], C:['🐱','Cat'], D:['🐶','Dog'], E:['🐘','Elephant'], F:['🐟','Fish'],
+  G:['🍇','Grapes'], H:['🎩','Hat'], I:['🍦','Ice cream'], J:['🧃','Juice'], K:['🪁','Kite'], L:['🦁','Lion'],
+  M:['🌙','Moon'], N:['🪺','Nest'], O:['🍊','Orange'], P:['🐷','Pig'], Q:['👸','Queen'], R:['🐰','Rabbit'],
+  S:['☀️','Sun'], T:['🌳','Tree'], U:['☂️','Umbrella'], V:['🎻','Violin'], W:['🐳','Whale'], X:['🦊','Fox'],
+  Y:['🪀','Yo-yo'], Z:['🦓','Zebra'],
+};
+function wordFor(ch) {
+  if (THAI_NAME[ch]) return [THAI_EMOJI[ch] || '', THAI_NAME[ch]];
+  if (ENG_WORD[ch]) return [ENG_WORD[ch][0], ch + ' ' + ENG_WORD[ch][1]];
+  if (NUM_NAME[ch]) return [ch === '0' ? '⭕' : '⭐'.repeat(+ch), ch + ' ' + NUM_NAME[ch]];
+  return ['', ch];
+}
 const NUM_NAME = {
   '0':'ศูนย์','1':'หนึ่ง','2':'สอง','3':'สาม','4':'สี่',
   '5':'ห้า','6':'หก','7':'เจ็ด','8':'แปด','9':'เก้า',
@@ -452,15 +480,15 @@ function showScreen(name) {
 }
 
 // ============================================================================
-// FONT — ensure Itim is loaded before drawing glyphs to canvas
+// FONT — ensure Mali (rounded, clear Thai heads) is loaded before drawing glyphs to canvas
 // ============================================================================
 let fontReady = null;
 function ensureFont() {
   if (!fontReady) {
     fontReady = (document.fonts && document.fonts.load)
       ? Promise.all([
-          document.fonts.load('700 200px Itim', 'ก'),
-          document.fonts.load('700 200px Itim', 'A'),
+          document.fonts.load('700 200px Mali', 'ก'),
+          document.fonts.load('700 200px Mali', 'A'),
         ]).then(() => document.fonts.ready).catch(() => {})
       : Promise.resolve();
   }
@@ -471,7 +499,7 @@ function ensureFont() {
 // GLYPH RENDERING — fit + center one character into an SxS canvas
 // ============================================================================
 function metricsFor(ctx, ch, size) {
-  ctx.font = `700 ${size}px Itim`;
+  ctx.font = `700 ${size}px Mali, Itim`;
   const m = ctx.measureText(ch);
   const aL = m.actualBoundingBoxLeft  != null ? m.actualBoundingBoxLeft  : 0;
   const aR = m.actualBoundingBoxRight != null ? m.actualBoundingBoxRight : m.width;
@@ -494,7 +522,7 @@ function drawGlyph(ctx, ch, S, mode) {
   m = metricsFor(ctx, ch, size);
   const x = (S - m.gw) / 2 + m.aL;
   const y = (S - m.gh) / 2 + m.aA;
-  ctx.font = `700 ${size}px Itim`;
+  ctx.font = `700 ${size}px Mali, Itim`;
   if (mode === 'stroke') {
     // Dark silhouette expanded outward by a thick round stroke → uniform outline.
     // The white body (drawn on top) covers the interior, leaving only the halo.
@@ -691,6 +719,10 @@ async function openGlyph(ch) {
   state.done = false;
   state.drawing = false;
   $('glyphTitle').textContent = ch;
+  const w = wordFor(ch), wl = $('wordLine');
+  wl.textContent = '';
+  if (w[0]) { const s = document.createElement('span'); s.className = 'em'; s.textContent = w[0]; wl.appendChild(s); }
+  wl.appendChild(document.createTextNode(w[1]));
   pctx.clearRect(0, 0, R, R);
   vctx.clearRect(0, 0, R, R);
   showScreen('game');
