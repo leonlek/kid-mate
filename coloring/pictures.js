@@ -839,13 +839,12 @@ add('farm', '🚜 ฟาร์ม', 'misc', 'bounce', 3, [
 
 // ===== Q6: food, sky, misc + faces on the simple lv1 drawings =====
 const arcRing = (id, cx, cy, r0, r1) => p(id, `M ${cx - r1} ${cy} A ${r1} ${r1} 0 0 1 ${cx + r1} ${cy} L ${cx + r0} ${cy} A ${r0} ${r0} 0 0 0 ${cx - r0} ${cy} Z`);
-add('rainbow', '🌈 รุ้งกินน้ำ', 'nature', 'shimmer', 2, [
-  c('sun', 130, 130, 62),
-  arcRing('r1', 400, 560, 285, 340), arcRing('r2', 400, 560, 230, 285), arcRing('r3', 400, 560, 175, 230), arcRing('r4', 400, 560, 120, 175), arcRing('r5', 400, 560, 65, 120),
-  cloud('cloud-l', 140, 600, 1.1), cloud('cloud-r', 660, 600, 1.1),
-  ...eye(100, 590, 14), ...eye(180, 590, 14), smile(140, 618, 18),
-  ...eye(620, 590, 14), ...eye(700, 590, 14), smile(660, 618, 18),
-  cloud('cloud-s', 560, 160, 0.7),
+add('rainbow', '🌈 รุ้งกินน้ำ', 'nature', 'shimmer', 3, [
+  // 7 bands like a real rainbow: แดง แสด เหลือง เขียว น้ำเงิน คราม ม่วง (outer → inner)
+  ...Array.from({ length: 7 }, (_, i) => arcRing('band-' + (i + 1), 400, 600, 380 - (i + 1) * 46, 380 - i * 46)),
+  cloud('cloud-l', 120, 610, 1.15), cloud('cloud-r', 680, 610, 1.15),
+  ...eye(80, 600, 14), ...eye(160, 600, 14), smile(120, 628, 18),
+  ...eye(640, 600, 14), ...eye(720, 600, 14), smile(680, 628, 18),
 ]);
 add('sun', '☀️ พระอาทิตย์', 'nature', 'spin', 3, [
   ...Array.from({ length: 12 }, (_, i) => petal('ray' + i, 400, 400, i * 30, 360, 46)),
