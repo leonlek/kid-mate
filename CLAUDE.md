@@ -127,6 +127,10 @@ Tap-to-fill coloring. **82 pictures** live in `coloring/pictures.js` (data only;
 
 Scribble-with-crayon scenes (portrait 800×1200). 60 scenes: 11 hand-written in `crayon/index.html` + 49 generated into `crayon/scenes.js` from the coloring game's drawings (`node tools/gen_crayon_scenes.js` — edit `coloring/pictures.js` or the LIST in the script, then re-run; never hand-edit scenes.js). Regions under ~46 units don't have to be touched to finish. Size button cycles 3 crayon widths; ⭐ level is derived from the paintable-region count.
 
+### ท่องอวกาศ (`/solar-system/`)
+
+Interactive solar system: planets orbit at true relative speeds (1/period; 1 Earth year = 20 s at ▶), tap a body → inline info card with NASA Planetary Fact Sheet figures + Thai TTS; 📏 view draws all diameters to one true scale; 🎯 missions (⭐ find by name, ⭐⭐ find by clue). **Accuracy rule:** every number/clue must match NASA data; orbit distances and orbit-view sizes are compressed and the screen says so. Giant-planet moon counts change often — keep them as "มากกว่า …".
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
