@@ -111,6 +111,12 @@
   #sizeWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   #sizeSvg { min-width: 760px; }
 
+  .vctrls { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .vlab { font-size: 28px; }
+  #tilt { -webkit-appearance: none; appearance: none; width: min(260px, 50vw); height: 14px; border-radius: 999px; background: rgba(255,255,255,0.25); outline: none; }
+  #tilt::-webkit-slider-thumb { -webkit-appearance: none; width: 44px; height: 44px; border-radius: 50%; background: var(--gold); border: 4px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.35); cursor: pointer; }
+  #tilt::-moz-range-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); border: 4px solid #fff; cursor: pointer; }
+  #orbitSvg { touch-action: none; }
   /* planet picker strip — the big, easy tap targets */
   .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
   @media (min-width: 760px) { .strip { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
@@ -242,6 +248,15 @@
         <button class="chip icon" data-speed="0.25" aria-label="ช้า">🐢</button>
         <button class="chip icon on" data-speed="1" aria-label="ปกติ">▶️</button>
         <button class="chip icon" data-speed="6" aria-label="เร็ว">🚀</button>
+      </div>
+      <div class="vctrls" id="vctrls">
+        <span class="vlab">🔝</span>
+        <input type="range" id="tilt" min="0" max="75" step="1" value="0" aria-label="มุมเอียง">
+        <span class="vlab">🛸</span>
+        <button class="chip icon" id="zIn" aria-label="ซูมเข้า">➕</button>
+        <button class="chip icon" id="zOut" aria-label="ซูมออก">➖</button>
+        <button class="chip icon" id="zFollow" aria-label="ตามดาวที่เลือก">🎯</button>
+        <button class="chip icon" id="zReset" aria-label="ดูทั้งหมด">🔍</button>
       </div>
       <div class="strip" id="strip"></div>
     </div>
@@ -395,42 +410,93 @@ let moonAngle = 0, beltAngle = 0;
 let days = 0, speed = 1, selected = 'earth', mode = 'explore';
 const DAYS_PER_SEC = 365.25 / 20;   // at ▶ speed one Earth year takes 20 seconds
 
+// Tilt: the orbital plane is drawn as seen at an angle (orthographic) — orbits become
+// ellipses (height × cos tilt) and planets on the far side pass BEHIND the Sun.
+let tiltDeg = 0, TS = 1;
+// Zoom/pan: the SVG viewBox. 1000 = whole system.
+const vb = { x: 0, y: 0, w: 1000 };
+let follow = false;
+
 function buildOrbit() {
-  let s = `<circle cx="500" cy="500" r="${ORBIT_R.mercury - 30}" fill="none"/>`;
-  for (const p of PLANETS) s += `<circle cx="500" cy="500" r="${ORBIT_R[p.id]}" fill="none" stroke="rgba(170,185,255,0.28)" stroke-width="2"/>`;
+  let s = '';
+  for (const p of PLANETS) s += `<ellipse class="orb" cx="500" cy="500" rx="${ORBIT_R[p.id]}" ry="${ORBIT_R[p.id]}" fill="none" stroke="rgba(170,185,255,0.28)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
   // asteroid belt between Mars and Jupiter
   let belt = '';
   let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   for (let i = 0; i < 170; i++) {
     const a = rnd() * Math.PI * 2, rr = 252 + rnd() * 40;
-    belt += `<circle cx="${(500 + rr * Math.cos(a)).toFixed(1)}" cy="${(500 + rr * Math.sin(a)).toFixed(1)}" r="${(1 + rnd() * 1.8).toFixed(1)}" fill="#a39b8f" opacity="${(0.5 + rnd() * 0.5).toFixed(2)}"/>`;
+    belt += `<circle cx="${(rr * Math.cos(a)).toFixed(1)}" cy="${(rr * Math.sin(a)).toFixed(1)}" r="${(1 + rnd() * 1.8).toFixed(1)}" fill="#a39b8f" opacity="${(0.5 + rnd() * 0.5).toFixed(2)}"/>`;
   }
   s += `<g id="belt">${belt}</g>`;
+  s += `<g id="backG"></g>`;
   s += `<g id="sunG" data-id="sun">${art('sun', 500, 500, 48, { glow: true })}</g>`;
+  s += `<g id="frontG">`;
   for (const p of PLANETS) {
     s += `<g id="pl-${p.id}" data-id="${p.id}"><circle class="selring" cx="0" cy="0" r="${SHOW_R[p.id] + 10}" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/>${art(p.id, 0, 0, SHOW_R[p.id])}` +
       (p.id === 'earth' ? `<g id="moonG">${art('moon', 0, 0, 4)}</g>` : '') + `</g>`;
   }
+  s += `</g>`;
   s += `<text id="selLabel" x="0" y="0" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="#ffd93d" stroke="#0b1033" stroke-width="6" paint-order="stroke"></text>`;
   orbitSvg.innerHTML = s;
 }
+function setTilt(deg) {
+  tiltDeg = deg; TS = Math.cos(deg * Math.PI / 180);
+  for (const el of orbitSvg.querySelectorAll('.orb')) el.setAttribute('ry', (+el.getAttribute('rx') * TS).toFixed(1));
+  placeOrbit();
+}
 function placeOrbit() {
-  for (const p of PLANETS) {
+  const backG = document.getElementById('backG'), frontG = document.getElementById('frontG');
+  // far side (sin < 0, top of the screen) first, so nearer planets paint over farther ones
+  const order = PLANETS.slice().sort((p, q) => Math.sin(angle[p.id]) - Math.sin(angle[q.id]));
+  for (const p of order) {
     const r = ORBIT_R[p.id], a = angle[p.id];
-    const x = 500 + r * Math.cos(a), y = 500 + r * Math.sin(a);
+    const x = 500 + r * Math.cos(a), y = 500 + r * Math.sin(a) * TS;
     const g = document.getElementById('pl-' + p.id);
     g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
     g._x = x; g._y = y;
     g.querySelector('.selring').setAttribute('opacity', selected === p.id ? 1 : 0);
+    // behind the Sun only when on the far side AND the view is tilted enough to overlap
+    const behind = tiltDeg > 5 && Math.sin(a) < 0;
+    (behind ? backG : frontG).appendChild(g);
   }
   const mg = document.getElementById('moonG');
-  mg.setAttribute('transform', `translate(${(24 * Math.cos(moonAngle)).toFixed(1)} ${(24 * Math.sin(moonAngle)).toFixed(1)})`);
-  document.getElementById('belt').setAttribute('transform', `rotate(${(beltAngle * 180 / Math.PI).toFixed(2)} 500 500)`);
+  mg.setAttribute('transform', `translate(${(24 * Math.cos(moonAngle)).toFixed(1)} ${(24 * Math.sin(moonAngle) * TS).toFixed(1)})`);
+  document.getElementById('belt').setAttribute('transform', `translate(500 500) scale(1 ${TS.toFixed(3)}) rotate(${(beltAngle * 180 / Math.PI).toFixed(2)})`);
   const lab = document.getElementById('selLabel');
   const sb = BY[selected];
-  if (selected === 'sun') { lab.setAttribute('x', 500); lab.setAttribute('y', 500 + 48 + 34); lab.textContent = sb.th; }
-  else if (selected === 'moon') { const g = document.getElementById('pl-earth'); lab.setAttribute('x', g._x); lab.setAttribute('y', g._y + 50); lab.textContent = sb.th; }
-  else { const g = document.getElementById('pl-' + selected); lab.setAttribute('x', g._x); lab.setAttribute('y', g._y + SHOW_R[selected] + 34); lab.textContent = sb.th; }
+  let lx, ly;
+  if (selected === 'sun') { lx = 500; ly = 500 + 48 + 34; }
+  else if (selected === 'moon') { const g = document.getElementById('pl-earth'); lx = g._x; ly = g._y + 50; }
+  else { const g = document.getElementById('pl-' + selected); lx = g._x; ly = g._y + SHOW_R[selected] + 34; }
+  lab.setAttribute('x', lx.toFixed(1)); lab.setAttribute('y', ly.toFixed(1)); lab.textContent = sb.th;
+  lab.setAttribute('font-size', (24 * vb.w / 1000).toFixed(1)); lab.setAttribute('stroke-width', (6 * vb.w / 1000).toFixed(2));
+  if (follow) followSelected();
+}
+// ---- zoom / pan ----
+function applyVB() {
+  vb.w = Math.max(160, Math.min(1000, vb.w));
+  vb.x = Math.max(0, Math.min(1000 - vb.w, vb.x));
+  vb.y = Math.max(0, Math.min(1000 - vb.w, vb.y));
+  orbitSvg.setAttribute('viewBox', `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.w.toFixed(1)}`);
+}
+function zoomAt(f, cx, cy) {             // f < 1 = zoom in, around content point (cx,cy)
+  const nw = Math.max(160, Math.min(1000, vb.w * f));
+  vb.x = cx - (cx - vb.x) * nw / vb.w; vb.y = cy - (cy - vb.y) * nw / vb.w; vb.w = nw;
+  applyVB(); placeOrbit();
+}
+function selPos() {
+  if (selected === 'sun') return [500, 500];
+  const g = document.getElementById('pl-' + (selected === 'moon' ? 'earth' : selected));
+  return [g._x, g._y];
+}
+function followSelected() {
+  const [x, y] = selPos();
+  vb.x = x - vb.w / 2; vb.y = y - vb.w / 2;
+  applyVB();
+}
+function toContent(e) {
+  const pt = orbitSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(orbitSvg.getScreenCTM().inverse());
 }
 function fmtDays(d) {
   const y = Math.floor(d / 365.25), rest = Math.floor(d - y * 365.25);
@@ -452,18 +518,66 @@ function tick(now) {
   requestAnimationFrame(tick);
 }
 
-// tap in the orbit view → nearest body (generous radius, little fingers)
-orbitSvg.addEventListener('pointerdown', (e) => {
-  ensureAudio();
-  const pt = orbitSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
-  const q = pt.matrixTransform(orbitSvg.getScreenCTM().inverse());
+// tap in the orbit view → nearest body (generous radius, little fingers);
+// drag = pan (when zoomed), two fingers = pinch zoom, mouse wheel = zoom
+const ptrs = new Map();
+let gesture = null;
+function pickAt(e) {
+  const q = toContent(e);
   let best = null, bd = 1e9;
+  const tol = 60 * vb.w / 1000 + 10;
   const consider = (id, x, y, r) => { const d = Math.hypot(q.x - x, q.y - y) - r; if (d < bd) { bd = d; best = id; } };
   consider('sun', 500, 500, 48);
   for (const p of PLANETS) { const g = document.getElementById('pl-' + p.id); consider(p.id, g._x, g._y, SHOW_R[p.id]); }
   const eg = document.getElementById('pl-earth');
-  consider('moon', eg._x + 24 * Math.cos(moonAngle), eg._y + 24 * Math.sin(moonAngle), 4);
-  if (best && bd < 60) choose(best);
+  consider('moon', eg._x + 24 * Math.cos(moonAngle), eg._y + 24 * Math.sin(moonAngle) * TS, 4);
+  if (best && bd < tol) choose(best);
+}
+orbitSvg.addEventListener('pointerdown', (e) => {
+  ensureAudio();
+  try { orbitSvg.setPointerCapture(e.pointerId); } catch (_) {}
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY });
+  if (ptrs.size === 1) gesture = { moved: false, vx: vb.x, vy: vb.y };
+  else if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()];
+    gesture = { pinch: true, d0: Math.hypot(a.x - b.x, a.y - b.y), w0: vb.w, moved: true };
+  }
+});
+orbitSvg.addEventListener('pointermove', (e) => {
+  const p = ptrs.get(e.pointerId); if (!p || !gesture) return;
+  p.x = e.clientX; p.y = e.clientY;
+  const rect = orbitSvg.getBoundingClientRect(), k = vb.w / rect.width;
+  if (gesture.pinch && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const mid = toContent({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+    zoomAt((gesture.w0 * gesture.d0 / Math.max(20, d)) / vb.w, mid.x, mid.y);
+  } else if (ptrs.size === 1) {
+    if (Math.hypot(p.x - p.sx, p.y - p.sy) > 10) gesture.moved = true;
+    if (gesture.moved && vb.w < 1000) {
+      follow = false; document.getElementById('zFollow').classList.remove('on');
+      vb.x = gesture.vx - (p.x - p.sx) * k; vb.y = gesture.vy - (p.y - p.sy) * k;
+      applyVB(); placeOrbit();
+    }
+  }
+});
+function endPtr(e) {
+  const had = ptrs.get(e.pointerId);
+  ptrs.delete(e.pointerId);
+  if (had && gesture && !gesture.moved && !gesture.pinch && ptrs.size === 0) pickAt(e);
+  if (ptrs.size === 0) gesture = null;
+}
+orbitSvg.addEventListener('pointerup', endPtr);
+orbitSvg.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); if (!ptrs.size) gesture = null; });
+orbitSvg.addEventListener('wheel', (e) => { e.preventDefault(); const q = toContent(e); zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, q.x, q.y); }, { passive: false });
+document.getElementById('tilt').addEventListener('input', (e) => setTilt(+e.target.value));
+document.getElementById('zIn').addEventListener('click', () => { buzz(8); const [x, y] = follow ? selPos() : [vb.x + vb.w / 2, vb.y + vb.w / 2]; zoomAt(0.7, x, y); });
+document.getElementById('zOut').addEventListener('click', () => { buzz(8); zoomAt(1 / 0.7, vb.x + vb.w / 2, vb.y + vb.w / 2); });
+document.getElementById('zReset').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
+document.getElementById('zFollow').addEventListener('click', (e) => {
+  buzz(8); follow = !follow; e.currentTarget.classList.toggle('on', follow);
+  if (follow && vb.w > 500) vb.w = 420;
+  placeOrbit();
 });
 
 // ============================================================================
@@ -839,6 +953,7 @@ function setMode(m) {
   const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', ageView: m === 'age', moonView: m === 'moon' };
   for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
   document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
+  document.getElementById('vctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
   strip.classList.toggle('hidden', m === 'age' || m === 'moon');
   if (m === 'mission') { target = null; newQuestion(); }
   else if (m === 'jump') { visit(dest); }
