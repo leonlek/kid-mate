@@ -157,6 +157,29 @@
   .score { text-align: center; font-size: 26px; margin-top: 8px; min-height: 34px; letter-spacing: 2px; }
   .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
 
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .pick { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 8px 0; }
+  .pick .chip { min-width: 64px; }
+  .res { font-size: 18px; line-height: 1.45; margin-top: 10px; }
+  .res b { color: var(--brand-dark); font-size: 22px; }
+  .ages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; }
+  @media (min-width: 700px) { .ages { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .acard {
+    background: rgba(255,255,255,0.08); border: 3px solid rgba(255,255,255,0.18);
+    border-radius: 20px; padding: 10px; text-align: center; cursor: pointer;
+  }
+  .acard svg { width: 64px; height: 64px; }
+  .acard .an { font-size: 15px; color: #cfd6ff; }
+  .acard .av { font-family: 'Itim', cursive; font-size: 30px; color: var(--gold); line-height: 1.1; }
+  .acard .ax { font-size: 12px; color: #aab3e6; }
+  .acard.sel { border-color: var(--gold); background: rgba(255,217,61,0.15); }
+  .phase { display: block; margin: 0 auto; width: 200px; height: 200px; }
   .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
   .hidden { display: none !important; }
@@ -192,6 +215,9 @@
     <button class="chip on" data-mode="explore">🔭 สำรวจ</button>
     <button class="chip" data-mode="size">📏 เทียบขนาด</button>
     <button class="chip" data-mode="mission">🎯 ภารกิจ</button>
+    <button class="chip" data-mode="jump">🚀 ไปเยือนดาว</button>
+    <button class="chip" data-mode="age">🎂 อายุบนดาว</button>
+    <button class="chip" data-mode="moon">🌙 ข้างขึ้นข้างแรม</button>
   </div>
 
   <div class="main">
@@ -204,6 +230,12 @@
       <div class="view hidden" id="sizeView">
         <div id="sizeWrap"><svg id="sizeSvg" viewBox="0 0 1900 600" aria-label="เทียบขนาดดาว"></svg></div>
         <div class="note" style="position:static;max-width:none;text-align:center;padding:0 12px 10px">ขนาดในหน้านี้เทียบกันตามจริง · ดวงอาทิตย์ใหญ่จนล้นจอ!</div>
+      </div>
+      <div class="view hidden" id="jumpView"><svg id="jumpSvg" viewBox="0 0 1000 700" aria-label="ไปเยือนดาว"></svg></div>
+      <div class="view hidden" id="ageView"><div class="ages" id="ages"></div></div>
+      <div class="view hidden" id="moonView">
+        <svg id="moonSvg" viewBox="0 0 1000 700" aria-label="ดวงจันทร์โคจรรอบโลก"></svg>
+        <div class="note">ลากดวงจันทร์ให้วิ่งรอบโลก · ภาพมองจากเหนือขั้วโลกเหนือ (ระยะย่อ)</div>
       </div>
       <div class="ctrls" id="ctrls">
         <button class="chip icon" data-speed="0" aria-label="หยุด">⏸</button>
@@ -407,7 +439,8 @@ function fmtDays(d) {
 let last = performance.now();
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
-  if (mode !== 'size' && speed > 0 && !document.hidden) {
+  moonTick(dt);
+  if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
     const dd = dt * DAYS_PER_SEC * speed;
     days += dd;
     for (const p of PLANETS) angle[p.id] -= dd / p.periodDays * Math.PI * 2;   // counter-clockwise seen from above the north pole
@@ -503,6 +536,7 @@ function markStrip(id) { for (const el of strip.children) el.classList.toggle('s
 
 function choose(id) {
   if (mode === 'mission') { answer(id); return; }
+  if (mode === 'jump') { visit(id); return; }
   selected = id;
   markStrip(id);
   renderInfo(id);
@@ -576,16 +610,240 @@ function answer(id) {
   }
 }
 
+
+// ============================================================================
+// 🚀 VISIT A WORLD — jump height + weight from real surface gravity (NASA, Earth = 1)
+// Gas/ice giants have no ground and the Sun is far too hot — the game says so.
+// ============================================================================
+const GRAV = { sun: 28, mercury: 0.38, venus: 0.90, earth: 1, moon: 0.165, mars: 0.38, jupiter: 2.36, saturn: 0.92, uranus: 0.89, neptune: 1.12 };
+const NO_GROUND = { jupiter: 1, saturn: 1, uranus: 1, neptune: 1 };
+const EARTH_JUMP_CM = 30;
+let kg = 20, dest = 'moon', jumping = false;
+const jumpSvg = document.getElementById('jumpSvg');
+function astronaut() {
+  return `<g id="astro">
+    <rect x="-34" y="-96" width="20" height="52" rx="8" fill="#cfd6e6" stroke="#2d3436" stroke-width="4"/>
+    <rect x="-26" y="-100" width="52" height="64" rx="18" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="-12" y="-82" width="24" height="16" rx="5" fill="#ff6b9d" stroke="#2d3436" stroke-width="3"/>
+    <rect x="-24" y="-40" width="20" height="40" rx="8" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="4" y="-40" width="20" height="40" rx="8" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="-44" y="-92" width="18" height="40" rx="9" fill="#fff" stroke="#2d3436" stroke-width="5" transform="rotate(20 -35 -92)"/>
+    <rect x="26" y="-92" width="18" height="40" rx="9" fill="#fff" stroke="#2d3436" stroke-width="5" transform="rotate(-20 35 -92)"/>
+    <circle cx="0" cy="-128" r="34" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <ellipse cx="2" cy="-126" rx="22" ry="17" fill="#2b3a67"/>
+    <ellipse cx="-6" cy="-132" rx="7" ry="4" fill="#fff" opacity=".8"/>
+  </g>`;
+}
+function buildJump() {
+  const id = dest, R = 1500, surfY = 560;
+  let s = `<rect x="0" y="0" width="1000" height="700" fill="transparent"/>`;
+  if (id === 'sun') {
+    s += `<g>${art('sun', 500, surfY + R, R)}</g>`;
+    s += `<text x="500" y="250" text-anchor="middle" font-family="Mitr" font-size="40" font-weight="700" fill="#ffd93d" stroke="#0b1033" stroke-width="8" paint-order="stroke">ร้อนเกินไป! เข้าใกล้ไม่ได้ 🔥</text>`;
+    jumpSvg.innerHTML = s; return;
+  }
+  s += `<g>${art(id, 500, surfY + R, R)}</g>`;
+  // ruler: 1 m = 150 units
+  const M = 150;
+  for (let cm = 0; cm <= 200; cm += 50) {
+    const y = surfY - cm / 100 * M;
+    s += `<line x1="70" y1="${y}" x2="${cm % 100 ? 100 : 120}" y2="${y}" stroke="#fff" stroke-width="4" opacity=".8"/>`;
+    if (cm % 100 === 0) s += `<text x="130" y="${y + 9}" font-family="Mitr" font-size="26" fill="#fff">${cm / 100} ม.</text>`;
+  }
+  s += `<line x1="85" y1="${surfY}" x2="85" y2="${surfY - 2 * M}" stroke="#fff" stroke-width="4" opacity=".8"/>`;
+  // Earth jump reference (dashed)
+  s += `<line x1="380" y1="${surfY - EARTH_JUMP_CM / 100 * M}" x2="620" y2="${surfY - EARTH_JUMP_CM / 100 * M}" stroke="#7ed957" stroke-width="4" stroke-dasharray="10 8"/><text x="630" y="${surfY - EARTH_JUMP_CM / 100 * M + 8}" font-family="Mitr" font-size="22" fill="#7ed957">บนโลก</text>`;
+  if (NO_GROUND[id]) {
+    s += `<rect x="410" y="${surfY - 8}" width="180" height="16" rx="8" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="12 8"/>`;
+    s += `<text x="500" y="${surfY + 52}" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="#fff" stroke="#0b1033" stroke-width="6" paint-order="stroke">ไม่มีพื้นให้ยืน · แท่นสมมติ</text>`;
+  }
+  const h = Math.min(260, EARTH_JUMP_CM / GRAV[id]);
+  s += `<line id="peak" x1="400" y1="${surfY - h / 100 * M}" x2="600" y2="${surfY - h / 100 * M}" stroke="#ffd93d" stroke-width="4" opacity="0"/>`;
+  s += `<g id="astroWrap" transform="translate(500 ${surfY})">${astronaut()}</g>`;
+  jumpSvg.innerHTML = s;
+}
+function jumpCm(id) { return Math.round(EARTH_JUMP_CM / GRAV[id]); }
+function renderJumpPanel() {
+  const b = BY[dest], g = GRAV[dest], w = Math.round(kg * g * 10) / 10;
+  const hot = dest === 'sun';
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${art(dest, 0, 0, dest === 'saturn' ? 24 : dest === 'uranus' ? 34 : 44)}</svg>
+      <div><div class="p-name">${b.th}</div><div class="p-sub">แรงโน้มถ่วง ${g === 1 ? 'เท่าโลก' : g + ' เท่าของโลก'}</div></div></div>
+    <div style="margin-top:10px;font-weight:600">หนูหนักเท่าไหร่บนโลก?</div>
+    <div class="pick">${[15, 20, 25, 30].map(k => `<button class="chip ${k === kg ? 'on' : ''}" data-kg="${k}">🧒 ${k} กก.</button>`).join('')}</div>
+    <div class="res">${hot ? `ดวงอาทิตย์ร้อนจัดและไม่มีพื้นให้ยืน แต่ถ้ายืนได้ ตาชั่งจะชี้ <b>${w} กก.</b> หนักกว่าบนโลก 28 เท่า!`
+      : `${NO_GROUND[dest] ? 'ดาวนี้เป็นก๊าซ ไม่มีพื้นให้ยืน — ถ้ายืนได้ ' : 'บน' + b.th + ' '}ตาชั่งจะชี้ <b>${w} กก.</b><br>กระโดดได้สูง <b>${jumpCm(dest)} ซม.</b> (บนโลก ${EARTH_JUMP_CM} ซม.)`}</div>
+    ${hot ? '' : `<button class="big-btn" id="jumpBtn">🦘 กระโดด!</button>`}
+    <div class="src">แรงโน้มถ่วงจาก NASA Planetary Fact Sheet · ความสูงคำนวณจากเด็กที่กระโดดบนโลกได้ ${EARTH_JUMP_CM} ซม.</div>`;
+  for (const c of panel.querySelectorAll('[data-kg]')) c.addEventListener('click', () => { kg = +c.dataset.kg; buzz(8); renderJumpPanel(); sayWeight(); });
+  const jb = document.getElementById('jumpBtn'); if (jb) jb.addEventListener('click', () => { ensureAudio(); doJump(); });
+}
+function sayWeight() {
+  const b = BY[dest], w = Math.round(kg * GRAV[dest] * 10) / 10;
+  speak(dest === 'sun' ? 'ดวงอาทิตย์ร้อนเกินไป เข้าใกล้ไม่ได้' : (NO_GROUND[dest] ? b.th + ' ไม่มีพื้นให้ยืน ' : 'บน' + b.th + ' ') + 'หนูจะหนัก ' + w + ' กิโลกรัม');
+}
+function doJump() {
+  if (jumping || dest === 'sun') return;
+  jumping = true;
+  const g = GRAV[dest], hcm = EARTH_JUMP_CM / g, M = 150, surfY = 560;
+  const shown = Math.min(hcm, 260) / 100 * M;
+  const T = 650 / g;                         // time in the air ∝ 1/g (Earth ≈ 0.65 s)
+  const wrap = document.getElementById('astroWrap'), peak = document.getElementById('peak');
+  const t0 = performance.now();
+  tone(300 + 200 * Math.min(2, 1 / g), 0.25, 'triangle', 0.12); buzz(15);
+  (function step(now) {
+    const u = Math.min(1, (now - t0) / Math.min(T, 6000));
+    const y = surfY - shown * 4 * u * (1 - u);
+    wrap.setAttribute('transform', `translate(500 ${y.toFixed(1)})`);
+    if (u > 0.45 && u < 0.55) peak.setAttribute('opacity', 1);
+    if (u < 1) requestAnimationFrame(step);
+    else { jumping = false; buzz(10); tone(200, 0.15, 'sine', 0.1); speak('กระโดดได้สูง ' + Math.round(hcm) + ' เซนติเมตร'); }
+  })(t0);
+}
+function visit(id) {
+  dest = id; markStrip(id);
+  buildJump(); renderJumpPanel(); blip(600); sayWeight();
+}
+
+// ============================================================================
+// 🎂 HOW OLD WOULD I BE — age × 365.25 ÷ orbital period (days)
+// ============================================================================
+let myAge = 5;
+function renderAges() {
+  const box = document.getElementById('ages');
+  box.innerHTML = PLANETS.map(p => {
+    const a = myAge * 365.25 / p.periodDays;
+    const big = a >= 1;
+    const wait = Math.ceil(p.periodDays / 365.25 - myAge);
+    return `<div class="acard ${p.id === 'earth' ? 'sel' : ''}" data-id="${p.id}">
+      <svg viewBox="-60 -60 120 120">${art(p.id, 0, 0, p.id === 'saturn' ? 24 : p.id === 'uranus' ? 34 : 44)}</svg>
+      <div class="an">${p.th}</div>
+      <div class="av">${big ? Math.floor(a) + ' ปี' : 'ยังไม่ถึง 1 ปี'}</div>
+      <div class="ax">${big ? '1 ปีที่นี่ = ' + p.yearTxt : 'อีก ' + wait + ' ปีโลก ถึงจะครบ 1 ปี'}</div></div>`;
+  }).join('');
+  for (const c of box.children) c.addEventListener('click', () => { ensureAudio(); sayAge(c.dataset.id); for (const o of box.children) o.classList.toggle('sel', o === c); });
+}
+function sayAge(id) {
+  const p = BY[id], a = myAge * 365.25 / p.periodDays;
+  speak(a >= 1 ? 'ถ้าอยู่บน' + p.th + ' หนูจะอายุ ' + Math.floor(a) + ' ปี' : 'บน' + p.th + ' หนูยังอายุไม่ถึงหนึ่งปีเลย');
+}
+function renderAgePanel() {
+  panel.innerHTML = `
+    <div class="q-text">🎂 หนูอายุกี่ขวบ?</div>
+    <div class="pick">${[3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button class="chip ${n === myAge ? 'on' : ''}" data-age="${n}">${n}</button>`).join('')}</div>
+    <div class="res">1 ปี คือเวลาที่ดาวเดินทางรอบดวงอาทิตย์ครบ 1 รอบ ดาวที่อยู่ใกล้ใช้เวลาสั้น ดาวที่อยู่ไกลใช้เวลานานมาก<br>
+      บนโลก หนูมีชีวิตมาแล้วประมาณ <b>${Math.round(myAge * 365.25).toLocaleString('th-TH')} วัน</b></div>
+    <div class="src">คำนวณจากคาบการโคจรจริง (NASA) · แตะการ์ดดาวเพื่อฟัง</div>`;
+  for (const c of panel.querySelectorAll('[data-age]')) c.addEventListener('click', () => {
+    myAge = +c.dataset.age; buzz(8); ensureAudio(); renderAgePanel(); renderAges(); sayAge('mercury');
+  });
+}
+
+// ============================================================================
+// 🌙 MOON PHASES — drag the Moon around Earth. Sunlight comes from the left.
+// e = angle from the Sun direction, counter-clockwise (the Moon's real direction).
+// lit fraction = (1 − cos e) / 2 · waxing lights the RIGHT side (as seen from Thailand)
+// ============================================================================
+const moonSvg = document.getElementById('moonSvg');
+let elong = Math.PI / 2, moonDrag = false, moonAuto = false;
+const EX = 560, EY = 350, MR = 230;
+function buildMoon() {
+  let s = '';
+  for (let i = 0; i < 6; i++) { const y = 90 + i * 104; s += `<line x1="20" y1="${y}" x2="150" y2="${y}" stroke="#ffd93d" stroke-width="6" stroke-linecap="round"/><polygon points="150,${y - 14} 178,${y} 150,${y + 14}" fill="#ffd93d"/>`; }
+  s += `<text x="30" y="40" font-family="Mitr" font-size="26" font-weight="600" fill="#ffd93d">☀️ แสงอาทิตย์</text>`;
+  s += `<circle cx="${EX}" cy="${EY}" r="${MR}" fill="none" stroke="rgba(170,185,255,0.35)" stroke-width="3" stroke-dasharray="8 8"/>`;
+  s += `<g>${art('earth', EX, EY, 62)}<path d="M ${EX} ${EY - 62} A 62 62 0 0 1 ${EX} ${EY + 62} Z" fill="#000" opacity=".55"/></g>`;
+  s += `<text x="${EX}" y="${EY + 98}" text-anchor="middle" font-family="Mitr" font-size="22" fill="#cfd6ff">โลก (ด้านขวาเป็นกลางคืน)</text>`;
+  s += `<g id="mPos"><g>${art('moon', 0, 0, 30)}</g><path d="M 0 -30 A 30 30 0 0 1 0 30 Z" fill="#000" opacity=".6"/><circle r="52" fill="transparent"/></g>`;
+  moonSvg.innerHTML = s;
+  placeMoon();
+}
+function placeMoon() {
+  // Sun is to the LEFT: e = 0 → Moon on the Sun side (left of Earth)
+  const x = EX - MR * Math.cos(elong), y = EY + MR * Math.sin(elong);
+  document.getElementById('mPos').setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+}
+function phaseInfo(e) {
+  const deg = ((e * 180 / Math.PI) % 360 + 360) % 360;
+  const k = (1 - Math.cos(e)) / 2;
+  const waxing = deg < 180;
+  const day = Math.max(1, Math.min(15, Math.round((waxing ? deg : deg - 180) / 12.19)));
+  let name, thai;
+  if (deg < 8 || deg > 352) { name = 'เดือนมืด (จันทร์ดับ)'; thai = 'มองไม่เห็นดวงจันทร์ เพราะด้านที่โดนแสงหันไปทางดวงอาทิตย์'; }
+  else if (Math.abs(deg - 180) < 8) { name = 'เดือนเพ็ญ (ขึ้น 15 ค่ำ)'; thai = 'เห็นเต็มดวง เพราะโลกอยู่ระหว่างดวงอาทิตย์กับดวงจันทร์'; }
+  else if (Math.abs(deg - 90) < 8) { name = 'ขึ้น 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นครึ่งดวงด้านขวา · เป็นวันพระ'; }
+  else if (Math.abs(deg - 270) < 8) { name = 'แรม 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นครึ่งดวงด้านซ้าย · เป็นวันพระ'; }
+  else { name = (waxing ? 'ข้างขึ้น ' : 'ข้างแรม ') + day + ' ค่ำ'; thai = waxing ? 'ส่วนสว่างค่อยๆ ใหญ่ขึ้นทุกคืน' : 'ส่วนสว่างค่อยๆ เล็กลงทุกคืน'; }
+  return { k, waxing, name, thai };
+}
+function phasePath(e, R) {
+  const { k, waxing } = phaseInfo(e);
+  const rx = Math.abs(1 - 2 * k) * R, cres = k < 0.5;
+  if (k < 0.005) return '';
+  if (k > 0.995) return `<circle cx="0" cy="0" r="${R}" fill="#fdf6d8"/>`;
+  const d = waxing
+    ? `M 0 ${-R} A ${R} ${R} 0 0 1 0 ${R} A ${rx} ${R} 0 0 ${cres ? 0 : 1} 0 ${-R} Z`
+    : `M 0 ${-R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 ${cres ? 1 : 0} 0 ${-R} Z`;
+  return `<path d="${d}" fill="#fdf6d8"/>`;
+}
+function renderMoonPanel(sayIt) {
+  const pi = phaseInfo(elong);
+  let ph = document.getElementById('phaseSvg');
+  if (!ph) {
+    panel.innerHTML = `
+      <div style="text-align:center;font-weight:600">ภาพที่เห็นจากเมืองไทย</div>
+      <svg class="phase" id="phaseSvg" viewBox="-100 -100 200 200"></svg>
+      <div class="q-text" id="phName"></div><div class="q-hint" id="phDesc"></div>
+      <button class="big-btn" id="moonPlay">▶️ ให้ดวงจันทร์โคจรเอง</button>
+      <ul class="know">
+        <li>ดวงจันทร์ไม่มีแสงในตัวเอง เราเห็นเพราะแสงอาทิตย์ส่องแล้วสะท้อนมา</li>
+        <li>จากเดือนมืดถึงเดือนมืดครั้งถัดไปใช้เวลาราว 29.5 วัน</li>
+        <li>วันพระคือ ขึ้น 8 ค่ำ ขึ้น 15 ค่ำ แรม 8 ค่ำ และแรม 14 หรือ 15 ค่ำ · ลอยกระทงคือคืนเพ็ญเดือน 12</li>
+      </ul>`;
+    document.getElementById('moonPlay').addEventListener('click', () => {
+      moonAuto = !moonAuto; buzz(8);
+      document.getElementById('moonPlay').textContent = moonAuto ? '⏸ หยุด' : '▶️ ให้ดวงจันทร์โคจรเอง';
+    });
+    ph = document.getElementById('phaseSvg');
+  }
+  ph.innerHTML = `<circle cx="0" cy="0" r="80" fill="#3a3f5c"/>${phasePath(elong, 80)}<circle cx="0" cy="0" r="80" fill="none" stroke="#2d3436" stroke-width="4"/>`;
+  document.getElementById('phName').textContent = pi.name;
+  document.getElementById('phDesc').textContent = pi.thai;
+  if (sayIt) speak(pi.name);
+}
+function moonFromEvent(ev) {
+  const pt = moonSvg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const q = pt.matrixTransform(moonSvg.getScreenCTM().inverse());
+  // invert placeMoon: x = EX − MR·cos e, y = EY + MR·sin e
+  elong = Math.atan2(q.y - EY, EX - q.x);
+  if (elong < 0) elong += Math.PI * 2;
+  placeMoon(); renderMoonPanel(false);
+}
+let lastSaid = '';
+moonSvg.addEventListener('pointerdown', (e) => { ensureAudio(); moonDrag = true; moonAuto = false; try { moonSvg.setPointerCapture(e.pointerId); } catch (_) {} moonFromEvent(e); });
+moonSvg.addEventListener('pointermove', (e) => { if (moonDrag) moonFromEvent(e); });
+const endMoon = () => { if (!moonDrag) return; moonDrag = false; const n = phaseInfo(elong).name; if (n !== lastSaid) { lastSaid = n; speak(n); } };
+moonSvg.addEventListener('pointerup', endMoon); moonSvg.addEventListener('pointercancel', endMoon);
+function moonTick(dt) {
+  if (mode !== 'moon' || !moonAuto) return;
+  elong = (elong + dt * Math.PI * 2 / 12) % (Math.PI * 2);     // one lunar month every 12 s
+  placeMoon(); renderMoonPanel(false);
+}
+
 // ============================================================================
 // MODES + SPEED
 // ============================================================================
 function setMode(m) {
   mode = m;
   for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
-  document.getElementById('orbitView').classList.toggle('hidden', m === 'size');
-  document.getElementById('sizeView').classList.toggle('hidden', m !== 'size');
-  document.getElementById('ctrls').classList.toggle('hidden', m === 'size');
+  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', ageView: m === 'age', moonView: m === 'moon' };
+  for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
+  document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
+  strip.classList.toggle('hidden', m === 'age' || m === 'moon');
   if (m === 'mission') { target = null; newQuestion(); }
+  else if (m === 'jump') { visit(dest); }
+  else if (m === 'age') { renderAges(); renderAgePanel(); speak('หนูอายุกี่ขวบ แตะตัวเลขเลย'); }
+  else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
   else { renderInfo(selected); markStrip(selected); }
 }
 for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
