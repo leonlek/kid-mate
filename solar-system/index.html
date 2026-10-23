@@ -88,6 +88,10 @@
   /* layout: view + side panel (landscape) / stacked (portrait) */
   .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
   .main > * { min-width: 0; }
+  body.nopanel .main { grid-template-columns: minmax(0, 1fr) !important; }
+  body.nopanel #panel { display: none; }
+  body.nopanel #orbitSvg { max-height: 84vh; }
+  body.nopanel #orbitView, body.nopanel #sizeView { max-width: 1100px; margin: 0 auto; }
   @media (min-width: 900px) and (orientation: landscape) {
     .main { grid-template-columns: minmax(0, 1fr) 380px; }
   }
@@ -103,6 +107,16 @@
     position: absolute; left: 14px; bottom: 10px;
     font-size: 15px; color: #cfd6ff; background: rgba(0,0,0,0.35);
     padding: 4px 12px; border-radius: 999px;
+  }
+  #globe { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .pin {
+    position: absolute; transform: translate(-50%, -100%); pointer-events: none;
+    font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap;
+    background: rgba(229,75,130,0.92); padding: 3px 10px; border-radius: 999px; border: 2px solid #fff;
+  }
+  .ghint {
+    position: absolute; left: 50%; top: 12px; transform: translateX(-50%); pointer-events: none;
+    font-size: 15px; color: #fff; background: rgba(0,0,0,0.45); padding: 5px 14px; border-radius: 999px; white-space: nowrap;
   }
   .zoom-out {
     position: absolute; top: 12px; right: 12px; z-index: 2;
@@ -232,12 +246,16 @@
     <button class="chip" data-mode="jump">🚀 ไปเยือนดาว</button>
     <button class="chip" data-mode="age">🎂 อายุบนดาว</button>
     <button class="chip" data-mode="moon">🌙 ข้างขึ้นข้างแรม</button>
+    <button class="chip" id="panelBtn">🗂️ ซ่อนการ์ด</button>
   </div>
 
   <div class="main">
     <div>
       <div class="view" id="orbitView">
         <svg id="orbitSvg" viewBox="0 0 1000 1000" aria-label="ระบบสุริยะ"></svg>
+        <canvas id="globe"></canvas>
+        <div class="pin hidden" id="pin"></div>
+        <div class="ghint hidden" id="ghint">👆 ลากเพื่อหมุนดาว · ถ่างนิ้วเพื่อซูม</div>
         <div class="clock" id="clock">⏱ 0 วัน</div>
         <button class="zoom-out hidden" id="zoomOut" aria-label="ดูทั้งหมด">🔍 ดูทั้งหมด</button>
         <div class="note">ขนาดดาวและระยะทางย่อให้ดูง่าย<br>ของจริงอยู่ห่างกันมากกว่านี้มาก</div>
@@ -250,7 +268,9 @@
       <div class="view hidden" id="ageView"><div class="ages" id="ages"></div></div>
       <div class="view hidden" id="moonView">
         <svg id="moonSvg" viewBox="0 0 1000 700" aria-label="ดวงจันทร์โคจรรอบโลก"></svg>
-        <div class="note">ลากดวงจันทร์ให้วิ่งรอบโลก · ภาพมองจากเหนือขั้วโลกเหนือ (ระยะย่อ)</div>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 4px">มองจากด้านบน · ลากดวงจันทร์ให้วิ่งรอบโลก (ระยะย่อ)</div>
+        <svg id="sideSvg" viewBox="0 0 1000 230" aria-label="มองจากด้านข้าง"></svg>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 10px">มองจากด้านข้าง · วงโคจรดวงจันทร์เอียงจริง 5° (วาดให้เอียงมากขึ้นเพื่อให้เห็นชัด)</div>
       </div>
       <div class="ctrls" id="ctrls">
         <button class="chip icon" data-speed="0" aria-label="หยุด">⏸</button>
@@ -441,7 +461,7 @@ function buildOrbit() {
   s += `<g id="sunG" data-id="sun">${art('sun', 500, 500, 48, { glow: true })}</g>`;
   s += `<g id="frontG">`;
   for (const p of PLANETS) {
-    s += `<g id="pl-${p.id}" data-id="${p.id}"><circle class="selring" cx="0" cy="0" r="${SHOW_R[p.id] + 10}" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/>${art(p.id, 0, 0, SHOW_R[p.id])}` +
+    s += `<g id="pl-${p.id}" data-id="${p.id}"><circle class="selring" cx="0" cy="0" r="${SHOW_R[p.id] + 10}" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/><g class="art">${art(p.id, 0, 0, SHOW_R[p.id])}</g>` +
       (p.id === 'earth' ? `<g id="moonG">${art('moon', 0, 0, 4)}</g>` : '') + `</g>`;
   }
   s += `</g>`;
@@ -482,22 +502,27 @@ function placeOrbit() {
   if (follow) followSelected();
 }
 // ---- zoom / pan ----
+function bodyR(id) { return id === 'sun' ? 48 : id === 'moon' ? 4 : SHOW_R[id]; }
+function minW() { return follow && TEX[selected] ? Math.max(0.5, bodyR(selected) * 0.28) : 160; }
 function applyVB() {
   if (!isFinite(vb.x) || !isFinite(vb.y) || !isFinite(vb.w)) { vb.x = 0; vb.y = 0; vb.w = 1000; }   // never get stuck
-  vb.w = Math.max(160, Math.min(1000, vb.w));
-  vb.x = Math.max(0, Math.min(1000 - vb.w, vb.x));
-  vb.y = Math.max(0, Math.min(1000 - vb.w, vb.y));
+  vb.w = Math.max(minW(), Math.min(1000, vb.w));
+  if (!follow) {
+    vb.x = Math.max(0, Math.min(1000 - vb.w, vb.x));
+    vb.y = Math.max(0, Math.min(1000 - vb.w, vb.y));
+  }
   orbitSvg.setAttribute('viewBox', `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.w.toFixed(1)}`);
   document.getElementById('zoomOut').classList.toggle('hidden', vb.w > 990);
 }
 function zoomAt(f, cx, cy) {             // f < 1 = zoom in, around content point (cx,cy)
-  const nw = Math.max(160, Math.min(1000, vb.w * f));
+  const nw = Math.max(minW(), Math.min(1000, vb.w * f));
   vb.x = cx - (cx - vb.x) * nw / vb.w; vb.y = cy - (cy - vb.y) * nw / vb.w; vb.w = nw;
   applyVB(); placeOrbit();
 }
 function selPos() {
   if (selected === 'sun') return [500, 500];
-  const g = document.getElementById('pl-' + (selected === 'moon' ? 'earth' : selected));
+  if (selected === 'moon') { const g = document.getElementById('pl-earth'); return [g._x + 24 * Math.cos(moonAngle), g._y + 24 * Math.sin(moonAngle) * TS]; }
+  const g = document.getElementById('pl-' + selected);
   return [g._x, g._y];
 }
 function followSelected() {
@@ -517,6 +542,7 @@ let last = performance.now();
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   moonTick(dt);
+  if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
     const dd = dt * DAYS_PER_SEC * speed;
     days += dd;
@@ -533,6 +559,20 @@ function tick(now) {
 // drag = pan (when zoomed), two fingers = pinch zoom, mouse wheel = zoom
 const ptrs = new Map();
 let gesture = null;
+function nearestBody(q) {
+  let best = null, bd = 1e9;
+  const consider = (id, x, y, r) => { const d = Math.hypot(q.x - x, q.y - y) - r; if (d < bd) { bd = d; best = id; } };
+  consider('sun', 500, 500, 48);
+  for (const p of PLANETS) { const g = document.getElementById('pl-' + p.id); consider(p.id, g._x, g._y, SHOW_R[p.id]); }
+  const eg = document.getElementById('pl-earth');
+  consider('moon', eg._x + 24 * Math.cos(moonAngle), eg._y + 24 * Math.sin(moonAngle) * TS, 4);
+  return bd < 120 * vb.w / 1000 + 10 ? best : null;
+}
+function setFollow(id) {
+  if (id !== selected && mode !== 'mission') { selected = id; markStrip(id); renderInfo(id); }
+  follow = true; document.getElementById('zFollow').classList.add('on');
+  loadTex(selected);
+}
 function pickAt(e) {
   const q = toContent(e);
   let best = null, bd = 1e9;
@@ -562,9 +602,19 @@ orbitSvg.addEventListener('pointermove', (e) => {
     const [a, b] = [...ptrs.values()];
     const d = Math.hypot(a.x - b.x, a.y - b.y);
     const mid = toContent({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
-    zoomAt((gesture.w0 * gesture.d0 / Math.max(20, d)) / vb.w, mid.x, mid.y);
+    const want = gesture.w0 * gesture.d0 / Math.max(20, d);
+    if (!follow && want < 200) { const id = nearestBody(mid); if (id) setFollow(id); }
+    zoomAt(want / vb.w, mid.x, mid.y);
   } else if (ptrs.size === 1) {
     if (Math.hypot(p.x - p.sx, p.y - p.sy) > 10) gesture.moved = true;
+    if (gesture.moved && globeOn) {
+      const dx = p.x - (p.lx ?? p.sx), dy = p.y - (p.ly ?? p.sy);
+      p.lx = p.x; p.ly = p.y;
+      const k2 = 2.2 / Math.max(60, globeRcss);
+      gspin[selected] = (gspin[selected] || 0) + dx * k2;
+      viewLat = Math.max(-1.35, Math.min(1.35, viewLat + dy * k2));
+      return;
+    }
     if (gesture.moved && vb.w < 1000) {
       follow = false; document.getElementById('zFollow').classList.remove('on');
       vb.x = gesture.vx - (p.x - p.sx) * k; vb.y = gesture.vy - (p.y - p.sy) * k;
@@ -574,7 +624,7 @@ orbitSvg.addEventListener('pointermove', (e) => {
 });
 function restartPan() {
   // after a pinch, the finger that is still down continues as a pan from where it is now
-  for (const q of ptrs.values()) { q.sx = q.x; q.sy = q.y; }
+  for (const q of ptrs.values()) { q.sx = q.x; q.sy = q.y; q.lx = undefined; q.ly = undefined; }
   gesture = { moved: true, vx: vb.x, vy: vb.y };
 }
 function endPtr(e) {
@@ -590,15 +640,196 @@ orbitSvg.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); if
 for (const ev of ['gesturestart', 'gesturechange']) orbitSvg.addEventListener(ev, (e) => e.preventDefault());
 orbitSvg.addEventListener('wheel', (e) => { e.preventDefault(); const q = toContent(e); zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, q.x, q.y); }, { passive: false });
 document.getElementById('tilt').addEventListener('input', (e) => setTilt(+e.target.value));
-document.getElementById('zIn').addEventListener('click', () => { buzz(8); const [x, y] = follow ? selPos() : [vb.x + vb.w / 2, vb.y + vb.w / 2]; zoomAt(0.7, x, y); });
+document.getElementById('zIn').addEventListener('click', () => {
+  buzz(8);
+  if (vb.w < 400 && !follow) setFollow(selected);
+  const [x, y] = follow ? selPos() : [vb.x + vb.w / 2, vb.y + vb.w / 2]; zoomAt(0.6, x, y);
+});
 document.getElementById('zOut').addEventListener('click', () => { buzz(8); zoomAt(1 / 0.7, vb.x + vb.w / 2, vb.y + vb.w / 2); });
 document.getElementById('zoomOut').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zReset').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zFollow').addEventListener('click', (e) => {
   buzz(8); follow = !follow; e.currentTarget.classList.toggle('on', follow);
+  if (follow) loadTex(selected);
   if (follow && vb.w > 500) vb.w = 420;
   placeOrbit();
 });
+
+
+// ============================================================================
+// GLOBE — zoom close to a body and it becomes a real, rotating, sun-lit sphere.
+// Surface maps: Solar System Scope (CC BY 4.0, from NASA imagery) — see CREDITS.md.
+// Plain WebGL, no library. If WebGL is missing the flat drawing simply stays.
+// ============================================================================
+const TEX = { sun: '2k_sun.jpg', mercury: '2k_mercury.jpg', venus: '2k_venus_atmosphere.jpg', earth: '2k_earth_daymap.jpg', moon: '2k_moon.jpg',
+  mars: '2k_mars.jpg', jupiter: '2k_jupiter.jpg', saturn: '2k_saturn.jpg', uranus: '2k_uranus.jpg', neptune: '2k_neptune.jpg' };
+// axial tilt in degrees (NASA); Venus is drawn as 2.6° spinning backwards (= its 177.4°)
+const AXIS = { sun: 7.25, mercury: 0.03, venus: 2.6, earth: 23.4, moon: 6.7, mars: 25.2, jupiter: 3.1, saturn: 26.7, uranus: 97.8, neptune: 28.3 };
+const RETRO = { venus: 1, uranus: 1 };
+// pins on real places: [lat, lon, label]
+const PINS = { earth: [15, 101, '📍 ประเทศไทย'], mars: [18.65, -133.8, '🌋 ภูเขาไฟโอลิมปัส'], moon: [0.67, 23.47, '👣 อะพอลโล 11 ลงจอดที่นี่'] };
+const gcv = document.getElementById('globe');
+let gl = null, gprog = null, GU = {}, globeOn = false, globeRcss = 0, viewLat = 0.25;
+const texObj = {}, texLoading = {}, gspin = {};
+function glInit() {
+  if (gl !== null) return !!gl;
+  try { gl = gcv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true }); } catch (e) { gl = false; }
+  if (!gl) { gl = false; return false; }
+  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs = `precision highp float;
+uniform vec2 uC;uniform float uR;uniform mat3 uM;uniform mat3 uMT;uniform vec3 uL;
+uniform sampler2D uTex;uniform sampler2D uCloud;uniform sampler2D uRing;
+uniform float uEmis;uniform float uHasCloud;uniform float uHasRing;uniform float uRin;uniform float uRout;
+const float PI=3.14159265;
+void main(){
+  vec2 p=(gl_FragCoord.xy-uC)/uR; float d2=dot(p,p);
+  vec4 col=vec4(0.); float pz=-1e9;
+  if(d2<=1.){
+    vec3 n=vec3(p,sqrt(1.-d2)); vec3 q=uMT*n;
+    float lon=atan(q.x,q.z), lat=asin(clamp(q.y,-1.,1.));
+    vec2 uv=vec2(.5+lon/(2.*PI), .5-lat/PI);
+    vec3 c=texture2D(uTex,uv).rgb;
+    if(uHasCloud>.5){ float cl=texture2D(uCloud,uv).r; c=mix(c,vec3(1.),cl*.8); }
+    if(uEmis>.5){ c*=0.62+0.48*n.z; }
+    else { float dif=max(dot(n,uL),0.); c*=0.05+0.95*dif; }
+    col=vec4(c,1.); pz=n.z;
+  }
+  if(uHasRing>.5){
+    vec3 N=uM*vec3(0.,1.,0.);
+    if(abs(N.z)>1e-3){
+      float z=-(p.x*N.x+p.y*N.y)/N.z; vec3 P=vec3(p,z); float r=length(P);
+      if(r>uRin&&r<uRout&&z>pz){
+        vec4 rc=texture2D(uRing,vec2((r-uRin)/(uRout-uRin),.5));
+        float lit=.35+.65*abs(dot(N,uL));
+        // the planet's own shadow falls on the rings
+        float along=dot(P,uL); if(along<0.&&length(P-along*uL)<1.) lit*=.25;
+        vec3 rr=rc.rgb*lit; float a=rc.a;
+        col=vec4(mix(col.rgb,rr,a), max(col.a,a));
+      }
+    }
+  }
+  gl_FragColor=vec4(col.rgb*col.a,col.a);
+}`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  try {
+    gprog = gl.createProgram();
+    gl.attachShader(gprog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(gprog, sh(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(gprog); gl.useProgram(gprog);
+  } catch (e) { gl = false; return false; }
+  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(gprog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  for (const n of ['uC', 'uR', 'uM', 'uMT', 'uL', 'uTex', 'uCloud', 'uRing', 'uEmis', 'uHasCloud', 'uHasRing', 'uRin', 'uRout']) GU[n] = gl.getUniformLocation(gprog, n);
+  gl.uniform1i(GU.uTex, 0); gl.uniform1i(GU.uCloud, 1); gl.uniform1i(GU.uRing, 2);
+  return true;
+}
+function makeTex(img, clampS) {
+  const tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, clampS ? gl.CLAMP_TO_EDGE : gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return tx;
+}
+function fetchTex(key, file, clampS) {
+  if (texObj[key] || texLoading[key]) return;
+  texLoading[key] = true;
+  const img = new Image();
+  img.onload = () => { if (glInit()) texObj[key] = makeTex(img, clampS); };
+  img.onerror = () => { texLoading[key] = false; };     // offline first time → stay flat, retry later
+  img.src = 'tex/' + file;
+}
+function loadTex(id) {
+  if (!TEX[id] || !glInit()) return;
+  fetchTex(id, TEX[id]);
+  if (id === 'earth') fetchTex('clouds', '2k_earth_clouds.jpg');
+  if (id === 'saturn') fetchTex('ring', '2k_saturn_ring_alpha.png', true);
+}
+// rotation matrices (row-major 3x3 as arrays)
+function mul(a, b) { const r = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) r[i * 3 + j] = a[i * 3] * b[j] + a[i * 3 + 1] * b[3 + j] + a[i * 3 + 2] * b[6 + j]; return r; }
+const Rx = (t) => [1, 0, 0, 0, Math.cos(t), -Math.sin(t), 0, Math.sin(t), Math.cos(t)];
+const Ry = (t) => [Math.cos(t), 0, Math.sin(t), 0, 1, 0, -Math.sin(t), 0, Math.cos(t)];
+const Rz = (t) => [Math.cos(t), -Math.sin(t), 0, Math.sin(t), Math.cos(t), 0, 0, 0, 1];
+const colMajor = (m) => [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]];
+const transposeRM = (m) => [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]];
+function setArt(id, visible) {
+  const v = visible ? '' : 'hidden';
+  if (id === 'sun') document.getElementById('sunG').style.visibility = v;
+  else if (id === 'moon') document.getElementById('moonG').style.visibility = v;
+  else { const g = document.getElementById('pl-' + id); g.querySelector('.art').style.visibility = v; g.querySelector('.selring').style.visibility = v; }
+  document.getElementById('selLabel').style.visibility = v;
+}
+let artHidden = null;
+function renderGlobe(dt) {
+  const pin = document.getElementById('pin'), hint = document.getElementById('ghint');
+  const want = (mode === 'explore' || mode === 'mission') && follow && TEX[selected] && gl && texObj[selected];
+  const rect = orbitSvg.getBoundingClientRect(), vrect = document.getElementById('orbitView').getBoundingClientRect();
+  const m = orbitSvg.getScreenCTM();
+  let Rcss = 0, cx = 0, cy = 0;
+  if (want && m) {
+    const [x, y] = selPos();
+    cx = m.a * x + m.e - rect.left; cy = m.d * y + m.f - rect.top;
+    Rcss = bodyR(selected) * m.a;
+  }
+  const on = !!(want && Rcss >= 46);
+  globeRcss = Rcss;
+  if (artHidden && (!on || artHidden !== selected)) { setArt(artHidden, true); artHidden = null; }
+  if (!on) {
+    if (globeOn && gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+    globeOn = false; pin.classList.add('hidden'); hint.classList.add('hidden');
+    return;
+  }
+  globeOn = true;
+  if (artHidden !== selected) { setArt(selected, false); artHidden = selected; }
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = Math.round(rect.width * dpr), H = Math.round(rect.height * dpr);
+  if (gcv.width !== W || gcv.height !== H) {
+    gcv.width = W; gcv.height = H;
+    gcv.style.width = rect.width + 'px'; gcv.style.height = rect.height + 'px';
+  }
+  gcv.style.left = (rect.left - vrect.left) + 'px'; gcv.style.top = (rect.top - vrect.top) + 'px';
+  gl.viewport(0, 0, W, H);
+  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  // spin (direction true to each world; speed slowed down so kids can watch)
+  gspin[selected] = (gspin[selected] || 0) + (speed > 0 ? dt * 0.25 * (RETRO[selected] ? -1 : 1) : 0);
+  const M = mul(Rx(viewLat), mul(Rz(AXIS[selected] * Math.PI / 180), Ry(gspin[selected])));
+  gl.uniformMatrix3fv(GU.uM, false, colMajor(M));
+  gl.uniformMatrix3fv(GU.uMT, false, colMajor(transposeRM(M)));
+  // sunlight direction as seen in this tilted view (the Sun is in the orbital plane)
+  let L = [0, 0, 1];
+  if (selected !== 'sun') {
+    const a = selected === 'moon' ? angle.earth : angle[selected];
+    const st = Math.sin(tiltDeg * Math.PI / 180);
+    L = [-Math.cos(a), Math.sin(a) * TS, -Math.sin(a) * st];
+    const l = Math.hypot(L[0], L[1], L[2]) || 1; L = L.map(v => v / l);
+  }
+  gl.uniform3f(GU.uL, L[0], L[1], L[2]);
+  gl.uniform2f(GU.uC, cx * dpr, (rect.height - cy) * dpr);
+  gl.uniform1f(GU.uR, Rcss * dpr);
+  gl.uniform1f(GU.uEmis, selected === 'sun' ? 1 : 0);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texObj[selected]);
+  const hasCloud = selected === 'earth' && texObj.clouds, hasRing = selected === 'saturn' && texObj.ring;
+  gl.uniform1f(GU.uHasCloud, hasCloud ? 1 : 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, hasCloud ? texObj.clouds : texObj[selected]);
+  gl.uniform1f(GU.uHasRing, hasRing ? 1 : 0);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, hasRing ? texObj.ring : texObj[selected]);
+  gl.uniform1f(GU.uRin, 1.24); gl.uniform1f(GU.uRout, 2.27);         // C-ring inner edge → A-ring outer edge (planet radii)
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  // pin on a real place, when it faces us
+  const P = PINS[selected];
+  if (P) {
+    const la = P[0] * Math.PI / 180, lo = P[1] * Math.PI / 180;
+    const q = [Math.cos(la) * Math.sin(lo), Math.sin(la), Math.cos(la) * Math.cos(lo)];
+    const v = [M[0] * q[0] + M[1] * q[1] + M[2] * q[2], M[3] * q[0] + M[4] * q[1] + M[5] * q[2], M[6] * q[0] + M[7] * q[1] + M[8] * q[2]];
+    if (v[2] > 0.25) {
+      pin.textContent = P[2]; pin.classList.remove('hidden');
+      pin.style.left = (rect.left - vrect.left + cx + v[0] * Rcss) + 'px';
+      pin.style.top = (rect.top - vrect.top + cy - v[1] * Rcss) + 'px';
+    } else pin.classList.add('hidden');
+  } else pin.classList.add('hidden');
+  hint.classList.remove('hidden');
+}
 
 // ============================================================================
 // SIZE VIEW — all diameters to the same true scale (Earth radius = 16 units)
@@ -878,24 +1109,70 @@ function renderAgePanel() {
 // e = angle from the Sun direction, counter-clockwise (the Moon's real direction).
 // lit fraction = (1 − cos e) / 2 · waxing lights the RIGHT side (as seen from Thailand)
 // ============================================================================
-const moonSvg = document.getElementById('moonSvg');
-let elong = Math.PI / 2, moonDrag = false, moonAuto = false;
+const moonSvg = document.getElementById('moonSvg'), sideSvg = document.getElementById('sideSvg');
+let elong = Math.PI / 2, moonDrag = false, moonAuto = false, moonMonth = 3;
 const EX = 560, EY = 350, MR = 230;
+// The Moon's orbit is tilted 5.14° to Earth's. Each month the line where the two
+// orbits cross (the "nodes") sits ~30.6° further round relative to the Sun, so a
+// full Moon only meets Earth's shadow in about two months of the year.
+const nodeAt = (m) => ((m - 1) * 30.6 - 2.5) * Math.PI / 180;
+const betaDeg = (e) => 5.14 * Math.sin(e - nodeAt(moonMonth));       // Moon height above/below Earth's orbit plane
+function shownE() {                                                     // snap to exact full / new near them, small fingers
+  const d = Math.abs(((elong - Math.PI) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+  return d < 6 * Math.PI / 180 ? Math.PI : elong;
+}
+function eclipse() {
+  // umbra radius at the Moon ≈ 0.69°, Moon radius ≈ 0.26° (as seen from Earth)
+  const e = shownE();
+  const off = Math.abs(((e - Math.PI) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * 180 / Math.PI;
+  if (off > 3) return 0;
+  const d = Math.hypot(off, betaDeg(e));
+  return d < 0.43 ? 2 : d < 0.95 ? 1 : 0;                                // 2 = total, 1 = partial
+}
 function buildMoon() {
   let s = '';
   for (let i = 0; i < 6; i++) { const y = 90 + i * 104; s += `<line x1="20" y1="${y}" x2="150" y2="${y}" stroke="#ffd93d" stroke-width="6" stroke-linecap="round"/><polygon points="150,${y - 14} 178,${y} 150,${y + 14}" fill="#ffd93d"/>`; }
   s += `<text x="30" y="40" font-family="Mitr" font-size="26" font-weight="600" fill="#ffd93d">☀️ แสงอาทิตย์</text>`;
+  // Earth's shadow (umbra) behind Earth, away from the Sun
+  s += `<polygon points="${EX},${EY - 62} 1000,${EY - 40} 1000,${EY + 40} ${EX},${EY + 62}" fill="#000" opacity=".5"/>`;
+  s += `<text x="985" y="${EY + 72}" text-anchor="end" font-family="Mitr" font-size="20" fill="#9aa3d6">เงาของโลก</text>`;
   s += `<circle cx="${EX}" cy="${EY}" r="${MR}" fill="none" stroke="rgba(170,185,255,0.35)" stroke-width="3" stroke-dasharray="8 8"/>`;
+  s += `<line id="sight" x1="${EX}" y1="${EY}" x2="${EX}" y2="${EY}" stroke="#ffd93d" stroke-width="3" stroke-dasharray="4 8" opacity=".8"/>`;
   s += `<g>${art('earth', EX, EY, 62)}<path d="M ${EX} ${EY - 62} A 62 62 0 0 1 ${EX} ${EY + 62} Z" fill="#000" opacity=".55"/></g>`;
   s += `<text x="${EX}" y="${EY + 98}" text-anchor="middle" font-family="Mitr" font-size="22" fill="#cfd6ff">โลก (ด้านขวาเป็นกลางคืน)</text>`;
-  s += `<g id="mPos"><g>${art('moon', 0, 0, 30)}</g><path d="M 0 -30 A 30 30 0 0 1 0 30 Z" fill="#000" opacity=".6"/><circle r="52" fill="transparent"/></g>`;
+  s += `<g id="mPos"><g>${art('moon', 0, 0, 30)}</g><path d="M 0 -30 A 30 30 0 0 1 0 30 Z" fill="#000" opacity=".6"/><circle id="mRed" r="30" fill="#b3381f" opacity="0"/><circle r="52" fill="transparent"/></g>`;
+  s += `<text id="halfTxt" x="0" y="0" text-anchor="middle" font-family="Mitr" font-size="18" fill="#fff">ด้านสว่างหันหาดวงอาทิตย์เสมอ</text>`;
   moonSvg.innerHTML = s;
   placeMoon();
 }
 function placeMoon() {
   // Sun is to the LEFT: e = 0 → Moon on the Sun side (left of Earth)
-  const x = EX - MR * Math.cos(elong), y = EY + MR * Math.sin(elong);
+  const e = shownE();
+  const x = EX - MR * Math.cos(e), y = EY + MR * Math.sin(e);
   document.getElementById('mPos').setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+  const sl = document.getElementById('sight'); sl.setAttribute('x2', x.toFixed(1)); sl.setAttribute('y2', y.toFixed(1));
+  const ht = document.getElementById('halfTxt'); ht.setAttribute('x', x.toFixed(1)); ht.setAttribute('y', (y + (y > EY ? 58 : -44)).toFixed(1));
+  const ec = eclipse();
+  document.getElementById('mRed').setAttribute('opacity', ec === 2 ? 0.85 : ec === 1 ? 0.5 : 0);
+  drawSide();
+}
+function drawSide() {
+  const e = shownE(), b = betaDeg(e), Y = 115, K = 46;            // K: drawing units per degree (exaggerated)
+  const show = (deg) => 92 * Math.tanh(deg / 2);                   // exaggerated, but keeps 5° on screen
+  const x = EX - MR * Math.cos(e), ec = eclipse();
+  // orbit line: highest/lowest points where the tilt is biggest
+  const xs = [], n = 80;
+  for (let i = 0; i <= n; i++) { const ee = 2 * Math.PI * i / n; xs.push(`${(EX - MR * Math.cos(ee)).toFixed(1)},${(Y - show(5.14 * Math.sin(ee - nodeAt(moonMonth)))).toFixed(1)}`); }
+  let s = `<line x1="0" y1="${Y}" x2="1000" y2="${Y}" stroke="rgba(170,185,255,0.35)" stroke-width="2" stroke-dasharray="6 8"/>`;
+  s += `<text x="30" y="${Y + 8}" font-family="Mitr" font-size="20" fill="#ffd93d">☀️</text>`;
+  s += `<polygon points="${EX},${Y - 30} 1000,${Y - 22} 1000,${Y + 22} ${EX},${Y + 30}" fill="#000" opacity=".55"/>`;
+  s += `<polyline points="${xs.join(' ')}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="3"/>`;
+  s += `<g>${art('earth', EX, Y, 30)}</g>`;
+  s += `<g>${art('moon', x, Y - show(b), 14)}</g>`;
+  if (ec) s += `<circle cx="${x}" cy="${Y - show(b)}" r="14" fill="#b3381f" opacity="${ec === 2 ? 0.85 : 0.5}"/>`;
+  s += `<text x="${EX}" y="${Y + 62}" text-anchor="middle" font-family="Mitr" font-size="18" fill="#cfd6ff">โลก</text>`;
+  if (Math.abs(b) > 0.95) s += `<text x="${x + (x > 800 ? -24 : 24)}" y="${Y - show(b) + 6}" text-anchor="${x > 800 ? 'end' : 'start'}" font-family="Mitr" font-size="18" fill="#fff">${b > 0 ? 'ลอยเหนือเงา' : 'ลอดใต้เงา'}</text>`;
+  sideSvg.innerHTML = s;
 }
 function phaseInfo(e) {
   const deg = ((e * 180 / Math.PI) % 360 + 360) % 360;
@@ -903,11 +1180,11 @@ function phaseInfo(e) {
   const waxing = deg < 180;
   const day = Math.max(1, Math.min(15, Math.round((waxing ? deg : deg - 180) / 12.19)));
   let name, thai;
-  if (deg < 8 || deg > 352) { name = 'เดือนมืด (จันทร์ดับ)'; thai = 'มองไม่เห็นดวงจันทร์ เพราะด้านที่โดนแสงหันไปทางดวงอาทิตย์'; }
-  else if (Math.abs(deg - 180) < 8) { name = 'เดือนเพ็ญ (ขึ้น 15 ค่ำ)'; thai = 'เห็นเต็มดวง เพราะโลกอยู่ระหว่างดวงอาทิตย์กับดวงจันทร์'; }
-  else if (Math.abs(deg - 90) < 8) { name = 'ขึ้น 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นครึ่งดวงด้านขวา · เป็นวันพระ'; }
-  else if (Math.abs(deg - 270) < 8) { name = 'แรม 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นครึ่งดวงด้านซ้าย · เป็นวันพระ'; }
-  else { name = (waxing ? 'ข้างขึ้น ' : 'ข้างแรม ') + day + ' ค่ำ'; thai = waxing ? 'ส่วนสว่างค่อยๆ ใหญ่ขึ้นทุกคืน' : 'ส่วนสว่างค่อยๆ เล็กลงทุกคืน'; }
+  if (deg < 6 || deg > 354) { name = 'เดือนมืด (จันทร์ดับ)'; thai = 'ด้านที่สว่างหันไปทางดวงอาทิตย์หมด เราจึงมองไม่เห็น'; }
+  else if (Math.abs(deg - 180) < 6) { name = 'เดือนเพ็ญ (ขึ้น 15 ค่ำ)'; thai = 'ด้านที่สว่างหันมาทางโลกเต็มๆ เราจึงเห็นเต็มดวง'; }
+  else if (Math.abs(deg - 90) < 8) { name = 'ขึ้น 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นด้านสว่างแค่ครึ่งหนึ่ง สว่างด้านขวา · วันพระ'; }
+  else if (Math.abs(deg - 270) < 8) { name = 'แรม 8 ค่ำ (ครึ่งดวง)'; thai = 'เห็นด้านสว่างแค่ครึ่งหนึ่ง สว่างด้านซ้าย · วันพระ'; }
+  else { name = (waxing ? 'ข้างขึ้น ' : 'ข้างแรม ') + day + ' ค่ำ'; thai = waxing ? 'ดวงจันทร์หมุนไป เราเห็นด้านสว่างมากขึ้นทุกคืน' : 'ดวงจันทร์หมุนไป เราเห็นด้านสว่างน้อยลงทุกคืน'; }
   return { k, waxing, name, thai };
 }
 function phasePath(e, R) {
@@ -921,29 +1198,45 @@ function phasePath(e, R) {
   return `<path d="${d}" fill="#fdf6d8"/>`;
 }
 function renderMoonPanel(sayIt) {
-  const pi = phaseInfo(elong);
+  const e = shownE(), pi = phaseInfo(e), ec = eclipse();
   let ph = document.getElementById('phaseSvg');
   if (!ph) {
     panel.innerHTML = `
-      <div style="text-align:center;font-weight:600">ภาพที่เห็นจากเมืองไทย</div>
+      <div style="text-align:center;font-weight:600">ภาพที่หนูเห็นจากเมืองไทย</div>
       <svg class="phase" id="phaseSvg" viewBox="-100 -100 200 200"></svg>
       <div class="q-text" id="phName"></div><div class="q-hint" id="phDesc"></div>
+      <div class="levels"><button class="chip icon" id="mPrev" aria-label="เดือนก่อน">◀</button><button class="chip" id="mLab" style="pointer-events:none"></button><button class="chip icon" id="mNext" aria-label="เดือนถัดไป">▶</button></div>
+      <div class="q-hint">ลองเปลี่ยนเดือน แล้วลากไปคืนเพ็ญ หาเดือนที่เกิดจันทรุปราคา!</div>
       <button class="big-btn" id="moonPlay">▶️ ให้ดวงจันทร์โคจรเอง</button>
       <ul class="know">
-        <li>ดวงจันทร์ไม่มีแสงในตัวเอง เราเห็นเพราะแสงอาทิตย์ส่องแล้วสะท้อนมา</li>
-        <li>จากเดือนมืดถึงเดือนมืดครั้งถัดไปใช้เวลาราว 29.5 วัน</li>
-        <li>วันพระคือ ขึ้น 8 ค่ำ ขึ้น 15 ค่ำ แรม 8 ค่ำ และแรม 14 หรือ 15 ค่ำ · ลอยกระทงคือคืนเพ็ญเดือน 12</li>
+        <li>ดวงจันทร์โดนแสงอาทิตย์<b>ครึ่งดวงเสมอ</b> ข้างขึ้นข้างแรมเกิดจากเรามองเห็นด้านสว่างนั้นจากมุมที่ต่างกัน</li>
+        <li><b>ไม่ใช่เงาโลก!</b> ถ้าเงาโลกบังดวงจันทร์ เรียกว่า <b>จันทรุปราคา</b> ดวงจันทร์จะเป็นสีแดงอิฐ เกิดได้เฉพาะคืนเพ็ญ</li>
+        <li>วงโคจรดวงจันทร์เอียง 5° คืนเพ็ญส่วนใหญ่ดวงจันทร์จึงลอยเหนือหรือใต้เงาโลก จันทรุปราคาจึงเกิดแค่ไม่กี่ครั้งต่อปี</li>
+        <li>จากเดือนมืดถึงเดือนมืดครั้งถัดไปใช้เวลาราว 29.5 วัน · ลอยกระทงคือคืนเพ็ญเดือน 12</li>
       </ul>`;
     document.getElementById('moonPlay').addEventListener('click', () => {
       moonAuto = !moonAuto; buzz(8);
       document.getElementById('moonPlay').textContent = moonAuto ? '⏸ หยุด' : '▶️ ให้ดวงจันทร์โคจรเอง';
     });
+    const step = (d) => { moonMonth = (moonMonth + d + 11) % 12 + 1; buzz(8); placeMoon(); renderMoonPanel(false); };
+    document.getElementById('mPrev').addEventListener('click', () => step(-1));
+    document.getElementById('mNext').addEventListener('click', () => step(1));
     ph = document.getElementById('phaseSvg');
   }
-  ph.innerHTML = `<circle cx="0" cy="0" r="80" fill="#3a3f5c"/>${phasePath(elong, 80)}<circle cx="0" cy="0" r="80" fill="none" stroke="#2d3436" stroke-width="4"/>`;
-  document.getElementById('phName').textContent = pi.name;
-  document.getElementById('phDesc').textContent = pi.thai;
-  if (sayIt) speak(pi.name);
+  document.getElementById('mLab').textContent = 'เดือนที่ ' + moonMonth;
+  let body = `<circle cx="0" cy="0" r="80" fill="#3a3f5c"/>${phasePath(e, 80)}`;
+  if (ec) {
+    // Earth's shadow disc on the Moon (umbra ≈ 2.65 × Moon's size), offset by how far the Moon misses the centre
+    const off = betaDeg(e) / 0.26 * 80;
+    body += `<clipPath id="mclip"><circle r="80"/></clipPath><circle cx="0" cy="${(off).toFixed(1)}" r="212" fill="#8e2c14" opacity="${ec === 2 ? 0.85 : 0.75}" clip-path="url(#mclip)"/>`;
+  }
+  ph.innerHTML = body + `<circle cx="0" cy="0" r="80" fill="none" stroke="#2d3436" stroke-width="4"/>`;
+  const name = ec === 2 ? '🔴 จันทรุปราคาเต็มดวง' : ec === 1 ? '🌗 จันทรุปราคาบางส่วน' : pi.name;
+  const desc = ec ? 'เงาของโลกบังดวงจันทร์ เกิดได้เฉพาะคืนเพ็ญ · นี่ไม่ใช่ข้างแรมนะ!'
+    : (Math.abs(e - Math.PI) < 1e-6 ? `คืนเพ็ญนี้ดวงจันทร์${betaDeg(e) > 0 ? 'ลอยเหนือ' : 'ลอดใต้'}เงาโลก จึงไม่เกิดจันทรุปราคา` : pi.thai);
+  document.getElementById('phName').textContent = name;
+  document.getElementById('phDesc').textContent = desc;
+  if (sayIt) speak(name.replace(/[🔴🌗]/g, ''));
 }
 function moonFromEvent(ev) {
   const pt = moonSvg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
@@ -956,7 +1249,11 @@ function moonFromEvent(ev) {
 let lastSaid = '';
 moonSvg.addEventListener('pointerdown', (e) => { ensureAudio(); moonDrag = true; moonAuto = false; try { moonSvg.setPointerCapture(e.pointerId); } catch (_) {} moonFromEvent(e); });
 moonSvg.addEventListener('pointermove', (e) => { if (moonDrag) moonFromEvent(e); });
-const endMoon = () => { if (!moonDrag) return; moonDrag = false; const n = phaseInfo(elong).name; if (n !== lastSaid) { lastSaid = n; speak(n); } };
+const endMoon = () => {
+  if (!moonDrag) return; moonDrag = false;
+  const ec = eclipse(), n = ec === 2 ? 'จันทรุปราคาเต็มดวง' : ec === 1 ? 'จันทรุปราคาบางส่วน' : phaseInfo(shownE()).name;
+  if (n !== lastSaid) { lastSaid = n; speak(n); }
+};
 moonSvg.addEventListener('pointerup', endMoon); moonSvg.addEventListener('pointercancel', endMoon);
 function moonTick(dt) {
   if (mode !== 'moon' || !moonAuto) return;
@@ -967,9 +1264,23 @@ function moonTick(dt) {
 // ============================================================================
 // MODES + SPEED
 // ============================================================================
+let panelHidden = false;
+try { panelHidden = localStorage.getItem('solarPanelHidden') === '1'; } catch (e) {}
+function applyPanel() {
+  const can = mode === 'explore' || mode === 'size';
+  document.getElementById('panelBtn').classList.toggle('hidden', !can);
+  document.getElementById('panelBtn').textContent = panelHidden ? '🗂️ แสดงการ์ด' : '🗂️ ซ่อนการ์ด';
+  document.body.classList.toggle('nopanel', can && panelHidden);
+}
+document.getElementById('panelBtn').addEventListener('click', () => {
+  panelHidden = !panelHidden; buzz(8);
+  try { localStorage.setItem('solarPanelHidden', panelHidden ? '1' : '0'); } catch (e) {}
+  applyPanel(); placeOrbit();
+});
 function setMode(m) {
   mode = m;
-  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  applyPanel();
+  for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.classList.toggle('on', b.dataset.mode === m);
   const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', ageView: m === 'age', moonView: m === 'moon' };
   for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
   document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
@@ -981,7 +1292,7 @@ function setMode(m) {
   else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
   else { renderInfo(selected); markStrip(selected); }
 }
-for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
+for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
 for (const b of document.querySelectorAll('#ctrls .chip')) b.addEventListener('click', () => {
   speed = +b.dataset.speed; buzz(8);
   for (const o of document.querySelectorAll('#ctrls .chip')) o.classList.toggle('on', o === b);
@@ -1057,7 +1368,7 @@ document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - las
 
 // Init
 buildOrbit(); buildSize(); buildStrip();
-placeOrbit(); markStrip(selected); renderInfo(selected);
+placeOrbit(); markStrip(selected); renderInfo(selected); applyPanel();
 requestAnimationFrame(tick);
 </script>
 <script>

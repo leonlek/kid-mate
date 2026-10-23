@@ -83,6 +83,21 @@ for racer_id in order:
     if 'audio' in entry:
         lines.append(row(racer_id, 'audio', entry))
 
+# write-cjk (KanjiVG) — kept here so regenerating doesn't drop it
+lines += [""] + ['## write-cjk (เขียนจีน-ญี่ปุ่น)', '', "Every character's stroke paths are from **KanjiVG**, Copyright (C) 2009–2011", 'Ulrich Apel, used under **Creative Commons Attribution-Share Alike 3.0**.', 'The game embeds a subset of the stroke data, so `write-cjk/index.html` is a', 'derivative work and is likewise available under CC BY-SA 3.0.', '', '| Asset | Licence | Author | Source |', '|---|---|---|---|', '| Character stroke paths (一-十, 山木火水日月口人大小中田, あ-こ) | CC BY-SA 3.0 | Ulrich Apel / KanjiVG | [kanjivg.tagaini.net](http://kanjivg.tagaini.net) |']
+
+# solar-system planet surface textures (single source, one licence)
+lines += [
+    "",
+    "## solar-system (ท่องอวกาศ)",
+    "",
+    "Planet, Sun, Moon and Saturn-ring surface textures in `solar-system/tex/` are from",
+    "[Solar System Scope](https://www.solarsystemscope.com/textures/) — licensed",
+    "**CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/). Based on NASA",
+    "elevation and imagery data; resized/recompressed for the web.",
+    "Planet facts: NASA Planetary Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/).",
+]
+
 lines.append("")
 lines.append("---")
 lines.append("")
