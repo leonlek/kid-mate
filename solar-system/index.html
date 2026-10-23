@@ -104,6 +104,14 @@
     font-size: 15px; color: #cfd6ff; background: rgba(0,0,0,0.35);
     padding: 4px 12px; border-radius: 999px;
   }
+  .zoom-out {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    min-height: 56px; padding: 0 18px; border-radius: 999px;
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 700;
+    background: var(--gold); color: var(--ink); border: 3px solid #fff;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); cursor: pointer;
+  }
+  .zoom-out:active { transform: translateY(2px); }
   .note {
     position: absolute; right: 14px; bottom: 10px; max-width: 55%;
     font-size: 12px; color: #aab3e6; text-align: right; line-height: 1.3;
@@ -231,6 +239,7 @@
       <div class="view" id="orbitView">
         <svg id="orbitSvg" viewBox="0 0 1000 1000" aria-label="ระบบสุริยะ"></svg>
         <div class="clock" id="clock">⏱ 0 วัน</div>
+        <button class="zoom-out hidden" id="zoomOut" aria-label="ดูทั้งหมด">🔍 ดูทั้งหมด</button>
         <div class="note">ขนาดดาวและระยะทางย่อให้ดูง่าย<br>ของจริงอยู่ห่างกันมากกว่านี้มาก</div>
       </div>
       <div class="view hidden" id="sizeView">
@@ -474,10 +483,12 @@ function placeOrbit() {
 }
 // ---- zoom / pan ----
 function applyVB() {
+  if (!isFinite(vb.x) || !isFinite(vb.y) || !isFinite(vb.w)) { vb.x = 0; vb.y = 0; vb.w = 1000; }   // never get stuck
   vb.w = Math.max(160, Math.min(1000, vb.w));
   vb.x = Math.max(0, Math.min(1000 - vb.w, vb.x));
   vb.y = Math.max(0, Math.min(1000 - vb.w, vb.y));
   orbitSvg.setAttribute('viewBox', `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.w.toFixed(1)}`);
+  document.getElementById('zoomOut').classList.toggle('hidden', vb.w > 990);
 }
 function zoomAt(f, cx, cy) {             // f < 1 = zoom in, around content point (cx,cy)
   const nw = Math.max(160, Math.min(1000, vb.w * f));
@@ -561,18 +572,27 @@ orbitSvg.addEventListener('pointermove', (e) => {
     }
   }
 });
+function restartPan() {
+  // after a pinch, the finger that is still down continues as a pan from where it is now
+  for (const q of ptrs.values()) { q.sx = q.x; q.sy = q.y; }
+  gesture = { moved: true, vx: vb.x, vy: vb.y };
+}
 function endPtr(e) {
   const had = ptrs.get(e.pointerId);
   ptrs.delete(e.pointerId);
   if (had && gesture && !gesture.moved && !gesture.pinch && ptrs.size === 0) pickAt(e);
   if (ptrs.size === 0) gesture = null;
+  else if (ptrs.size === 1) restartPan();
 }
 orbitSvg.addEventListener('pointerup', endPtr);
-orbitSvg.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); if (!ptrs.size) gesture = null; });
+orbitSvg.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); if (!ptrs.size) gesture = null; else if (ptrs.size === 1) restartPan(); });
+// iPad Safari: stop the page itself from pinch-zooming while the kid pinches the solar system
+for (const ev of ['gesturestart', 'gesturechange']) orbitSvg.addEventListener(ev, (e) => e.preventDefault());
 orbitSvg.addEventListener('wheel', (e) => { e.preventDefault(); const q = toContent(e); zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, q.x, q.y); }, { passive: false });
 document.getElementById('tilt').addEventListener('input', (e) => setTilt(+e.target.value));
 document.getElementById('zIn').addEventListener('click', () => { buzz(8); const [x, y] = follow ? selPos() : [vb.x + vb.w / 2, vb.y + vb.w / 2]; zoomAt(0.7, x, y); });
 document.getElementById('zOut').addEventListener('click', () => { buzz(8); zoomAt(1 / 0.7, vb.x + vb.w / 2, vb.y + vb.w / 2); });
+document.getElementById('zoomOut').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zReset').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zFollow').addEventListener('click', (e) => {
   buzz(8); follow = !follow; e.currentTarget.classList.toggle('on', follow);
