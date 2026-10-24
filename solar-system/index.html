@@ -138,7 +138,8 @@
   #tilt { -webkit-appearance: none; appearance: none; width: min(260px, 50vw); height: 14px; border-radius: 999px; background: rgba(255,255,255,0.25); outline: none; }
   #tilt::-webkit-slider-thumb { -webkit-appearance: none; width: 44px; height: 44px; border-radius: 50%; background: var(--gold); border: 4px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.35); cursor: pointer; }
   #tilt::-moz-range-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); border: 4px solid #fff; cursor: pointer; }
-  #orbitSvg { touch-action: none; }
+  #orbitSvg { touch-action: pan-y; }
+  #moonSvg { touch-action: none; }   /* dragging the Moon must not scroll the page */
   /* planet picker strip — the big, easy tap targets */
   .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
   @media (min-width: 760px) { .strip { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
@@ -526,7 +527,11 @@ function applyVB() {
   }
   orbitSvg.setAttribute('viewBox', `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.w.toFixed(1)}`);
   document.getElementById('zoomOut').classList.toggle('hidden', vb.w > 990);
+  updateTouch();
 }
+// iOS/Android read touch-action when a touch STARTS, so this decides the next touch:
+// whole system visible → vertical swipes scroll the page; zoomed in → drag moves the view.
+function updateTouch() { orbitSvg.style.touchAction = (vb.w < 990 || globeOn) ? 'none' : 'pan-y'; }
 function zoomAt(f, cx, cy) {             // f < 1 = zoom in, around content point (cx,cy)
   const nw = Math.max(minW(), Math.min(1000, vb.w * f));
   vb.x = cx - (cx - vb.x) * nw / vb.w; vb.y = cy - (cy - vb.y) * nw / vb.w; vb.w = nw;
@@ -540,7 +545,9 @@ function selPos() {
 }
 function followSelected() {
   const [x, y] = selPos();
-  vb.x = x - vb.w / 2; vb.y = y - vb.w / 2;
+  const tx = x - vb.w / 2, ty = y - vb.w / 2;
+  const k = Math.hypot(tx - vb.x, ty - vb.y) < 2 ? 1 : 0.18;      // ease in, then lock on
+  vb.x += (tx - vb.x) * k; vb.y += (ty - vb.y) * k;
   applyVB();
 }
 function toContent(e) {
@@ -555,6 +562,7 @@ let last = performance.now();
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   moonTick(dt);
+  if ((mode === 'explore' || mode === 'mission') && follow && speed === 0) placeOrbit();
   if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
     const dd = dt * DAYS_PER_SEC * speed;
@@ -619,6 +627,7 @@ orbitSvg.addEventListener('pointermove', (e) => {
     if (!follow && want < 200) { const id = nearestBody(mid); if (id) setFollow(id); }
     zoomAt(want / vb.w, mid.x, mid.y);
   } else if (ptrs.size === 1) {
+    if (gesture.frozen) return;
     if (Math.hypot(p.x - p.sx, p.y - p.sy) > 10) gesture.moved = true;
     if (gesture.moved && globeOn) {
       const dx = p.x - (p.lx ?? p.sx), dy = p.y - (p.ly ?? p.sy);
@@ -636,9 +645,8 @@ orbitSvg.addEventListener('pointermove', (e) => {
   }
 });
 function restartPan() {
-  // after a pinch, the finger that is still down continues as a pan from where it is now
-  for (const q of ptrs.values()) { q.sx = q.x; q.sy = q.y; q.lx = undefined; q.ly = undefined; }
-  gesture = { moved: true, vx: vb.x, vy: vb.y };
+  // after a pinch the remaining finger does nothing until all fingers are up — no jump on release
+  gesture = { moved: true, frozen: true };
 }
 function endPtr(e) {
   const had = ptrs.get(e.pointerId);
@@ -787,6 +795,7 @@ function renderGlobe(dt) {
   }
   const on = !!(want && Rcss >= 46);
   globeRcss = Rcss;
+  if (on !== globeOn) { globeOn = on; updateTouch(); }
   if (artHidden && (!on || artHidden !== selected)) { setArt(artHidden, true); artHidden = null; }
   if (!on) {
     if (globeOn && gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
