@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v104';
+const CACHE = 'kid-games-v105';
 const SHELL = [
   './',
   './index.html',
@@ -61,6 +61,16 @@ const SHELL = [
   './coloring/pictures.js',
   './solar-system/',
   './solar-system/index.html',
+  './solar-system/img/sun.webp',
+  './solar-system/img/mercury.webp',
+  './solar-system/img/venus.webp',
+  './solar-system/img/earth.webp',
+  './solar-system/img/moon.webp',
+  './solar-system/img/mars.webp',
+  './solar-system/img/jupiter.webp',
+  './solar-system/img/saturn.webp',
+  './solar-system/img/uranus.webp',
+  './solar-system/img/neptune.webp',
   './color-letters/',
   './color-letters/index.html',
   './whats-missing/',

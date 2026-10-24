@@ -230,6 +230,7 @@
     <radialGradient id="g-saturn" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#fbedc6"/><stop offset="1" stop-color="#d1aa62"/></radialGradient>
     <radialGradient id="g-uranus" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#d4fbfb"/><stop offset="1" stop-color="#6cc6cf"/></radialGradient>
     <radialGradient id="g-neptune" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#6d9dff"/><stop offset="1" stop-color="#1d3aa6"/></radialGradient>
+ <linearGradient id="g-shade" x1="0" y1="0" x2="1" y2="0"><stop offset=".46" stop-color="#000" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity=".62"/><stop offset="1" stop-color="#000" stop-opacity=".72"/></linearGradient>
     <radialGradient id="g-moon" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#f0f0f0"/><stop offset="1" stop-color="#9a9a9a"/></radialGradient>
   </defs>
 </svg>
@@ -384,7 +385,7 @@ const EARTH_D = 12756;
 // PLANET ART — one function draws any body at (cx,cy) radius r, used everywhere
 // ============================================================================
 let uidN = 0;
-function art(id, cx, cy, r, opt = {}) {
+function cartoonArt(id, cx, cy, r, opt = {}) {
   const u = 'u' + (++uidN), clip = `<clipPath id="c${u}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
   const base = (g) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#g-${g})"/>`;
   const C = (x, y, rr, f, o = 1) => `<circle cx="${cx + x * r}" cy="${cy + y * r}" r="${rr * r}" fill="${f}" opacity="${o}"/>`;
@@ -424,6 +425,17 @@ function art(id, cx, cy, r, opt = {}) {
   return '';
 }
 
+// Real look: pre-rendered photo sprites (tools/gen_planet_sprites.sh → img/<id>.webp),
+// made from the same NASA-based surface maps the zoom-in globe uses.
+// Saturn's sprite is wider because of its rings (planet radius = sprite half-width / 2.3).
+function art(id, cx, cy, r, opt = {}) {
+  if (opt.cartoon) return cartoonArt(id, cx, cy, r, opt);
+  const half = id === 'saturn' ? r * 2.3 : r * 1.008;
+  const glow = id === 'sun' && opt.glow ? `<circle cx="${cx}" cy="${cy}" r="${r * 1.45}" fill="url(#g-sunglow)"/>` : '';
+  const src = 'img/' + id + '.webp';
+  return glow + `<image href="${src}" xlink:href="${src}" x="${cx - half}" y="${cy - half}" width="${half * 2}" height="${half * 2}" preserveAspectRatio="xMidYMid meet"/>`;
+}
+
 // ============================================================================
 // ORBIT VIEW — real order, real relative orbit speeds (1 / period).
 // Distances and sizes are compressed (stated on screen) so everything fits.
@@ -461,7 +473,7 @@ function buildOrbit() {
   s += `<g id="sunG" data-id="sun">${art('sun', 500, 500, 48, { glow: true })}</g>`;
   s += `<g id="frontG">`;
   for (const p of PLANETS) {
-    s += `<g id="pl-${p.id}" data-id="${p.id}"><circle class="selring" cx="0" cy="0" r="${SHOW_R[p.id] + 10}" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/><g class="art">${art(p.id, 0, 0, SHOW_R[p.id])}</g>` +
+    s += `<g id="pl-${p.id}" data-id="${p.id}"><circle class="selring" cx="0" cy="0" r="${SHOW_R[p.id] + 10}" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/><g class="art">${art(p.id, 0, 0, SHOW_R[p.id])}<circle class="shade" r="${SHOW_R[p.id] + 0.5}" fill="url(#g-shade)"/></g>` +
       (p.id === 'earth' ? `<g id="moonG">${art('moon', 0, 0, 4)}</g>` : '') + `</g>`;
   }
   s += `</g>`;
@@ -483,6 +495,7 @@ function placeOrbit() {
     const g = document.getElementById('pl-' + p.id);
     g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
     g._x = x; g._y = y;
+    g.querySelector('.shade').setAttribute('transform', `rotate(${(Math.atan2(Math.sin(a) * TS, Math.cos(a)) * 180 / Math.PI).toFixed(1)})`);
     g.querySelector('.selring').setAttribute('opacity', selected === p.id ? 1 : 0);
     // behind the Sun only when on the far side AND the view is tilted enough to overlap
     const behind = tiltDeg > 5 && Math.sin(a) < 0;
@@ -839,7 +852,7 @@ function buildSize() {
   const K = 16 / (EARTH_D / 2);                 // units per km of radius
   const cy = 300;
   const sunR = BY.sun.d / 2 * K;                // ≈ 1747 — far bigger than the screen
-  let s = `<g data-id="sun">${art('sun', 210 - sunR, cy, sunR)}</g>`;
+  let s = `<g data-id="sun">${art('sun', 210 - sunR, cy, sunR, { cartoon: true })}</g>`;
   s += `<text x="40" y="${cy}" font-family="Mitr" font-size="30" font-weight="600" fill="#5a2a00">ดวงอาทิตย์</text>`;
   let x = 250;
   for (const p of PLANETS) {
@@ -869,7 +882,7 @@ function buildStrip() {
   for (const id of STRIP_IDS) {
     const b = document.createElement('button');
     b.className = 'pbtn'; b.dataset.id = id;
-    b.innerHTML = `<svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : id === 'uranus' ? 34 : 44)}</svg><span>${BY[id].th}</span>`;
+    b.innerHTML = `<svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : 44)}</svg><span>${BY[id].th}</span>`;
     b.addEventListener('click', () => { ensureAudio(); choose(id); });
     strip.appendChild(b);
   }
@@ -881,7 +894,7 @@ function renderInfo(id) {
   const rel = id === 'earth' ? 'ขนาดของเรา' : ratio >= 1 ? `ใหญ่กว่าโลก ${ratio >= 20 ? Math.round(ratio) : ratio.toFixed(1)} เท่า` : `เล็กกว่าโลก ${(1 / ratio).toFixed(1)} เท่า`;
   panel.innerHTML = `
     <div class="p-head">
-      <svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : id === 'uranus' ? 34 : 44)}</svg>
+      <svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : 44)}</svg>
       <div><div class="p-name">${b.th}</div><div class="p-sub">${b.en} · ${b.order ? 'ดวงที่ ' + b.order + ' จากดวงอาทิตย์ · ' : ''}${b.kind}</div></div>
       <button class="say" id="sayBtn" aria-label="ฟัง">🔊</button>
     </div>
@@ -1003,11 +1016,11 @@ function buildJump() {
   const id = dest, R = 1500, surfY = 560;
   let s = `<rect x="0" y="0" width="1000" height="700" fill="transparent"/>`;
   if (id === 'sun') {
-    s += `<g>${art('sun', 500, surfY + R, R)}</g>`;
+    s += `<g>${art('sun', 500, surfY + R, R, { cartoon: true })}</g>`;
     s += `<text x="500" y="250" text-anchor="middle" font-family="Mitr" font-size="40" font-weight="700" fill="#ffd93d" stroke="#0b1033" stroke-width="8" paint-order="stroke">ร้อนเกินไป! เข้าใกล้ไม่ได้ 🔥</text>`;
     jumpSvg.innerHTML = s; return;
   }
-  s += `<g>${art(id, 500, surfY + R, R)}</g>`;
+  s += `<circle cx="500" cy="${surfY + R}" r="${R}" fill="url(#g-${id})"/>`;   // plain ground in the world's colour
   // ruler: 1 m = 150 units
   const M = 150;
   for (let cm = 0; cm <= 200; cm += 50) {
@@ -1032,7 +1045,7 @@ function renderJumpPanel() {
   const b = BY[dest], g = GRAV[dest], w = Math.round(kg * g * 10) / 10;
   const hot = dest === 'sun';
   panel.innerHTML = `
-    <div class="p-head"><svg viewBox="-60 -60 120 120">${art(dest, 0, 0, dest === 'saturn' ? 24 : dest === 'uranus' ? 34 : 44)}</svg>
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${art(dest, 0, 0, dest === 'saturn' ? 24 : 44)}</svg>
       <div><div class="p-name">${b.th}</div><div class="p-sub">แรงโน้มถ่วง ${g === 1 ? 'เท่าโลก' : g + ' เท่าของโลก'}</div></div></div>
     <div style="margin-top:10px;font-weight:600">หนูหนักเท่าไหร่บนโลก?</div>
     <div class="pick">${[15, 20, 25, 30].map(k => `<button class="chip ${k === kg ? 'on' : ''}" data-kg="${k}">🧒 ${k} กก.</button>`).join('')}</div>
@@ -1081,7 +1094,7 @@ function renderAges() {
     const big = a >= 1;
     const wait = Math.ceil(p.periodDays / 365.25 - myAge);
     return `<div class="acard ${p.id === 'earth' ? 'sel' : ''}" data-id="${p.id}">
-      <svg viewBox="-60 -60 120 120">${art(p.id, 0, 0, p.id === 'saturn' ? 24 : p.id === 'uranus' ? 34 : 44)}</svg>
+      <svg viewBox="-60 -60 120 120">${art(p.id, 0, 0, p.id === 'saturn' ? 24 : 44)}</svg>
       <div class="an">${p.th}</div>
       <div class="av">${big ? Math.floor(a) + ' ปี' : 'ยังไม่ถึง 1 ปี'}</div>
       <div class="ax">${big ? '1 ปีที่นี่ = ' + p.yearTxt : 'อีก ' + wait + ' ปีโลก ถึงจะครบ 1 ปี'}</div></div>`;
