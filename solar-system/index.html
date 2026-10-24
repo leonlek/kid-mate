@@ -506,6 +506,7 @@ function placeOrbit() {
   mg.setAttribute('transform', `translate(${(24 * Math.cos(moonAngle)).toFixed(1)} ${(24 * Math.sin(moonAngle) * TS).toFixed(1)})`);
   document.getElementById('belt').setAttribute('transform', `translate(500 500) scale(1 ${TS.toFixed(3)}) rotate(${(beltAngle * 180 / Math.PI).toFixed(2)})`);
   const lab = document.getElementById('selLabel');
+  if (!selected) { lab.textContent = ''; return; }
   const sb = BY[selected];
   let lx, ly;
   if (selected === 'sun') { lx = 500; ly = 500 + 48 + 34; }
@@ -544,6 +545,7 @@ function selPos() {
   return [g._x, g._y];
 }
 function followSelected() {
+  if (!selected) return;
   const [x, y] = selPos();
   const tx = x - vb.w / 2, ty = y - vb.w / 2;
   const k = Math.hypot(tx - vb.x, ty - vb.y) < 2 ? 1 : 0.18;      // ease in, then lock on
@@ -590,7 +592,7 @@ function nearestBody(q) {
   return bd < 120 * vb.w / 1000 + 10 ? best : null;
 }
 function setFollow(id) {
-  if (id !== selected && mode !== 'mission') { selected = id; markStrip(id); renderInfo(id); }
+  if (id !== selected) { selected = id; markStrip(id); if (mode !== 'mission') renderInfo(id); }
   follow = true; document.getElementById('zFollow').classList.add('on');
   loadTex(selected);
 }
@@ -604,6 +606,7 @@ function pickAt(e) {
   const eg = document.getElementById('pl-earth');
   consider('moon', eg._x + 24 * Math.cos(moonAngle), eg._y + 24 * Math.sin(moonAngle) * TS, 4);
   if (best && bd < tol) choose(best);
+  else if (mode === 'explore') deselect();
 }
 orbitSvg.addEventListener('pointerdown', (e) => {
   ensureAudio();
@@ -663,14 +666,16 @@ orbitSvg.addEventListener('wheel', (e) => { e.preventDefault(); const q = toCont
 document.getElementById('tilt').addEventListener('input', (e) => setTilt(+e.target.value));
 document.getElementById('zIn').addEventListener('click', () => {
   buzz(8);
-  if (vb.w < 400 && !follow) setFollow(selected);
+  if (vb.w < 400 && !follow && selected) setFollow(selected);
   const [x, y] = follow ? selPos() : [vb.x + vb.w / 2, vb.y + vb.w / 2]; zoomAt(0.6, x, y);
 });
 document.getElementById('zOut').addEventListener('click', () => { buzz(8); zoomAt(1 / 0.7, vb.x + vb.w / 2, vb.y + vb.w / 2); });
 document.getElementById('zoomOut').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zReset').addEventListener('click', () => { buzz(8); follow = false; document.getElementById('zFollow').classList.remove('on'); vb.x = vb.y = 0; vb.w = 1000; applyVB(); placeOrbit(); });
 document.getElementById('zFollow').addEventListener('click', (e) => {
-  buzz(8); follow = !follow; e.currentTarget.classList.toggle('on', follow);
+  buzz(8);
+  if (!selected) { selected = 'earth'; markStrip('earth'); renderInfo('earth'); }
+  follow = !follow; e.currentTarget.classList.toggle('on', follow);
   if (follow) loadTex(selected);
   if (follow && vb.w > 500) vb.w = 420;
   placeOrbit();
@@ -877,7 +882,8 @@ function buildSize() {
   }
   sv.innerHTML = s;
   sv.addEventListener('pointerdown', (e) => {
-    const g = e.target.closest('[data-id]'); if (g) { ensureAudio(); choose(g.dataset.id); }
+    const g = e.target.closest('[data-id]'); ensureAudio();
+    if (g) choose(g.dataset.id); else deselect();
   });
 }
 
@@ -897,7 +903,25 @@ function buildStrip() {
   }
 }
 const panel = document.getElementById('panel');
+function renderOverview() {
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${art('sun', 0, 0, 44)}</svg>
+      <div><div class="p-name">ระบบสุริยะ</div><div class="p-sub">บ้านของโลกในอวกาศ</div></div></div>
+    <div class="q-hint" style="margin:10px 0 4px">👆 แตะดาวเพื่อดูข้อมูล · แตะซ้ำหรือแตะที่ว่างเพื่อปิด</div>
+    <div class="facts">
+      <div class="fact"><div class="k">☀️ ดาวฤกษ์</div><div class="v">ดวงอาทิตย์ 1 ดวง</div></div>
+      <div class="fact"><div class="k">🪐 ดาวเคราะห์</div><div class="v">8 ดวง</div></div>
+      <div class="fact"><div class="k">⏳ อายุ</div><div class="v">ประมาณ 4,600 ล้านปี</div></div>
+      <div class="fact"><div class="k">🌑 ดาวเคราะห์แคระ</div><div class="v">เช่น ดาวพลูโต</div></div>
+    </div>
+    <ul class="know">
+      <li>เรียงจากใกล้ดวงอาทิตย์: พุธ ศุกร์ โลก อังคาร พฤหัสบดี เสาร์ ยูเรนัส เนปจูน</li>
+      <li>ดวงอาทิตย์หนักกว่าทุกอย่างในระบบสุริยะรวมกัน (มีมวลราว 99.8% ของทั้งหมด)</li>
+    </ul>
+    <div class="src">ข้อมูล: NASA</div>`;
+}
 function renderInfo(id) {
+  if (!id) { renderOverview(); return; }
   const b = BY[id];
   const ratio = b.d / EARTH_D;
   const rel = id === 'earth' ? 'ขนาดของเรา' : ratio >= 1 ? `ใหญ่กว่าโลก ${ratio >= 20 ? Math.round(ratio) : ratio.toFixed(1)} เท่า` : `เล็กกว่าโลก ${(1 / ratio).toFixed(1)} เท่า`;
@@ -921,9 +945,18 @@ function renderInfo(id) {
 }
 function markStrip(id) { for (const el of strip.children) el.classList.toggle('sel', el.dataset.id === id); }
 
+// Forgiving selection (UX rule 9): tap the selected body again — or empty space — to close it.
+function deselect() {
+  if (!selected) return;
+  selected = null;
+  follow = false; document.getElementById('zFollow').classList.remove('on');
+  markStrip(null); renderInfo(null); placeOrbit();
+  blip(420); buzz(8);
+}
 function choose(id) {
   if (mode === 'mission') { answer(id); return; }
   if (mode === 'jump') { visit(id); return; }
+  if (id === selected) { deselect(); return; }
   selected = id;
   markStrip(id);
   renderInfo(id);
