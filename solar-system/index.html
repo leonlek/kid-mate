@@ -544,8 +544,26 @@ function selPos() {
   const g = document.getElementById('pl-' + selected);
   return [g._x, g._y];
 }
+// Switching worlds while zoomed in: the camera pulls back, flies across, and zooms in
+// again (instead of skimming past a screen-filling Sun).
+let flight = null;
+function startFlight() {
+  flight = { t0: performance.now(), cx: vb.x + vb.w / 2, cy: vb.y + vb.w / 2, w0: vb.w };
+}
 function followSelected() {
   if (!selected) return;
+  if (flight) {
+    const u = Math.min(1, (performance.now() - flight.t0) / 1400);
+    const ease = u * u * (3 - 2 * u);
+    const [x, y] = selPos();
+    const cx = flight.cx + (x - flight.cx) * ease, cy = flight.cy + (y - flight.cy) * ease;
+    const wMid = Math.max(flight.w0, 700);
+    vb.w = flight.w0 + (wMid - flight.w0) * Math.sin(Math.PI * u);
+    vb.x = cx - vb.w / 2; vb.y = cy - vb.w / 2;
+    if (u >= 1) flight = null;
+    applyVB();
+    return;
+  }
   const [x, y] = selPos();
   const tx = x - vb.w / 2, ty = y - vb.w / 2;
   const k = Math.hypot(tx - vb.x, ty - vb.y) < 2 ? 1 : 0.18;      // ease in, then lock on
@@ -564,7 +582,7 @@ let last = performance.now();
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   moonTick(dt);
-  if ((mode === 'explore' || mode === 'mission') && follow && speed === 0) placeOrbit();
+  if ((mode === 'explore' || mode === 'mission') && (follow || flight) && speed === 0) placeOrbit();
   if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
     const dd = dt * DAYS_PER_SEC * speed;
@@ -717,7 +735,7 @@ void main(){
     vec3 c=texture2D(uTex,uv).rgb;
     if(uHasCloud>.5){ float cl=texture2D(uCloud,uv).r; c=mix(c,vec3(1.),cl*.8); }
     if(uEmis>.5){ c*=0.62+0.48*n.z; }
-    else { float dif=max(dot(n,uL),0.); c*=0.05+0.95*dif; }
+    else { float dif=max(dot(n,uL),0.); c*=0.16+0.84*dif; }   /* night side stays faintly visible */
     col=vec4(c,1.); pz=n.z;
   }
   if(uHasRing>.5){
@@ -786,7 +804,7 @@ function setArt(id, visible) {
   else { const g = document.getElementById('pl-' + id); g.querySelector('.art').style.visibility = v; g.querySelector('.selring').style.visibility = v; }
   document.getElementById('selLabel').style.visibility = v;
 }
-let artHidden = null;
+let artHidden = null, drewGlobe = false;
 function renderGlobe(dt) {
   const pin = document.getElementById('pin'), hint = document.getElementById('ghint');
   const want = (mode === 'explore' || mode === 'mission') && follow && TEX[selected] && gl && texObj[selected];
@@ -803,7 +821,8 @@ function renderGlobe(dt) {
   if (on !== globeOn) { globeOn = on; updateTouch(); }
   if (artHidden && (!on || artHidden !== selected)) { setArt(artHidden, true); artHidden = null; }
   if (!on) {
-    if (globeOn && gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+    // wipe the last globe frame — otherwise it stays painted while the camera moves on
+    if (drewGlobe && gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); drewGlobe = false; }
     globeOn = false; pin.classList.add('hidden'); hint.classList.add('hidden');
     return;
   }
@@ -843,6 +862,7 @@ function renderGlobe(dt) {
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, hasRing ? texObj.ring : texObj[selected]);
   gl.uniform1f(GU.uRin, 1.24); gl.uniform1f(GU.uRout, 2.27);         // C-ring inner edge → A-ring outer edge (planet radii)
   gl.drawArrays(gl.TRIANGLES, 0, 3);
+  drewGlobe = true;
   // pin on a real place, when it faces us
   const P = PINS[selected];
   if (P) {
@@ -958,6 +978,7 @@ function choose(id) {
   if (mode === 'jump') { visit(id); return; }
   if (id === selected) { deselect(); return; }
   selected = id;
+  if (follow) { loadTex(id); if (vb.w < 500) startFlight(); }   // camera following → fly to the new world
   markStrip(id);
   renderInfo(id);
   placeOrbit();
