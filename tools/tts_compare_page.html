@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เทียบเสียงพากษ์ไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --brand: #ff6b9d; --ink: #2d3436; --card-border: #ffd6e4; }
+  body { margin: 0; padding: 16px; font-family: Mitr, sans-serif; color: var(--ink); background: #fdf6fa; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .hint { font-size: 14px; opacity: .7; margin-bottom: 14px; }
+  .card { background: #fff; border: 3px solid var(--card-border); border-radius: 20px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 4px 0 var(--card-border); }
+  .txt { font-size: 19px; margin-bottom: 8px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; font-size: 15px; border: 2px solid #ddd; background: #fff; border-radius: 999px; padding: 10px 14px; min-height: 48px; cursor: pointer; }
+  button.play.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+  button.dev { border-style: dashed; }
+  #votes { position: sticky; top: 0; z-index: 2; background: #fdf6fa; padding: 8px 0 10px; }
+  #votes button.v.on { background: #ffd93d; border-color: #e0b800; }
+  #sum { font-size: 14px; margin-top: 6px; }
+</style></head><body>
+<h1>🎙️ เทียบเสียงพากษ์ไทย</h1>
+<div class="hint">แตะชื่อเสียงเพื่อฟัง · กด 👍 ที่เสียงที่ชอบ (กดได้หลายอัน) · ปุ่มเส้นประ = เสียงจากเครื่องที่ใช้อยู่ตอนนี้</div>
+<div id="votes"></div>
+<div id="list"></div>
+<script>
+const D = /*DATA*/null;
+const audio = new Audio();
+let playingBtn = null;
+function mark(b) { if (playingBtn) playingBtn.classList.remove('on'); playingBtn = b; if (b) b.classList.add('on'); }
+audio.onended = () => mark(null);
+function playSeq(uris, btn) {
+  speechSynthesis.cancel(); mark(btn);
+  let i = 0;
+  const next = () => { if (i >= uris.length) { mark(null); audio.onended = () => mark(null); return; } audio.src = uris[i++]; audio.play(); };
+  audio.onended = next; next();
+}
+function device(text, btn) {
+  audio.pause(); speechSynthesis.cancel(); mark(btn);
+  const u = new SpeechSynthesisUtterance(text); u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+  const v = speechSynthesis.getVoices().find(v => (v.lang || '').toLowerCase().startsWith('th')); if (v) u.voice = v;
+  u.onend = () => mark(null); speechSynthesis.speak(u);
+}
+function row(label, uriFor, devText) {
+  const c = document.createElement('div'); c.className = 'card';
+  c.innerHTML = `<div class="txt">${label}</div><div class="btns"></div>`;
+  const box = c.lastChild;
+  D.voices.forEach(v => {
+    const uris = uriFor(v); if (uris.some(u => !u)) return;
+    const b = document.createElement('button'); b.className = 'play'; b.textContent = '▶ ' + v;
+    b.onclick = () => playSeq(uris, b); box.appendChild(b);
+  });
+  const b = document.createElement('button'); b.className = 'play dev'; b.textContent = '▶ เสียงเครื่อง';
+  b.onclick = () => device(devText, b); box.appendChild(b);
+  document.getElementById('list').appendChild(c);
+}
+const n = D.sentences.length;
+D.sentences.forEach((s, i) => row(s, v => [D.clips[v][i]], s));
+row('🧩 ต่อท่อน: ' + D.stitch.join(' + '), v => D.stitch.map((_, j) => D.clips[v][n + j]), D.stitch.join(' '));
+
+let liked = [];
+try { liked = JSON.parse(localStorage.getItem('ttsLiked') || '[]'); } catch (e) {}
+function renderVotes() {
+  const box = document.getElementById('votes');
+  box.innerHTML = '<div class="btns"></div><div id="sum"></div>';
+  [...D.voices, 'เสียงเครื่อง'].forEach(v => {
+    const b = document.createElement('button'); b.className = 'v' + (liked.includes(v) ? ' on' : ''); b.textContent = '👍 ' + v;
+    b.onclick = () => { liked = liked.includes(v) ? liked.filter(x => x !== v) : [...liked, v];
+      try { localStorage.setItem('ttsLiked', JSON.stringify(liked)); } catch (e) {} renderVotes(); };
+    box.firstChild.appendChild(b);
+  });
+  document.getElementById('sum').textContent = liked.length ? 'ที่ชอบ: ' + liked.join(', ') : 'ยังไม่ได้เลือก';
+}
+renderVotes();
+</script>
+</body></html>

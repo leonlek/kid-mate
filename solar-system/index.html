@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🪐 ท่องอวกาศ — คิดส์เล่น</title>
 <meta name="description" content="เกมสำรวจระบบสุริยะ ดาวเคราะห์โคจรจริง แตะดาวฟังข้อมูลจริงจาก NASA เทียบขนาดดาว และภารกิจหาดาว">
@@ -1111,7 +1113,7 @@ function renderJumpPanel() {
     <div class="p-head"><svg viewBox="-60 -60 120 120">${art(dest, 0, 0, dest === 'saturn' ? 24 : 44)}</svg>
       <div><div class="p-name">${b.th}</div><div class="p-sub">แรงโน้มถ่วง ${g === 1 ? 'เท่าโลก' : g + ' เท่าของโลก'}</div></div></div>
     <div style="margin-top:10px;font-weight:600">หนูหนักเท่าไหร่บนโลก?</div>
-    <div class="pick">${[15, 20, 25, 30].map(k => `<button class="chip ${k === kg ? 'on' : ''}" data-kg="${k}">🧒 ${k} กก.</button>`).join('')}</div>
+    <div class="pick">${KGS.map(k => `<button class="chip ${k === kg ? 'on' : ''}" data-kg="${k}">🧒 ${k} กก.</button>`).join('')}</div>
     <div class="res">${hot ? `ดวงอาทิตย์ร้อนจัดและไม่มีพื้นให้ยืน แต่ถ้ายืนได้ ตาชั่งจะชี้ <b>${w} กก.</b> หนักกว่าบนโลก 28 เท่า!`
       : `${NO_GROUND[dest] ? 'ดาวนี้เป็นก๊าซ ไม่มีพื้นให้ยืน — ถ้ายืนได้ ' : 'บน' + b.th + ' '}ตาชั่งจะชี้ <b>${w} กก.</b><br>กระโดดได้สูง <b>${jumpCm(dest)} ซม.</b> (บนโลก ${EARTH_JUMP_CM} ซม.)`}</div>
     ${hot ? '' : `<button class="big-btn" id="jumpBtn">🦘 กระโดด!</button>`}
@@ -1119,10 +1121,13 @@ function renderJumpPanel() {
   for (const c of panel.querySelectorAll('[data-kg]')) c.addEventListener('click', () => { kg = +c.dataset.kg; buzz(8); renderJumpPanel(); sayWeight(); });
   const jb = document.getElementById('jumpBtn'); if (jb) jb.addEventListener('click', () => { ensureAudio(); doJump(); });
 }
-function sayWeight() {
-  const b = BY[dest], w = Math.round(kg * GRAV[dest] * 10) / 10;
-  speak(dest === 'sun' ? 'ดวงอาทิตย์ร้อนเกินไป เข้าใกล้ไม่ได้' : (NO_GROUND[dest] ? b.th + ' ไม่มีพื้นให้ยืน ' : 'บน' + b.th + ' ') + 'หนูจะหนัก ' + w + ' กิโลกรัม');
+const KGS = [15, 20, 25, 30], AGES = [3, 4, 5, 6, 7, 8, 9, 10];
+function weightLine(id, k) {
+  const b = BY[id], w = Math.round(k * GRAV[id] * 10) / 10;
+  return id === 'sun' ? 'ดวงอาทิตย์ร้อนเกินไป เข้าใกล้ไม่ได้' : (NO_GROUND[id] ? b.th + ' ไม่มีพื้นให้ยืน ' : 'บน' + b.th + ' ') + 'หนูจะหนัก ' + w + ' กิโลกรัม';
 }
+const jumpLine = (id) => 'กระโดดได้สูง ' + jumpCm(id) + ' เซนติเมตร';
+function sayWeight() { speak(weightLine(dest, kg)); }
 function doJump() {
   if (jumping || dest === 'sun') return;
   jumping = true;
@@ -1138,7 +1143,7 @@ function doJump() {
     wrap.setAttribute('transform', `translate(500 ${y.toFixed(1)})`);
     if (u > 0.45 && u < 0.55) peak.setAttribute('opacity', 1);
     if (u < 1) requestAnimationFrame(step);
-    else { jumping = false; buzz(10); tone(200, 0.15, 'sine', 0.1); speak('กระโดดได้สูง ' + Math.round(hcm) + ' เซนติเมตร'); }
+    else { jumping = false; buzz(10); tone(200, 0.15, 'sine', 0.1); speak(jumpLine(dest)); }
   })(t0);
 }
 function visit(id) {
@@ -1164,14 +1169,15 @@ function renderAges() {
   }).join('');
   for (const c of box.children) c.addEventListener('click', () => { ensureAudio(); sayAge(c.dataset.id); for (const o of box.children) o.classList.toggle('sel', o === c); });
 }
-function sayAge(id) {
-  const p = BY[id], a = myAge * 365.25 / p.periodDays;
-  speak(a >= 1 ? 'ถ้าอยู่บน' + p.th + ' หนูจะอายุ ' + Math.floor(a) + ' ปี' : 'บน' + p.th + ' หนูยังอายุไม่ถึงหนึ่งปีเลย');
+function ageLine(id, age) {
+  const p = BY[id], a = age * 365.25 / p.periodDays;
+  return a >= 1 ? 'ถ้าอยู่บน' + p.th + ' หนูจะอายุ ' + Math.floor(a) + ' ปี' : 'บน' + p.th + ' หนูยังอายุไม่ถึงหนึ่งปีเลย';
 }
+function sayAge(id) { speak(ageLine(id, myAge)); }
 function renderAgePanel() {
   panel.innerHTML = `
     <div class="q-text">🎂 หนูอายุกี่ขวบ?</div>
-    <div class="pick">${[3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button class="chip ${n === myAge ? 'on' : ''}" data-age="${n}">${n}</button>`).join('')}</div>
+    <div class="pick">${AGES.map(n => `<button class="chip ${n === myAge ? 'on' : ''}" data-age="${n}">${n}</button>`).join('')}</div>
     <div class="res">1 ปี คือเวลาที่ดาวเดินทางรอบดวงอาทิตย์ครบ 1 รอบ ดาวที่อยู่ใกล้ใช้เวลาสั้น ดาวที่อยู่ไกลใช้เวลานานมาก<br>
       บนโลก หนูมีชีวิตมาแล้วประมาณ <b>${Math.round(myAge * 365.25).toLocaleString('th-TH')} วัน</b></div>
     <div class="src">คำนวณจากคาบการโคจรจริง (NASA) · แตะการ์ดดาวเพื่อฟัง</div>`;
@@ -1397,10 +1403,15 @@ function pickVoice() {
   try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
 }
 if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
 function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
   if (!('speechSynthesis' in window)) return;
   try {
-    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
     const v = pickVoice(); if (v) u.voice = v;
@@ -1446,6 +1457,24 @@ document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - las
 buildOrbit(); buildSize(); buildStrip();
 placeOrbit(); markStrip(selected); renderInfo(selected); applyPanel();
 requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+function speechLines() {
+  const L = ['หนูอายุกี่ขวบ แตะตัวเลขเลย', 'จันทรุปราคาเต็มดวง', 'จันทรุปราคาบางส่วน', ...CLUES.map(c => c.q + ' คือดาวอะไร แตะเลย')];
+  for (const id of STRIP_IDS) {
+    const b = BY[id];
+    L.push(b.say, b.say + ' ' + b.know[0], 'หา' + b.th + ' แตะเลย', 'เก่งมาก นั่นคือ' + b.th, 'นี่คือ' + b.th + ' ลองใหม่นะ');
+    for (const k of KGS) L.push(weightLine(id, k));
+    if (id !== 'sun') L.push(jumpLine(id));
+  }
+  for (const p of PLANETS) for (const a of AGES) L.push(ageLine(p.id, a));
+  for (let d = 0; d < 360; d += 0.25) L.push(phaseInfo(d * Math.PI / 180).name);
+  return [...new Set(L.map(t => String(t).replace(/\s+/g, ' ').trim()))];
+}
+if (location.search === '?lines') {
+  const pre = document.createElement('pre'); pre.id = 'voice-lines';
+  pre.textContent = JSON.stringify(speechLines()); document.body.appendChild(pre);
+}
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

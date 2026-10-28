@@ -131,6 +131,8 @@ Scribble-with-crayon scenes (portrait 800×1200). 60 scenes: 11 hand-written in 
 
 Interactive solar system: planets orbit at true relative speeds (1/period; 1 Earth year = 20 s at ▶), tap a body → inline info card with NASA Planetary Fact Sheet figures + Thai TTS; 📏 view draws all diameters to one true scale; 🎯 missions (⭐ find by name, ⭐⭐ find by clue). **Accuracy rule:** every number/clue must match NASA data; orbit distances and orbit-view sizes are compressed and the screen says so. Giant-planet moon counts change often — keep them as "มากกว่า …".
 
+**Recorded Thai voice (Azure `th-TH-PremwadeeNeural`)**: every line the game can say is pre-recorded into `solar-system/voice/*.mp3` + `voice/map.js`; `../voice-clips.js` plays the clip and falls back to device TTS for anything unmapped/unloadable. The game lists its lines in `speechLines()` (`index.html?lines`). **Change or add any spoken text → add it to `speechLines()` if it's a new kind of line, then run `python3 tools/gen_voice.py solar-system`** (needs `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION` in the git-ignored `tools/.tts-keys`; only new lines are synthesized, stale clips deleted) and bump `CACHE`. Same pattern can be applied to other games.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

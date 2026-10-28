@@ -25,3 +25,5 @@ tools/_raw_audio/
 # API credentials — never commit.
 tools/.freesound_token
 .env
+tools/.tts-keys
+tools/_tts_compare/
