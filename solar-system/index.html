@@ -217,6 +217,11 @@
   .phase { display: block; margin: 0 auto; width: 200px; height: 200px; }
   .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  #daySvg { touch-action: none; cursor: grab; }
+  .months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; padding: 6px 10px 12px; }
+  .months .chip { min-width: 0; padding: 0 4px; font-size: 16px; }
+  .clockbig { font-family: 'Itim', cursive; font-size: 40px; text-align: center; color: var(--brand-dark); line-height: 1.1; }
+  .badge { display: block; width: fit-content; margin: 6px auto 0; font-size: 18px; font-weight: 700; padding: 4px 16px; border-radius: 999px; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -256,6 +261,8 @@
     <button class="chip" data-mode="age">🎂 อายุบนดาว</button>
     <button class="chip" data-mode="moon">🌙 ข้างขึ้นข้างแรม</button>
     <button class="chip" data-mode="sky">✨ กลุ่มดาวไทย</button>
+    <button class="chip" data-mode="day">🌗 กลางวันกลางคืน</button>
+    <button class="chip" data-mode="season">🍂 ฤดูกาล</button>
     <button class="chip" id="panelBtn">🗂️ ซ่อนการ์ด</button>
   </div>
 
@@ -277,6 +284,19 @@
       <div class="view hidden" id="jumpView"><svg id="jumpSvg" viewBox="0 0 1000 700" aria-label="ไปเยือนดาว"></svg></div>
       <div class="view hidden" id="tripView"><svg id="tripSvg" viewBox="0 0 1000 700" aria-label="นั่งจรวดไปดาว"></svg></div>
       <div class="view hidden" id="skyView"><svg id="skySvg" viewBox="0 0 1000 700" aria-label="กลุ่มดาวไทย"></svg></div>
+      <div class="view hidden" id="dayView">
+        <svg id="daySvg" viewBox="0 0 1000 620" aria-label="โลกหมุนรอบตัวเอง"></svg>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 6px">มองโลกจากด้านบนขั้วโลกเหนือ · ลากโลกให้หมุน</div>
+        <svg id="dayStrip" viewBox="0 0 1000 230" aria-label="ท้องฟ้าที่ประเทศไทย"></svg>
+      </div>
+      <div class="view hidden" id="seasonView">
+        <svg id="seasonSvg" viewBox="0 0 1000 640" aria-label="โลกโคจรรอบดวงอาทิตย์"></svg>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 4px">ขนาดและระยะย่อให้ดูง่าย · แกนโลกเอียงจริง 23.4°</div>
+        <div class="months" id="months"></div>
+      </div>
+      <div class="ctrls hidden" id="dayCtrls">
+        <button class="chip icon" id="dayPlay" aria-label="หมุนเอง">▶️</button>
+      </div>
       <div class="view hidden" id="ageView"><div class="ages" id="ages"></div></div>
       <div class="view hidden" id="moonView">
         <svg id="moonSvg" viewBox="0 0 1000 700" aria-label="ดวงจันทร์โคจรรอบโลก"></svg>
@@ -592,6 +612,7 @@ let last = performance.now();
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   moonTick(dt);
+  dayTick(dt);
   if ((mode === 'explore' || mode === 'mission') && (follow || flight) && speed === 0) placeOrbit();
   if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
@@ -1372,16 +1393,19 @@ function setMode(m) {
   mode = m;
   applyPanel();
   for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.classList.toggle('on', b.dataset.mode === m);
-  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', tripView: m === 'trip', skyView: m === 'sky', ageView: m === 'age', moonView: m === 'moon' };
+  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', tripView: m === 'trip', skyView: m === 'sky', ageView: m === 'age', moonView: m === 'moon', dayView: m === 'day', seasonView: m === 'season', dayCtrls: m === 'day' };
   tripRun++; tripFlying = false;
   for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
   document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
   document.getElementById('vctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
-  strip.classList.toggle('hidden', m === 'age' || m === 'moon' || m === 'sky');
+  strip.classList.toggle('hidden', m === 'age' || m === 'moon' || m === 'sky' || m === 'day' || m === 'season');
+  seasonAnim++; seasonTheta = null;
   if (m === 'mission') { target = null; newQuestion(); }
   else if (m === 'jump') { visit(dest); }
   else if (m === 'trip') { tripTo(tripDest); }
   else if (m === 'sky') { skyPick(sky); }
+  else if (m === 'day') { makePolar(); buildDay(); lastDayHour = -1; setDayHour(dayHour); speak(dayIntro); }
+  else if (m === 'season') { buildSeason(); buildMonths(); renderSeasonPanel(); speak(seasonIntro); }
   else if (m === 'age') { renderAges(); renderAgePanel(); speak('หนูอายุกี่ขวบ แตะตัวเลขเลย'); }
   else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
   else { renderInfo(selected); markStrip(selected); }
@@ -1653,6 +1677,289 @@ function renderSkyPanel() {
 }
 
 // ============================================================================
+// 🌗 DAY & NIGHT — Earth seen from above the North Pole, Sun to the left.
+// The map is the real Earth texture re-projected around the pole (edge = 20°S).
+// Thailand faces the Sun at noon; Earth turns counter-clockwise (west → east).
+// ============================================================================
+const daySvg = document.getElementById('daySvg'), dayStrip = document.getElementById('dayStrip');
+const DCX = 600, DCY = 310, DR = 270, EDGE_LAT = -20;
+const TH_LAT = 13.75, TH_LON = 100.5;                 // Bangkok
+const NY = { lat: 40.7, lon: -74, name: '🗽 อเมริกา' };
+let dayHour = 9, dayDrag = null, dayAuto = false, polarUrl = null, polarBusy = false, lastDayHour = -1;
+const polarR = (lat) => DR * (90 - lat) / (90 - EDGE_LAT);
+function timeTH(h) {
+  if (h === 0) return 'เที่ยงคืน';
+  if (h < 6) return 'ตี ' + h;
+  if (h < 12) return h + ' โมงเช้า';
+  if (h === 12) return 'เที่ยงวัน';
+  if (h === 13) return 'บ่ายโมง';
+  if (h < 16) return 'บ่าย ' + (h - 12) + ' โมง';
+  if (h < 19) return (h - 12) + ' โมงเย็น';
+  return (h - 18) + ' ทุ่ม';
+}
+const isDayAt = (h) => h > 6 && h < 18;
+function dayLine(h) {
+  if (h === 6) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังขึ้น';
+  if (h === 18) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังตก';
+  return timeTH(h) + ' ที่ประเทศไทยเป็น' + (isDayAt(h) ? 'กลางวัน' : 'กลางคืน');
+}
+const DOING = [[0, '😴 นอนหลับ'], [6, '🌅 ตื่นนอน'], [7, '🎒 ไปโรงเรียน'], [9, '📚 เรียนหนังสือ'], [12, '🍚 กินข้าวเที่ยง'],
+  [13, '🎨 เรียนและเล่น'], [16, '⚽ เล่นกับเพื่อน'], [18, '🌇 ดูพระอาทิตย์ตก'], [19, '🍲 กินข้าวเย็น'], [20, '🪥 อาบน้ำ แปรงฟัน'], [21, '😴 นอนหลับ']];
+const doing = (h) => DOING.filter(d => d[0] <= h).pop()[1];
+function makePolar() {               // equirectangular texture → north-polar disc, Thailand pointing right
+  if (polarUrl || polarBusy) return;
+  polarBusy = true;
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const W = 1024, H = 512, src = document.createElement('canvas');
+      src.width = W; src.height = H;
+      const sx = src.getContext('2d'); sx.drawImage(img, 0, 0, W, H);
+      const px = sx.getImageData(0, 0, W, H).data;
+      const S = 540, out = document.createElement('canvas'); out.width = out.height = S;
+      const ox = out.getContext('2d'), od = ox.createImageData(S, S);
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const dx = x - S / 2 + 0.5, dy = S / 2 - y - 0.5, r = Math.hypot(dx, dy) / (S / 2);
+        if (r > 1) continue;
+        const lat = 90 - r * (90 - EDGE_LAT), lon = TH_LON + Math.atan2(dy, dx) * 180 / Math.PI;
+        const u = Math.floor((((lon + 180) % 360 + 360) % 360) / 360 * W) % W, v = Math.min(H - 1, Math.floor((90 - lat) / 180 * H));
+        const i = (v * W + u) * 4, o = (y * S + x) * 4;
+        od.data[o] = px[i]; od.data[o + 1] = px[i + 1]; od.data[o + 2] = px[i + 2]; od.data[o + 3] = 255;
+      }
+      ox.putImageData(od, 0, 0);
+      polarUrl = out.toDataURL('image/jpeg', 0.85);
+      if (mode === 'day') buildDay();
+    } catch (e) {}
+    polarBusy = false;
+  };
+  img.onerror = () => { polarBusy = false; };          // offline first time → plain blue Earth
+  img.src = 'tex/2k_earth_daymap.jpg';
+}
+function buildDay() {
+  let rays = '';
+  for (let i = -3; i <= 3; i++) rays += `<path d="M150,${DCY + i * 70} L${DCX - DR - 30},${DCY + i * 70}" stroke="#ffd93d" stroke-width="5" stroke-dasharray="14 16" opacity=".55"/>`;
+  daySvg.innerHTML = `
+    <defs><clipPath id="dayClip"><circle cx="${DCX}" cy="${DCY}" r="${DR}"/></clipPath>
+      <radialGradient id="dayShade" cx="35%" cy="50%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>
+    ${starfield(7, 70)}
+    <circle cx="10" cy="${DCY}" r="150" fill="url(#g-sunglow)"/><circle cx="10" cy="${DCY}" r="105" fill="url(#g-sun)"/>
+    <text x="40" y="${DCY + 150}" font-size="22" fill="#ffd93d" font-family="Mitr">☀️ ดวงอาทิตย์</text>
+    ${rays}
+    <g clip-path="url(#dayClip)">
+      <g id="dayEarth">${polarUrl ? `<image href="${polarUrl}" x="${DCX - DR}" y="${DCY - DR}" width="${DR * 2}" height="${DR * 2}"/>` : `<circle cx="${DCX}" cy="${DCY}" r="${DR}" fill="url(#g-earth)"/>`}
+        <circle cx="${DCX}" cy="${DCY}" r="${polarR(0)}" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 8" opacity=".55"/></g>
+      <rect x="${DCX}" y="${DCY - DR}" width="${DR}" height="${DR * 2}" fill="#050a2a" opacity=".62"/>
+      <rect x="${DCX - 3}" y="${DCY - DR}" width="6" height="${DR * 2}" fill="#ffb347" opacity=".5"/>
+      <circle cx="${DCX}" cy="${DCY}" r="${DR}" fill="url(#dayShade)"/>
+    </g>
+    <circle cx="${DCX}" cy="${DCY}" r="${DR}" fill="none" stroke="#9ec9ff" stroke-width="4"/>
+    <text x="${DCX - DR / 2}" y="${DCY - DR - 14}" text-anchor="middle" font-size="22" fill="#ffd93d" font-family="Mitr" font-weight="600">☀️ กลางวัน</text>
+    <text x="${DCX + DR / 2}" y="${DCY - DR - 14}" text-anchor="middle" font-size="22" fill="#cfd6ff" font-family="Mitr" font-weight="600">🌙 กลางคืน</text>
+    <path id="spinArrow" d="M${DCX + DR + 24},${DCY + 60} A${DR + 24},${DR + 24} 0 0 0 ${DCX + DR + 24},${DCY - 60}" fill="none" stroke="#fff" stroke-width="5" opacity=".7" marker-end="url(#arrowHead)"/>
+    <defs><marker id="arrowHead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fff"/></marker></defs>
+    <g id="nyPin"></g><g id="thPin"></g>`;
+  placeDay();
+}
+function pinAt(lat, angDeg) {
+  const r = polarR(lat), a = angDeg * Math.PI / 180;
+  return [DCX + r * Math.cos(a), DCY - r * Math.sin(a)];
+}
+function placeDay() {
+  const phiT = 180 + (dayHour - 12) * 15;                      // Thailand's angle (math, y up)
+  const e = document.getElementById('dayEarth');
+  if (!e) return;
+  e.setAttribute('transform', `rotate(${(-phiT).toFixed(2)} ${DCX} ${DCY})`);
+  const [tx, ty] = pinAt(TH_LAT, phiT), thDay = tx < DCX - 2;
+  document.getElementById('thPin').innerHTML = `<circle cx="${tx}" cy="${ty}" r="11" fill="#ff6b9d" stroke="#fff" stroke-width="4"/>
+    <text x="${tx}" y="${ty - 22}" text-anchor="middle" font-size="30">${thDay ? '🧒' : '😴'}</text>
+    <rect x="${tx - 62}" y="${ty + 16}" width="124" height="32" rx="16" fill="rgba(229,75,130,.92)" stroke="#fff" stroke-width="2"/>
+    <text x="${tx}" y="${ty + 38}" text-anchor="middle" font-size="18" fill="#fff" font-family="Mitr" font-weight="700">ประเทศไทย</text>`;
+  const [nx, ny] = pinAt(NY.lat, phiT + (NY.lon - TH_LON));
+  document.getElementById('nyPin').innerHTML = `<circle cx="${nx}" cy="${ny}" r="8" fill="#ffd93d" stroke="#fff" stroke-width="3"/>
+    <text x="${nx}" y="${ny - 14}" text-anchor="middle" font-size="17" fill="#fff" font-family="Mitr" font-weight="600">${NY.name} ${nx < DCX - 2 ? '☀️' : '🌙'}</text>`;
+  drawDayStrip();
+}
+function drawDayStrip() {
+  const h = dayHour, alt = Math.sin((h - 6) / 12 * Math.PI);          // > 0 between 6 and 18
+  const sky = alt > 0.25 ? ['#6ec6ff', '#c8ecff'] : alt > -0.05 ? ['#5a6fb8', '#ffa96b'] : ['#0b1033', '#1b2160'];
+  const sx = 80 + (h - 6) / 12 * 840, sy = 190 - 160 * alt;
+  let stars = '';
+  if (alt < 0) for (let i = 0; i < 26; i++) stars += `<circle cx="${(i * 389) % 1000}" cy="${15 + (i * 151) % 140}" r="${1.5 + (i % 3)}" fill="#fff" opacity=".8"/>`;
+  dayStrip.innerHTML = `<defs><linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
+    <rect width="1000" height="230" fill="url(#dsky)"/>${stars}
+    ${alt > -0.1 ? `<circle cx="${sx}" cy="${sy}" r="34" fill="url(#g-sun)"/>` : ''}
+    <rect y="180" width="1000" height="50" fill="${alt > 0 ? '#7ed957' : '#2d5a2a'}"/>
+    <text x="500" y="168" text-anchor="middle" font-size="58">🏠</text><text x="575" y="172" text-anchor="middle" font-size="40">${alt > 0 ? '🧒' : '😴'}</text>
+    <text x="20" y="214" font-size="18" fill="#fff" font-family="Mitr" font-weight="600">⬅ ตะวันออก</text>
+    <text x="980" y="214" text-anchor="end" font-size="18" fill="#fff" font-family="Mitr" font-weight="600">ตะวันตก ➡</text>
+    <text x="500" y="30" text-anchor="middle" font-size="20" fill="#fff" font-family="Mitr" font-weight="600">ท้องฟ้าที่ประเทศไทย</text>`;
+}
+function renderDayPanel() {
+  const h = dayHour, clocks = '🕛🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚';
+  const day = isDayAt(h), edge = h === 6 || h === 18;
+  panel.innerHTML = `<div class="clockbig">${[...clocks][h % 12]} ${timeTH(h)}</div>
+    <span class="badge" style="background:${edge ? '#ffe0c2' : day ? '#fff3b0' : '#dfe3ff'}">${h === 6 ? '🌅 ดวงอาทิตย์ขึ้น' : h === 18 ? '🌇 ดวงอาทิตย์ตก' : day ? '☀️ กลางวัน' : '🌙 กลางคืน'}</span>
+    <div class="res" style="text-align:center">ตอนนี้หนูกำลัง ${doing(h)}</div>
+    <ul class="know">
+      <li>โลกหมุนรอบตัวเองครบ 1 รอบใน 24 ชั่วโมง เราเลยมีกลางวันและกลางคืน</li>
+      <li>ฝั่งที่หันหาดวงอาทิตย์เป็นกลางวัน อีกฝั่งเป็นกลางคืน</li>
+      <li>ตอนประเทศไทยเป็นกลางวัน อเมริกาอยู่อีกฝั่งของโลก กำลังเป็นกลางคืน</li>
+      <li>โลกหมุนจากทิศตะวันตกไปตะวันออก เราเลยเห็นดวงอาทิตย์ขึ้นทางทิศตะวันออก</li>
+    </ul>
+    <div class="src">เวลาขึ้น-ตกแสดงแบบประมาณ (6 โมงเช้า / 6 โมงเย็น) ของจริงเลื่อนไปมาเล็กน้อยตามฤดู</div>`;
+}
+function setDayHour(h, sayIt) {
+  dayHour = ((Math.round(h) % 24) + 24) % 24;
+  placeDay();
+  if (dayHour !== lastDayHour) { lastDayHour = dayHour; renderDayPanel(); blip(isDayAt(dayHour) ? 700 : 420); }
+  if (sayIt) speak(dayLine(dayHour));
+}
+function dayAngle(ev) {
+  const r = daySvg.getBoundingClientRect(), k = 1000 / r.width;
+  return Math.atan2(-((ev.clientY - r.top) * k - DCY), (ev.clientX - r.left) * k - DCX) * 180 / Math.PI;
+}
+daySvg.addEventListener('pointerdown', (ev) => {
+  ensureAudio(); dayAuto = false; markDayPlay();
+  daySvg.setPointerCapture(ev.pointerId);
+  dayDrag = { a: dayAngle(ev), h: dayHour, raw: dayHour };
+});
+daySvg.addEventListener('pointermove', (ev) => {
+  if (!dayDrag) return;
+  let d = dayAngle(ev) - dayDrag.a;
+  if (d > 180) d -= 360; if (d < -180) d += 360;
+  dayDrag.a += d; dayDrag.raw += d / 15;                      // 15° of turn = 1 hour
+  dayHour = ((dayDrag.raw % 24) + 24) % 24;
+  placeDay();
+  const hh = Math.round(dayHour) % 24;
+  if (hh !== lastDayHour) { lastDayHour = hh; buzz(5); tone(isDayAt(hh) ? 700 : 420, 0.05, 'sine', 0.05); }
+});
+const endDayDrag = () => { if (!dayDrag) return; dayDrag = null; lastDayHour = -1; setDayHour(dayHour, true); };
+daySvg.addEventListener('pointerup', endDayDrag); daySvg.addEventListener('pointercancel', endDayDrag);
+function markDayPlay() { document.getElementById('dayPlay').classList.toggle('on', dayAuto); }
+document.getElementById('dayPlay').addEventListener('click', () => { ensureAudio(); dayAuto = !dayAuto; markDayPlay(); buzz(8); });
+function dayTick(dt) {
+  if (mode !== 'day' || !dayAuto || dayDrag) return;
+  const before = Math.floor(dayHour);
+  dayHour = (dayHour + dt * 2) % 24;                           // a whole day in 12 seconds
+  placeDay();
+  const now = Math.floor(dayHour);
+  if (now !== before) { lastDayHour = now; renderDayPanel(); if (now % 6 === 0) speak(dayLine(now)); }
+}
+const dayIntro = 'ลากโลกให้หมุน ดูซิว่าประเทศไทยเป็นกลางวันหรือกลางคืน';
+
+// ============================================================================
+// 🍂 SEASONS — Earth's tilted axis always points the same way (to Polaris);
+// June: the north leans toward the Sun. Thai seasons per the Thai Meteorological
+// Department (หนาว mid-Oct–mid-Feb, ร้อน mid-Feb–mid-May, ฝน mid-May–mid-Oct).
+// ============================================================================
+const seasonSvg = document.getElementById('seasonSvg');
+const MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+const MSHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const TSEASON = { cool: ['❄️', 'ฤดูหนาว', '#dff1ff'], hot: ['☀️', 'ฤดูร้อน', '#ffe6b3'], rain: ['🌧️', 'ฤดูฝน', '#d9f3c9'] };
+const MSEASON = ['cool', 'cool>hot', 'hot', 'hot', 'hot>rain', 'rain', 'rain', 'rain', 'rain', 'rain>cool', 'cool', 'cool'];
+function seasonName(i) {
+  const [a, b] = MSEASON[i].split('>');
+  return b ? 'ปลาย' + TSEASON[a][1] + ' เริ่มเข้า' + TSEASON[b][1] : TSEASON[a][1];
+}
+const seasonLine = (i) => 'เดือน' + MONTHS[i] + ' ประเทศไทย' + (MSEASON[i].includes('>') ? ' ' : 'เป็น') + seasonName(i);
+const SCX = 500, SCY = 270, SRX = 380, SRY = 160, SER = 54, TILT = 23.44;
+let seasonMonth = new Date().getMonth(), seasonTheta = null, seasonAnim = 0;
+const doyOf = (m) => [15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349][m];
+const thetaOf = (doy) => Math.PI + 2 * Math.PI * (doy - 172) / 365.25;   // June solstice = left of the Sun
+const declOf = (doy) => 23.44 * Math.sin(2 * Math.PI * (doy - 81) / 365);
+function sunAt(doy) {
+  const d = declOf(doy) * Math.PI / 180, f = TH_LAT * Math.PI / 180;
+  const noonAlt = 90 - Math.abs(TH_LAT - declOf(doy));
+  const H = Math.acos((Math.sin(-0.833 * Math.PI / 180) - Math.sin(f) * Math.sin(d)) / (Math.cos(f) * Math.cos(d)));
+  const mins = Math.round(2 * H * 180 / Math.PI / 15 * 60);
+  return { noonAlt, north: declOf(doy) > TH_LAT, dayH: Math.floor(mins / 60), dayM: mins % 60 };
+}
+function earthGlyph(x, y) {
+  const ang = Math.atan2(SCY - y, SCX - x) * 180 / Math.PI;          // toward the Sun
+  const ax = Math.sin(TILT * Math.PI / 180), ay = -Math.cos(TILT * Math.PI / 180);
+  const L = SER + 26;
+  const tx = x + ax * SER * 0.24, ty = y + ay * SER * 0.24;            // ~13.75°N on the near face
+  return `<g>
+    <circle cx="${x}" cy="${y}" r="${SER}" fill="url(#g-earth)"/>
+    <path d="M${x - SER * 0.35},${y - SER * 0.3} q14,-14 30,-4 q10,12 -6,22 q-18,4 -24,-18 Z M${x + 8},${y + 6} q16,-6 24,8 q-4,18 -20,14 Z" fill="#5fb85a" opacity=".85"/>
+    <path transform="rotate(${ang + 180} ${x} ${y})" d="M${x},${y - SER} A${SER},${SER} 0 0 1 ${x},${y + SER} Z" fill="#050a2a" opacity=".55"/>
+    <ellipse cx="${x}" cy="${y}" rx="${SER}" ry="${SER * 0.22}" transform="rotate(${TILT} ${x} ${y})" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="4 4" opacity=".7"/>
+    <path d="M${x - ax * L},${y - ay * L} L${x + ax * L},${y + ay * L}" stroke="#fff" stroke-width="3"/>
+    <text x="${x + ax * (L + 14)}" y="${y + ay * (L + 14) + 6}" text-anchor="middle" font-size="18">⭐</text>
+    <circle cx="${tx}" cy="${ty}" r="7" fill="#ff6b9d" stroke="#fff" stroke-width="3"/></g>`;
+}
+function buildSeason() {
+  const doy = doyOf(seasonMonth);
+  const th = seasonTheta === null ? thetaOf(doy) : seasonTheta;
+  const ex = SCX + SRX * Math.cos(th), ey = SCY - SRY * Math.sin(th);
+  let labels = '';
+  for (let m = 0; m < 12; m++) {
+    if (m === seasonMonth && seasonTheta === null) continue;      // Earth sits on its own label
+    const t = thetaOf(doyOf(m)), lx = SCX + (SRX + 52) * Math.cos(t), ly = SCY - (SRY + 40) * Math.sin(t) + 6;
+    labels += `<text x="${lx}" y="${ly}" text-anchor="middle" font-size="17" font-family="Mitr" font-weight="${m === seasonMonth ? 700 : 400}" fill="${m === seasonMonth ? '#ffd93d' : '#aab3e6'}">${MSHORT[m]}</text>`;
+  }
+  const sun = `<circle cx="${SCX}" cy="${SCY}" r="95" fill="url(#g-sunglow)"/><circle cx="${SCX}" cy="${SCY}" r="58" fill="url(#g-sun)"/>`;
+  const far = ey < SCY;
+  seasonSvg.innerHTML = `${starfield(11, 60)}
+    <ellipse cx="${SCX}" cy="${SCY}" rx="${SRX}" ry="${SRY}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-dasharray="8 10"/>
+    ${labels}${far ? earthGlyph(ex, ey) + sun : sun + earthGlyph(ex, ey)}
+    ${noonInset(doy)}`;
+}
+function noonInset(doy) {            // the child's noon shadow in Bangkok
+  const s = sunAt(doy), X = 18, Y = 478, W = 300, H = 156, gx = X + W / 2, gy = Y + H - 26;
+  const a = s.noonAlt * Math.PI / 180, dir = s.north ? 1 : -1;      // +1 = Sun to the north (right)
+  const kh = 56, sh = Math.min(130, kh / Math.tan(a));
+  const sx = gx + dir * Math.cos(a) * 110, sy = gy - Math.sin(a) * 110;
+  return `<g><rect x="${X}" y="${Y}" width="${W}" height="${H}" rx="18" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+    <text x="${X + 4}" y="${Y - 8}" font-size="15" fill="#cfd6ff" font-family="Mitr">เงาตอนเที่ยงที่กรุงเทพฯ</text>
+    <path d="M${X + 10},${gy} H${X + W - 10}" stroke="#7ed957" stroke-width="4"/>
+    <text x="${X + 14}" y="${gy + 20}" font-size="13" fill="#aab3e6" font-family="Mitr">ใต้</text><text x="${X + W - 14}" y="${gy + 20}" text-anchor="end" font-size="13" fill="#aab3e6" font-family="Mitr">เหนือ</text>
+    ${sh > 2 ? `<ellipse cx="${gx - dir * sh / 2}" cy="${gy}" rx="${sh / 2}" ry="5" fill="#000" opacity=".55"/>` : ''}
+    <path d="M${gx},${gy} v-${kh * 0.45} M${gx - 12},${gy - kh * 0.62} h24" stroke="#ff6b9d" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="${gx}" cy="${gy - kh * 0.82}" r="10" fill="#ffd2a8"/>
+    <circle cx="${Math.min(X + W - 20, Math.max(X + 20, sx))}" cy="${Math.max(Y + 22, sy)}" r="16" fill="url(#g-sun)"/></g>`;
+}
+function renderSeasonPanel() {
+  const i = seasonMonth, s = sunAt(doyOf(i)), [a, b] = MSEASON[i].split('>');
+  const shadow = s.noonAlt > 88 ? 'เงาแทบหายไปเลย!' : 'เงาชี้ไปทาง' + (s.north ? 'ใต้' : 'เหนือ');
+  panel.innerHTML = `<div class="clockbig">เดือน${MONTHS[i]}</div>
+    <span class="badge" style="background:${TSEASON[a][2]}">${TSEASON[a][0]}${b ? ' → ' + TSEASON[b][0] : ''} ${seasonName(i)}</span>
+    <div class="facts">
+      <div class="fact"><div class="k">🌞 กลางวันยาว</div><div class="v">${s.dayH} ชม. ${s.dayM} นาที</div></div>
+      <div class="fact"><div class="k">📐 เที่ยงวัน ดวงอาทิตย์สูง</div><div class="v">${Math.round(s.noonAlt)}° · ${shadow}</div></div>
+    </div>
+    <ul class="know">
+      <li>ฤดูกาลเกิดเพราะแกนโลกเอียง 23.4 องศา ไม่ใช่เพราะโลกเข้าใกล้หรือออกห่างดวงอาทิตย์</li>
+      <li>โลกอยู่ใกล้ดวงอาทิตย์ที่สุดต้นเดือนมกราคม ตอนนั้นประเทศไทยกลับเป็นหน้าหนาว</li>
+      <li>ปลายเดือนเมษายนกับกลางเดือนสิงหาคม ดวงอาทิตย์ตอนเที่ยงอยู่ตรงหัวคนกรุงเทพฯ เงาแทบหายไป</li>
+      <li>ตอนประเทศไทยเป็นหน้าหนาว ออสเตรเลียกลับเป็นหน้าร้อน</li>
+      <li>แกนโลกชี้ไปทางดาวเหนือ ⭐ ตลอดทั้งปี</li>
+    </ul>
+    <div class="src">ฤดูของไทยตามกรมอุตุนิยมวิทยา · ความยาวกลางวันและมุมดวงอาทิตย์คำนวณสำหรับกรุงเทพฯ กลางเดือน</div>`;
+}
+function buildMonths() {
+  const box = document.getElementById('months');
+  box.innerHTML = MSHORT.map((m, i) => `<button class="chip${i === seasonMonth ? ' on' : ''}" data-m="${i}">${m}</button>`).join('');
+  for (const b of box.children) b.addEventListener('click', () => { ensureAudio(); buzz(8); goMonth(+b.dataset.m); });
+}
+function goMonth(m) {
+  const from = seasonTheta === null ? thetaOf(doyOf(seasonMonth)) : seasonTheta;
+  let to = thetaOf(doyOf(m));
+  while (to < from) to += 2 * Math.PI;                         // always travel forward (counter-clockwise)
+  seasonMonth = m; buildMonths(); renderSeasonPanel(); blip(600);
+  speak(seasonLine(m));
+  const my = ++seasonAnim, t0 = performance.now(), dur = 500 + (to - from) / (2 * Math.PI) * 2400;
+  (function step(now) {
+    if (my !== seasonAnim || mode !== 'season') return;
+    const u = Math.min(1, (now - t0) / dur), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    seasonTheta = from + (to - from) * e;
+    buildSeason();
+    if (u < 1) requestAnimationFrame(step); else seasonTheta = null;
+  })(t0);
+}
+const seasonIntro = 'แตะเดือน ดูโลกเดินทางรอบดวงอาทิตย์';
+
+// ============================================================================
 // SOUND + SPEECH + FX
 // ============================================================================
 let AC = null;
@@ -1744,6 +2051,9 @@ VoiceClips.lines(() => {
   L.push('สาม', 'สอง', 'หนึ่ง', 'ปล่อยจรวด!', tripChooseLine('earth'));
   for (const id in TRIPS) L.push(tripChooseLine(id), tripArriveLine(id));
   for (const c of SKY) L.push(skyIntro(c), skyDone(c));
+  L.push(dayIntro, seasonIntro);
+  for (let h = 0; h < 24; h++) L.push(dayLine(h));
+  for (let m = 0; m < 12; m++) L.push(seasonLine(m));
   return L;
 });
 </script>
