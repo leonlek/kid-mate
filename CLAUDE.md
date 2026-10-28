@@ -133,7 +133,11 @@ Scribble-with-crayon scenes (portrait 800×1200). 60 scenes: 11 hand-written in 
 Interactive solar system: planets orbit at true relative speeds (1/period; 1 Earth year = 20 s at ▶), tap a body → inline info card with NASA Planetary Fact Sheet figures + Thai TTS; 📏 view draws all diameters to one true scale; 🎯 missions (⭐ find by name, ⭐⭐ find by clue). **Accuracy rule:** every number/clue must match NASA data; orbit distances and orbit-view sizes are compressed and the screen says so. Giant-planet moon counts change often — keep them as "มากกว่า …".
 🚀 นั่งจรวด: travel time = real launch→arrival dates of real spacecraft (Apollo 11, Parker, MESSENGER, Venus Express, Perseverance, Juno, Cassini, Voyager 2) in `TRIPS`. ✨ กลุ่มดาวไทย: connect-the-dots on real J2000 star positions (`STARS`), Thai names per NARIT/สวทช. (ดาวไถ = Orion's belt, ดาวเต่า = Orion, ดาวจระเข้ = Big Dipper, ดาวลูกไก่ = Pleiades, ดาวแมงป่อง = Scorpius).
 
-**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), 🌍 day/night + seasons on the globe, ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference: 🦖 dinosaurs (incl. Thai finds: ภูเวียงโกซอรัส สิรินธรน่า), 🌊 deep-sea dive (true depths to Mariana 10,935 m), 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
+**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), 🌍 day/night + seasons on the globe, ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs is done — see below): 🌊 deep-sea dive (true depths to Mariana 10,935 m), 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
+
+### โลกไดโนเสาร์ (`/dinosaurs/`)
+
+11 animals in `DINOS` (incl. Thai finds ภูเวียงโกซอรัส สิรินธรเน่ + สยามโมไทรันนัส, and เทอราโนดอน flagged as "not a dinosaur"). Hand-drawn side-view SVGs in `ART` (240×160 box, facing right, feet on y=148, `x0..x1` = nose-to-tail span so drawings scale to true length; `rib` = body ellipse for fossil ribs). Modes: 🦕 explore (scene + fact card + era timeline), 📏 size (dino beside a 1.1 m child, 2.7 m elephant and 12 m bus at one scale, 30 px/m), 🦴 dig (brush sand off a random skeleton on a canvas; 60 % of the body box cleared → reveal). **Accuracy rule:** lengths/weights/ages from the species' Wikipedia articles; where estimates disagree show the range, never a single invented number.
 
 ### (Planned)
 

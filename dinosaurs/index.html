@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🦖 โลกไดโนเสาร์ — คิดส์เล่น</title>
+<meta name="description" content="เกมไดโนเสาร์สำหรับเด็กไทย ข้อมูลจริง เทียบขนาดกับตัวเรา ขุดฟอสซิล และไดโนเสาร์ที่พบในประเทศไทย">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ไดโนเสาร์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+
+  .modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .main { grid-template-columns: minmax(0, 1fr) 380px; }
+  }
+  .view {
+    position: relative; background: #fffef9;
+    border: 4px solid #fff; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .view svg { display: block; width: 100%; height: auto; }
+  #scene { cursor: pointer; touch-action: manipulation; max-height: 70vh; }
+  #scene .dino { transform-box: fill-box; transform-origin: 50% 100%; }
+  #scene .dino.idle { animation: breathe 3s ease-in-out infinite; }
+  #scene .dino.fly { animation: glide 3s ease-in-out infinite; }
+  #scene .dino.hop { animation: hop .5s ease; }
+  @keyframes breathe { 50% { transform: scaleY(1.025); } }
+  @keyframes glide { 50% { transform: translateY(-14px) rotate(-2deg); } }
+  @keyframes hop { 30% { transform: translateY(-6%) scale(1.04); } 60% { transform: translateY(0) scale(.98); } }
+  .hint {
+    position: absolute; left: 50%; top: 12px; transform: translateX(-50%); pointer-events: none;
+    font-size: 15px; color: #fff; background: rgba(0,0,0,0.4); padding: 5px 14px; border-radius: 999px; white-space: nowrap;
+  }
+  #sizeWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #sizeSvg { min-width: 760px; }
+  .note { font-size: 13px; color: #7a6f60; text-align: center; padding: 4px 12px 10px; }
+
+  #digView { touch-action: none; }
+  #sand { position: absolute; left: 0; top: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; transition: opacity .8s; }
+  #sand.gone { opacity: 0; pointer-events: none; }
+  .bone path, .bone ellipse, .bone circle { fill: #f3e8cc !important; stroke: #8b7355 !important; }
+  .bone .eye { fill: #5a4630 !important; stroke: none !important; }
+  .bone .deco { display: none; }
+  #digColor { transition: opacity 1s; }
+
+  /* dinosaur picker strip */
+  .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+  @media (min-width: 640px) { .strip { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .strip { grid-template-columns: repeat(11, minmax(0, 1fr)); } }
+  .dbtn {
+    position: relative; min-height: 84px; border-radius: 20px;
+    background: #fff; border: 3px solid var(--card-border);
+    color: var(--ink); font-family: 'Mitr', sans-serif; font-size: 12px; font-weight: 500; line-height: 1.15; text-align: center; overflow-wrap: anywhere;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    cursor: pointer; padding: 6px 2px; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    transition: transform .1s, border-color .15s;
+  }
+  .dbtn svg { width: 64px; height: 43px; }
+  .dbtn:active { transform: translateY(2px) scale(0.95); }
+  .dbtn.sel { border-color: var(--brand); background: #ffe8f0; }
+  .dbtn .flag { position: absolute; top: 2px; right: 4px; font-size: 13px; }
+
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .p-head { display: flex; align-items: center; gap: 10px; }
+  .p-head svg { width: 96px; height: 64px; flex-shrink: 0; }
+  .p-name { font-family: 'Itim', cursive; font-size: 28px; line-height: 1.05; color: var(--brand-dark); }
+  .p-sub { font-size: 13px; color: #777; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .diet { display: inline-block; margin-top: 4px; font-size: 14px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #eef8e6; }
+  .diet.meat { background: #ffe6e1; } .diet.fish { background: #e3f1ff; }
+  .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0 8px; }
+  .fact { background: #fff8ec; border-radius: 16px; padding: 8px 10px; }
+  .fact .k { font-size: 13px; color: #6b7280; }
+  .fact .v { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .tl { width: 100%; height: auto; display: block; margin-top: 6px; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 16px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .res { font-size: 19px; line-height: 1.45; margin-top: 8px; text-align: center; }
+  .res b { color: var(--brand-dark); font-size: 24px; }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .q-text { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .bar { height: 22px; border-radius: 999px; background: #f1e6cf; overflow: hidden; margin: 10px 0 4px; border: 3px solid #e3d3b0; }
+  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, #ffd93d, #ff914d); transition: width .25s; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🦖 โลกไดโนเสาร์</h1></header>
+
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="explore">🦕 สำรวจ</button>
+    <button class="chip" data-mode="size">📏 ตัวใหญ่แค่ไหน</button>
+    <button class="chip" data-mode="dig">🦴 ขุดฟอสซิล</button>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="view" id="exploreView">
+        <svg id="scene" viewBox="0 0 1000 620" aria-label="ไดโนเสาร์"></svg>
+        <div class="hint">👆 แตะไดโนเสาร์</div>
+      </div>
+      <div class="view hidden" id="sizeView">
+        <div id="sizeWrap"><svg id="sizeSvg" aria-label="เทียบขนาดไดโนเสาร์"></svg></div>
+        <div class="note">ทุกอย่างในภาพนี้ย่อด้วยอัตราส่วนเดียวกัน เทียบกันได้ตามจริง · เลื่อนดูทางขวาได้</div>
+      </div>
+      <div class="view hidden" id="digView">
+        <svg id="digSvg" viewBox="0 0 1000 620" aria-label="ขุดฟอสซิล"></svg>
+        <canvas id="sand"></canvas>
+      </div>
+      <div class="strip" id="strip"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// DATA — sizes/ages from the Wikipedia species articles (which cite the
+// published estimates). Where scientists disagree, the card shows the range.
+// `L` = length in metres used for the to-scale drawing (wingspan for Pteranodon).
+// Ma = million years ago. Periods: Triassic 252–201, Jurassic 201–145, Cretaceous 145–66.
+// ============================================================================
+const DINOS = [
+  { id: 'trex', th: 'ทีเร็กซ์', sci: 'Tyrannosaurus rex · ไทรันโนซอรัส เร็กซ์', diet: 'meat',
+    L: 12, len: 'ราว 12 เมตร', wt: 'ราว 8 ตัน', ma: [68, 66], where: 'อเมริกาเหนือ',
+    know: ['ฟันซี่ใหญ่ที่สุดยาวราว 30 เซนติเมตร (รวมราก)',
+           'แขนสั้นนิดเดียว มีนิ้วแค่ 2 นิ้ว',
+           'ทีเร็กซ์อยู่ใกล้ยุคของเรา มากกว่ายุคของสเตโกซอรัสเสียอีก'],
+    say: 'ทีเร็กซ์ นักล่าตัวใหญ่ กินเนื้อ ยาวราว 12 เมตร' },
+  { id: 'tri', th: 'ไทรเซอราทอปส์', sci: 'Triceratops', diet: 'plant',
+    L: 8.5, len: '8–9 เมตร', wt: '6–12 ตัน', ma: [68, 66], where: 'อเมริกาเหนือ',
+    know: ['มี 3 เขา กับแผงคอใหญ่ ชื่อแปลว่า "หน้าสามเขา"',
+           'อยู่ยุคเดียวกับทีเร็กซ์ เคยพบรอยฟันทีเร็กซ์บนกระดูกของมัน'],
+    say: 'ไทรเซอราทอปส์ มีสามเขา กินพืช' },
+  { id: 'brachio', th: 'แบรคิโอซอรัส', sci: 'Brachiosaurus', diet: 'plant',
+    L: 20, len: '18–22 เมตร', wt: '28–47 ตัน', ma: [154, 153], where: 'อเมริกาเหนือ',
+    know: ['ขาหน้ายาวกว่าขาหลัง หลังเลยลาดลงเหมือนยีราฟ',
+           'ยกหัวได้สูงราว 9–13 เมตร สูงกว่าตึก 3 ชั้น',
+           'กินใบไม้บนยอดต้นไม้สูงๆ'],
+    say: 'แบรคิโอซอรัส คอยาวมาก กินใบไม้บนยอดไม้' },
+  { id: 'stego', th: 'สเตโกซอรัส', sci: 'Stegosaurus', diet: 'plant',
+    L: 7, len: '6.5–9 เมตร', wt: '3.5–7 ตัน', ma: [155, 145], where: 'อเมริกาเหนือ และโปรตุเกส',
+    know: ['แผ่นบนหลังแผ่นใหญ่สุดสูงราว 1 เมตร',
+           'ปลายหางมีหนามแหลม 4 อัน ไว้ป้องกันตัว',
+           'หัวเล็กมาก เมื่อเทียบกับตัวที่ใหญ่โต'],
+    say: 'สเตโกซอรัส มีแผ่นบนหลัง และหนามที่หาง' },
+  { id: 'raptor', th: 'เวโลซิแรปเตอร์', sci: 'Velociraptor', diet: 'meat',
+    L: 1.8, len: '1.5–2 เมตร', wt: 'ราว 15–20 กิโลกรัม', ma: [75, 71], where: 'มองโกเลีย และจีน',
+    know: ['ตัวจริงเล็กกว่าที่คิด สะโพกสูงแค่ราวครึ่งเมตร',
+           'มีขนเหมือนนก และมีกรงเล็บโค้งที่เท้า'],
+    say: 'เวโลซิแรปเตอร์ ตัวเล็ก มีขนเหมือนนก วิ่งเร็ว' },
+  { id: 'spino', th: 'สไปโนซอรัส', sci: 'Spinosaurus', diet: 'fish',
+    L: 14, len: 'ราว 14 เมตร', wt: 'ราว 7 ตัน', ma: [100, 94], where: 'แอฟริกา (อียิปต์ โมร็อกโก)',
+    know: ['มีครีบใหญ่บนหลัง กระดูกครีบยาวได้ราว 1.6 เมตร',
+           'ปากยาวคล้ายจระเข้ จับปลากินเก่ง แต่ก็กินสัตว์อื่นด้วย',
+           'ยาวกว่าทีเร็กซ์ แต่อยู่คนละยุค ไม่เคยเจอกัน'],
+    say: 'สไปโนซอรัส มีครีบบนหลัง ชอบกินปลา' },
+  { id: 'ankylo', th: 'แองคิโลซอรัส', sci: 'Ankylosaurus', diet: 'plant',
+    L: 7, len: '6–8 เมตร', wt: '4.8–8 ตัน', ma: [68, 66], where: 'อเมริกาเหนือ',
+    know: ['ตัวมีเกราะกระดูกแข็งๆ เหมือนรถถัง',
+           'ปลายหางเป็นก้อนกระดูกเหมือนตะบอง ไว้ฟาดศัตรู'],
+    say: 'แองคิโลซอรัส ตัวมีเกราะ หางเป็นตะบอง' },
+  { id: 'para', th: 'พาราซอโรโลฟัส', sci: 'Parasaurolophus', diet: 'plant',
+    L: 9, len: '7.5–9.5 เมตร', wt: 'ราว 2.5–5 ตัน', ma: [76.5, 73], where: 'อเมริกาเหนือ',
+    know: ['หงอนยาวกลวงข้างใน นักวิทยาศาสตร์คิดว่าอาจใช้ส่งเสียงร้องเรียกกัน',
+           'ปากแบนคล้ายปากเป็ด'],
+    say: 'พาราซอโรโลฟัส มีหงอนยาว ปากเหมือนเป็ด' },
+  { id: 'ptera', th: 'เทอราโนดอน', sci: 'Pteranodon', diet: 'fish', fly: true,
+    L: 5.6, len: 'ปีกกว้าง 4–7 เมตร', wt: 'ราว 20–50 กิโลกรัม', ma: [86, 78], where: 'อเมริกาเหนือ',
+    know: ['เทอราโนดอนไม่ใช่ไดโนเสาร์นะ เป็นสัตว์เลื้อยคลานบินได้ ญาติของไดโนเสาร์',
+           'ปากไม่มีฟันเลย บินจับปลาในทะเลกิน'],
+    say: 'เทอราโนดอน บินได้ แต่ไม่ใช่ไดโนเสาร์นะ' },
+  { id: 'phuwiang', th: 'ภูเวียงโกซอรัส', sci: 'Phuwiangosaurus sirindhornae · ภูเวียงโกซอรัส สิรินธรเน่', diet: 'plant', thai: true,
+    L: 17, len: '15–20 เมตร', wt: 'ราว 17 ตัน', ma: [134, 132], where: 'ภูเวียง จ.ขอนแก่น ประเทศไทย',
+    know: ['ไดโนเสาร์คอยาวของไทย พบที่ภูเวียง จังหวัดขอนแก่น เมื่อปี 2525',
+           'ชื่อ สิรินธรเน่ ตั้งเพื่อเฉลิมพระเกียรติ สมเด็จพระกนิษฐาธิราชเจ้า กรมสมเด็จพระเทพรัตนราชสุดา ที่สนพระทัยเรื่องไดโนเสาร์'],
+    say: 'ภูเวียงโกซอรัส ไดโนเสาร์คอยาวของไทย พบที่ขอนแก่น' },
+  { id: 'siamo', th: 'สยามโมไทรันนัส', sci: 'Siamotyrannus isanensis · สยามโมไทรันนัส อีสานเอนซิส', diet: 'meat', thai: true,
+    L: 7, len: '6–10 เมตร', wt: 'ราว 0.5–1.75 ตัน', ma: [145, 120], where: 'ภูเวียง จ.ขอนแก่น ประเทศไทย',
+    know: ['นักล่าของไทย พบที่ภูเวียง จังหวัดขอนแก่น เมื่อปี 2536',
+           'ชื่อแปลว่า "ทรราชแห่งสยาม จากภาคอีสาน"',
+           'เคยคิดว่าเป็นญาติของทีเร็กซ์ แต่ตอนนี้นักวิทยาศาสตร์คิดว่าไม่ใช่ญาติใกล้กัน'],
+    say: 'สยามโมไทรันนัส นักล่าของไทย พบที่ขอนแก่น' },
+];
+const BY = Object.fromEntries(DINOS.map(d => [d.id, d]));
+const DIET = { plant: ['🌿 กินพืช', ''], meat: ['🍖 กินเนื้อ', 'meat'], fish: ['🐟 กินปลา', 'fish'] };
+const PERIODS = [['ไทรแอสซิก', 252, 201, '#f6b26b'], ['จูราสสิก', 201, 145, '#93c47d'], ['ครีเทเชียส', 145, 66, '#6fa8dc']];
+const periodOf = (ma) => (PERIODS.find(p => ma <= p[1] && ma > p[2]) || PERIODS[2])[0];
+const KID_M = 1.1;    // a 5-year-old is ~110 cm tall
+const kidsLong = (d) => Math.max(1, Math.round(d.L / KID_M));
+const sizeLine = (d) => d.th + (d.fly ? ' ปีกกว้างเท่ากับหนูนอนต่อกัน ' : ' ยาวเท่ากับหนูนอนต่อกัน ') + kidsLong(d) + ' คน';
+const digIntro = 'ใต้ทรายมีกระดูกซ่อนอยู่ ใช้นิ้วปัดทรายออกเลย';
+const digDone = (d) => 'เจอแล้ว! นี่คือกระดูกของ' + d.th;
+// the spoken fact skips know[0] where `say` already said the same thing
+const roarLine = (d) => d.say + ' ' + d.know[d.thai || d.fly ? 1 : 0];
+
+// ============================================================================
+// ART — every drawing is side-on, facing right, in a 240×160 box, feet on y=148.
+// x0..x1 = nose-to-tail span, so drawings can be scaled to true length.
+// rib = body ellipse (fossil ribs are drawn inside it in dig mode).
+// ============================================================================
+const GROUND = 148;
+const tri3 = (pts, f) => pts.map(p => `<path fill="${f}" d="${p}"/>`).join('');
+const eye = (x, y, r = 3.5) => `<circle class="eye" fill="#2d3436" stroke="none" cx="${x}" cy="${y}" r="${r}"/><circle class="deco" fill="#fff" stroke="none" cx="${x + r * 0.35}" cy="${y - r * 0.35}" r="${r * 0.35}"/>`;
+const ART = {
+  trex: { c: '#6aa84f', d: '#4e7f39', b: '#cfe6a8', x0: 12, x1: 224, rib: [122, 86, 36, 24], draw: (c, d, b) => `
+    <path fill="${d}" d="M126,100 L134,146 L150,146 L142,100 Z"/>
+    <path fill="${c}" d="M12,78 Q60,62 104,66 L108,98 Q60,96 12,78 Z"/>
+    <ellipse fill="${c}" cx="122" cy="86" rx="36" ry="24"/>
+    <path class="deco" fill="${b}" stroke="none" d="M98,98 Q122,114 150,98 Q140,108 122,110 Q104,108 98,98 Z"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="4" d="M96,68 l4,9 M108,64 l4,9 M120,63 l4,9 M60,70 l3,7 M74,68 l3,8"/>
+    <ellipse fill="${c}" cx="112" cy="102" rx="17" ry="22"/>
+    <path fill="${c}" d="M104,116 L100,146 L120,146 L118,118 Z"/>
+    <path fill="${c}" d="M142,76 Q150,58 168,54 L212,56 Q224,58 224,68 L222,78 L198,78 L198,82 L178,84 Q162,92 152,100 Z"/>
+    <path fill="#fff" stroke-width="1.5" d="M186,78 l3,5 l3,-5 Z M196,78 l3,5 l3,-5 Z M206,78 l3,5 l3,-5 Z M214,78 l3,4 l3,-4 Z"/>
+    ${eye(184, 63)}<path fill="none" d="M177,58 L191,56"/>
+    <path fill="none" stroke-width="4" d="M150,94 q8,7 15,3"/>` },
+  siamo: { c: '#c0674f', d: '#8f4a38', b: '#f3c4a8', x0: 10, x1: 214, rib: [120, 86, 32, 20], draw: (c, d, b) => `
+    <path fill="${d}" d="M124,100 L130,146 L146,146 L138,100 Z"/>
+    <path fill="${c}" d="M10,80 Q60,66 102,70 L106,96 Q60,94 10,80 Z"/>
+    <ellipse fill="${c}" cx="120" cy="86" rx="32" ry="20"/>
+    <path class="deco" fill="${b}" stroke="none" d="M98,96 Q120,108 146,96 Q136,104 120,105 Q104,104 98,96 Z"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="4" d="M100,70 l4,9 M112,67 l4,9 M124,67 l4,9 M70,72 l3,7"/>
+    <ellipse fill="${c}" cx="110" cy="100" rx="15" ry="20"/>
+    <path fill="${c}" d="M102,112 L98,146 L118,146 L116,114 Z"/>
+    <path fill="${c}" d="M140,78 Q150,60 166,58 L204,60 Q214,62 214,70 L212,78 L180,80 Q162,88 150,98 Z"/>
+    <path fill="#fff" stroke-width="1.5" d="M184,79 l3,4 l3,-4 Z M194,79 l3,4 l3,-4 Z M204,78 l3,4 l3,-4 Z"/>
+    ${eye(180, 66)}<path fill="none" d="M173,61 L186,60"/>
+    <path fill="none" stroke-width="5" d="M146,90 L160,104 L170,102"/>
+    <path fill="none" stroke-width="2.5" d="M170,102 l5,4 M168,104 l3,6"/>` },
+  tri: { c: '#d98b4b', d: '#a8652f', b: '#f6c894', x0: 12, x1: 226, rib: [116, 98, 46, 28], draw: (c, d, b) => `
+    <path fill="${d}" d="M92,110 L92,146 L106,146 L106,110 Z M156,110 L156,146 L170,146 L170,110 Z"/>
+    <path fill="${c}" d="M12,96 Q48,84 82,86 L84,106 Q48,104 12,96 Z"/>
+    <ellipse fill="${c}" cx="116" cy="98" rx="46" ry="28"/>
+    <path class="deco" fill="${b}" stroke="none" d="M82,110 Q116,130 154,112 Q140,122 116,124 Q92,122 82,110 Z"/>
+    <path fill="${c}" d="M80,112 L80,148 L98,148 L98,112 Z M144,112 L144,148 L162,148 L162,112 Z"/>
+    <ellipse fill="${b}" cx="166" cy="80" rx="22" ry="30"/>
+    <path class="deco" fill="${d}" stroke="none" d="M158,62 a4,4 0 1,0 0.1,0 Z M170,70 a4,4 0 1,0 0.1,0 Z M156,82 a4,4 0 1,0 0.1,0 Z M168,56 a3,3 0 1,0 0.1,0 Z"/>
+    <path fill="#fff3d6" d="M176,84 L200,54 L186,86 Z"/>
+    <path fill="${c}" d="M162,86 Q188,78 208,90 L218,104 Q206,114 186,112 Q170,110 162,100 Z"/>
+    <path fill="#e8d9a8" d="M208,90 L226,100 L214,108 Z"/>
+    <path fill="#fff3d6" d="M184,86 L210,56 L192,90 Z"/>
+    <path fill="#fff3d6" d="M206,92 L212,78 L216,96 Z"/>
+    ${eye(192, 96)}` },
+  brachio: { c: '#7fa7c9', d: '#5a7f9e', b: '#c5dbee', x0: 8, x1: 200, rib: [106, 96, 40, 22], draw: (c, d, b) => `
+    <path fill="${d}" d="M86,108 L86,148 L100,148 L100,108 Z M136,104 L136,148 L150,148 L150,104 Z"/>
+    <path fill="${c}" d="M8,98 Q38,90 70,92 L72,110 Q38,108 8,98 Z"/>
+    <path fill="${c}" d="M66,110 Q62,80 96,76 Q130,68 150,84 Q156,104 140,118 Q100,128 66,110 Z"/>
+    <path class="deco" fill="${d}" stroke="none" d="M96,88 a5,5 0 1,0 0.1,0 Z M112,82 a4,4 0 1,0 0.1,0 Z M124,92 a5,5 0 1,0 0.1,0 Z M84,96 a4,4 0 1,0 0.1,0 Z"/>
+    <path fill="${c}" d="M128,86 Q148,60 166,40 L182,46 Q162,70 148,104 Z"/>
+    <ellipse fill="${c}" cx="180" cy="33" rx="7" ry="5"/>
+    <ellipse fill="${c}" cx="184" cy="40" rx="16" ry="9"/>
+    ${eye(189, 37, 3)}<path fill="none" d="M192,44 L199,43"/>
+    <path fill="${c}" d="M74,108 L74,148 L92,148 L92,108 Z M124,104 L124,148 L142,148 L142,104 Z"/>` },
+  phuwiang: { c: '#e0a96d', d: '#b07d47', b: '#f6d8b0', x0: 4, x1: 215, rib: [106, 98, 40, 24], draw: (c, d, b) => `
+    <path fill="${d}" d="M86,108 L86,148 L100,148 L100,108 Z M132,108 L132,148 L146,148 L146,108 Z"/>
+    <path fill="${c}" d="M4,94 Q40,86 72,90 L74,108 Q40,106 4,94 Z"/>
+    <ellipse fill="${c}" cx="106" cy="98" rx="40" ry="24"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="5" d="M84,80 l3,10 M98,76 l3,10 M112,75 l3,10 M126,78 l3,10"/>
+    <path fill="${c}" d="M128,90 Q160,62 188,50 L196,60 Q168,76 144,104 Z"/>
+    <ellipse fill="${c}" cx="202" cy="52" rx="13" ry="8"/>
+    ${eye(206, 49, 3)}<path fill="none" d="M208,56 L214,55"/>
+    <path fill="${c}" d="M74,108 L74,148 L92,148 L92,108 Z M120,108 L120,148 L138,148 L138,108 Z"/>` },
+  stego: { c: '#9fb05a', d: '#76853c', b: '#e8794a', x0: 4, x1: 200, rib: [116, 96, 40, 22], draw: (c, d, b) => `
+    ${tri3(['M70,92 L76,66 L88,86 Z', 'M84,82 L94,52 L106,78 Z', 'M100,74 L114,42 L124,72 Z', 'M118,72 L132,46 L140,76 Z', 'M134,78 L146,58 L152,86 Z', 'M148,88 L158,72 L162,94 Z'], b)}
+    <path fill="${d}" d="M90,108 L90,146 L104,146 L104,108 Z M146,106 L146,146 L158,146 L158,106 Z"/>
+    ${tri3(['M22,96 L8,76 L28,94 Z', 'M32,94 L22,72 L38,92 Z', 'M18,100 L4,114 L24,101 Z', 'M28,101 L18,118 L33,102 Z'], '#fff3d6')}
+    <path fill="${c}" d="M10,98 Q40,90 72,94 L74,110 Q40,110 10,98 Z"/>
+    <path fill="${c}" d="M66,112 Q72,70 116,68 Q160,70 168,108 Q120,124 66,112 Z"/>
+    <path class="deco" fill="${d}" stroke="none" d="M100,86 a5,5 0 1,0 0.1,0 Z M120,82 a5,5 0 1,0 0.1,0 Z M138,90 a4,4 0 1,0 0.1,0 Z"/>
+    <path fill="${c}" d="M78,108 L78,148 L96,148 L96,108 Z M136,106 L136,148 L152,148 L152,106 Z"/>
+    <path fill="${c}" d="M160,96 Q178,94 198,104 Q200,114 188,116 L168,114 Z"/>
+    ${eye(186, 105, 3)}` },
+  raptor: { c: '#c97d4a', d: '#99582c', b: '#f2b880', x0: 12, x1: 190, rib: [112, 86, 26, 16], draw: (c, d, b) => `
+    <path fill="${d}" d="M118,98 L124,136 L118,146 L136,146 L132,136 L128,98 Z"/>
+    <path class="deco" fill="${b}" d="M12,72 L22,62 L30,70 L42,60 L50,70 L62,62 L70,72 L80,66 L90,76 Z"/>
+    <path fill="${c}" d="M12,72 Q60,68 96,76 L98,90 Q60,86 12,72 Z"/>
+    <path class="deco" fill="${b}" d="M90,74 Q110,60 134,70 L130,78 Q110,70 94,80 Z"/>
+    <ellipse fill="${c}" cx="112" cy="86" rx="26" ry="16"/>
+    <ellipse fill="${c}" cx="106" cy="98" rx="11" ry="14"/>
+    <path fill="${c}" d="M100,106 L106,138 L96,146 L120,146 L114,138 L112,106 Z"/>
+    <path fill="none" stroke-width="3" d="M104,142 Q96,134 104,128"/>
+    <path fill="${c}" d="M128,80 Q140,62 154,62 L184,64 Q190,68 186,74 L158,78 Q148,86 134,94 Z"/>
+    <path fill="#fff" stroke-width="1.2" d="M166,76 l2,3 l2,-3 Z M174,75 l2,3 l2,-3 Z M181,74 l2,3 l2,-3 Z"/>
+    ${eye(162, 67, 3)}
+    <path fill="${b}" d="M128,90 L146,106 L154,98 Z"/>` },
+  spino: { c: '#5c8f8a', d: '#3e6a66', b: '#e0644a', x0: 8, x1: 227, rib: [112, 88, 36, 20], draw: (c, d, b) => `
+    <path fill="${b}" d="M72,82 Q84,16 112,20 Q138,24 144,78 Z"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="2" d="M88,78 L92,34 M104,78 L108,24 M120,78 L122,28 M134,78 L134,44"/>
+    <path fill="${d}" d="M118,98 L124,146 L138,146 L132,98 Z"/>
+    <path fill="${c}" d="M8,84 Q46,66 82,74 L84,100 Q46,102 8,84 Z"/>
+    <ellipse fill="${c}" cx="112" cy="88" rx="36" ry="20"/>
+    <ellipse fill="${c}" cx="104" cy="100" rx="13" ry="16"/>
+    <path fill="${c}" d="M98,110 L96,146 L114,146 L110,112 Z"/>
+    <path fill="${c}" d="M138,80 Q150,70 164,70 L222,76 Q229,80 224,86 L172,90 Q158,96 148,100 Z"/>
+    <path fill="#fff" stroke-width="1.2" d="M182,88 l2,3 l2,-3 Z M192,87 l2,3 l2,-3 Z M202,87 l2,3 l2,-3 Z M212,86 l2,3 l2,-3 Z"/>
+    ${eye(168, 77, 3)}
+    <path fill="none" stroke-width="4" d="M146,96 q8,10 16,8"/>` },
+  ankylo: { c: '#a0855b', d: '#76603f', b: '#e8d2a6', x0: 3, x1: 210, rib: [120, 98, 52, 22], draw: (c, d, b) => `
+    <path fill="${d}" d="M96,116 L96,146 L110,146 L110,116 Z M158,114 L158,146 L170,146 L170,114 Z"/>
+    <path fill="${c}" d="M18,104 Q44,98 72,100 L74,114 Q44,114 18,110 Z"/>
+    <ellipse fill="${d}" cx="16" cy="107" rx="13" ry="10"/>
+    ${tri3(['M62,112 L48,118 L64,120 Z', 'M84,120 L78,132 L92,122 Z', 'M120,124 L118,136 L130,124 Z', 'M156,122 L160,134 L166,120 Z'], b)}
+    <path fill="${c}" d="M60,120 Q66,74 120,72 Q172,74 180,118 Q120,128 60,120 Z"/>
+    <path class="deco" fill="${d}" stroke="none" d="M90,86 a5,5 0 1,0 0.1,0 Z M110,80 a5,5 0 1,0 0.1,0 Z M130,80 a5,5 0 1,0 0.1,0 Z M150,86 a5,5 0 1,0 0.1,0 Z M80,104 a5,5 0 1,0 0.1,0 Z M100,100 a5,5 0 1,0 0.1,0 Z M120,96 a5,5 0 1,0 0.1,0 Z M140,100 a5,5 0 1,0 0.1,0 Z M160,104 a5,5 0 1,0 0.1,0 Z"/>
+    <path fill="${c}" d="M82,116 L82,148 L100,148 L100,116 Z M146,114 L146,148 L162,148 L162,114 Z"/>
+    <path fill="${b}" d="M194,98 L206,88 L204,102 Z"/>
+    <path fill="${c}" d="M172,100 Q192,94 208,104 Q212,116 198,120 L176,118 Z"/>
+    ${eye(194, 106, 3)}` },
+  para: { c: '#8e7cc3', d: '#675a99', b: '#f6b26b', x0: 8, x1: 200, rib: [114, 92, 38, 24], draw: (c, d, b) => `
+    <path fill="${b}" d="M170,62 Q150,30 106,20 Q100,28 110,32 Q146,42 162,68 Z"/>
+    <path fill="${d}" d="M116,98 L122,146 L138,146 L130,98 Z M146,104 L152,146 L162,146 L154,104 Z"/>
+    <path fill="${c}" d="M8,84 Q48,72 86,78 L88,96 Q48,96 8,84 Z"/>
+    <ellipse fill="${c}" cx="114" cy="92" rx="38" ry="24"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="4" d="M90,72 l4,10 M104,69 l4,10 M118,69 l4,10 M132,72 l4,10 M40,78 l3,8 M60,76 l3,8"/>
+    <path fill="${c}" d="M138,106 L142,148 L156,148 L150,106 Z"/>
+    <ellipse fill="${c}" cx="102" cy="104" rx="15" ry="20"/>
+    <path fill="${c}" d="M94,116 L92,148 L110,148 L108,118 Z"/>
+    <path fill="${c}" d="M138,84 Q150,60 166,58 L184,62 Q198,68 198,76 L182,80 Q166,82 152,100 Z"/>
+    <path fill="#e8d9a8" d="M184,62 Q200,66 200,76 L184,79 Z"/>
+    ${eye(172, 66, 3)}` },
+  ptera: { c: '#e2a07a', d: '#b8754f', b: '#f5cdb5', x0: 10, x1: 230, rib: [120, 90, 18, 9], draw: (c, d, b) => `
+    <path fill="${d}" d="M122,84 Q170,52 230,62 Q182,76 172,94 Q148,92 122,96 Z"/>
+    <path fill="${b}" d="M118,84 Q70,56 10,70 Q60,80 70,96 Q96,92 118,96 Z"/>
+    <path class="deco" fill="none" stroke="${d}" stroke-width="2" d="M40,72 Q66,80 76,94 M90,72 Q100,84 104,94"/>
+    <path fill="${c}" d="M134,78 L102,58 L130,86 Z"/>
+    <ellipse fill="${c}" cx="120" cy="90" rx="18" ry="9"/>
+    <path fill="${c}" d="M130,80 Q136,74 142,78 L198,94 L138,92 Z"/>
+    ${eye(139, 82, 2.6)}` },
+};
+function dinoSvg(id, opts = {}) {
+  const a = ART[id];
+  const inner = `<g stroke="#2d3436" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${a.draw(a.c, a.d, a.b)}</g>`;
+  if (!opts.bone) return inner;
+  const [cx, cy, rx, ry] = a.rib;
+  let ribs = `<path d="M${cx - rx},${cy - ry * 0.5} Q${cx},${cy - ry * 1.05} ${cx + rx},${cy - ry * 0.5}"/>`;
+  for (let i = 0; i < 6; i++) {
+    const x = cx - rx * 0.62 + i * rx * 0.25;
+    ribs += `<path d="M${x},${cy - ry * 0.72} Q${x - 7},${cy} ${x - 3},${cy + ry * 0.62}"/>`;
+  }
+  return `<g class="bone">${inner}<g fill="none" stroke="#8b7355" stroke-width="3" stroke-linecap="round">${ribs}</g></g>`;
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+let mode = 'explore', selected = 'trex';
+
+// ============================================================================
+// 🦕 EXPLORE — one big dinosaur in a prehistoric scene
+// ============================================================================
+const scene = $('scene');
+function sceneBg() {
+  return `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2b8"/><stop offset="1" stop-color="#fff6dd"/></linearGradient></defs>
+    <rect width="1000" height="620" fill="url(#sky)"/>
+    <circle cx="840" cy="110" r="54" fill="#ffd93d" opacity=".9"/>
+    <path d="M40,470 L210,210 L250,230 L420,470 Z" fill="#a5826b"/><path d="M210,210 L250,230 L238,260 L222,250 Z" fill="#e8794a"/>
+    <path d="M226,200 q-20,-40 10,-70 q30,-30 0,-70" fill="none" stroke="#c9c2bb" stroke-width="22" stroke-linecap="round" opacity=".7"/>
+    <path d="M380,470 Q520,330 700,470 Z" fill="#c4a98f"/>
+    <path d="M0,560 L1000,560 L1000,620 L0,620 Z" fill="#b8d98a"/>
+    <path d="M0,470 Q250,440 500,468 T1000,462 L1000,562 L0,562 Z" fill="#a8d07a"/>
+    ${[60, 900, 960].map(x => `<g transform="translate(${x},560)"><path d="M0,0 L0,-90" stroke="#7a5a3a" stroke-width="10"/>${[-1, 1].map(s => `<path d="M0,-86 q${50 * s},-10 ${70 * s},20 M0,-86 q${36 * s},-36 ${66 * s},-30" stroke="#5c9e3a" stroke-width="12" fill="none" stroke-linecap="round"/>`).join('')}</g>`).join('')}`;
+}
+function buildScene() {
+  const a = ART[selected], d = BY[selected];
+  const w = 800, h = w * 160 / 240;
+  const y = d.fly ? 20 : 562 - h * GROUND / 160;
+  scene.innerHTML = sceneBg() + `<svg class="dino ${d.fly ? 'fly' : 'idle'}" id="sceneDino" x="${(1000 - w) / 2}" y="${y}" width="${w}" height="${h}" viewBox="0 0 240 160">${dinoSvg(selected)}</svg>`;
+}
+scene.addEventListener('click', () => {
+  ensureAudio(); roar(BY[selected]); buzz(30);
+  const el = $('sceneDino');
+  el.classList.remove('hop'); void el.getBBox(); el.classList.add('hop');
+  setTimeout(() => el.classList.remove('hop'), 520);
+  speak(BY[selected].say);
+});
+
+// ============================================================================
+// 📏 SIZE — dinosaur next to a child, an elephant and a city bus, one true scale
+// ============================================================================
+const sizeSvg = $('sizeSvg');
+const PPM = 30;             // px per metre
+const SG = 470;             // ground line in the size view
+function kidSvg(x) {         // a child 1.1 m tall
+  const h = KID_M * PPM, s = h / 110;
+  return `<g transform="translate(${x},${SG - h}) scale(${s})" stroke="#2d3436" stroke-width="${3 / s}">
+    <circle cx="20" cy="16" r="15" fill="#ffd2a8"/><path d="M8,8 Q20,-6 34,10 Q22,4 8,8 Z" fill="#3b2a20"/>
+    <path d="M6,36 Q20,30 34,36 L36,72 L4,72 Z" fill="#ff6b9d"/>
+    <path d="M8,72 L8,110 L18,110 L18,74 Z M22,74 L22,110 L32,110 L32,72 Z" fill="#5b8bd6"/></g>`;
+}
+function elephantSvg(x) {    // Asian elephant, ~2.7 m at the shoulder
+  const h = 2.7 * PPM, s = h / 100;
+  return `<g transform="translate(${x},${SG - h * 1.12}) scale(${s})" stroke="#2d3436" stroke-width="${3 / s}" fill="#9aa5ad">
+    <path d="M10,112 L10,70 Q10,22 70,22 Q120,22 128,60 L128,112 L108,112 L108,84 L34,84 L34,112 Z"/>
+    <path d="M118,30 Q150,20 160,52 Q166,90 152,110 L144,108 Q152,84 146,64 Q140,54 128,60 Z"/>
+    <ellipse cx="118" cy="52" rx="16" ry="22" fill="#b5bec5"/><circle cx="138" cy="44" r="3" fill="#2d3436" stroke="none"/>
+    <path d="M10,64 Q-4,70 0,92" fill="none"/></g>`;
+}
+function busSvg(x) {         // city bus 12 m × 3.2 m
+  const w = 12 * PPM, h = 3.2 * PPM, wr = 0.5 * PPM;
+  let win = '';
+  for (let i = 0; i < 7; i++) win += `<rect x="${x + 22 + i * (w - 40) / 7}" y="${SG - h + 12}" width="${(w - 40) / 7 - 8}" height="${h * 0.32}" rx="4" fill="#cfefff"/>`;
+  return `<g stroke="#2d3436" stroke-width="3"><rect x="${x}" y="${SG - h - 4}" width="${w}" height="${h - 4}" rx="14" fill="#5bc0eb"/>${win}
+    <circle cx="${x + 2.5 * PPM}" cy="${SG - wr}" r="${wr}" fill="#2d3436"/><circle cx="${x + w - 2.5 * PPM}" cy="${SG - wr}" r="${wr}" fill="#2d3436"/></g>`;
+}
+function placeDino(id, xStart, airM = 0) {
+  const a = ART[id], d = BY[id];
+  const k = d.L * PPM / (a.x1 - a.x0);
+  const w = 240 * k, h = 160 * k;
+  return { svg: `<svg x="${xStart - a.x0 * k}" y="${SG - GROUND * k - airM * PPM}" width="${w}" height="${h}" viewBox="0 0 240 160">${dinoSvg(id)}</svg>`, end: xStart + d.L * PPM };
+}
+function label(x, txt, sub) {
+  return `<text x="${x}" y="${SG + 34}" text-anchor="middle" font-family="Mitr" font-size="20" font-weight="600" fill="#2d3436">${txt}</text>` +
+    (sub ? `<text x="${x}" y="${SG + 58}" text-anchor="middle" font-family="Mitr" font-size="16" fill="#7a6f60">${sub}</text>` : '');
+}
+function buildSize() {
+  const d = BY[selected];
+  const kidX = 30, dinoX = kidX + 2 * PPM;
+  const p = placeDino(selected, dinoX, d.fly ? 3 : 0);
+  const eleX = p.end + 1.5 * PPM, busX = eleX + 6 * PPM;
+  const W = busX + 12 * PPM + 40;
+  let ruler = '';
+  for (let m = 0; m * PPM < W - 60; m += 5) {
+    const x = kidX + m * PPM;
+    ruler += `<path d="M${x},${SG + 64} v10" stroke="#7a6f60" stroke-width="2"/><text x="${x}" y="${SG + 92}" text-anchor="middle" font-family="Mitr" font-size="14" fill="#7a6f60">${m} ม.</text>`;
+  }
+  sizeSvg.setAttribute('viewBox', `0 0 ${W} ${SG + 104}`);
+  sizeSvg.innerHTML = `<rect width="${W}" height="${SG + 104}" fill="#fff6dd"/>
+    <rect y="${SG}" width="${W}" height="104" fill="#d9f3c9"/><path d="M0,${SG} H${W}" stroke="#7ab55c" stroke-width="4"/>
+    <path d="M${kidX},${SG + 69} H${W - 30}" stroke="#7a6f60" stroke-width="2"/>${ruler}
+    ${kidSvg(kidX - 18)}<text x="${kidX + 2}" y="${SG - KID_M * PPM - 12}" text-anchor="middle" font-size="30">👇</text>${p.svg}${elephantSvg(eleX)}${busSvg(busX)}
+    ${label(kidX + 2, '🧒 หนู', '1.1 ม.')}${label((dinoX + p.end) / 2, d.th, d.len)}
+    ${label(eleX + 2.2 * PPM, '🐘 ช้าง', 'สูง 2.7 ม.')}${label(busX + 6 * PPM, '🚌 รถเมล์', 'ยาว 12 ม.')}`;
+  $('sizeWrap').scrollLeft = 0;
+}
+
+// ============================================================================
+// 🦴 DIG — brush sand off a hidden skeleton, then it comes to life
+// ============================================================================
+const digSvg = $('digSvg'), sand = $('sand'), sctx = sand.getContext('2d');
+let digId = null, digDoneFlag = false, digPct = 0, lastDig = [];
+function newDig() {
+  const pool = DINOS.filter(d => d.id !== digId && !lastDig.includes(d.id));
+  digId = pool[Math.floor(Math.random() * pool.length)].id;
+  lastDig = [...lastDig, digId].slice(-4);
+  digDoneFlag = false; digPct = 0;
+  const w = 780, h = w * 160 / 240;
+  digSvg.innerHTML = `<rect width="1000" height="620" fill="#c9a47a"/>
+    ${[90, 210, 360, 500].map((y, i) => `<path d="M0,${y} Q250,${y - 20} 500,${y + 6} T1000,${y - 4} L1000,${y + 30} Q500,${y + 40} 0,${y + 26} Z" fill="${i % 2 ? '#b8916a' : '#d6b58c'}" opacity=".7"/>`).join('')}
+    <svg x="110" y="${80}" width="${w}" height="${h}" viewBox="0 0 240 160">${dinoSvg(digId, { bone: true })}</svg>
+    <svg id="digColor" x="110" y="${80}" width="${w}" height="${h}" viewBox="0 0 240 160" style="opacity:0">${dinoSvg(digId)}</svg>`;
+  sand.classList.remove('gone');
+  sizeSand();
+  renderDigPanel();
+}
+function sizeSand() {
+  const r = digSvg.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  if (!r.width) return;
+  sand.width = Math.round(r.width * dpr); sand.height = Math.round(r.height * dpr);
+  const W = sand.width, H = sand.height;
+  sctx.globalCompositeOperation = 'source-over';
+  sctx.fillStyle = '#e9cf9c'; sctx.fillRect(0, 0, W, H);
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 1400; i++) {
+    sctx.fillStyle = ['#d9bb84', '#f3dfb4', '#cfae76'][i % 3];
+    sctx.beginPath(); sctx.arc(rnd() * W, rnd() * H, (1 + rnd() * 2.5) * dpr, 0, 6.283); sctx.fill();
+  }
+  for (let i = 0; i < 14; i++) {
+    sctx.fillStyle = '#b79a6e';
+    sctx.beginPath(); sctx.ellipse(rnd() * W, rnd() * H, (6 + rnd() * 10) * dpr, (4 + rnd() * 6) * dpr, rnd() * 3, 0, 6.283); sctx.fill();
+  }
+  sctx.fillStyle = '#8b6d45'; sctx.font = `${Math.round(W / 26)}px Mitr, sans-serif`; sctx.textAlign = 'center';
+  sctx.fillText('👆 ปัดทรายออก', W / 2, H * 0.12);
+}
+let brushing = null, lastScratch = 0, lastCheck = 0;
+function brushAt(e) {
+  const r = sand.getBoundingClientRect(), dpr = sand.width / r.width;
+  return [(e.clientX - r.left) * dpr, (e.clientY - r.top) * dpr];
+}
+function brush(p) {
+  sctx.globalCompositeOperation = 'destination-out';
+  sctx.lineCap = 'round'; sctx.lineJoin = 'round'; sctx.lineWidth = sand.width * 0.075;
+  sctx.beginPath(); sctx.moveTo(brushing[0], brushing[1]); sctx.lineTo(p[0], p[1]); sctx.stroke();
+  brushing = p;
+  const now = performance.now();
+  if (now - lastScratch > 110) { lastScratch = now; scratch(); }
+  if (now - lastCheck > 200) { lastCheck = now; checkDig(); }
+}
+sand.addEventListener('pointerdown', (e) => {
+  if (digDoneFlag) return;
+  ensureAudio(); sand.setPointerCapture(e.pointerId);
+  brushing = brushAt(e); brush([brushing[0] + 0.1, brushing[1]]);
+});
+sand.addEventListener('pointermove', (e) => { if (brushing) brush(brushAt(e)); });
+const endBrush = () => { if (brushing) { brushing = null; checkDig(); } };
+sand.addEventListener('pointerup', endBrush); sand.addEventListener('pointercancel', endBrush);
+function checkDig() {
+  if (digDoneFlag) return;
+  const sx = sand.width / 1000, sy = sand.height / 620;
+  const a = ART[digId], k = 780 / 240;
+  const x0 = Math.round((110 + a.x0 * k) * sx), x1 = Math.round((110 + a.x1 * k) * sx);
+  const y0 = Math.round((80 + 30 * k) * sy), y1 = Math.round((80 + GROUND * k) * sy);
+  const img = sctx.getImageData(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0)).data;
+  let clear = 0, n = 0;
+  for (let i = 3; i < img.length; i += 4 * 9) { n++; if (img[i] < 40) clear++; }
+  digPct = n ? clear / n : 0;
+  const bar = $('digBar'); if (bar) bar.style.width = Math.min(100, Math.round(digPct / 0.6 * 100)) + '%';
+  if (digPct >= 0.6) finishDig();
+}
+function finishDig() {
+  digDoneFlag = true; brushing = null;
+  sand.classList.add('gone');
+  setTimeout(() => { const c = $('digColor'); if (c) c.style.opacity = 1; roar(BY[digId]); }, 900);
+  cheer(); celebrate(40); buzz([40, 60, 40]);
+  speak(digDone(BY[digId]));
+  selected = digId; markStrip();
+  renderDigPanel();
+}
+
+// ============================================================================
+// STRIP + PANEL
+// ============================================================================
+const strip = $('strip'), panel = $('panel');
+function buildStrip() {
+  strip.innerHTML = '';
+  for (const d of DINOS) {
+    const b = document.createElement('button');
+    b.className = 'dbtn'; b.dataset.id = d.id;
+    b.innerHTML = `${d.thai ? '<span class="flag">🇹🇭</span>' : ''}<svg viewBox="0 0 240 160">${dinoSvg(d.id)}</svg>${d.th}`;
+    b.onclick = () => choose(d.id);
+    strip.appendChild(b);
+  }
+}
+function markStrip() { for (const el of strip.children) el.classList.toggle('sel', el.dataset.id === selected); }
+function timeline(d) {
+  const X = (ma) => 10 + (252 - ma) / 252 * 300;
+  const mid = (d.ma[0] + d.ma[1]) / 2;
+  return `<svg class="tl" viewBox="0 0 320 64">
+    ${PERIODS.map(p => `<rect x="${X(p[1])}" y="22" width="${X(p[2]) - X(p[1])}" height="18" fill="${p[3]}"/><text x="${(X(p[1]) + X(p[2])) / 2}" y="54" text-anchor="middle" font-family="Mitr" font-size="10.5" fill="#555">${p[0]}</text>`).join('')}
+    <rect x="${X(66)}" y="22" width="${X(0) - X(66)}" height="18" fill="#e3e3e3"/><text x="${(X(66) + X(0)) / 2}" y="54" text-anchor="middle" font-family="Mitr" font-size="10.5" fill="#555">หลังไดโนเสาร์</text>
+    <text x="${X(0)}" y="16" text-anchor="end" font-family="Mitr" font-size="10.5" fill="#555">ตอนนี้ 👧</text>
+    <text x="${X(mid)}" y="19" text-anchor="middle" font-size="16">📍</text></svg>`;
+}
+function maTxt(d) { return (d.ma[0] === d.ma[1] ? d.ma[0] : d.ma[0] + '–' + d.ma[1]) + ' ล้านปีก่อน'; }
+function head(d) {
+  return `<div class="p-head"><svg viewBox="0 0 240 160">${dinoSvg(d.id)}</svg>
+    <div><div class="p-name">${d.th}</div><div class="p-sub">${d.sci}</div><span class="diet ${DIET[d.diet][1]}">${DIET[d.diet][0]}</span></div>
+    <button class="say" id="sayBtn" aria-label="ฟัง">🔊</button></div>`;
+}
+function renderInfo() {
+  const d = BY[selected];
+  panel.innerHTML = head(d) + `
+    <div class="facts">
+      <div class="fact"><div class="k">📏 ${d.fly ? 'ขนาด' : 'ยาว'}</div><div class="v">${d.len}</div></div>
+      <div class="fact"><div class="k">⚖️ หนัก</div><div class="v">${d.wt}</div></div>
+      <div class="fact"><div class="k">⏳ อยู่เมื่อ</div><div class="v">${maTxt(d)}</div></div>
+      <div class="fact"><div class="k">🗺️ พบที่</div><div class="v">${d.where}</div></div>
+    </div>
+    <div class="p-sub">ยุค${periodOf(d.ma[0])}</div>${timeline(d)}
+    <ul class="know">${d.know.map(k => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">ขนาดเป็นค่าประมาณจากงานวิจัย นักวิทยาศาสตร์แต่ละคนประเมินต่างกันได้</div>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(roarLine(d)); };
+}
+function renderSizePanel() {
+  const d = BY[selected];
+  panel.innerHTML = head(d) + `
+    <div class="res">${d.fly ? 'ปีกกว้าง' : 'ยาว'}เท่ากับหนู 🧒 นอนต่อกัน<br><b>${kidsLong(d)} คน</b></div>
+    <ul class="know">
+      <li>ไดโนเสาร์ส่วนใหญ่หายไปเมื่อ 66 ล้านปีก่อน หลังอุกกาบาตยักษ์ชนโลก</li>
+      <li>นกเป็นลูกหลานของไดโนเสาร์ ไก่ที่เราเห็นทุกวันก็เป็นญาติของทีเร็กซ์!</li>
+      <li>ไม่มีคนเคยเห็นไดโนเสาร์ตัวเป็นๆ เลย เพราะคนเกิดมาหลังจากนั้นนานมาก</li>
+    </ul>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(sizeLine(d)); };
+}
+function renderDigPanel() {
+  if (!digDoneFlag) {
+    panel.innerHTML = `<div class="q-text">🦴 ใต้ทรายมีอะไรนะ?</div>
+      <div class="res">ใช้นิ้วปัดทรายออก<br>ดูซิว่าเป็นไดโนเสาร์ตัวไหน</div>
+      <div class="bar"><div id="digBar"></div></div>
+      <button class="big-btn" id="digNew">🔄 เปลี่ยนหลุมใหม่</button>`;
+  } else {
+    const d = BY[digId];
+    panel.innerHTML = head(d) + `<div class="res">🎉 เจอแล้ว! กระดูกของ<br><b>${d.th}</b></div>
+      <ul class="know"><li>${d.know[0]}</li></ul>
+      <button class="big-btn" id="digNew">🦴 ขุดหลุมต่อไป</button>`;
+    $('sayBtn').onclick = () => { ensureAudio(); speak(roarLine(d)); };
+  }
+  $('digNew').onclick = () => { ensureAudio(); blip(660); newDig(); speak(digIntro); };
+}
+function choose(id) {
+  ensureAudio(); blip(560); buzz(15);
+  if (mode === 'dig') return;
+  selected = id; markStrip();
+  if (mode === 'explore') { buildScene(); renderInfo(); speak(BY[id].say); }
+  else { buildSize(); renderSizePanel(); speak(sizeLine(BY[id])); }
+}
+function setMode(m) {
+  mode = m;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  $('exploreView').classList.toggle('hidden', m !== 'explore');
+  $('sizeView').classList.toggle('hidden', m !== 'size');
+  $('digView').classList.toggle('hidden', m !== 'dig');
+  strip.classList.toggle('hidden', m === 'dig');
+  if (m === 'explore') { buildScene(); renderInfo(); }
+  else if (m === 'size') { buildSize(); renderSizePanel(); }
+  else { newDig(); speak(digIntro); }
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.onclick = () => { ensureAudio(); blip(520); setMode(b.dataset.mode); };
+addEventListener('resize', () => { if (mode === 'dig' && !digDoneFlag) sizeSand(); });
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function noise(dur) {
+  const b = AC.createBuffer(1, Math.round(AC.sampleRate * dur), AC.sampleRate), ch = b.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  const s = AC.createBufferSource(); s.buffer = b; return s;
+}
+// A growl whose pitch follows body size: big dinosaurs rumble, small ones chirp.
+function roar(d) {
+  if (!AC) return;
+  const t = AC.currentTime, base = d.L > 10 ? 70 : d.L > 5 ? 110 : 320, dur = d.L > 5 ? 0.9 : 0.4;
+  const o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter();
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(base * 1.4, t); o.frequency.exponentialRampToValueAtTime(base, t + dur);
+  f.type = 'lowpass'; f.frequency.value = base * 8;
+  const n = noise(dur), ng = AC.createGain(); ng.gain.value = 0.25;
+  n.connect(ng).connect(f); o.connect(f).connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.22, t + 0.08); g.gain.linearRampToValueAtTime(0, t + dur);
+  o.start(t); o.stop(t + dur + 0.05); n.start(t); n.stop(t + dur);
+}
+function scratch() {
+  if (!AC) return;
+  const n = noise(0.08), f = AC.createBiquadFilter(), g = AC.createGain();
+  f.type = 'highpass'; f.frequency.value = 2500; g.gain.value = 0.06;
+  n.connect(f).connect(g).connect(AC.destination); n.start();
+}
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+// Init
+buildStrip(); markStrip(); setMode('explore');
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = [digIntro];
+  for (const d of DINOS) L.push(d.say, roarLine(d), sizeLine(d), digDone(d));
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
