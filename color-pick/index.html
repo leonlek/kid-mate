@@ -2,6 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🎨 เลือกสีที่บอก — คิดส์เล่น</title>
 <meta name="description" content="เกมเรียนรู้สีไทย ลูกโป่ง ดอกไม้ สำหรับเด็กไทย">
@@ -681,10 +684,14 @@ function popConfetti(x, y) {
 
 function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) {} }
 
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
 function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (_) {}
+  if (window.VoiceClips) VoiceClips.say(text, null, deviceSpeak); else deviceSpeak(text);
+}
+function deviceSpeak(text) {
   try {
     if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'th-TH';
     u.rate = 0.95;
@@ -700,6 +707,9 @@ function darken(hex) {
   const b = Math.max(0, (n & 255) - 50);
   return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 }
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+if (window.VoiceClips) VoiceClips.lines(() => [...COLORS.flatMap(c => ['สี' + c.name, 'แตะลูกโป่งสี' + c.name, c.name]), 'เก่งมาก']);
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

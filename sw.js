@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v109';
+const CACHE = 'kid-games-v110';
 const SHELL = [
   './',
   './index.html',
@@ -33,16 +33,21 @@ const SHELL = [
   './look-draw/index.html',
   './draw-along/',
   './draw-along/index.html',
+  './draw-along/voice/map.js',
   './paint/',
   './paint/index.html',
   './shape-sort/',
   './shape-sort/index.html',
+  './shape-sort/voice/map.js',
   './color-pick/',
   './color-pick/index.html',
+  './color-pick/voice/map.js',
   './pet-care/',
   './pet-care/index.html',
+  './pet-care/voice/map.js',
   './animal-race/',
   './animal-race/index.html',
+  './animal-race/voice/map.js',
   './quick-tap/',
   './quick-tap/index.html',
   './sort-rule/',
@@ -75,6 +80,7 @@ const SHELL = [
   './solar-system/img/neptune.webp',
   './color-letters/',
   './color-letters/index.html',
+  './color-letters/voice/map.js',
   './whats-missing/',
   './whats-missing/index.html',
   './whats-different/',
@@ -89,6 +95,7 @@ const SHELL = [
   './sequence-it/index.html',
   './trace-letters/',
   './trace-letters/index.html',
+  './trace-letters/voice/map.js',
   './tangram/',
   './tangram/index.html',
   './size-order/',
@@ -125,6 +132,7 @@ const SHELL = [
   './balance/index.html',
   './write-cjk/',
   './write-cjk/index.html',
+  './write-cjk/voice/map.js',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1459,7 +1459,7 @@ placeOrbit(); markStrip(selected); renderInfo(selected); applyPanel();
 requestAnimationFrame(tick);
 
 // Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
-function speechLines() {
+VoiceClips.lines(() => {
   const L = ['หนูอายุกี่ขวบ แตะตัวเลขเลย', 'จันทรุปราคาเต็มดวง', 'จันทรุปราคาบางส่วน', ...CLUES.map(c => c.q + ' คือดาวอะไร แตะเลย')];
   for (const id of STRIP_IDS) {
     const b = BY[id];
@@ -1469,12 +1469,8 @@ function speechLines() {
   }
   for (const p of PLANETS) for (const a of AGES) L.push(ageLine(p.id, a));
   for (let d = 0; d < 360; d += 0.25) L.push(phaseInfo(d * Math.PI / 180).name);
-  return [...new Set(L.map(t => String(t).replace(/\s+/g, ' ').trim()))];
-}
-if (location.search === '?lines') {
-  const pre = document.createElement('pre'); pre.id = 'voice-lines';
-  pre.textContent = JSON.stringify(speechLines()); document.body.appendChild(pre);
-}
+  return L;
+});
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

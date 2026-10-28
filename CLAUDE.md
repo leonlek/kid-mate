@@ -91,7 +91,8 @@ When you add a game (e.g. `memory-match`):
 6. **Update `sw.js`'s `SHELL` array** — add `./<game-id>/` and `./<game-id>/index.html`. Bump the `CACHE` constant (e.g. `kid-games-v2`) so old caches evict.
 7. **Copy the Cloudflare Web Analytics beacon `<script>`** from any existing page into the new one, just before `</body>` — without it the game never shows up in the pageview report (see Phase 5 in section 9).
 8. **Any game that uses Web Audio must load `../audio-unlock.js` first in `<head>`** (before other scripts). It resumes `suspended`/`interrupted` contexts on every gesture and requests the `playback` audio session so iPad silent mode doesn't mute the game. Add it to every new game; no need to touch the game's own `ensureAudio()`.
-9. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
+9. **Spoken lines use recorded voice clips, not raw `speechSynthesis`.** Load `../voice-clips.js` + `voice/map.js` in `<head>`, route every spoken line through `VoiceClips.say(text, audioCtx|null, deviceFallback, lang)`, list every line the game can say in `VoiceClips.lines(() => [...])` (Thai strings, or `['en'|'zh'|'ja', text]`), then run `python3 tools/gen_voice.py <game-id>` and add `./<game-id>/voice/map.js` to `sw.js` SHELL. Voices: Azure `th-TH-PremwadeeNeural` (Thai), Jenny (en), Xiaoxiao (zh), Nanami (ja). Needs `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION` in the git-ignored `tools/.tts-keys` (free F0 tier, 500k chars/month — the whole hub is ~10k). **Whenever spoken text changes, re-run gen_voice for that game** (only new lines are synthesized, stale clips deleted) — an unmapped line silently falls back to the robotic device voice.
+10. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
 
 Keep each game under ~1500 lines of HTML. If a game grows beyond that, split it into `<game-id>/index.html` + `<game-id>/game.js` + `<game-id>/styles.css`. Still no bundler.
 
@@ -130,8 +131,6 @@ Scribble-with-crayon scenes (portrait 800×1200). 60 scenes: 11 hand-written in 
 ### ท่องอวกาศ (`/solar-system/`)
 
 Interactive solar system: planets orbit at true relative speeds (1/period; 1 Earth year = 20 s at ▶), tap a body → inline info card with NASA Planetary Fact Sheet figures + Thai TTS; 📏 view draws all diameters to one true scale; 🎯 missions (⭐ find by name, ⭐⭐ find by clue). **Accuracy rule:** every number/clue must match NASA data; orbit distances and orbit-view sizes are compressed and the screen says so. Giant-planet moon counts change often — keep them as "มากกว่า …".
-
-**Recorded Thai voice (Azure `th-TH-PremwadeeNeural`)**: every line the game can say is pre-recorded into `solar-system/voice/*.mp3` + `voice/map.js`; `../voice-clips.js` plays the clip and falls back to device TTS for anything unmapped/unloadable. The game lists its lines in `speechLines()` (`index.html?lines`). **Change or add any spoken text → add it to `speechLines()` if it's a new kind of line, then run `python3 tools/gen_voice.py solar-system`** (needs `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION` in the git-ignored `tools/.tts-keys`; only new lines are synthesized, stale clips deleted) and bump `CACHE`. Same pattern can be applied to other games.
 
 ### (Planned)
 

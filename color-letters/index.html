@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🖍️ ระบายตัวอักษร — คิดส์เล่น</title>
 <meta name="description" content="ระบายตัวอักษร ก-ฮ A-Z และตัวเลข ลากนิ้วค่อยๆ ระบายเหมือนสีเทียนจริง">
@@ -450,11 +452,17 @@ if ('speechSynthesis' in window) {
   speechSynthesis.getVoices();
   speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
 }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
 function speak(ch) {
-  if (!('speechSynthesis' in window) || !ch) return;
+  if (!ch) return;
   const s = saySpec(ch);
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  if (window.VoiceClips) VoiceClips.say(s.text, audioCtx, () => deviceSpeak(s), s.lang); else deviceSpeak(s);
+}
+function deviceSpeak(s) {
+  if (!('speechSynthesis' in window)) return;
   try {
-    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(s.text);
     u.lang = s.lang;
     u.rate = 0.8;
@@ -873,6 +881,9 @@ document.addEventListener('touchend', (e) => {
 buildSoftMask();
 renderPalette();
 renderSelect();
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+if (window.VoiceClips) VoiceClips.lines(() => [...THAI, ...ENG, ...NUM].map(ch => { const s = saySpec(ch); return [s.lang, s.text]; }));
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

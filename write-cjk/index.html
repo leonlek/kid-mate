@@ -10,6 +10,8 @@
 <head>
 <meta charset="UTF-8">
 <script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>✏️ เขียนจีน-ญี่ปุ่น — คิดส์เล่น</title>
 <meta name="description" content="หัดเขียนตัวอักษรจีนและญี่ปุ่นง่ายๆ ลากนิ้วทับเส้น เลข 一-十 คำภาพ 山 木 火 และฮิรางานะ พร้อมคำอ่านให้ผู้ปกครองอ่านให้ฟัง">
@@ -593,10 +595,19 @@ function speakRaw(text, lang, rate, voice) {
 }
 // Say the Thai meaning (reliable everywhere) then, if a native voice exists,
 // the character itself in Mandarin or Japanese.
+// Recorded clips first (voice/: Thai + Mandarin/Japanese, made by tools/gen_voice.py).
 function sayChar(c) {
-  if (!('speechSynthesis' in window) || !c) return;
-  try { speechSynthesis.cancel(); } catch (e) {}
-  speakRaw(c.th, 'th-TH', 0.9, voiceFor('th'));
+  if (!c) return;
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSayChar(c, true); return; }
+  ensureAudio();
+  VoiceClips.say(c.th, audioCtx, () => deviceSayChar(c, true)).then(done => {
+    if (done) VoiceClips.say(c.char, audioCtx, () => deviceSayChar(c, false), c.cn ? 'zh' : 'ja');
+  });
+}
+function deviceSayChar(c, withThai) {
+  if (!('speechSynthesis' in window)) return;
+  if (withThai) speakRaw(c.th, 'th-TH', 0.9, voiceFor('th'));
   const prefs = c.cn ? ['zh', 'ja'] : ['ja'];
   let nv = null;
   for (const p of prefs) { const v = voiceFor(p); if (v) { nv = v; break; } }
@@ -1027,6 +1038,9 @@ document.addEventListener('touchend', (e) => {
 // Init
 renderPalette();
 renderSelect();
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+if (window.VoiceClips) VoiceClips.lines(() => CHARS.flatMap(c => [c.th, [c.cn ? 'zh' : 'ja', c.char]]));
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

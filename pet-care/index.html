@@ -2,6 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🐶 เลี้ยงสัตว์น้อย — คิดส์เล่น</title>
 <meta name="description" content="เกมเลี้ยงสัตว์น่ารัก 12 ตัว ให้อาหาร อาบน้ำ เล่นด้วย ดูแลตอนไม่สบาย สำหรับเด็กไทย">
@@ -1336,10 +1339,14 @@ function popConfetti(x, y) {
 
 function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) {} }
 
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
 function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (_) {}
+  if (window.VoiceClips) VoiceClips.say(text, null, deviceSpeak); else deviceSpeak(text);
+}
+function deviceSpeak(text) {
   try {
     if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'th-TH';
     u.rate = 0.95;
@@ -1350,6 +1357,15 @@ function speak(text) {
 
 // Init
 buildPicker();
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+if (window.VoiceClips) VoiceClips.lines(() => [
+  'จับได้แล้ว เก่งมาก', 'น้องโตขึ้นแล้ว เก่งมาก', ...EVENTS.flatMap(ev => [ev.line, ev.done]),
+  ...PETS.flatMap(pet => [
+    ...pet.needs.flatMap(n => [pet.name + ' ' + n.thai, n.say]),
+    'ได้ของใหม่ ใส่ให้' + pet.name + 'แล้ว', pet.name + 'กลับบ้านแล้ว บ๊ายบาย', 'เก่งมาก ดูแล' + pet.name + 'ครบแล้ว',
+  ]),
+]);
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

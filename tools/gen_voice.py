@@ -3,7 +3,7 @@
 
   python3 tools/gen_voice.py solar-system [--voice th-TH-NiwatNeural]
 
-The game lists its own lines: `<game>/index.html?lines` prints them (speechLines()),
+The game lists its own lines: `<game>/index.html?lines` prints them (VoiceClips.lines()),
 read here via headless Chrome. Clip ids hash voice+text, so only new/changed lines
 are synthesized and stale clips are deleted. Needs AZURE_SPEECH_* in tools/.tts-keys.
 After running, bump CACHE in sw.js.
@@ -16,6 +16,12 @@ from tts_compare import load_keys, post
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+# Non-Thai lines (["en", "A"]) — native voices, slower for small learners.
+VOICES = {
+    'en': ('en-US', 'en-US-JennyNeural', '-15%'),
+    'zh': ('zh-CN', 'zh-CN-XiaoxiaoNeural', '-20%'),
+    'ja': ('ja-JP', 'ja-JP-NanamiNeural', '-20%'),
+}
 
 
 def game_lines(game):
@@ -24,7 +30,7 @@ def game_lines(game):
                          capture_output=True, text=True, timeout=120).stdout
     m = re.search(r'<pre id="voice-lines">(.*?)</pre>', dom, re.S)
     if not m:
-        sys.exit(f'{game}/index.html?lines printed nothing — does it define speechLines()?')
+        sys.exit(f'{game}/index.html?lines printed nothing — does it call VoiceClips.lines()?')
     return json.loads(html.unescape(m.group(1)))
 
 
@@ -42,19 +48,25 @@ def main():
     lines = game_lines(a.game)
     out = os.path.join(ROOT, a.game, 'voice')
     os.makedirs(out, exist_ok=True)
+    voices = dict(VOICES, th=('th-TH', a.voice, a.rate))
     vmap, made = {}, 0
-    for t in lines:
-        cid = hashlib.sha1(f'{a.voice}|{a.rate}|{t}'.encode()).hexdigest()[:10]
-        vmap[t] = cid
+    for line in lines:
+        lang, t = line if isinstance(line, list) else ('th', line)
+        loc, voice, rate = voices[lang]
+        cid = hashlib.sha1(f'{voice}|{rate}|{t}'.encode()).hexdigest()[:10]
+        vmap[t if lang == 'th' else f'{lang}|{t}'] = cid
         path = os.path.join(out, cid + '.mp3')
         if os.path.exists(path):
             continue
-        ssml = (f"<speak version='1.0' xml:lang='th-TH'><voice name='{a.voice}'>"
-                f"<prosody rate='{a.rate}'>{escape(t)}</prosody></voice></speak>")
+        body = escape(t)
+        if re.fullmatch(r'[A-Za-z]', t):          # a lone letter → its name ("ay"), not the word "a"
+            body = f"<say-as interpret-as='characters'>{body}</say-as>"
+        ssml = (f"<speak version='1.0' xml:lang='{loc}'><voice name='{voice}'>"
+                f"<prosody rate='{rate}'>{body}</prosody></voice></speak>")
         with open(path, 'wb') as f:
             f.write(post(url, hdr, ssml.encode('utf-8')))
         made += 1
-        print(f'  + {t}')
+        print(f'  + {lang} {t}')
     keep = {c + '.mp3' for c in vmap.values()}
     stale = [f for f in os.listdir(out) if f.endswith('.mp3') and f not in keep]
     for f in stale:

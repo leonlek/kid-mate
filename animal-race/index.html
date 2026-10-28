@@ -2,6 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🏁 แข่งความเร็ว — คิดส์เล่น</title>
 <meta name="description" content="เกมแข่งความเร็วสำหรับเด็ก เลือกสัตว์ รถ เครื่องบิน มาแข่งกันด้วยความเร็วจริง สนุก ฟรี ไม่ต้องโหลดแอป">
@@ -883,10 +886,15 @@
     } catch (e) { console.warn('[sfx] exception', src, e); }
   }
 
-  // Speak an English word via built-in TTS (Siri/Google/etc. — no network).
-  // onDone fires when speech ends OR errors, so callers can chain reliably.
+  // Speak an English word: recorded clip first (voice/, made by tools/gen_voice.py),
+  // built-in TTS as fallback. onDone fires when speech ends OR errors, so callers can chain.
   function speakEn(text, onDone) {
-    if (!('speechSynthesis' in window) || !text) { if (onDone) onDone(); return; }
+    if (!text) { if (onDone) onDone(); return; }
+    if (!window.VoiceClips) { deviceSpeakEn(text, onDone); return; }
+    VoiceClips.say(text, null, () => deviceSpeakEn(text, onDone), 'en').then(done => { if (done && onDone) onDone(); });
+  }
+  function deviceSpeakEn(text, onDone) {
+    if (!('speechSynthesis' in window)) { if (onDone) onDone(); return; }
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
@@ -907,6 +915,7 @@
     const seq = ++tapSeq;
     stopAllSfx();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (window.VoiceClips) VoiceClips.stop();
     if (a.en) {
       speakEn(a.en, () => {
         if (seq !== tapSeq) return; // newer tap has superseded this one
@@ -916,6 +925,9 @@
       playSfx(a.sfx);
     }
   }
+
+  // Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+  if (window.VoiceClips) VoiceClips.lines(() => ANIMALS.filter(a => a.en).map(a => ['en', a.en]));
 
   startBtn.addEventListener('click', () => {
     buzz(15);
