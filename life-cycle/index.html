@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🐛 วงจรชีวิต — คิดส์เล่น</title>
+<meta name="description" content="เกมวงจรชีวิตสำหรับเด็กไทย ผีเสื้อ กบ ไก่ ถั่วเขียว และคน ดูทีละขั้นแล้วลองเรียงเอง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="วงจรชีวิต">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .modes, .cycles { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .cycles .chip { font-size: 17px; padding: 0 14px; }
+  .cycles .chip.on { background: var(--gold); border-color: #e0b400; color: var(--ink); }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) { .main { grid-template-columns: minmax(0, 1fr) 360px; } }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  #ring { display: block; width: 100%; height: auto; max-height: 70vh; touch-action: manipulation; cursor: pointer; }
+  #ring .node { transition: transform .2s; }
+  #ring .pop { animation: pop .5s ease; transform-box: fill-box; transform-origin: center; }
+  #ring .bob { animation: bob 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pop { 0% { transform: scale(.4); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  @keyframes bob { 50% { transform: translateY(-8px); } }
+
+  .tray { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 12px; min-height: 10px; }
+  .card {
+    width: 104px; height: 112px; border-radius: 22px; background: #fff; border: 4px solid var(--card-border);
+    box-shadow: 0 5px 0 rgba(0,0,0,0.15); cursor: pointer; padding: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Mitr', sans-serif; font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .card svg { width: 76px; height: 76px; }
+  .card:active { transform: translateY(2px) scale(.96); }
+  .card.wob { animation: wob .45s; }
+  @keyframes wob { 20%,60% { transform: translateX(-7px); } 40%,80% { transform: translateX(7px); } }
+
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .p-head { display: flex; align-items: center; gap: 12px; }
+  .p-head svg { width: 84px; height: 84px; flex-shrink: 0; }
+  .p-name { font-family: 'Itim', cursive; font-size: 32px; line-height: 1.05; color: var(--brand-dark); }
+  .p-sub { font-size: 14px; color: #777; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .time { display: inline-block; margin-top: 10px; background: #e9f7e1; border-radius: 999px; padding: 4px 14px; font-weight: 600; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 17px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .q-text { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .q-hint { text-align: center; font-size: 16px; color: #6b7280; }
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🐛 วงจรชีวิต</h1></header>
+  <div class="cycles" id="cycles"></div>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="watch">🔄 ดูวงจร</button>
+    <button class="chip" data-mode="order">🧩 เรียงให้ถูก</button>
+  </div>
+  <div class="main">
+    <div>
+      <div class="view"><svg id="ring" viewBox="0 0 1000 760" aria-label="วงจรชีวิต"></svg></div>
+      <div class="tray" id="tray"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// ART — custom drawings for stages with no emoji. Each is centred on (0,0),
+// about 200 units across. Emoji stages are drawn as text.
+// ============================================================================
+const INK = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const DRAW = {
+  leafEggs: `<path d="M-90,30 Q-20,-90 90,-40 Q30,70 -90,30 Z" fill="#7ccf6b" ${INK}/><path d="M-80,28 Q0,-20 80,-36" fill="none" stroke="#4e9a43" stroke-width="4"/>
+    ${[[-20, 0], [0, -8], [20, -14], [-6, 14], [14, 4]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="9" fill="#fff6d0" stroke="#c9b26b" stroke-width="2"/>`).join('')}`,
+  chrysalis: `<path d="M-70,-92 L70,-92" stroke="#8b5a2b" stroke-width="10" stroke-linecap="round"/><path d="M0,-92 L0,-76" ${INK}/>
+    <path d="M0,-78 Q40,-40 32,10 Q22,70 0,90 Q-22,70 -32,10 Q-40,-40 0,-78 Z" fill="#7fd36e" ${INK}/>
+    <path d="M-24,-20 Q0,-30 24,-20" fill="none" stroke="#e6c34a" stroke-width="5"/><circle cx="-12" cy="-10" r="4" fill="#e6c34a"/><circle cx="12" cy="-10" r="4" fill="#e6c34a"/>`,
+  frogEggs: [[-50, -30], [-10, -46], [30, -34], [62, 0], [-62, 10], [-24, 4], [16, 4], [-36, 46], [6, 44], [44, 40]]
+    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="24" fill="#dff3ff" stroke="#9cc9e6" stroke-width="3"/><circle cx="${x}" cy="${y}" r="9" fill="#2d3436"/>`).join(''),
+  tadpole: `<path d="M-10,0 Q40,-30 92,-6 Q50,4 92,14 Q40,30 -10,0 Z" fill="#5d6b46" ${INK}/><ellipse cx="-34" cy="0" rx="46" ry="36" fill="#5d6b46" ${INK}/>
+    <circle cx="-52" cy="-12" r="9" fill="#fff"/><circle cx="-54" cy="-12" r="5" fill="#2d3436"/>`,
+  legs: `<path d="M10,22 L30,62 L54,64 M-4,26 L6,60 L28,66" fill="none" stroke="#5d6b46" stroke-width="10" stroke-linecap="round"/>
+    <path d="M-10,0 Q40,-30 92,-6 Q50,4 92,14 Q40,30 -10,0 Z" fill="#6b7d4c" ${INK}/><ellipse cx="-34" cy="0" rx="46" ry="36" fill="#6b7d4c" ${INK}/>
+    <circle cx="-52" cy="-12" r="9" fill="#fff"/><circle cx="-54" cy="-12" r="5" fill="#2d3436"/>`,
+  froglet: `<path d="M30,30 Q80,30 96,46 Q70,46 30,44 Z" fill="#6aa84f" ${INK}/>
+    <ellipse cx="0" cy="30" rx="60" ry="44" fill="#7ccf6b" ${INK}/><circle cx="-26" cy="-14" r="20" fill="#7ccf6b" ${INK}/><circle cx="26" cy="-14" r="20" fill="#7ccf6b" ${INK}/>
+    <circle cx="-26" cy="-14" r="9" fill="#2d3436"/><circle cx="26" cy="-14" r="9" fill="#2d3436"/><path d="M-22,40 Q0,54 22,40" fill="none" ${INK}/>
+    <path d="M-56,62 L-80,76 M56,62 L80,76" ${INK}/>`,
+  seed: `<ellipse cx="0" cy="0" rx="66" ry="46" fill="#5fae4a" ${INK}/><path d="M-22,-18 Q0,-26 22,-18" fill="none" stroke="#f4f1e8" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="-22" cy="-14" rx="14" ry="8" fill="#8ed27a" opacity=".7"/>`,
+  sprout: `<path d="M0,10 Q-8,50 -2,96 M-2,60 l-16,14 M-2,76 l14,12" fill="none" stroke="#f4ecd8" stroke-width="7" stroke-linecap="round"/>
+    <path d="M0,10 Q-8,50 -2,96" fill="none" stroke="#c9b98f" stroke-width="2"/>
+    <ellipse cx="0" cy="0" rx="50" ry="34" fill="#5fae4a" ${INK}/><path d="M10,-20 Q30,-70 6,-92" fill="none" stroke="#f4ecd8" stroke-width="9" stroke-linecap="round"/>
+    <path d="M6,-92 q-24,-4 -30,10 q20,8 30,-10 Z" fill="#a6e07d" ${INK}/>`,
+  flower: `<path d="M0,96 L0,-40 M0,30 Q-40,10 -66,24 Q-44,46 0,30 M0,0 Q40,-20 66,-6 Q44,16 0,0" fill="#6fc35a" ${INK}/>
+    ${[[-30, -66], [12, -86], [38, -54]].map(([x, y]) => `<g transform="translate(${x},${y})">${[0, 72, 144, 216, 288].map(a => `<ellipse rx="9" ry="16" transform="rotate(${a}) translate(0,-14)" fill="#ffe14d" stroke="#d1a800" stroke-width="2"/>`).join('')}<circle r="8" fill="#e8a400"/></g>`).join('')}
+    <path d="M0,-40 L-30,-66 M0,-40 L12,-86 M0,-40 L38,-54" stroke="#6fc35a" stroke-width="5"/>`,
+  pods: `<path d="M-60,-90 Q-10,-80 0,-60" fill="none" stroke="#6fc35a" stroke-width="7"/>
+    ${[[-50, -10, -12], [10, 0, 6], [60, -6, 18]].map(([x, y, r]) => `<g transform="translate(${x},${y}) rotate(${r})"><rect x="-13" y="-70" width="26" height="140" rx="13" fill="#3b3b2e" ${INK}/>
+      ${[-46, -16, 14, 44].map(yy => `<ellipse cx="0" cy="${yy}" rx="8" ry="11" fill="#5f6b3e"/>`).join('')}</g>`).join('')}`,
+};
+function stageArt(s, size = 200) {
+  const inner = s.draw ? DRAW[s.draw] : `<text text-anchor="middle" dominant-baseline="central" font-size="170">${s.e}</text>`;
+  return `<g transform="scale(${size / 200})">${inner}</g>`;
+}
+const artSvg = (s) => `<svg viewBox="-110 -110 220 220">${stageArt(s)}</svg>`;
+
+// ============================================================================
+// DATA — timings are typical ranges; species and weather change them.
+// ============================================================================
+const CYCLES = [
+  { id: 'butterfly', th: 'ผีเสื้อ', e: '🦋', note: 'ระยะเวลาเป็นค่าประมาณของผีเสื้อหลายชนิด',
+    loop: 'แล้วผีเสื้อก็วางไข่ วนกลับไปเริ่มใหม่ นี่แหละวงจรชีวิต',
+    stages: [
+      { th: 'ไข่', draw: 'leafEggs', time: 'ราว 3–5 วัน', say: 'ไข่ แม่ผีเสื้อวางไข่ใบเล็กๆ ไว้บนใบไม้' },
+      { th: 'หนอน', e: '🐛', time: 'ราว 2 สัปดาห์', say: 'หนอน กินใบไม้ทั้งวัน ตัวโตเร็วมาก และลอกคราบหลายครั้ง' },
+      { th: 'ดักแด้', draw: 'chrysalis', time: 'ราว 1–2 สัปดาห์', say: 'ดักแด้ ข้างในหนอนกำลังเปลี่ยนร่างเป็นผีเสื้อ' },
+      { th: 'ผีเสื้อ', e: '🦋', time: 'ส่วนใหญ่อยู่ได้ไม่กี่สัปดาห์', say: 'ผีเสื้อ ออกจากดักแด้ กางปีกให้แห้ง แล้วบินไปวางไข่ต่อ' },
+    ] },
+  { id: 'frog', th: 'กบ', e: '🐸', note: 'จากไข่จนเป็นลูกกบ ส่วนใหญ่ใช้เวลาราว 1–4 เดือน แล้วแต่ชนิดและอากาศ',
+    loop: 'แล้วกบก็วางไข่ในน้ำ วนกลับไปเริ่มใหม่ นี่แหละวงจรชีวิต',
+    stages: [
+      { th: 'ไข่กบ', draw: 'frogEggs', time: 'ฟักในไม่กี่วันถึงราว 3 สัปดาห์', say: 'ไข่กบ แม่กบวางไข่เป็นกลุ่มในน้ำ มีวุ้นใสๆ หุ้ม' },
+      { th: 'ลูกอ๊อด', draw: 'tadpole', time: 'อยู่ในน้ำหลายสัปดาห์', say: 'ลูกอ๊อด ว่ายน้ำด้วยหาง หายใจด้วยเหงือกเหมือนปลา' },
+      { th: 'ลูกอ๊อดมีขา', draw: 'legs', time: 'ขาค่อยๆ งอก', say: 'ลูกอ๊อดมีขา ขาหลังงอกก่อน แล้วขาหน้าตามมา' },
+      { th: 'ลูกกบ', draw: 'froglet', time: 'หางหดหายไป', say: 'ลูกกบ หางค่อยๆ หดหายไป เริ่มหายใจด้วยปอด ขึ้นบกได้' },
+      { th: 'กบ', e: '🐸', time: 'โตเต็มวัย', say: 'กบโตเต็มวัย กินแมลง แล้ววางไข่ในน้ำต่อ' },
+    ] },
+  { id: 'chicken', th: 'ไก่', e: '🐔', note: 'ไข่ไก่ใช้เวลาฟัก 21 วัน',
+    loop: 'แล้วแม่ไก่ก็ออกไข่ วนกลับไปเริ่มใหม่ นี่แหละวงจรชีวิต',
+    stages: [
+      { th: 'ไข่', e: '🥚', time: 'กกไข่ 21 วัน', say: 'ไข่ไก่ แม่ไก่กกไข่ให้อุ่นอยู่ 21 วัน' },
+      { th: 'เจาะเปลือก', e: '🐣', time: 'ออกจากไข่', say: 'ลูกเจี๊ยบใช้ปุ่มแข็งที่ปลายปาก เจาะเปลือกออกมา' },
+      { th: 'ลูกเจี๊ยบ', e: '🐥', time: 'เดินได้ทันที', say: 'ลูกเจี๊ยบขนฟูนุ่ม พอขนแห้งก็เดินตามแม่ไก่ได้เลย' },
+      { th: 'ไก่', e: '🐔', time: 'ออกไข่ได้ตอนอายุราว 5 เดือน', say: 'ไก่โตแล้ว แม่ไก่เริ่มออกไข่ได้ตอนอายุราว 5 เดือน' },
+    ] },
+  { id: 'bean', th: 'ถั่วเขียว', e: '🌱', note: 'ถั่วเขียวปลูกจนเก็บฝักได้ราว 2–3 เดือน',
+    loop: 'แล้วเมล็ดในฝักก็เอาไปปลูกต่อ วนกลับไปเริ่มใหม่ นี่แหละวงจรชีวิต',
+    stages: [
+      { th: 'เมล็ด', draw: 'seed', time: 'รอน้ำ', say: 'เมล็ดถั่วเขียว ข้างในมีต้นอ่อนตัวจิ๋วกับอาหารสะสม' },
+      { th: 'งอก', draw: 'sprout', time: 'ราว 2–3 วัน', say: 'ได้น้ำแล้วงอก รากออกมาก่อน ถั่วงอกที่เรากินก็คือถั่วเขียวงอกนี่เอง' },
+      { th: 'ต้นอ่อน', e: '🌱', time: 'ราว 1 สัปดาห์', say: 'ต้นอ่อน ใบโผล่ขึ้นมารับแสงแดด สร้างอาหารเองได้' },
+      { th: 'ออกดอก', draw: 'flower', time: 'ราว 1 เดือนขึ้นไป', say: 'ต้นโตแล้ว ออกดอกเล็กๆ สีเหลือง' },
+      { th: 'ฝัก', draw: 'pods', time: 'ราว 2–3 เดือนหลังปลูก', say: 'ดอกกลายเป็นฝัก ข้างในมีเมล็ดใหม่ เอาไปปลูกต่อได้' },
+    ] },
+  { id: 'human', th: 'คน', e: '🧒', note: 'ทุกคนโตไม่เท่ากัน ตัวเลขเป็นค่าโดยทั่วไป',
+    loop: 'แล้วก็มีลูกหลานต่อไป วนเป็นวงจรชีวิต',
+    stages: [
+      { th: 'ทารก', e: '👶', time: 'แรกเกิด', say: 'ทารกแรกเกิด นอนวันละราว 14 ถึง 17 ชั่วโมง' },
+      { th: 'เด็ก', e: '🧒', time: 'วัยเดียวกับหนู', say: 'วัยเด็ก ตัวสูงขึ้นปีละราว 5 ถึง 7 เซนติเมตร' },
+      { th: 'ผู้ใหญ่', e: '🧑', time: 'โตเต็มที่', say: 'ผู้ใหญ่ ร่างกายโตเต็มที่ ส่วนใหญ่หยุดสูงช่วงปลายวัยรุ่น' },
+      { th: 'ผู้สูงอายุ', e: '🧓', time: 'คุณตาคุณยาย', say: 'ผู้สูงอายุ ผมเปลี่ยนเป็นสีขาว มีเรื่องเล่าเยอะ อย่าลืมกอดคุณตาคุณยายนะ' },
+    ] },
+];
+
+// ============================================================================
+// RING
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const ring = $('ring'), panel = $('panel'), tray = $('tray');
+const CX = 500, CY = 380, RR = 280, NR = 86;
+let cyc = CYCLES[0], mode = 'watch', cur = 0, placed = 0, busy = false;
+const nodePos = (i, n) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [CX + RR * Math.cos(a), CY + RR * Math.sin(a)]; };
+function arrows(n) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const a0 = -Math.PI / 2 + i * 2 * Math.PI / n, a1 = a0 + 2 * Math.PI / n, pad = (NR + 18) / RR;
+    const p0 = [CX + RR * Math.cos(a0 + pad), CY + RR * Math.sin(a0 + pad)], p1 = [CX + RR * Math.cos(a1 - pad), CY + RR * Math.sin(a1 - pad)];
+    const on = mode === 'watch' ? i === (cur - 1 + n) % n : i < placed - 1;
+    s += `<path d="M${p0[0].toFixed(1)},${p0[1].toFixed(1)} A${RR},${RR} 0 0 1 ${p1[0].toFixed(1)},${p1[1].toFixed(1)}" fill="none" stroke="${on ? '#ff6b9d' : '#c9d6c0'}" stroke-width="12" stroke-linecap="round" marker-end="url(#ah${on ? 'On' : ''})"/>`;
+  }
+  return s;
+}
+function drawRing(popAt = -1) {
+  const n = cyc.stages.length;
+  let nodes = '';
+  cyc.stages.forEach((s, i) => {
+    const [x, y] = nodePos(i, n), hidden = mode === 'order' && i >= placed, isCur = mode === 'watch' && i === cur;
+    nodes += `<g class="node" data-i="${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g class="${i === popAt ? 'pop' : ''}">
+      <circle r="${NR}" fill="${hidden ? '#f1f1ea' : isCur ? '#fff3b0' : '#fff'}" stroke="${isCur ? '#ffb800' : hidden ? '#d6d6cc' : '#ffd6e4'}" stroke-width="7" ${hidden ? 'stroke-dasharray="14 12"' : ''}/>
+      ${hidden ? `<text text-anchor="middle" dominant-baseline="central" font-size="64" font-family="Itim" fill="#c4c4b8">${i + 1}</text>` : stageArt(s, 120)}
+      ${hidden ? '' : `<rect x="-62" y="${NR - 10}" width="124" height="38" rx="19" fill="${isCur ? '#ff6b9d' : '#fff'}" stroke="#ffd6e4" stroke-width="3"/>
+      <text y="${NR + 16}" text-anchor="middle" font-family="Mitr" font-size="21" font-weight="700" fill="${isCur ? '#fff' : '#2d3436'}">${s.th}</text>`}</g></g>`;
+  });
+  const centre = mode === 'watch'
+    ? `<g class="bob" transform="translate(${CX} ${CY - 20})">${stageArt(cyc.stages[cur], 210)}</g>`
+    : placed === n ? `<g class="bob" transform="translate(${CX} ${CY - 10})"><text text-anchor="middle" dominant-baseline="central" font-size="150">${cyc.e}</text></g>`
+      : `<text x="${CX}" y="${CY}" text-anchor="middle" dominant-baseline="central" font-size="120">🧩</text>`;
+  ring.innerHTML = `<defs>
+      <marker id="ah" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#c9d6c0"/></marker>
+      <marker id="ahOn" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#ff6b9d"/></marker></defs>
+    <circle cx="${CX}" cy="${CY}" r="150" fill="#f3fbec"/>
+    ${arrows(n)}${centre}${nodes}`;
+}
+
+// ============================================================================
+// 🔄 WATCH
+// ============================================================================
+function renderWatch() {
+  const s = cyc.stages[cur], last = cur === cyc.stages.length - 1;
+  panel.innerHTML = `<div class="p-head">${artSvg(s)}<div><div class="p-name">${s.th}</div>
+      <div class="p-sub">วงจรชีวิต${cyc.th} · ขั้นที่ ${cur + 1} จาก ${cyc.stages.length}</div></div>
+      <button class="say" id="sayBtn" aria-label="ฟัง">🔊</button></div>
+    <span class="time">⏳ ${s.time}</span>
+    <ul class="know"><li>${s.say}</li></ul>
+    <button class="big-btn" id="nextBtn">${last ? '🔄 วนกลับไปเริ่มใหม่' : 'ขั้นต่อไป ➡️'}</button>
+    <div class="src">${cyc.note}</div>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(s.say); };
+  $('nextBtn').onclick = () => { ensureAudio(); stepWatch(); };
+}
+function showStage(i, sayIt = true) {
+  cur = i; drawRing(i); renderWatch(); blip(500 + i * 80); buzz(10);
+  if (sayIt) speak(cyc.stages[i].say);
+}
+function stepWatch() {
+  if (cur === cyc.stages.length - 1) { cur = 0; drawRing(0); renderWatch(); cheer(); speak(cyc.loop); return; }
+  showStage(cur + 1);
+}
+
+// ============================================================================
+// 🧩 ORDER — tap the stage cards in the right order
+// ============================================================================
+const orderIntro = (c) => 'เรียงวงจรชีวิตของ' + c.th + ' แตะการ์ดที่มาต่อจาก' + c.stages[0].th;
+const orderDone = (c) => 'เก่งมาก เรียงวงจรชีวิตของ' + c.th + 'ครบแล้ว';
+function startOrder() {
+  placed = 1; busy = false; drawRing();
+  const rest = cyc.stages.map((s, i) => i).slice(1);
+  for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
+  if (rest.length > 1 && rest[0] === 1) rest.push(rest.shift());        // don't hand them the answer first
+  tray.innerHTML = rest.map(i => `<button class="card" data-i="${i}">${artSvg(cyc.stages[i])}${cyc.stages[i].th}</button>`).join('');
+  for (const b of tray.children) b.onclick = () => pickCard(b);
+  renderOrderPanel(); speak(orderIntro(cyc));
+}
+function renderOrderPanel() {
+  const n = cyc.stages.length, done = placed === n;
+  panel.innerHTML = done
+    ? `<div class="q-text">🎉 เก่งมาก!<br>ครบวงจร${cyc.th}แล้ว</div><ul class="know"><li>${cyc.loop}</li></ul>
+       <button class="big-btn" id="againBtn">🧩 เล่นอีกครั้ง</button>`
+    : `<div class="q-text">อะไรมาต่อจาก<br>${cyc.stages[placed - 1].th}?</div><div class="q-hint">แตะการ์ดด้านล่างภาพ</div>
+       <button class="big-btn" id="hintBtn">🔊 ฟังอีกครั้ง</button>`;
+  if (done) $('againBtn').onclick = () => { ensureAudio(); startOrder(); };
+  else $('hintBtn').onclick = () => { ensureAudio(); speak(placed === 1 ? orderIntro(cyc) : nextQ(placed)); };
+}
+const nextQ = (k) => 'อะไรมาต่อจาก' + cyc.stages[k - 1].th;
+function pickCard(b) {
+  if (busy) return;
+  ensureAudio();
+  const i = +b.dataset.i;
+  if (i !== placed) {
+    b.classList.remove('wob'); void b.offsetWidth; b.classList.add('wob');
+    boop(); buzz(40); speak('ยังไม่ใช่ ลองดูใหม่นะ'); return;
+  }
+  b.remove(); placed++; drawRing(i); buzz([15, 20, 15]);
+  if (placed === cyc.stages.length) {
+    busy = true; cheer(); celebrate(70); renderOrderPanel(); speak(orderDone(cyc));
+    setTimeout(() => { busy = false; }, 600);
+  } else { blip(600 + placed * 60); renderOrderPanel(); speak(cyc.stages[i].th + ' ถูกต้อง'); }
+}
+
+// ============================================================================
+// WIRING
+// ============================================================================
+function buildCycles() {
+  $('cycles').innerHTML = CYCLES.map(c => `<button class="chip${c === cyc ? ' on' : ''}" data-c="${c.id}">${c.e} ${c.th}</button>`).join('');
+  for (const b of $('cycles').children) b.onclick = () => { ensureAudio(); blip(520); pickCycle(CYCLES.find(c => c.id === b.dataset.c)); };
+}
+function pickCycle(c) {
+  cyc = c; buildCycles();
+  if (mode === 'watch') { tray.innerHTML = ''; showStage(0); } else startOrder();
+}
+function setMode(m) {
+  mode = m;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  if (m === 'watch') { tray.innerHTML = ''; showStage(0); } else startOrder();
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.onclick = () => { ensureAudio(); blip(520); setMode(b.dataset.mode); };
+ring.addEventListener('click', (ev) => {
+  const g = ev.target.closest('.node');
+  if (!g || mode !== 'watch') return;
+  ensureAudio(); showStage(+g.dataset.i);
+});
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+buildCycles(); cur = 0; drawRing(); renderWatch();
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['ยังไม่ใช่ ลองดูใหม่นะ'];
+  for (const c of CYCLES) {
+    L.push(c.loop, orderIntro(c), orderDone(c));
+    c.stages.forEach((s, k) => { L.push(s.say, s.th + ' ถูกต้อง'); if (k > 0) L.push('อะไรมาต่อจาก' + c.stages[k - 1].th); });
+  }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

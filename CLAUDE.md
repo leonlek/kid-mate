@@ -135,7 +135,7 @@ Interactive solar system: planets orbit at true relative speeds (1/period; 1 Ear
 
 🌗 กลางวันกลางคืน: Earth from above the North Pole (the real day-map texture re-projected to a polar disc at runtime, edge = 20°S), Sun on the left, drag to turn (15° = 1 h); Thailand + New York pins; sky strip from Thailand. 🍂 ฤดูกาล: Earth around the Sun with the axis fixed 23.4° toward Polaris (June = north leans sunward), Thai seasons per the Thai Meteorological Department, Bangkok day length / noon sun height computed (declination formula + −0.833° sunrise).
 
-**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs and 🌊 deep sea are done — see below): 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
+**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs, 🌊 deep sea, 🫀 body and 🐛 life cycles are done — see below): 🔬 tiny-to-huge scale zoom.
 
 ### โลกไดโนเสาร์ (`/dinosaurs/`)
 
@@ -144,6 +144,14 @@ Interactive solar system: planets orbit at true relative speeds (1/period; 1 Ear
 ### ดำน้ำทะเลลึก (`/deep-sea/`)
 
 Submarine dive through 18 `STOPS` at real depths (surface → clownfish 5 m → … giant squid 900 m → leatherback 1,280 m → Cuvier's beaked whale 2,992 m → Titanic 3,800 m → dumbo octopus 6,957 m → snailfish 8,336 m → Challenger Deep 10,935 m). ⬇️/⬆️ go stop to stop; tapping the true-scale depth gauge jumps to the nearest stop; at the bottom an Everest (8,849 m) silhouette rises from the trench floor. Zones per NOAA. **Accuracy rule:** each depth is a recorded dive/sighting from the species' Wikipedia article; pressure = 1 atm per 10 m.
+
+### ร่างกายของเรา (`/body/`)
+
+Front-view child SVG (400×780; viewer's left = the child's right, so the heart sits right of centre). Modes: 🫀 organs (tap → card + voice; heart beats, lungs breathe), 🦴 X-ray bones, 🍎 food trip (an apple follows `FOOD_PATH` mouth → oesophagus → stomach → small → large intestine → 💩; `at` = fraction of path length per stop), 🎯 find the organ. Facts in `ORGANS`/`BONES`/`FOOD` (NHS / Cleveland Clinic level; kid heart rate = paediatric range ages 3–5).
+
+### วงจรชีวิต (`/life-cycle/`)
+
+5 cycles in `CYCLES` (ผีเสื้อ, กบ, ไก่, ถั่วเขียว, คน) drawn as a ring of stage nodes; custom SVG in `DRAW` for stages with no emoji (eggs on a leaf, chrysalis, frog spawn, tadpoles, froglet, seed, sprout, flowering plant, pods). 🔄 watch = step through with voice; 🧩 order = tap shuffled cards in sequence. Timings are typical ranges and the card says so.
 
 ### (Planned)
 

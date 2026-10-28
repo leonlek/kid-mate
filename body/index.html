@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🫀 ร่างกายของเรา — คิดส์เล่น</title>
+<meta name="description" content="เกมร่างกายสำหรับเด็กไทย แตะดูอวัยวะ กระดูก และตามอาหารเดินทางในท้อง ข้อมูลจริง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ร่างกาย">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 760px) { .main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .view {
+    position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .view.xray { background: #10244a; }
+  #bodySvg { display: block; width: 100%; height: auto; max-height: 78vh; touch-action: manipulation; cursor: pointer; }
+  #bodySvg [data-id] { transition: opacity .2s; }
+  #bodySvg .sel { filter: drop-shadow(0 0 6px #ffd93d) drop-shadow(0 0 6px #ffd93d); }
+  #bodySvg .beat { animation: beat .85s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  #bodySvg .breath { animation: breath 4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 0; }
+  #bodySvg .wob { animation: wob .45s; transform-box: fill-box; transform-origin: center; }
+  @keyframes beat { 15% { transform: scale(1.12); } 30% { transform: scale(1); } 45% { transform: scale(1.07); } 60% { transform: scale(1); } }
+  @keyframes breath { 50% { transform: scale(1.05, 1.07); } }
+  @keyframes wob { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .p-head { display: flex; align-items: center; gap: 12px; }
+  .p-emo { font-size: 58px; line-height: 1; width: 72px; text-align: center; flex-shrink: 0; }
+  .p-name { font-family: 'Itim', cursive; font-size: 32px; line-height: 1.05; color: var(--brand-dark); }
+  .p-sub { font-size: 14px; color: #777; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 17px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .q-text { font-family: 'Itim', cursive; font-size: 32px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .q-hint { text-align: center; font-size: 16px; color: #6b7280; }
+  .score { text-align: center; font-size: 28px; margin-top: 8px; min-height: 36px; letter-spacing: 2px; }
+  .steps { display: flex; justify-content: center; gap: 6px; margin: 10px 0 4px; font-size: 26px; flex-wrap: wrap; }
+  .steps span { opacity: .3; } .steps span.on { opacity: 1; }
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🫀 ร่างกายของเรา</h1></header>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="organs">🫀 อวัยวะ</button>
+    <button class="chip" data-mode="bones">🦴 กระดูก</button>
+    <button class="chip" data-mode="food">🍎 อาหารไปไหน</button>
+    <button class="chip" data-mode="find">🎯 หาให้เจอ</button>
+  </div>
+  <div class="main">
+    <div class="view" id="view"><svg id="bodySvg" viewBox="0 0 400 780" aria-label="ร่างกาย"></svg></div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// DATA — facts checked against standard references (NHS, Cleveland Clinic,
+// Britannica). Kid heart rate = paediatric normal range for ages 3–5.
+// ============================================================================
+const ORGANS = {
+  brain:   { th: 'สมอง', e: '🧠', know: ['สมองสั่งการทุกอย่าง ทั้งคิด จำ และขยับตัว', 'สมองของผู้ใหญ่หนักราว 1.4 กิโลกรัม'] },
+  heart:   { th: 'หัวใจ', e: '❤️', know: ['หัวใจสูบฉีดเลือดไปทั่วร่างกาย ไม่เคยหยุดพักเลย', 'หัวใจมีขนาดราวกำปั้นของเจ้าของ', 'หัวใจเด็กเต้นเร็วกว่าผู้ใหญ่ ราว 80 ถึง 120 ครั้งต่อนาที'] },
+  lungs:   { th: 'ปอด', e: '🫁', know: ['ปอดสูดอากาศเข้าไป เอาออกซิเจนให้ร่างกาย', 'ปอดข้างซ้ายเล็กกว่าข้างขวา เพราะเว้นที่ให้หัวใจ'] },
+  liver:   { th: 'ตับ', e: '🟤', know: ['ตับเป็นอวัยวะภายในที่ใหญ่ที่สุด', 'ตับช่วยกำจัดของเสียในเลือด และเก็บพลังงานไว้ใช้'] },
+  stomach: { th: 'กระเพาะอาหาร', e: '🍲', know: ['กระเพาะอาหารบีบและย่อยอาหารด้วยน้ำย่อยที่เป็นกรด', 'อาหารอยู่ในกระเพาะราว 2 ถึง 4 ชั่วโมง'] },
+  small:   { th: 'ลำไส้เล็ก', e: '🌀', know: ['ลำไส้เล็กดูดสารอาหารเข้าไปในเลือด ไปเลี้ยงทั้งร่างกาย', 'ลำไส้เล็กของผู้ใหญ่ยาวราว 6 เมตร ขดอยู่ในท้อง'] },
+  large:   { th: 'ลำไส้ใหญ่', e: '🔄', know: ['ลำไส้ใหญ่ดูดน้ำกลับ ส่วนที่เหลือกลายเป็นอึ', 'ลำไส้ใหญ่ยาวราว 1.5 เมตร อ้วนกว่าแต่สั้นกว่าลำไส้เล็ก'] },
+  bladder: { th: 'กระเพาะปัสสาวะ', e: '💧', know: ['กระเพาะปัสสาวะเก็บฉี่ไว้ พอเต็มเราจะรู้สึกปวดฉี่'] },
+  skin:    { th: 'ผิวหนัง', e: '✋', know: ['ผิวหนังเป็นอวัยวะที่ใหญ่ที่สุดของร่างกาย', 'ผิวหนังปกป้องเราจากเชื้อโรค และช่วยให้รู้สึกร้อน เย็น หรือเจ็บ'] },
+};
+const ORGAN_IDS = ['brain', 'heart', 'lungs', 'liver', 'stomach', 'small', 'large', 'bladder'];
+const BONES = {
+  skull:  { th: 'กะโหลกศีรษะ', know: ['กะโหลกแข็งเหมือนหมวกกันน็อก ปกป้องสมองข้างใน'] },
+  spine:  { th: 'กระดูกสันหลัง', know: ['กระดูกสันหลังเป็นข้อเล็กๆ ราว 33 ข้อต่อกัน ทำให้เราก้มและบิดตัวได้'] },
+  ribs:   { th: 'ซี่โครง', know: ['ซี่โครงมี 12 คู่ เป็นกรงปกป้องหัวใจและปอด'] },
+  pelvis: { th: 'กระดูกเชิงกราน', know: ['กระดูกเชิงกรานรองรับลำตัว และเป็นที่ต่อของขาทั้งสองข้าง'] },
+  arm:    { th: 'กระดูกแขน', know: ['แขนแต่ละข้างมีกระดูกต้นแขน 1 ท่อน และปลายแขน 2 ท่อน'] },
+  femur:  { th: 'กระดูกต้นขา', know: ['กระดูกต้นขาเป็นกระดูกที่ยาวและแข็งแรงที่สุดในร่างกาย'] },
+};
+const BONE_FACTS = ['ผู้ใหญ่มีกระดูก 206 ชิ้น แต่เด็กแรกเกิดมีเกือบ 300 ชิ้น แล้วบางชิ้นค่อยๆ เชื่อมกัน',
+                    'กระดูกที่เล็กที่สุดอยู่ในหู ยาวแค่ราว 3 มิลลิเมตร'];
+// The food's trip — times from Cleveland Clinic "Digestive System".
+const FOOD = [
+  { th: 'ปาก', e: '👄', at: 0, know: 'ฟันบดอาหารให้ละเอียด น้ำลายช่วยให้กลืนง่าย เคี้ยวให้ละเอียดนะ' },
+  { th: 'หลอดอาหาร', e: '⬇️', at: 0.1, know: 'อาหารไหลลงไปตามหลอดอาหาร ใช้เวลาแค่ไม่กี่วินาที' },
+  { th: 'กระเพาะอาหาร', e: '🍲', at: 0.3, know: 'กระเพาะบีบและย่อยอาหารด้วยน้ำย่อย อาหารอยู่ในนี้ราว 2 ถึง 4 ชั่วโมง' },
+  { th: 'ลำไส้เล็ก', e: '🌀', at: 0.46, know: 'ลำไส้เล็กดูดสารอาหารเข้าไปในเลือด ไปเลี้ยงทั้งร่างกาย' },
+  { th: 'ลำไส้ใหญ่', e: '🔄', at: 0.76, know: 'ลำไส้ใหญ่ดูดน้ำกลับ อาหารที่เหลืออยู่ในนี้ราว 1 ถึง 2 วัน' },
+  { th: 'ออกมาเป็นอึ', e: '💩', at: 1, know: 'สุดท้ายส่วนที่ร่างกายไม่ใช้ ก็ออกมาเป็นอึตอนเข้าห้องน้ำ' },
+];
+
+// ============================================================================
+// DRAWING — a child, front view, 400×780. Viewer's left = the child's right.
+// ============================================================================
+const $ = (id) => document.getElementById(id);
+const svg = $('bodySvg'), panel = $('panel'), view = $('view');
+const INK = 'stroke="#2d3436" stroke-width="4" stroke-linejoin="round"';
+function outline(fill, ink) {
+  const s = `stroke="${ink}" stroke-width="4" stroke-linejoin="round"`;
+  return `<g data-id="skin" fill="${fill}" ${s}>
+    <path d="M128,196 Q96,206 88,252 L68,418 Q66,442 84,444 Q100,442 102,420 L122,290 Z"/>
+    <path d="M272,196 Q304,206 312,252 L332,418 Q334,442 316,444 Q300,442 298,420 L278,290 Z"/>
+    <path d="M132,460 L128,722 Q130,748 158,748 L172,748 Q184,742 182,722 L198,488 Z"/>
+    <path d="M268,460 L272,722 Q270,748 242,748 L228,748 Q216,742 218,722 L202,488 Z"/>
+    <rect x="180" y="150" width="40" height="46"/>
+    <path d="M126,198 Q200,178 274,198 Q286,330 284,470 Q200,500 116,470 Q114,330 126,198 Z"/>
+    <circle cx="200" cy="92" r="74"/></g>`;
+}
+function organsSvg() {
+  return `${outline('#ffe1c8', '#2d3436')}
+    <path d="M140,46 Q200,-6 262,48 Q236,30 200,32 Q166,32 140,46 Z" fill="#5b3a29" ${INK}/>
+    <circle cx="176" cy="116" r="7" fill="#2d3436"/><circle cx="224" cy="116" r="7" fill="#2d3436"/>
+    <path d="M182,140 Q200,154 218,140" fill="none" ${INK}/>
+    <g data-id="brain"><path d="M140,78 Q138,40 176,36 Q200,24 226,36 Q264,40 260,80 Q254,98 200,98 Q146,98 140,78 Z" fill="#f7a8c4" ${INK}/>
+      <path d="M200,36 V96 M160,60 q14,8 4,20 M240,60 q-14,8 -4,20 M176,46 q8,8 0,16 M224,46 q-8,8 0,16" fill="none" stroke="#c4688c" stroke-width="3"/></g>
+    <path id="esoph" d="M200,170 L200,250 Q202,290 232,312" fill="none" stroke="#f3b6a0" stroke-width="10" stroke-linecap="round" opacity=".9"/>
+    <g data-id="lungs"><g class="breath"><path d="M136,214 Q160,196 182,212 L184,302 Q160,318 136,300 Q128,256 136,214 Z" fill="#ff9aa8" ${INK}/>
+      <path d="M218,212 Q240,196 264,214 Q272,256 264,300 Q246,314 230,304 L222,282 Q236,262 218,248 Z" fill="#ff9aa8" ${INK}/></g></g>
+    <g data-id="heart"><path class="beat" d="M214,262 Q214,244 230,246 Q244,248 242,264 Q240,282 220,300 Q200,284 196,266 Q194,250 206,248 Q214,248 214,262 Z" fill="#e53950" ${INK}/></g>
+    <g data-id="liver"><path d="M132,318 Q170,296 226,312 Q224,346 182,352 Q140,352 132,318 Z" fill="#a0522d" ${INK}/></g>
+    <g data-id="stomach"><path d="M226,306 Q266,300 266,334 Q262,370 224,366 Q204,358 214,342 Q234,338 228,322 Z" fill="#ffb3c1" ${INK}/></g>
+    <g data-id="large"><path d="M156,452 L156,384 Q156,370 170,370 L232,370 Q246,370 246,384 L246,440 Q240,462 206,462" fill="none" stroke="#2d3436" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M156,452 L156,384 Q156,370 170,370 L232,370 Q246,370 246,384 L246,440 Q240,462 206,462" fill="none" stroke="#e7a273" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g data-id="small"><rect x="172" y="386" width="58" height="58" rx="18" fill="#f8c3cd" ${INK}/>
+      <path d="M180,398 q10,-8 20,0 t20,0 M180,414 q10,-8 20,0 t20,0 M180,430 q10,-8 20,0 t20,0" fill="none" stroke="#d97a8f" stroke-width="4" stroke-linecap="round"/></g>
+    <g data-id="bladder"><ellipse cx="200" cy="476" rx="20" ry="14" fill="#ffe27a" ${INK}/></g>`;
+}
+function bonesSvg() {
+  const B = 'fill="#f4f1e8" stroke="#9fb4d9" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+  let spine = '', ribs = '';
+  for (let y = 172; y < 450; y += 15) spine += `<rect x="191" y="${y}" width="18" height="11" rx="4"/>`;
+  for (let i = 0; i < 6; i++) {
+    const y = 214 + i * 17, w = 58 - Math.abs(i - 2) * 4;
+    ribs += `<path d="M196,${y} Q${196 - w},${y - 6} ${200 - w - 4},${y + 22}" fill="none" stroke-width="7"/><path d="M204,${y} Q${204 + w},${y - 6} ${200 + w + 4},${y + 22}" fill="none" stroke-width="7"/>`;
+  }
+  return `${outline('#1d3a6e', '#4c6fa8')}
+    <g data-id="skull" ${B}><path d="M134,96 Q130,26 200,22 Q270,26 266,96 Q262,132 236,140 L236,160 L164,160 L164,140 Q138,132 134,96 Z"/>
+      <circle cx="176" cy="102" r="15" fill="#1d3a6e"/><circle cx="224" cy="102" r="15" fill="#1d3a6e"/><path d="M200,114 l-7,14 h14 Z" fill="#1d3a6e"/>
+      <path d="M174,148 h52" stroke-width="3"/></g>
+    <g data-id="ribs" stroke="#f4f1e8" stroke-linecap="round">${ribs}</g>
+    <g data-id="spine" ${B}>${spine}</g>
+    <g data-id="pelvis" ${B}><path d="M146,440 Q150,420 186,432 L200,446 L214,432 Q250,420 254,440 Q256,474 226,486 L200,478 L174,486 Q144,474 146,440 Z"/>
+      <circle cx="176" cy="460" r="9" fill="#1d3a6e"/><circle cx="224" cy="460" r="9" fill="#1d3a6e"/></g>
+    <g data-id="arm" ${B}><path d="M132,204 L114,300 M268,204 L286,300" stroke="#f4f1e8" stroke-width="16"/>
+      <path d="M112,304 L92,420 M118,306 L100,420 M288,304 L308,420 M282,306 L300,420" stroke="#f4f1e8" stroke-width="8"/>
+      <circle cx="132" cy="202" r="14"/><circle cx="268" cy="202" r="14"/></g>
+    <g data-id="femur" ${B}><path d="M174,486 L160,606 M226,486 L240,606" stroke="#f4f1e8" stroke-width="20"/>
+      <circle cx="160" cy="610" r="13"/><circle cx="240" cy="610" r="13"/>
+      <path d="M158,624 L156,736 M242,624 L244,736" stroke="#f4f1e8" stroke-width="12"/></g>`;
+}
+
+// ============================================================================
+// MODES
+// ============================================================================
+let mode = 'organs', sel = null;
+function setMode(m) {
+  mode = m; sel = null;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  view.classList.toggle('xray', m === 'bones');
+  svg.innerHTML = m === 'bones' ? bonesSvg() : organsSvg();
+  if (m === 'organs') { renderOrgan('heart', false); }
+  else if (m === 'bones') { renderBones(); speak('แตะกระดูกแต่ละชิ้นดูนะ'); }
+  else if (m === 'food') { startFood(); }
+  else { stars = 0; newFind(); }
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.onclick = () => { ensureAudio(); blip(520); setMode(b.dataset.mode); };
+function mark(id) {
+  for (const g of svg.querySelectorAll('[data-id]')) g.classList.toggle('sel', g.dataset.id === id && id !== 'skin');
+}
+function wobble(id) {
+  const g = svg.querySelector(`[data-id="${id}"]`);
+  if (g) { g.classList.remove('wob'); void g.getBBox(); g.classList.add('wob'); }
+}
+const organLine = (id) => ORGANS[id].th + ' ' + ORGANS[id].know[0];
+function renderOrgan(id, sayIt = true) {
+  sel = id; mark(id);
+  const o = ORGANS[id];
+  panel.innerHTML = `<div class="p-head"><div class="p-emo">${o.e}</div><div><div class="p-name">${o.th}</div>
+      <div class="p-sub">แตะอวัยวะอื่นในภาพได้เลย</div></div><button class="say" id="sayBtn" aria-label="ฟัง">🔊</button></div>
+    <ul class="know">${o.know.map(k => `<li>${k}</li>`).join('')}</ul>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(organLine(id)); };
+  if (sayIt) speak(organLine(id));
+}
+const boneLine = (id) => BONES[id].th + ' ' + BONES[id].know[0];
+function renderBones(id) {
+  sel = id || null; mark(sel);
+  const b = id && BONES[id];
+  panel.innerHTML = `<div class="p-head"><div class="p-emo">🦴</div><div><div class="p-name">${b ? b.th : 'กระดูก'}</div>
+      <div class="p-sub">แตะกระดูกในภาพเอ็กซเรย์</div></div>${b ? '<button class="say" id="sayBtn" aria-label="ฟัง">🔊</button>' : ''}</div>
+    <ul class="know">${b ? `<li>${b.know[0]}</li>` : ''}${BONE_FACTS.map(k => `<li>${k}</li>`).join('')}</ul>`;
+  if (b) { $('sayBtn').onclick = () => { ensureAudio(); speak(boneLine(id)); }; speak(boneLine(id)); }
+}
+
+// 🍎 food trip — the apple rides a path mouth → oesophagus → stomach → intestines
+const FOOD_PATH = 'M200,136 L200,170 L200,250 Q202,290 232,312 Q258,322 246,346 Q236,362 214,360 L200,372 Q186,384 186,400 Q186,416 214,414 Q226,412 216,426 Q200,440 186,432 L160,420 L156,384 Q156,370 170,370 L232,370 Q246,370 246,384 L246,440 Q240,462 206,462 L200,500';
+let foodStep = 0, foodBusy = false, foodRun = 0;
+const foodLine = (i) => FOOD[i].th + ' ' + FOOD[i].know;
+function startFood() {
+  foodStep = 0; foodBusy = false; foodRun++;
+  svg.insertAdjacentHTML('beforeend', `<path id="foodPath" d="${FOOD_PATH}" fill="none" stroke="#ffd93d" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round" opacity=".9"/>
+    <text id="food" font-size="38" text-anchor="middle" dominant-baseline="central">🍎</text>`);
+  placeFood(0); renderFood(); speak('กินแอปเปิลกัน แล้วตามไปดูว่าอาหารไปไหน');
+}
+function placeFood(u) {
+  const p = $('foodPath'), f = $('food');
+  if (!p || !f) return;
+  const pt = p.getPointAtLength(p.getTotalLength() * u);
+  f.setAttribute('x', pt.x); f.setAttribute('y', pt.y);
+  f.textContent = u >= 1 ? '💩' : u > 0.05 ? '🟤' : '🍎';
+}
+function renderFood() {
+  const s = FOOD[foodStep], last = foodStep === FOOD.length - 1;
+  panel.innerHTML = `<div class="p-head"><div class="p-emo">${s.e}</div><div><div class="p-name">${s.th}</div>
+      <div class="p-sub">ขั้นที่ ${foodStep + 1} จาก ${FOOD.length}</div></div><button class="say" id="sayBtn" aria-label="ฟัง">🔊</button></div>
+    <div class="steps">${FOOD.map((f, i) => `<span class="${i <= foodStep ? 'on' : ''}">${f.e}</span>`).join('')}</div>
+    <ul class="know"><li>${s.know}</li></ul>
+    <button class="big-btn" id="foodNext" ${foodBusy ? 'disabled' : ''}>${last ? '🍎 กินอีกคำ' : 'ไปต่อ ➡️'}</button>
+    <div class="src">เวลาเป็นค่าประมาณของคนทั่วไป แต่ละคนเร็วช้าต่างกันได้</div>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(foodLine(foodStep)); };
+  $('foodNext').onclick = () => { ensureAudio(); last ? startFoodAgain() : nextFood(); };
+}
+function startFoodAgain() { svg.innerHTML = organsSvg(); startFood(); }
+function nextFood() {
+  if (foodBusy) return;
+  const a = FOOD[foodStep].at, b = FOOD[foodStep + 1].at, my = foodRun, t0 = performance.now(), dur = 900 + (b - a) * 3000;
+  foodBusy = true; blip(480); buzz(10);
+  (function step(now) {
+    if (my !== foodRun || mode !== 'food') return;
+    const u = Math.min(1, (now - t0) / dur);
+    placeFood(a + (b - a) * u);
+    if (u < 1) { requestAnimationFrame(step); return; }
+    foodBusy = false; foodStep++;
+    if (foodStep === FOOD.length - 1) { cheer(); celebrate(30); }
+    renderFood(); speak(foodLine(foodStep));
+  })(t0);
+}
+
+// 🎯 find the organ
+let target = null, stars = 0, waiting = false;
+const findLine = (id) => ORGANS[id].th + 'อยู่ไหน แตะเลย';
+function newFind() {
+  const pool = ORGAN_IDS.filter(i => i !== target);
+  target = pool[Math.floor(Math.random() * pool.length)];
+  waiting = false; mark(null);
+  panel.innerHTML = `<div class="q-text">${ORGANS[target].e} ${ORGANS[target].th}<br>อยู่ไหน?</div>
+    <div class="q-hint">แตะในภาพเลย</div><div class="score">${'⭐'.repeat(stars % 10) || '&nbsp;'}</div>
+    <button class="big-btn" id="hearQ">🔊 ฟังอีกครั้ง</button>`;
+  $('hearQ').onclick = () => { ensureAudio(); speak(findLine(target)); };
+  speak(findLine(target));
+}
+function answer(id) {
+  if (waiting) return;
+  if (id === target) {
+    waiting = true; stars++; mark(id); cheer(); buzz([20, 30, 20]);
+    if (stars % 5 === 0) celebrate(50);
+    speak('เก่งมาก นั่นคือ' + ORGANS[id].th);
+    panel.querySelector('.score').textContent = '⭐'.repeat(((stars - 1) % 10) + 1);
+    setTimeout(() => { if (mode === 'find') newFind(); }, 2200);
+  } else {
+    boop(); buzz(40); wobble(id);
+    speak('นั่นคือ' + ORGANS[id].th + ' ลองใหม่นะ');
+  }
+}
+
+svg.addEventListener('click', (ev) => {
+  ensureAudio();
+  const g = ev.target.closest('[data-id]');
+  if (!g) return;
+  const id = g.dataset.id;
+  if (mode === 'organs') { blip(600); buzz(10); renderOrgan(id); }
+  else if (mode === 'bones') { if (id !== 'skin') { blip(600); buzz(10); renderBones(id); } }
+  else if (mode === 'find') { if (id !== 'skin') answer(id); }
+});
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+setMode('organs');
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['แตะกระดูกแต่ละชิ้นดูนะ', 'กินแอปเปิลกัน แล้วตามไปดูว่าอาหารไปไหน'];
+  for (const id in ORGANS) L.push(organLine(id));
+  for (const id of ORGAN_IDS) L.push(findLine(id), 'เก่งมาก นั่นคือ' + ORGANS[id].th, 'นั่นคือ' + ORGANS[id].th + ' ลองใหม่นะ');
+  for (const id in BONES) L.push(boneLine(id));
+  FOOD.forEach((_, i) => L.push(foodLine(i)));
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
