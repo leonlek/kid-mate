@@ -157,6 +157,10 @@
   .pbtn:active { transform: translateY(2px) scale(0.95); }
   .pbtn.sel { border-color: var(--gold); background: rgba(255,217,61,0.18); }
   .pbtn.wobble { animation: wobble .45s; }
+  #skySvg { touch-action: manipulation; cursor: pointer; }
+  #skySvg .tgt { animation: twinkle 0.9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  #skySvg .tgt .halo { opacity: .45; }
+  @keyframes twinkle { 50% { transform: scale(1.35); } }
   @keyframes wobble { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
 
   /* info panel — inline, never a popup */
@@ -247,9 +251,11 @@
     <button class="chip on" data-mode="explore">🔭 สำรวจ</button>
     <button class="chip" data-mode="size">📏 เทียบขนาด</button>
     <button class="chip" data-mode="mission">🎯 ภารกิจ</button>
-    <button class="chip" data-mode="jump">🚀 ไปเยือนดาว</button>
+    <button class="chip" data-mode="trip">🚀 นั่งจรวด</button>
+    <button class="chip" data-mode="jump">🦘 ไปเยือนดาว</button>
     <button class="chip" data-mode="age">🎂 อายุบนดาว</button>
     <button class="chip" data-mode="moon">🌙 ข้างขึ้นข้างแรม</button>
+    <button class="chip" data-mode="sky">✨ กลุ่มดาวไทย</button>
     <button class="chip" id="panelBtn">🗂️ ซ่อนการ์ด</button>
   </div>
 
@@ -269,6 +275,8 @@
         <div class="note" style="position:static;max-width:none;text-align:center;padding:0 12px 10px">ขนาดในหน้านี้เทียบกันตามจริง · ดวงอาทิตย์ใหญ่จนล้นจอ!</div>
       </div>
       <div class="view hidden" id="jumpView"><svg id="jumpSvg" viewBox="0 0 1000 700" aria-label="ไปเยือนดาว"></svg></div>
+      <div class="view hidden" id="tripView"><svg id="tripSvg" viewBox="0 0 1000 700" aria-label="นั่งจรวดไปดาว"></svg></div>
+      <div class="view hidden" id="skyView"><svg id="skySvg" viewBox="0 0 1000 700" aria-label="กลุ่มดาวไทย"></svg></div>
       <div class="view hidden" id="ageView"><div class="ages" id="ages"></div></div>
       <div class="view hidden" id="moonView">
         <svg id="moonSvg" viewBox="0 0 1000 700" aria-label="ดวงจันทร์โคจรรอบโลก"></svg>
@@ -978,6 +986,7 @@ function deselect() {
 function choose(id) {
   if (mode === 'mission') { answer(id); return; }
   if (mode === 'jump') { visit(id); return; }
+  if (mode === 'trip') { tripTo(id); return; }
   if (id === selected) { deselect(); return; }
   selected = id;
   if (follow) { loadTex(id); if (vb.w < 500) startFlight(); }   // camera following → fly to the new world
@@ -1363,13 +1372,16 @@ function setMode(m) {
   mode = m;
   applyPanel();
   for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.classList.toggle('on', b.dataset.mode === m);
-  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', ageView: m === 'age', moonView: m === 'moon' };
+  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', tripView: m === 'trip', skyView: m === 'sky', ageView: m === 'age', moonView: m === 'moon' };
+  tripRun++; tripFlying = false;
   for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
   document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
   document.getElementById('vctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
-  strip.classList.toggle('hidden', m === 'age' || m === 'moon');
+  strip.classList.toggle('hidden', m === 'age' || m === 'moon' || m === 'sky');
   if (m === 'mission') { target = null; newQuestion(); }
   else if (m === 'jump') { visit(dest); }
+  else if (m === 'trip') { tripTo(tripDest); }
+  else if (m === 'sky') { skyPick(sky); }
   else if (m === 'age') { renderAges(); renderAgePanel(); speak('หนูอายุกี่ขวบ แตะตัวเลขเลย'); }
   else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
   else { renderInfo(selected); markStrip(selected); }
@@ -1379,6 +1391,266 @@ for (const b of document.querySelectorAll('#ctrls .chip')) b.addEventListener('c
   speed = +b.dataset.speed; buzz(8);
   for (const o of document.querySelectorAll('#ctrls .chip')) o.classList.toggle('on', o === b);
 });
+
+// ============================================================================
+// 🚀 ROCKET TRIP — real launch → arrival times of real spacecraft (NASA / ESA)
+// ============================================================================
+const TRIPS = {
+  moon:    { ship: 'อพอลโล 11', year: 2512, days: 3, took: '3 วัน', crew: true,
+             what: 'นักบินอวกาศ 3 คนไปถึงดวงจันทร์ และ 2 คนลงไปเดินบนดวงจันทร์เป็นครั้งแรก',
+             car: 'ถ้าขับรถเร็ว 100 กม./ชม. ไม่หยุดเลย ต้องใช้เวลาราว 5 เดือน' },
+  sun:     { ship: 'พาร์คเกอร์', year: 2561, days: 86, took: 'ราว 3 เดือน',
+             what: 'บินเข้าใกล้ดวงอาทิตย์ได้ แต่ลงไปไม่ได้ เพราะไม่มีพื้นและร้อนมาก ยานมีโล่กันความร้อน และเป็นยานที่เร็วที่สุดที่มนุษย์เคยสร้าง',
+             car: 'ถ้าขับรถเร็ว 100 กม./ชม. ไม่หยุดเลย ต้องใช้เวลาราว 170 ปี',
+             arrive: 'ยานพาร์คเกอร์ บินเข้าใกล้ดวงอาทิตย์ ใช้เวลาราว 3 เดือน' },
+  mercury: { ship: 'เมสเซนเจอร์', year: 2547, days: 2418, took: 'ราว 6 ปีครึ่ง',
+             what: 'ยานลำแรกที่เข้าไปโคจรรอบดาวพุธ ต้องบินวนผ่านโลก ดาวศุกร์ และดาวพุธหลายรอบ เพื่อชะลอความเร็วก่อนเข้าวงโคจร' },
+  venus:   { ship: 'วีนัสเอกซ์เพรส', year: 2548, days: 153, took: 'ราว 5 เดือน',
+             what: 'เข้าไปโคจรรอบดาวศุกร์ ศึกษาเมฆหนาทึบที่ห่อหุ้มดาวศุกร์ไว้' },
+  mars:    { ship: 'เพอร์เซเวียแรนซ์', year: 2563, days: 203, took: 'เกือบ 7 เดือน',
+             what: 'รถหุ่นยนต์ลงจอดบนดาวอังคาร และพาเฮลิคอปเตอร์ลำจิ๋วชื่ออินเจนูอิตีไปบินด้วย' },
+  jupiter: { ship: 'จูโน', year: 2554, days: 1796, took: 'ราว 5 ปี',
+             what: 'เข้าไปโคจรรอบดาวพฤหัสบดี ถ่ายภาพพายุและเมฆลายสวยของดาวพฤหัสบดี' },
+  saturn:  { ship: 'แคสสินี', year: 2540, days: 2451, took: 'เกือบ 7 ปี',
+             what: 'เข้าไปโคจรรอบดาวเสาร์ และปล่อยยานลูกชื่อไฮเกนส์ลงจอดบนไททัน ดวงจันทร์ของดาวเสาร์' },
+  uranus:  { ship: 'วอยเอจเจอร์ 2', year: 2520, days: 3079, took: 'ราว 8 ปีครึ่ง',
+             what: 'บินผ่านดาวยูเรนัสโดยไม่หยุด และยังเป็นยานลำเดียวที่เคยไปถึงดาวยูเรนัส' },
+  neptune: { ship: 'วอยเอจเจอร์ 2', year: 2520, days: 4388, took: '12 ปี',
+             what: 'บินผ่านดาวเนปจูน ระหว่างทางแวะผ่านดาวพฤหัสบดี ดาวเสาร์ และดาวยูเรนัส เป็นยานลำเดียวที่เคยไปถึงดาวเนปจูน' },
+};
+const tripChooseLine = (id) => id === 'earth' ? 'เราอยู่บนโลกแล้ว เลือกดาวดวงอื่นนะ' : 'ไป' + BY[id].th + ' กดปุ่มปล่อยจรวดเลย';
+const tripArriveLine = (id) => 'ถึง' + BY[id].th + 'แล้ว ' + (TRIPS[id].arrive || 'ยาน' + TRIPS[id].ship + ' ใช้เวลา' + TRIPS[id].took);
+const tripSvg = document.getElementById('tripSvg');
+let tripDest = 'moon', tripRun = 0, tripFlying = false;
+const T0 = [150, 540], T1 = [830, 210], TC1 = [330, 140], TC2 = [640, 600];
+function bez(u, i) {
+  const v = 1 - u;
+  return v*v*v*T0[i] + 3*v*v*u*TC1[i] + 3*v*u*u*TC2[i] + u*u*u*T1[i];
+}
+function bezD(u, i) {
+  const v = 1 - u;
+  return 3*v*v*(TC1[i] - T0[i]) + 6*v*u*(TC2[i] - TC1[i]) + 3*u*u*(T1[i] - TC2[i]);
+}
+const tripR = (id) => id === 'sun' ? 120 : id === 'moon' ? 48 : id === 'saturn' ? 34 : 70;
+function tripSpan(n) {
+  if (n < 30) return n + ' วัน';
+  const y = Math.floor(n / 365.25), m = Math.floor((n - y * 365.25) / 30.44);
+  return (y ? y + ' ปี ' : '') + (m ? m + ' เดือน' : '');
+}
+function starfield(seed, n) {
+  let s = '', x = seed;
+  const rnd = () => (x = (x * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) s += `<circle cx="${(rnd() * 1000).toFixed(0)}" cy="${(rnd() * 700).toFixed(0)}" r="${(0.8 + rnd() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.25 + rnd() * 0.5).toFixed(2)}"/>`;
+  return s;
+}
+function buildTrip() {
+  const id = tripDest, r = tripR(id);
+  let s = starfield(7, 90);
+  s += `<path d="M${T0} C${TC1} ${TC2} ${T1}" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="4 14" stroke-linecap="round" opacity=".45"/>`;
+  s += `<g>${art('earth', T0[0], T0[1], 64)}</g>`;
+  s += `<text x="${T0[0]}" y="${T0[1] + 105}" text-anchor="middle" font-family="Mitr" font-size="28" fill="#cfd6ff">โลก</text>`;
+  if (id !== 'earth') {
+    s += `<g>${art(id, T1[0], T1[1], r, { glow: id === 'sun' })}</g>`;
+    s += `<text x="${T1[0]}" y="${T1[1] + (id === 'sun' ? 170 : 115)}" text-anchor="middle" font-family="Mitr" font-size="28" fill="#cfd6ff">${BY[id].th}</text>`;
+  }
+  s += `<g id="trail"></g>`;
+  s += `<text id="rocket" x="0" y="0" font-size="70" text-anchor="middle" dominant-baseline="central" transform="translate(${T0[0] + 40} ${T0[1] - 70}) rotate(-45)">🚀</text>`;
+  s += `<text id="tripDays" x="500" y="70" text-anchor="middle" font-family="Mitr" font-size="40" font-weight="700" fill="#ffd93d" stroke="#0b1033" stroke-width="8" paint-order="stroke"></text>`;
+  s += `<text id="tripBig" x="500" y="400" text-anchor="middle" font-family="Itim" font-size="200" fill="#fff" stroke="#e54b82" stroke-width="10" paint-order="stroke"></text>`;
+  tripSvg.innerHTML = s;
+}
+function renderTripPanel(arrived) {
+  const id = tripDest;
+  if (id === 'earth') {
+    panel.innerHTML = `<div class="q-text">🌍 เราอยู่บนโลก</div><div class="q-hint" style="text-align:center">เลือกดาวปลายทางจากแถบด้านล่าง</div>`;
+    return;
+  }
+  const t = TRIPS[id];
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : 44)}</svg>
+      <div><div class="p-name">${arrived ? 'ถึงแล้ว! ' : 'ไป'}${BY[id].th}</div><div class="p-sub">ยาน${t.ship} · ${t.crew ? '👩‍🚀 มีคนไปด้วย' : '🤖 ยานหุ่นยนต์ ไม่มีคน'}</div></div></div>
+    <div class="facts">
+      <div class="fact"><div class="k">📅 ออกเดินทาง</div><div class="v">พ.ศ. ${t.year}</div></div>
+      <div class="fact"><div class="k">⏱ ใช้เวลา</div><div class="v">${t.took}</div></div>
+    </div>
+    <div class="res" style="margin-top:4px">${t.what}${t.car ? '<br>🚗 ' + t.car : ''}</div>
+    <button class="big-btn" id="launchBtn" ${tripFlying ? 'disabled' : ''}>${arrived ? '🔁 ไปอีกครั้ง' : '🚀 ปล่อยจรวด!'}</button>
+    <div class="src">เวลาจริงนับจากวันปล่อยยานถึงวันไปถึง (NASA / ESA) · ยานบินโค้งตามวงโคจร ไม่ได้บินเป็นเส้นตรง · มีแค่ดวงจันทร์ที่คนเคยไปถึง ดาวอื่นส่งยานหุ่นยนต์ไป</div>`;
+  document.getElementById('launchBtn').addEventListener('click', () => { ensureAudio(); launch(); });
+}
+function tripTo(id) {
+  tripRun++; tripFlying = false; tripDest = id;
+  markStrip(id); buildTrip(); renderTripPanel(false);
+  blip(560); buzz(10); speak(tripChooseLine(id));
+}
+function launch() {
+  if (tripFlying || tripDest === 'earth') return;
+  const my = ++tripRun, id = tripDest, days = TRIPS[id].days;
+  tripFlying = true; buildTrip(); renderTripPanel(false);
+  const big = document.getElementById('tripBig'), rocket = document.getElementById('rocket'),
+        label = document.getElementById('tripDays'), trail = document.getElementById('trail');
+  const words = ['สาม', 'สอง', 'หนึ่ง'];
+  words.forEach((w, i) => setTimeout(() => {
+    if (my !== tripRun) return;
+    big.textContent = 3 - i; tone(440, 0.15, 'square', 0.08); buzz(15); speak(w);
+  }, i * 1000));
+  setTimeout(() => {
+    if (my !== tripRun) return;
+    big.textContent = ''; tone(880, 0.35, 'square', 0.1); buzz([30, 20, 60]); speak('ปล่อยจรวด!');
+    const dur = 2600 + 1400 * Math.log10(days + 1), t0 = performance.now();
+    // take off from Earth's edge, touch down at the world's edge
+    let eS = 0, eE = 1;
+    while (eS < 0.5 && Math.hypot(bez(eS, 0) - T0[0], bez(eS, 1) - T0[1]) < 74) eS += 0.002;
+    while (eE > 0.5 && Math.hypot(bez(eE, 0) - T1[0], bez(eE, 1) - T1[1]) < tripR(id) * 0.95 + 20) eE -= 0.002;
+    let lastDot = 0;
+    (function fly(now) {
+      if (my !== tripRun) return;
+      const u = Math.min(1, (now - t0) / dur), e = u < 0.5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2;
+      const b = eS + (eE - eS) * e, x = bez(b, 0), y = bez(b, 1);
+      const ang = Math.atan2(bezD(b, 1), bezD(b, 0)) * 180 / Math.PI + 45;   // 🚀 glyph points up-right
+      rocket.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${ang.toFixed(1)})`);
+      if (now - lastDot > 70 && u < 1) {
+        lastDot = now;
+        trail.insertAdjacentHTML('beforeend', `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="6" fill="#ffd93d" opacity=".55"/>`);
+      }
+      const n = Math.max(1, Math.round(days * e));
+      label.textContent = '🗓️ ' + (n < 30 ? 'วันที่ ' + n : n.toLocaleString('th-TH') + ' วัน · ' + tripSpan(n));
+      if (u < 1) { requestAnimationFrame(fly); return; }
+      tripFlying = false;
+      label.textContent = '🎉 ถึงแล้ว! ใช้เวลา ' + TRIPS[id].took;
+      cheer(); celebrate(80); buzz([30, 20, 40]);
+      renderTripPanel(true); speak(tripArriveLine(id));
+    })(t0);
+  }, 3000);
+}
+
+// ============================================================================
+// ✨ THAI STAR PATTERNS — connect the real stars (J2000 RA hours / Dec degrees)
+// ============================================================================
+const STARS = {
+  mintaka: [5.5334, -0.2992, 2.2, 'มินทากา'], alnilam: [5.6036, -1.2019, 1.7, 'อัลไนแลม'], alnitak: [5.6793, -1.9428, 1.8, 'อัลไนแทก'],
+  betelgeuse: [5.9195, 7.4069, 0.5, 'บีเทลจูส', '#ffb36b'], bellatrix: [5.4189, 6.3497, 1.6, 'เบลลาทริกซ์'],
+  saiph: [5.7959, -9.6697, 2.1, 'ไซฟ์'], rigel: [5.2423, -8.2017, 0.1, 'ไรเจล', '#bcd7ff'], meissa: [5.5856, 9.9342, 3.4, 'ไมสสา'],
+  dubhe: [11.0621, 61.7508, 1.8, 'ดูบเฮ'], merak: [11.0307, 56.3825, 2.4, 'เมรัก'], phecda: [11.8972, 53.6947, 2.4, 'เฟกดา'],
+  megrez: [12.2571, 57.0325, 3.3, 'เมกเรซ'], alioth: [12.9005, 55.9597, 1.8, 'อาลิออท'], mizar: [13.3987, 54.9253, 2.2, 'มิซาร์'], alkaid: [13.7923, 49.3133, 1.9, 'อัลคาอิด'],
+  alcyone: [3.7914, 24.1050, 2.9, 'แอลไซโอนี'], atlas: [3.8194, 24.0533, 3.6, 'แอตลาส'], electra: [3.7479, 24.1133, 3.7, 'อิเล็กตรา'],
+  maia: [3.7638, 24.3678, 3.9, 'ไมอา'], merope: [3.7721, 23.9483, 4.2, 'เมอโรพี'], taygeta: [3.7535, 24.4672, 4.3, 'ไทยีตา'], pleione: [3.8198, 24.1367, 5.0, 'ไพลโอนี'],
+  acrab: [16.0906, -19.8053, 2.6], dschubba: [16.0056, -22.6217, 2.3], pisco: [15.9809, -26.1142, 2.9], sigsco: [16.3531, -25.5928, 2.9],
+  antares: [16.4901, -26.4319, 1.0, 'แอนทาเรส', '#ff8a5c'], tausco: [16.5981, -28.2161, 2.8], epssco: [16.8361, -34.2933, 2.3], mu1sco: [16.8645, -38.0475, 3.0],
+  zet2sco: [16.9097, -42.3614, 3.6], etasco: [17.2026, -43.2392, 3.3], sargas: [17.6220, -42.9978, 1.9], iot1sco: [17.7931, -40.1269, 3.0],
+  kapsco: [17.7081, -39.0300, 2.4], shaula: [17.5601, -37.1039, 1.6, 'ชอลา'], lesath: [17.5127, -37.2958, 2.7],
+};
+// path: tap order; '|' = lift the pen (no line to the next star)
+const SKY = [
+  { id: 'plough', th: 'ดาวไถ', emoji: '🌾', labels: ['mintaka', 'alnilam', 'alnitak'], path: ['mintaka', 'alnilam', 'alnitak'],
+    intl: 'เข็มขัดนายพราน (Orion’s Belt)', when: 'หัวค่ำ ธันวาคม–เมษายน · ขึ้นทางทิศตะวันออก',
+    legend: 'คนไทยเห็นดาว 3 ดวงเรียงกันเหมือนคันไถนา ในรามเกียรติ์เล่าว่า พระรามแผลงศรให้เกิดดวงจันทร์ 3 ดวงส่องทาง แล้วกลายเป็นดาว 3 ดวงนี้',
+    fact: 'ดาวไถขึ้นเกือบตรงทิศตะวันออก และตกเกือบตรงทิศตะวันตก คนโบราณจึงใช้ดูทิศ' },
+  { id: 'chicks', th: 'ดาวลูกไก่', emoji: '🐥', chicks: true, labels: [], path: ['alcyone', 'atlas', 'pleione', 'maia', 'taygeta', 'electra', 'merope'],
+    intl: 'กระจุกดาวลูกไก่ (Pleiades) หรือ กฤติกา', when: 'หัวค่ำ พฤศจิกายน–มีนาคม · ทางทิศตะวันออก',
+    legend: 'นิทานไทยเล่าว่า ลูกไก่รักแม่ไก่มาก เมื่อแม่ไก่จากไป ลูกไก่ก็ตามไปไม่ยอมแยกกัน เทวดาจึงให้แม่ไก่กับลูกไก่ไปอยู่ด้วยกันบนฟ้า',
+    fact: 'ตาเปล่าเห็นราว 6–7 ดวง แต่จริงๆ มีดาวมากกว่า 1,000 ดวงอยู่รวมกัน ห่างจากเราราว 440 ปีแสง' },
+  { id: 'turtle', th: 'ดาวเต่า', emoji: '🐢', labels: ['betelgeuse', 'bellatrix', 'saiph', 'rigel'], path: ['betelgeuse', 'meissa', 'bellatrix', 'mintaka', 'alnilam', 'alnitak', 'betelgeuse', '|', 'alnitak', 'saiph', 'rigel', 'mintaka'],
+    intl: 'กลุ่มดาวนายพราน (Orion)', when: 'หัวค่ำ ธันวาคม–เมษายน · ขึ้นทางทิศตะวันออก',
+    legend: 'คนไทยเห็นดาวสว่าง 4 ดวงรอบนอกเป็นขาเต่า 4 ขา มีดาวไถอยู่กลางตัวเต่า ส่วนฝรั่งเห็นเป็นนายพราน',
+    fact: 'ดาวบีเทลจูสสีส้มแดง เป็นดาวยักษ์ ถ้าเอามาไว้แทนดวงอาทิตย์ จะใหญ่เลยวงโคจรของดาวอังคาร ส่วนดาวไรเจลสีขาวอมฟ้า ร้อนกว่ามาก' },
+  { id: 'croc', th: 'ดาวจระเข้', emoji: '🐊', labels: ['merak', 'dubhe'], path: ['alkaid', 'mizar', 'alioth', 'megrez', 'phecda', 'merak', 'dubhe', 'megrez'],
+    intl: 'กระบวยใหญ่ (Big Dipper) ในกลุ่มดาวหมีใหญ่ · บางคนเรียกดาวกระบวย', when: 'หัวค่ำ มีนาคม–มิถุนายน · ทางทิศเหนือ',
+    legend: 'เล่ากันว่าคนไทยสมัยก่อนอยู่ริมน้ำ จึงเห็นดาว 7 ดวงนี้เป็นจระเข้ ส่วนฝรั่งเห็นเป็นหมี',
+    fact: 'ลากเส้นจากดาวเมรักไปดาวดูบเฮ แล้วต่อออกไปอีก จะเจอดาวเหนือ ซึ่งในเมืองไทยอยู่ต่ำใกล้ขอบฟ้าทิศเหนือ' },
+  { id: 'scorpion', th: 'ดาวแมงป่อง', emoji: '🦂', labels: ['antares'], path: ['acrab', 'dschubba', 'pisco', '|', 'dschubba', 'sigsco', 'antares', 'tausco', 'epssco', 'mu1sco', 'zet2sco', 'etasco', 'sargas', 'iot1sco', 'kapsco', 'shaula', 'lesath'],
+    intl: 'กลุ่มดาวแมงป่อง (Scorpius)', when: 'หัวค่ำ มิถุนายน–สิงหาคม · ทางทิศใต้',
+    legend: 'ตำนานกรีกเล่าว่า แมงป่องยักษ์ต่อยนายพราน เทพจึงให้ทั้งคู่อยู่คนละฝั่งฟ้า พอดาวแมงป่องขึ้น ดาวนายพรานหรือดาวเต่าก็ตกลับไป',
+    fact: 'ดาวแอนทาเรส ดาวสีแดงตรงหัวใจแมงป่อง เป็นดาวยักษ์แดงขนาดใหญ่มาก' },
+];
+const skyIntro = (c) => c.th + ' แตะดาวที่กะพริบทีละดวง';
+const skyDone = (c) => 'เก่งมาก นี่คือ' + c.th + ' ' + c.legend;
+const skySvg = document.getElementById('skySvg');
+let sky = SKY[0], skyPos = {}, skyStep = 0, skyDoneFlag = false;
+function skyLayout(c) {
+  const ids = [...new Set(c.path.filter(k => k !== '|'))];
+  const ra0 = ids.reduce((a, k) => a + STARS[k][0], 0) / ids.length, dec0 = ids.reduce((a, k) => a + STARS[k][1], 0) / ids.length;
+  const pts = ids.map(k => [k, -(STARS[k][0] - ra0) * 15 * Math.cos(STARS[k][1] * Math.PI / 180), -(STARS[k][1] - dec0)]);   // east to the left, north up
+  const xs = pts.map(p => p[1]), ys = pts.map(p => p[2]);
+  const w = Math.max(...xs) - Math.min(...xs) || 1, h = Math.max(...ys) - Math.min(...ys) || 1;
+  const k = Math.min(760 / w, 470 / h), cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+  skyPos = {};
+  for (const [id, x, y] of pts) skyPos[id] = [500 + (x - cx) * k, 360 + (y - cy) * k];
+}
+const starR = (k) => Math.max(7, Math.min(22, 8 + (4 - STARS[k][2]) * 4));
+function nextStar() { while (sky.path[skyStep] === '|') skyStep++; return sky.path[skyStep]; }
+function buildSky() {
+  let s = starfield(11, 140) + `<g id="skyArt"></g><g id="skyLines"></g><g id="skyStars"></g>`;
+  skySvg.innerHTML = s;
+  const g = document.getElementById('skyStars');
+  for (const id in skyPos) {
+    const [x, y] = skyPos[id], col = STARS[id][4] || '#fff', nm = sky.labels.includes(id) && STARS[id][3];
+    g.insertAdjacentHTML('beforeend', `<g data-star="${id}"><circle class="halo" cx="${x}" cy="${y}" r="${starR(id) + 14}" fill="${col}" opacity="0"/>
+      <circle class="dot" cx="${x}" cy="${y}" r="${starR(id)}" fill="${col}" opacity=".55"/>
+      ${nm ? `<text x="${x}" y="${y + starR(id) + 30}" text-anchor="middle" font-family="Mitr" font-size="22" fill="#aab3e6" opacity="0">${nm}</text>` : ''}</g>`);
+  }
+  markSkyTarget();
+}
+function markSkyTarget() {
+  for (const el of skySvg.querySelectorAll('[data-star]')) el.classList.toggle('tgt', !skyDoneFlag && el.dataset.star === nextStar());
+}
+function skyPick(c) {
+  sky = c; skyStep = 0; skyDoneFlag = false;
+  skyLayout(c); buildSky(); renderSkyPanel(); speak(skyIntro(c));
+}
+function skyTap(ev) {
+  if (skyDoneFlag) return;
+  const pt = skySvg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const q = pt.matrixTransform(skySvg.getScreenCTM().inverse());
+  const id = nextStar(), [x, y] = skyPos[id];
+  if (Math.hypot(q.x - x, q.y - y) > 80) return;
+  const prev = skyStep > 0 && sky.path[skyStep - 1] !== '|' ? sky.path[skyStep - 1] : null;
+  if (prev && !sky.chicks) {
+    const [px, py] = skyPos[prev];
+    document.getElementById('skyLines').insertAdjacentHTML('beforeend', `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#ffd93d" stroke-width="5" stroke-linecap="round" opacity=".85"/>`);
+  }
+  const el = skySvg.querySelector(`[data-star="${id}"]`);
+  el.querySelector('.dot').setAttribute('opacity', '1');
+  el.querySelector('.halo').setAttribute('opacity', '.25');
+  const lab = el.querySelector('text'); if (lab) lab.setAttribute('opacity', '1');
+  if (sky.chicks) el.insertAdjacentHTML('beforeend', `<text x="${x + 34}" y="${y - 18}" font-size="${skyStep === 0 ? 46 : 34}" text-anchor="middle">${skyStep === 0 ? '🐔' : '🐥'}</text>`);
+  skyStep++;
+  tone(520 + skyStep * 45, 0.14, 'sine', 0.1); buzz(10);
+  if (skyStep >= sky.path.length) {
+    skyDoneFlag = true;
+    if (!sky.chicks) {
+      const xs = Object.values(skyPos).map(p => p[0]), ys = Object.values(skyPos).map(p => p[1]);
+      const size = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 0.9;
+      document.getElementById('skyArt').innerHTML = `<text x="${(Math.max(...xs) + Math.min(...xs)) / 2}" y="${(Math.max(...ys) + Math.min(...ys)) / 2}" font-size="${Math.min(480, Math.max(160, size))}" text-anchor="middle" dominant-baseline="central" opacity=".28">${sky.emoji}</text>`;
+    }
+    cheer(); celebrate(70); buzz([30, 20, 40]);
+    renderSkyPanel(); speak(skyDone(sky));
+  }
+  markSkyTarget(); renderSkyProgress();
+}
+skySvg.addEventListener('pointerdown', (e) => { ensureAudio(); skyTap(e); });
+function renderSkyProgress() {
+  const el = document.getElementById('skyProg'); if (!el) return;
+  const total = sky.path.filter(k => k !== '|').length, done = sky.path.slice(0, skyStep).filter(k => k !== '|').length;
+  el.textContent = skyDoneFlag ? '🎉 ครบแล้ว!' : '⭐ ' + done + ' / ' + total;
+}
+function renderSkyPanel() {
+  const c = sky;
+  panel.innerHTML = `
+    <div class="pick">${SKY.map(o => `<button class="chip ${o === c ? 'on' : ''}" data-sky="${o.id}">${o.emoji} ${o.th}</button>`).join('')}</div>
+    <div class="q-text">${c.emoji} ${c.th}</div>
+    <div class="q-hint" style="text-align:center" id="skyProg"></div>
+    ${skyDoneFlag ? `<div class="res">${c.legend}</div>` : `<div class="q-hint" style="text-align:center">แตะดาวที่กะพริบทีละดวง</div>`}
+    <div class="facts">
+      <div class="fact"><div class="k">🌏 ชื่อสากล</div><div class="v">${c.intl}</div></div>
+      <div class="fact"><div class="k">🔭 มองหาได้</div><div class="v">${c.when}</div></div>
+    </div>
+    ${skyDoneFlag ? `<div class="res" style="font-size:16px">💡 ${c.fact}</div><button class="big-btn" id="skyAgain">🔁 โยงใหม่</button>` : ''}
+    <div class="src">ตำแหน่งดาวจริงจากแผนที่ดาว · ขยายภาพให้เห็นชัด ทิศเหนืออยู่ด้านบน · ชื่อไทยตาม NARIT และ สวทช.</div>`;
+  for (const b of panel.querySelectorAll('[data-sky]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); skyPick(SKY.find(o => o.id === b.dataset.sky)); });
+  const again = document.getElementById('skyAgain'); if (again) again.addEventListener('click', () => { ensureAudio(); skyPick(sky); });
+  renderSkyProgress();
+}
 
 // ============================================================================
 // SOUND + SPEECH + FX
@@ -1469,6 +1741,9 @@ VoiceClips.lines(() => {
   }
   for (const p of PLANETS) for (const a of AGES) L.push(ageLine(p.id, a));
   for (let d = 0; d < 360; d += 0.25) L.push(phaseInfo(d * Math.PI / 180).name);
+  L.push('สาม', 'สอง', 'หนึ่ง', 'ปล่อยจรวด!', tripChooseLine('earth'));
+  for (const id in TRIPS) L.push(tripChooseLine(id), tripArriveLine(id));
+  for (const c of SKY) L.push(skyIntro(c), skyDone(c));
   return L;
 });
 </script>

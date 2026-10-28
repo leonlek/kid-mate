@@ -94,7 +94,7 @@ When you add a game (e.g. `memory-match`):
 9. **Spoken lines use recorded voice clips, not raw `speechSynthesis`.** Load `../voice-clips.js` + `voice/map.js` in `<head>`, route every spoken line through `VoiceClips.say(text, audioCtx|null, deviceFallback, lang)`, list every line the game can say in `VoiceClips.lines(() => [...])` (Thai strings, or `['en'|'zh'|'ja', text]`), then run `python3 tools/gen_voice.py <game-id>` and add `./<game-id>/voice/map.js` to `sw.js` SHELL. Voices: Azure `th-TH-PremwadeeNeural` (Thai), Jenny (en), Xiaoxiao (zh), Nanami (ja). Needs `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION` in the git-ignored `tools/.tts-keys` (free F0 tier, 500k chars/month — the whole hub is ~10k). **Whenever spoken text changes, re-run gen_voice for that game** (only new lines are synthesized, stale clips deleted) — an unmapped line silently falls back to the robotic device voice.
 10. **Optionally add a `shortcuts` entry** in `manifest.webmanifest` — gives long-press app-icon shortcuts on Android.
 
-Keep each game under ~1500 lines of HTML. If a game grows beyond that, split it into `<game-id>/index.html` + `<game-id>/game.js` + `<game-id>/styles.css`. Still no bundler.
+~1500 lines per game is a soft guide, not a limit — the owner OK'd single files growing past it (2026-10-28); keep one file unless splitting genuinely helps. Still no bundler.
 
 ---
 
@@ -131,6 +131,9 @@ Scribble-with-crayon scenes (portrait 800×1200). 60 scenes: 11 hand-written in 
 ### ท่องอวกาศ (`/solar-system/`)
 
 Interactive solar system: planets orbit at true relative speeds (1/period; 1 Earth year = 20 s at ▶), tap a body → inline info card with NASA Planetary Fact Sheet figures + Thai TTS; 📏 view draws all diameters to one true scale; 🎯 missions (⭐ find by name, ⭐⭐ find by clue). **Accuracy rule:** every number/clue must match NASA data; orbit distances and orbit-view sizes are compressed and the screen says so. Giant-planet moon counts change often — keep them as "มากกว่า …".
+🚀 นั่งจรวด: travel time = real launch→arrival dates of real spacecraft (Apollo 11, Parker, MESSENGER, Venus Express, Perseverance, Juno, Cassini, Voyager 2) in `TRIPS`. ✨ กลุ่มดาวไทย: connect-the-dots on real J2000 star positions (`STARS`), Thai names per NARIT/สวทช. (ดาวไถ = Orion's belt, ดาวเต่า = Orion, ดาวจระเข้ = Big Dipper, ดาวลูกไก่ = Pleiades, ดาวแมงป่อง = Scorpius).
+
+**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), 🌍 day/night + seasons on the globe, ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference: 🦖 dinosaurs (incl. Thai finds: ภูเวียงโกซอรัส สิรินธรน่า), 🌊 deep-sea dive (true depths to Mariana 10,935 m), 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
 
 ### (Planned)
 
