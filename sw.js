@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v113';
+const CACHE = 'kid-games-v114';
 const SHELL = [
   './',
   './index.html',
@@ -196,13 +196,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else (fonts, icons, manifest) stays cache-first for speed.
+  // voice/map.js lists the clips for the page's CURRENT lines, so it must stay in
+  // step with the network-first HTML above — a cached old map makes every new
+  // line fall back to the robotic device voice. The mp3s themselves are named by
+  // content hash, so they can stay cache-first.
+  if (/\/voice\/map\.js$/.test(new URL(req.url).pathname)) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
+        return res.ok ? res : caches.match(req).then((c) => c || res);
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Everything else (fonts, icons, manifest, clips) stays cache-first for speed.
+  // Only good responses are kept — a 404 mid-deploy must not be pinned forever.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
       return fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
         return res;
       }).catch(() => cached);
     })
