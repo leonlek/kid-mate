@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🌊 ดำน้ำทะเลลึก — คิดส์เล่น</title>
+<meta name="description" content="เกมดำน้ำสำหรับเด็กไทย ดำลงไปถึงร่องลึกมาเรียนา 10,935 เมตร เจอสัตว์ทะเลที่ความลึกจริง">
+<meta name="theme-color" content="#0b2447">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ทะเลลึก">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #5bb8e8 45%, #0b2447 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: #fff; text-shadow: 3px 3px 0 var(--brand-dark);
+  }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .main { grid-template-columns: minmax(0, 1fr) 380px; }
+  }
+  .view {
+    position: relative; border: 4px solid #fff; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25); background: #0b2447;
+  }
+  .view svg { display: block; width: 100%; height: auto; max-height: 72vh; touch-action: manipulation; cursor: pointer; }
+  #crA .wig { animation: wig .5s ease; transform-box: fill-box; transform-origin: center; }
+  @keyframes wig { 25% { transform: rotate(-8deg) scale(1.08); } 75% { transform: rotate(8deg) scale(1.08); } }
+
+  .ctrls { display: flex; gap: 12px; justify-content: center; margin: 12px 0 0; }
+  .go {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 76px; min-width: 120px; padding: 0 22px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .go.up { background: #fff; color: var(--ink); border-color: var(--card-border); box-shadow: 0 5px 0 rgba(0,0,0,.25); }
+  .go:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .go:disabled { opacity: .45; }
+
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+  }
+  .p-head { display: flex; align-items: center; gap: 12px; }
+  .p-emo { font-size: 64px; line-height: 1; width: 80px; text-align: center; flex-shrink: 0; }
+  .p-emo svg { width: 80px; height: 80px; }
+  .p-name { font-family: 'Itim', cursive; font-size: 30px; line-height: 1.05; color: var(--brand-dark); }
+  .p-sub { font-size: 14px; color: #777; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0 8px; }
+  .fact { background: #eef7ff; border-radius: 16px; padding: 8px 10px; }
+  .fact .k { font-size: 13px; color: #6b7280; }
+  .fact .v { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 16px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🌊 ดำน้ำทะเลลึก</h1></header>
+  <div class="main">
+    <div>
+      <div class="view"><svg id="sea" viewBox="0 0 1000 700" aria-label="ทะเลลึก"></svg></div>
+      <div class="ctrls">
+        <button class="go up" id="upBtn" aria-label="ขึ้น">⬆️ ขึ้น</button>
+        <button class="go" id="downBtn" aria-label="ดำลง">⬇️ ดำลง</button>
+      </div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// DATA — real depths. Zones per NOAA (epi/meso/bathy/abysso/hadal-pelagic).
+// Animal depths = recorded dives / sightings from the species' Wikipedia
+// articles (which cite the studies). Challenger Deep ≈ 10,935 m (NOAA).
+// ============================================================================
+const ZONES = [
+  { th: 'เขตแสงแดด', from: 0, to: 200, c: '#4fc3f7', light: '☀️ สว่าง' },
+  { th: 'เขตแสงสลัว', from: 200, to: 1000, c: '#1f6fb5', light: '🌗 สลัว' },
+  { th: 'เขตมืดมิด', from: 1000, to: 4000, c: '#123a73', light: '🌑 มืดสนิท' },
+  { th: 'เขตก้นทะเลลึก', from: 4000, to: 6000, c: '#0b2650', light: '🌑 มืดสนิท' },
+  { th: 'เขตร่องลึก', from: 6000, to: 11000, c: '#06173a', light: '🌑 มืดสนิท' },
+];
+const zoneOf = (d) => ZONES.find(z => d < z.to) || ZONES[4];
+const BOTTOM = 10935;
+const STOPS = [
+  { d: 0, e: '🚤', th: 'ผิวน้ำ', say: 'พร้อมดำน้ำแล้ว กดปุ่มดำลงเลย',
+    fact: 'มหาสมุทรลึกเฉลี่ยราว 3,700 เมตร แต่บางที่ลึกเกือบ 11,000 เมตร ไปดูกัน!' },
+  { d: 5, e: '🐠', th: 'ปลาการ์ตูน',
+    fact: 'ปลาการ์ตูนอาศัยอยู่ในดอกไม้ทะเล ในทะเลน้ำตื้นที่มีแสงแดด พบในทะเลไทยด้วย' },
+  { d: 15, e: '🪸', th: 'ปะการัง',
+    fact: 'ปะการังเป็นสัตว์นะ ไม่ใช่ต้นไม้ มันต้องการแสงแดด เลยอยู่ในน้ำตื้น' },
+  { d: 40, e: '🤿', th: 'นักดำน้ำ',
+    fact: 'นักดำน้ำทั่วไปดำลงได้ไม่เกินราว 40 เมตร ลึกกว่านี้ต้องใช้เรือดำน้ำ' },
+  { d: 60, e: '🦈', th: 'ฉลามวาฬ',
+    fact: 'ฉลามวาฬเป็นปลาที่ใหญ่ที่สุดในโลก ยาวได้ถึงราว 18 เมตร กินแพลงก์ตอน ไม่ดุ พบในทะเลไทย และดำลงได้ลึกเกือบ 2,000 เมตร' },
+  { d: 200, e: '🔦', th: 'หมดแสงแดด',
+    fact: 'ลึก 200 เมตร แสงแดดเกือบหมดแล้ว ต้องเปิดไฟเรือดำน้ำ' },
+  { d: 900, e: '🦑', th: 'หมึกยักษ์',
+    fact: 'หมึกยักษ์ยาวได้ถึงราว 12 เมตร คนเพิ่งถ่ายภาพตัวเป็นๆ ได้ครั้งแรกเมื่อปี 2547 ที่ความลึกราว 900 เมตร' },
+  { d: 1000, e: '🌑', th: 'มืดสนิท',
+    fact: 'ลึกกว่า 1,000 เมตร มืดสนิท ไม่มีแสงแดดเลย สัตว์หลายชนิดเรืองแสงได้เอง' },
+  { d: 1280, e: '🐢', th: 'เต่ามะเฟือง',
+    fact: 'เต่ามะเฟืองดำน้ำได้ลึกราว 1,280 เมตร ลึกที่สุดในบรรดาเต่า และมาวางไข่ที่ชายหาดภาคใต้ของไทย' },
+  { d: 1500, e: 'angler', th: 'ปลาตกเบ็ด',
+    fact: 'ปลาตกเบ็ดมีไฟดวงเล็กบนหัว เรืองแสงไว้ล่อเหยื่อในความมืด' },
+  { d: 2000, e: '🐋', th: 'วาฬหัวทุย',
+    fact: 'วาฬหัวทุยกลั้นหายใจดำลงมาถึงราว 2,000 เมตร เพื่อล่าหมึกกิน' },
+  { d: 2992, e: '🐳', th: 'วาฬคูเวียร์',
+    fact: 'วาฬจงอยปากคูเวียร์ดำน้ำได้ลึกถึง 2,992 เมตร ลึกที่สุดในบรรดาสัตว์เลี้ยงลูกด้วยนม' },
+  { d: 3800, e: '🚢', th: 'เรือไททานิก', floor: true,
+    fact: 'ซากเรือไททานิกจมอยู่ที่ก้นทะเล ลึกราว 3,800 เมตร' },
+  { d: 4000, e: '🧊', th: 'น้ำเย็นจัด',
+    fact: 'ลึกขนาดนี้ น้ำเย็นมาก ราว 2 ถึง 4 องศา และมืดสนิทตลอดเวลา' },
+  { d: 6957, e: '🐙', th: 'หมึกดัมโบ้',
+    fact: 'หมึกดัมโบ้มีครีบคล้ายหูช้างดัมโบ้ เคยพบลึกถึง 6,957 เมตร ลึกที่สุดในบรรดาหมึกสาย' },
+  { d: 8336, e: '🐟', th: 'ปลาสเนลฟิช', pale: true,
+    fact: 'ปลาสเนลฟิชเป็นปลาที่อยู่ลึกที่สุด เท่าที่เคยถ่ายวิดีโอได้ ที่ความลึก 8,336 เมตร' },
+  { d: 10900, e: '🦐', th: 'แอมฟิพอด',
+    fact: 'แอมฟิพอดเป็นสัตว์ตัวเล็กคล้ายกุ้ง อยู่ได้ถึงก้นร่องลึกที่สุดของโลก' },
+  { d: BOTTOM, e: '🏁', th: 'ร่องลึกมาเรียนา', floor: true,
+    fact: 'ถึงก้นร่องลึกมาเรียนาแล้ว จุดที่ลึกที่สุดในโลก ลึกราว 10,935 เมตร' },
+];
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+for (const s of STOPS) if (!s.say) s.say = s.th + ' ลึก ' + fmt(s.d) + ' เมตร';
+const BOTTOM_FACTS = [
+  'ถ้าเอายอดเขาเอเวอเรสต์ สูง 8,849 เมตร มาวางตรงนี้ ยอดเขายังจมน้ำลึกกว่า 2,000 เมตร',
+  'คนลงมาถึงตรงนี้ครั้งแรกเมื่อปี 2503 ด้วยเรือดำน้ำชื่อ ทรีเอสเต',
+  'น้ำกดแรงกว่าบนผิวน้ำราว 1,000 เท่า เรือดำน้ำต้องแข็งแรงมาก',
+];
+// every 10 m of water adds one atmosphere of pressure
+const pressureX = (d) => 1 + d / 10;
+
+// ============================================================================
+// SCENE
+// ============================================================================
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+const sea = $('sea'), panel = $('panel');
+const GX = 900, GY0 = 70, GY1 = 660;                      // depth gauge (true scale)
+const gy = (d) => GY0 + d / 11000 * (GY1 - GY0);
+const SUB = [250, 330], CR = [570, 330];
+let depth = 0, at = 0, moving = null;
+const SNOW = Array.from({ length: 46 }, (_, i) => [(i * 211) % 760, (i * 137) % 700, 1.2 + (i % 4) * 0.8]);
+
+function mix(a, b, t) {
+  const p = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const A = p(a), B = p(b);
+  return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+const SEA_COL = [[0, '#5cc8f5'], [200, '#1c6cb0'], [1000, '#0d2c5a'], [4000, '#061433'], [11000, '#02060f']];
+function seaColor(d) {
+  for (let i = 1; i < SEA_COL.length; i++) if (d <= SEA_COL[i][0]) {
+    const [d0, c0] = SEA_COL[i - 1], [d1, c1] = SEA_COL[i];
+    return mix(c0, c1, (d - d0) / (d1 - d0));
+  }
+  return SEA_COL[SEA_COL.length - 1][1];
+}
+const darkness = (d) => Math.min(1, Math.max(0, Math.log10(1 + d) / Math.log10(1000)));   // 0 at surface → 1 by ~1,000 m
+
+function angler() {
+  return `<g stroke="#1b1b2f" stroke-width="4" stroke-linejoin="round">
+    <path d="M-20,-60 Q10,-110 40,-96" fill="none" stroke="#6b5b7a" stroke-width="5"/>
+    <circle cx="44" cy="-96" r="22" fill="#fff7a8" opacity=".35" stroke="none"/><circle cx="44" cy="-96" r="11" fill="#fff7a8"/>
+    <path d="M-90,-10 Q-60,-70 10,-62 Q80,-50 82,0 Q80,52 10,62 Q-60,70 -90,10 Z" fill="#4b3f63"/>
+    <path d="M-90,-10 L-140,-46 L-128,0 L-140,46 L-90,10 Z" fill="#3a3050"/>
+    <path d="M30,-6 Q60,0 82,0 Q60,30 30,26 Z" fill="#1b1b2f"/>
+    <path d="M40,-2 l6,12 l6,-12 M54,0 l5,11 l5,-11 M42,24 l6,-11 l6,11 M56,22 l5,-10 l5,10" fill="#fff" stroke-width="1.5"/>
+    <circle cx="20" cy="-26" r="10" fill="#fff"/><circle cx="22" cy="-26" r="5" fill="#1b1b2f" stroke="none"/></g>`;
+}
+function creature(s) {
+  const pic = s.e === 'angler' ? angler()
+    : `<text text-anchor="middle" dominant-baseline="central" font-size="180"${s.pale ? ' style="filter:saturate(.25) brightness(1.5)"' : ''}>${s.e}</text>`;
+  const floor = s.floor ? `<path d="M-330,110 Q-150,80 0,104 T330,96 L330,520 L-330,520 Z" fill="#3b3344"/>` : '';
+  const w = Math.max(160, s.th.length * 24 + 40);
+  return `${floor}<g class="pic">${pic}</g>
+    <rect x="${-w / 2}" y="120" width="${w}" height="46" rx="23" fill="rgba(255,255,255,.92)"/>
+    <text x="0" y="152" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="700" fill="#e54b82">${s.th}</text>`;
+}
+function buildSea() {
+  let snow = '', rays = '', gauge = '';
+  SNOW.forEach((p, i) => snow += `<circle id="sn${i}" cx="${p[0]}" cy="${p[1]}" r="${p[2]}" fill="#fff"/>`);
+  for (let i = 0; i < 6; i++) rays += `<path d="M${60 + i * 130},0 L${10 + i * 130},700 L${70 + i * 130},700 Z" fill="#fff"/>`;
+  for (const z of ZONES) {
+    gauge += `<rect x="${GX - 16}" y="${gy(z.from)}" width="32" height="${gy(Math.min(z.to, BOTTOM)) - gy(z.from)}" fill="${z.c}" stroke="rgba(255,255,255,.5)" stroke-width="1"/>`;
+  }
+  const labelY = [GY0 + 10, GY0 + 36, gy(2500), gy(5000), gy(8400)];
+  gauge += '<g id="zl">';
+  ZONES.forEach((z, i) => gauge += `<text x="${GX - 26}" y="${labelY[i] + 5}" text-anchor="end" font-family="Mitr" font-size="15" fill="#cfe8ff">${z.th}</text>`);
+  gauge += '</g>';
+  for (let m = 0; m <= 10000; m += 2000) gauge += `<text x="${GX + 24}" y="${gy(m) + 5}" font-family="Mitr" font-size="13" fill="#9fc3e6">${fmt(m)}</text><path d="M${GX + 16},${gy(m)} h6" stroke="#9fc3e6" stroke-width="2"/>`;
+  STOPS.forEach((s, i) => gauge += `<circle id="gd${i}" cx="${GX}" cy="${gy(s.d)}" r="5" fill="#fff" opacity=".8"/>`);
+  sea.innerHTML = `
+    <defs><linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop id="sg0" offset="0"/><stop id="sg1" offset="1"/></linearGradient>
+      <radialGradient id="beamG" cx="0" cy=".5" r="1"><stop offset="0" stop-color="#fff7c2" stop-opacity=".75"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs>
+    <rect width="1000" height="700" fill="url(#seaG)"/>
+    <g id="rays" opacity=".12">${rays}</g>
+    <g id="surf"><rect x="0" y="-700" width="1000" height="700" fill="#bfeaff"/><path d="M0,0 Q60,-18 120,0 T240,0 T360,0 T480,0 T600,0 T720,0 T840,0 T960,0 T1080,0 L1080,-30 L0,-30 Z" fill="#bfeaff"/></g>
+    <g id="snow" opacity=".5">${snow}</g>
+    <g id="crB"></g><g id="crA"></g>
+    <g id="sub">
+      <path id="beam" d="M70,0 L460,-150 L460,150 Z" fill="url(#beamG)" opacity="0"/>
+      <g stroke="#2d3436" stroke-width="4" stroke-linejoin="round">
+        <path d="M-34,-40 L-20,-74 L26,-74 L36,-40 Z" fill="#ffc83d"/>
+        <path d="M-6,-74 L-6,-96 L18,-96" fill="none" stroke-width="5"/>
+        <ellipse cx="0" cy="0" rx="92" ry="48" fill="#ffd93d"/>
+        <path d="M-92,0 L-122,-30 L-122,30 Z" fill="#ffc83d"/>
+        <circle cx="34" cy="-4" r="25" fill="#bfeaff"/><circle cx="-26" cy="-4" r="13" fill="#bfeaff"/>
+        <circle cx="86" cy="2" r="9" fill="#fff7c2"/></g>
+      <text x="34" y="-3" text-anchor="middle" dominant-baseline="central" font-size="30">🧒</text>
+    </g>
+    <rect x="0" y="0" width="760" height="62" fill="rgba(0,0,0,.28)"/>
+    <text id="dTxt" x="22" y="44" font-family="Itim" font-size="36" fill="#fff">ลึก 0 เมตร</text>
+    <text id="zTxt" x="740" y="42" text-anchor="end" font-family="Mitr" font-size="20" fill="#cfe8ff"></text>
+    <g id="gauge">
+      <rect x="770" y="0" width="230" height="700" fill="rgba(0,0,0,.35)"/>
+      <text x="${GX}" y="${GY0 - 28}" text-anchor="middle" font-family="Mitr" font-size="15" fill="#cfe8ff">ความลึกจริง (เมตร)</text>
+      <g id="everest" opacity="0"><path d="M${GX - 60},${gy(BOTTOM)} L${GX - 44},${gy(BOTTOM - 8849)} L${GX - 26},${gy(BOTTOM)} Z" fill="#c8d6e5" stroke="#fff" stroke-width="2"/>
+        <text x="${GX - 44}" y="${gy(BOTTOM - 8849) - 8}" text-anchor="middle" font-size="22">🏔️</text></g>
+      ${gauge}
+      <g id="gMark"><path d="M${GX + 18},0 l18,-12 v24 Z" fill="#ffd93d" stroke="#2d3436" stroke-width="2"/><circle cx="${GX}" cy="0" r="9" fill="#ffd93d" stroke="#2d3436" stroke-width="3"/></g>
+    </g>`;
+}
+function setCreatures(a, b, u) {        // a = stop leaving (moves away), b = stop arriving; u 0→1
+  const down = b > a;
+  const A = $('crA'), B = $('crB');
+  if (A.dataset.s !== String(b)) { A.dataset.s = b; A.innerHTML = creature(STOPS[b]); }
+  if (a === b) { B.innerHTML = ''; B.dataset.s = ''; }
+  else if (B.dataset.s !== String(a)) { B.dataset.s = a; B.innerHTML = creature(STOPS[a]); }
+  const off = 640;
+  A.setAttribute('transform', `translate(${CR[0]} ${CR[1] + (down ? 1 : -1) * (1 - u) * off})`);
+  if (a !== b) B.setAttribute('transform', `translate(${CR[0]} ${CR[1] - (down ? 1 : -1) * u * off})`);
+}
+let t0 = performance.now();
+function render(now) {
+  const t = (now - t0) / 1000, d = depth;
+  $('sg0').setAttribute('stop-color', seaColor(Math.max(0, d - 40)));
+  $('sg1').setAttribute('stop-color', seaColor(d + 120));
+  const dk = darkness(d);
+  $('rays').setAttribute('opacity', (0.14 * (1 - Math.min(1, d / 200))).toFixed(3));
+  $('surf').setAttribute('transform', `translate(0 ${Math.max(-40, 160 - d * 30).toFixed(1)})`);
+  $('beam').setAttribute('opacity', Math.min(1, Math.max(0, (d - 60) / 400)).toFixed(2));
+  SNOW.forEach((p, i) => {
+    const y = ((p[1] - d * 1.6 - t * 6) % 700 + 700) % 700, x = p[0] + Math.sin(t * 0.6 + i) * 6;
+    const el = $('sn' + i); el.setAttribute('cy', y.toFixed(1)); el.setAttribute('cx', x.toFixed(1));
+  });
+  $('snow').setAttribute('opacity', (0.2 + 0.5 * dk).toFixed(2));
+  const bob = Math.sin(t * 1.6) * 6;
+  $('sub').setAttribute('transform', `translate(${SUB[0]} ${SUB[1] + bob})`);
+  $('dTxt').textContent = 'ลึก ' + fmt(d) + ' เมตร';
+  $('zTxt').textContent = zoneOf(d).th;
+  $('gMark').setAttribute('transform', `translate(0 ${gy(d).toFixed(1)})`);
+  requestAnimationFrame(render);
+}
+
+// ============================================================================
+// DIVING
+// ============================================================================
+function go(to) {
+  if (moving || to < 0 || to >= STOPS.length || to === at) return;
+  ensureAudio(); buzz(15);
+  const from = at, d0 = STOPS[from].d, d1 = STOPS[to].d;
+  const dur = 1300 + 700 * Math.log10(1 + Math.abs(d1 - d0)), start = performance.now();
+  moving = true; markButtons(); bubbles(to > from);
+  (function step(now) {
+    const u = Math.min(1, (now - start) / dur), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    depth = d0 + (d1 - d0) * e;
+    setCreatures(from, to, e);
+    if (u < 1) { requestAnimationFrame(step); return; }
+    moving = false; at = to; depth = d1; setCreatures(to, to, 1);
+    arrive();
+  })(start);
+}
+function arrive() {
+  const s = STOPS[at];
+  markButtons(); renderPanel();
+  ping();
+  $('everest').setAttribute('opacity', at === STOPS.length - 1 ? 1 : 0);
+  $('zl').setAttribute('opacity', at === STOPS.length - 1 ? 0 : 1);       // Everest takes that column at the bottom
+  STOPS.forEach((_, i) => $('gd' + i).setAttribute('fill', i === at ? '#ffd93d' : '#fff'));
+  if (at === STOPS.length - 1) { cheer(); celebrate(80); buzz([40, 60, 40]); }
+  speak(s.say);
+}
+function markButtons() {
+  $('upBtn').disabled = !!moving || at === 0;
+  $('downBtn').disabled = !!moving;
+  $('downBtn').textContent = at === STOPS.length - 1 ? '🔁 กลับผิวน้ำ' : '⬇️ ดำลง';
+}
+$('downBtn').addEventListener('click', () => { if (at === STOPS.length - 1) go(0); else go(at + 1); });
+$('upBtn').addEventListener('click', () => go(at - 1));
+sea.addEventListener('click', (ev) => {
+  const r = sea.getBoundingClientRect(), k = 1000 / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
+  if (x > 770) {                                        // tap the depth gauge → dive to the nearest stop
+    let best = 0;
+    STOPS.forEach((s, i) => { if (Math.abs(gy(s.d) - y) < Math.abs(gy(STOPS[best].d) - y)) best = i; });
+    go(best); return;
+  }
+  if (moving) return;
+  ensureAudio(); buzz(10);
+  const pic = $('crA').querySelector('.pic');
+  if (pic) { pic.classList.remove('wig'); void pic.getBBox(); pic.classList.add('wig'); }
+  speak(STOPS[at].fact);
+});
+
+function picSvg(s) {
+  return s.e === 'angler' ? `<svg viewBox="-150 -130 300 260">${angler()}</svg>` : s.e;
+}
+function renderPanel() {
+  const s = STOPS[at], z = zoneOf(s.d), p = pressureX(s.d);
+  const extra = at === STOPS.length - 1 ? BOTTOM_FACTS.map(f => `<li>${f}</li>`).join('') : '';
+  panel.innerHTML = `<div class="p-head"><div class="p-emo"${s.pale ? ' style="filter:saturate(.25) brightness(1.3)"' : ''}>${picSvg(s)}</div>
+      <div><div class="p-name">${s.th}</div><div class="p-sub">ลึก ${fmt(s.d)} เมตร · ${z.th}</div></div>
+      <button class="say" id="sayBtn" aria-label="ฟัง">🔊</button></div>
+    <div class="facts">
+      <div class="fact"><div class="k">💡 แสง</div><div class="v">${z.light}</div></div>
+      <div class="fact"><div class="k">💪 น้ำกด</div><div class="v">${p <= 1 ? 'เท่าบนบก' : 'แรงกว่าบนบก ' + (p < 10 ? String(Math.round(p * 10) / 10) : fmt(p)) + ' เท่า'}</div></div>
+    </div>
+    <ul class="know"><li>${s.fact}</li>${extra}</ul>
+    <div class="src">ความลึกจริงจากการบันทึกของนักวิทยาศาสตร์ · ทุก 10 เมตร น้ำกดเพิ่มขึ้นเท่ากับอากาศทั้งก้อนที่กดเราบนบก 1 เท่า</div>`;
+  $('sayBtn').onclick = () => { ensureAudio(); speak(s.fact); };
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12, slide) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d);
+  o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function bubbles(down) { for (let i = 0; i < 6; i++) setTimeout(() => tone(down ? 500 - i * 40 : 300 + i * 60, 0.09, 'sine', 0.06, down ? 300 : 900), i * 90); }
+function ping() { tone(1320, 0.6, 'sine', 0.08, 1250); }
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+// Init
+buildSea(); setCreatures(0, 0, 1); markButtons(); renderPanel();
+STOPS.forEach((_, i) => $('gd' + i).setAttribute('fill', i === 0 ? '#ffd93d' : '#fff'));
+requestAnimationFrame(render);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => [...STOPS.flatMap(s => [s.say, s.fact])]);
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

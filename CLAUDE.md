@@ -135,11 +135,15 @@ Interactive solar system: planets orbit at true relative speeds (1/period; 1 Ear
 
 🌗 กลางวันกลางคืน: Earth from above the North Pole (the real day-map texture re-projected to a polar disc at runtime, edge = 20°S), Sun on the left, drag to turn (15° = 1 h); Thailand + New York pins; sky strip from Thailand. 🍂 ฤดูกาล: Earth around the Sun with the axis fixed 23.4° toward Polaris (June = north leans sunward), Thai seasons per the Thai Meteorological Department, Bangkok day length / noon sun height computed (declination formula + −0.833° sunrise).
 
-**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs is done — see below): 🌊 deep-sea dive (true depths to Mariana 10,935 m), 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
+**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs and 🌊 deep sea are done — see below): 🔬 tiny-to-huge scale zoom, 🫀 human body, 🐛 life cycles.
 
 ### โลกไดโนเสาร์ (`/dinosaurs/`)
 
 11 animals in `DINOS` (incl. Thai finds ภูเวียงโกซอรัส สิรินธรเน่ + สยามโมไทรันนัส, and เทอราโนดอน flagged as "not a dinosaur"). Hand-drawn side-view SVGs in `ART` (240×160 box, facing right, feet on y=148, `x0..x1` = nose-to-tail span so drawings scale to true length; `rib` = body ellipse for fossil ribs). Modes: 🦕 explore (scene + fact card + era timeline), 📏 size (dino beside a 1.1 m child, 2.7 m elephant and 12 m bus at one scale, 30 px/m), 🦴 dig (brush sand off a random skeleton on a canvas; 60 % of the body box cleared → reveal). **Accuracy rule:** lengths/weights/ages from the species' Wikipedia articles; where estimates disagree show the range, never a single invented number.
+
+### ดำน้ำทะเลลึก (`/deep-sea/`)
+
+Submarine dive through 18 `STOPS` at real depths (surface → clownfish 5 m → … giant squid 900 m → leatherback 1,280 m → Cuvier's beaked whale 2,992 m → Titanic 3,800 m → dumbo octopus 6,957 m → snailfish 8,336 m → Challenger Deep 10,935 m). ⬇️/⬆️ go stop to stop; tapping the true-scale depth gauge jumps to the nearest stop; at the bottom an Everest (8,849 m) silhouette rises from the trench floor. Zones per NOAA. **Accuracy rule:** each depth is a recorded dive/sighting from the species' Wikipedia article; pressure = 1 atm per 10 m.
 
 ### (Planned)
 
