@@ -174,6 +174,10 @@ Tap-to-fill 7 animals (cat, dog, Asian elephant, fish, butterfly, sparrow, torto
 
 8 animals × 8 foods from a wooden cart; tap a food and it flies to the animal. Real diets in `ANIMALS[id].eats` and real eating behaviour drawn per animal (`draw(state)`): monkey peels the banana, Asian elephant curls its trunk (one "finger") to bring sugarcane to its mouth, panda sits holding bamboo, Humboldt penguin swallows the fish head first, giraffe's dark purple tongue wraps leaves on a high feeder, lion lowers its head to tear meat, hippo's huge gape takes grass (eyes/ears/nostrils on top, ears flick), flamingo on one leg feeds head-upside-down filtering shrimp. Wrong food → head shake + thought bubble of the right food. Fed animals get ⭐ (localStorage `zooFed`).
 
+### ฟักไข่ (`/hatch/`)
+
+6 eggs with real incubation days and true relative egg sizes on the pick screen (16 px/cm): chicken 21 d/5.7 cm, duck 28/6.5, sea turtle ~55/4.2 (round, leathery, warmed by the sun in sand), Siamese crocodile ~80/7.5 (mound nest, babies chirp, mother carries them to water in her mouth), ostrich 42/15, emperor penguin ~65/12 (egg on dad's feet in a blizzard). 14 taps hatch any species (the day counter maps them to real days). 🔦 candling shows yolk → veins/heart → embryo filling the egg. Hatching follows pip → "zip" crack → cap off → wet chick that dries fluffy; reptiles slit the shell. After: chicks peck scattered feed, the duckling imprints and follows your finger (swims in the pond), turtle hatchlings crawl to the moonlit sea, ostrich chick sprints, penguin dad feeds the chick bill-to-bill. Album in localStorage `hatchAlbum`.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

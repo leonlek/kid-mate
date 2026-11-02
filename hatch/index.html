@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🐣 ฟักไข่ — คิดส์เล่น</title>
+<meta name="description" content="ฟักไข่ไก่ เป็ด เต่าทะเล จระเข้ นกกระจอกเทศ เพนกวิน ตามจำนวนวันจริง ส่องดูลูกในไข่ แล้วดูแลลูกสัตว์ สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ฟักไข่">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: none; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 12px 0 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 600;
+    min-height: 64px; min-width: 64px; padding: 0 22px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--gold); border-color: #e0b400; }
+  .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .fact::before { content: '💡 '; }
+  .hidden { display: none !important; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🐣 ฟักไข่</h1></header>
+  <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="ฟักไข่"></svg></div>
+  <div class="row" id="ctrls"></div>
+  <div class="fact" id="fact"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene'), ctrls = $('ctrls');
+const K = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const k3 = 'stroke="#2d3436" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const lerp = (a, b, u) => a + (b - a) * u;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+function svgPt(ev) { const p = scene.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(scene.getScreenCTM().inverse()); }
+
+// ============================================================================
+// SPECIES — incubation days and egg sizes are real (cm = egg length).
+// Egg looks: brown hen's egg, pale greenish duck egg, round leathery sea-turtle
+// egg (ping-pong ball), long chalky crocodile egg, huge pitted ostrich egg,
+// pear-shaped emperor-penguin egg balanced on dad's feet.
+// ============================================================================
+const SPECIES = {
+  chicken: { th: 'ไก่', baby: 'ลูกเจี๊ยบ', days: 21, cm: 5.7, rx: 60, ry: 78, fill: '#d9a066', scene: 'barn', hard: true,
+    fact: 'แม่ไก่กกไข่ 21 วัน และพลิกไข่วันละหลายครั้ง ลูกเจี๊ยบใช้ปุ่มแข็งที่ปลายปากเจาะเปลือก ออกมาตัวเปียก แล้วขนจะแห้งฟูภายในไม่กี่ชั่วโมง',
+    done: 'ลูกเจี๊ยบออกมาแล้ว แตะพื้นเพื่อโรยอาหาร' },
+  duck: { th: 'เป็ด', baby: 'ลูกเป็ด', days: 28, cm: 6.5, rx: 64, ry: 84, fill: '#e3efe5', scene: 'pond', hard: true,
+    fact: 'ไข่เป็ดใช้เวลาฟัก 28 วัน ลูกเป็ดจะเดินตามสิ่งแรกที่เห็นตอนออกจากไข่ เหมือนเป็นแม่ และว่ายน้ำได้ตั้งแต่เกิด',
+    done: 'ลูกเป็ดออกมาแล้ว ลูกเป็ดเดินตามหนู ลากนิ้วดูสิ' },
+  turtle: { th: 'เต่าทะเล', baby: 'ลูกเต่าทะเล', days: 55, cm: 4.2, rx: 40, ry: 40, fill: '#f5f2e8', scene: 'beach', soft: true, many: 7,
+    fact: 'แม่เต่าทะเลขุดหลุมวางไข่บนหาดทรายครั้งละราว 100 ฟอง แล้วกลับลงทะเล ไข่ฟักด้วยความอุ่นของแดดราว 2 เดือน ทรายอุ่นมากจะได้ลูกเต่าตัวเมียมาก',
+    done: 'ลูกเต่าทะเลออกมาแล้ว แตะลูกเต่าให้คลานลงทะเล' },
+  croc: { th: 'จระเข้', baby: 'ลูกจระเข้', days: 80, cm: 7.5, rx: 44, ry: 66, fill: '#f7f4ec', scene: 'mound', many: 5,
+    fact: 'จระเข้น้ำจืดของไทยทำรังเป็นกองใบไม้ ใบไม้เน่าทำให้รังอุ่น แม่จระเข้เฝ้ารังราว 80 วัน ลูกจะร้องเรียกจากในไข่ แม่จึงขุดรังแล้วคาบลูกไปที่น้ำอย่างเบามือ',
+    done: 'ลูกจระเข้ร้องเรียกแม่ แตะแม่จระเข้ให้คาบลูกไปที่น้ำ' },
+  ostrich: { th: 'นกกระจอกเทศ', baby: 'ลูกนกกระจอกเทศ', days: 42, cm: 15, rx: 108, ry: 132, fill: '#f3e7c9', scene: 'savanna', hard: true, pores: true,
+    fact: 'ไข่นกกระจอกเทศใหญ่ที่สุดในโลก ยาวราว 15 เซนติเมตร หนักเท่าไข่ไก่ราว 24 ฟอง เปลือกหนามาก ใช้เวลาฟัก 42 วัน พ่อนกช่วยกกไข่ตอนกลางคืน',
+    done: 'ลูกนกกระจอกเทศออกมาแล้ว แตะให้วิ่ง ลูกนกกระจอกเทศวิ่งเร็วมาก' },
+  penguin: { th: 'เพนกวินจักรพรรดิ', baby: 'ลูกเพนกวิน', days: 65, cm: 12, rx: 70, ry: 92, fill: '#e8efe6', scene: 'ice', hard: true,
+    fact: 'พ่อเพนกวินจักรพรรดิวางไข่ไว้บนเท้า แล้วคลุมด้วยพุงอุ่นๆ ยืนกลางพายุหิมะราว 65 วัน โดยไม่กินอะไรเลย',
+    done: 'ลูกเพนกวินออกมาแล้ว แตะพ่อเพนกวินให้ป้อนอาหาร' },
+};
+const ORDER = ['chicken', 'duck', 'turtle', 'croc', 'ostrich', 'penguin'];
+
+// ---- drawing helpers ----
+function egg(rx, ry, fill, opt = {}) {          // centred at 0,0 — narrow end up for bird eggs
+  const pear = opt.round ? 0 : 0.18;
+  const d = `M0,${-ry} C${rx * (1 - pear)},${-ry} ${rx},${-ry * 0.1} ${rx},${ry * 0.25} C${rx},${ry * 0.8} ${rx * 0.55},${ry} 0,${ry} C${-rx * 0.55},${ry} ${-rx},${ry * 0.8} ${-rx},${ry * 0.25} C${-rx},${-ry * 0.1} ${-rx * (1 - pear)},${-ry} 0,${-ry} Z`;
+  let s = `<path d="${d}" fill="${fill}" ${K}/>`;
+  if (opt.pores) for (let i = 0; i < 40; i++) { const a = i * 2.39, r = Math.sqrt(i / 40) * 0.85; s += `<circle cx="${(Math.cos(a) * r * rx).toFixed(1)}" cy="${(Math.sin(a) * r * ry * 0.9).toFixed(1)}" r="1.6" fill="#c9b48a"/>`; }
+  if (opt.chalk) s += `<path d="M${-rx * 0.6},${-ry * 0.1} h${rx * 1.2}" stroke="#e2dccb" stroke-width="${ry * 0.3}" opacity=".7"/>`;
+  s += `<ellipse cx="${-rx * 0.35}" cy="${-ry * 0.45}" rx="${rx * 0.18}" ry="${ry * 0.12}" fill="#fff" opacity=".55"/>`;
+  return { d, s };
+}
+function eggOf(sp, scale = 1) { const S = SPECIES[sp]; return egg(S.rx * scale, S.ry * scale, S.fill, { round: sp === 'turtle', pores: S.pores, chalk: sp === 'croc' }); }
+
+// ---- babies (drawn at 0,0 standing on y=0, facing right, ~120 tall). wet = 1 just out of the egg ----
+function baby(sp, wet = 0, t = 0, act = '') {
+  const peck = act === 'peck' ? Math.max(0, Math.sin(t * 10)) : 0;
+  if (sp === 'chicken') {
+    const c = wet > 0.5 ? '#c9b25a' : '#ffe066', fluff = 1 - wet * 0.25;
+    return `<path d="M-6,0 L-10,14 M6,0 L10,14 M-10,14 h-8 M10,14 h8" stroke="#f0a030" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-34" rx="${40 * fluff}" ry="${36 * fluff}" fill="${c}" ${K}/>
+      <g transform="rotate(${peck * 35} 18 -40)"><circle cx="24" cy="-70" r="${24 * fluff}" fill="${c}" ${K}/><path d="M44,-72 L58,-66 L44,-62 Z" fill="#f0a030" ${k3}/><circle cx="32" cy="-76" r="4" fill="#2d3436"/>${wet > 0.5 ? '' : '<path d="M14,-94 q4,-10 10,0 q4,-10 8,2" fill="none" stroke="#e0c040" stroke-width="3"/>'}</g>
+      <path d="M-20,-40 q14,14 30,4" fill="none" ${k3}/>`;
+  }
+  if (sp === 'duck') {
+    const c = wet > 0.5 ? '#bfae4a' : '#ffd84a';
+    return `<path d="M-8,0 l-4,10 l-12,4 l14,0 l6,-10 M8,0 l4,10 l12,4 l-14,0 l-6,-10" fill="#f08a2a" stroke="#c96a12" stroke-width="3"/>
+      <ellipse cx="-4" cy="-34" rx="44" ry="34" fill="${c}" ${K}/><path d="M-46,-40 l-14,-10 l6,16 Z" fill="${c}" ${k3}/>
+      <g transform="rotate(${peck * 30} 18 -44)"><circle cx="24" cy="-72" r="25" fill="${c}" ${K}/><path d="M42,-74 Q66,-76 68,-66 Q66,-58 42,-62 Z" fill="#f08a2a" ${k3}/><circle cx="32" cy="-78" r="4" fill="#2d3436"/></g>
+      <path d="M-30,-40 q20,16 40,2" fill="none" ${k3}/>`;
+  }
+  if (sp === 'turtle') {
+    const k = Math.sin(t * 10) * 10;
+    return `<g transform="rotate(${k} -16 -6)"><path d="M-14,-6 L-36,-20 L-30,-2 Z" fill="#3f4a3a" ${k3}/></g><g transform="rotate(${-k} 18 -6)"><path d="M18,-6 L44,-22 L40,-2 Z" fill="#3f4a3a" ${k3}/></g>
+      <ellipse cx="0" cy="-10" rx="30" ry="16" fill="#4e5a45" ${K}/><path d="M-20,-14 h40 M-8,-22 v14 M8,-22 v14" stroke="#2d3436" stroke-width="2"/>
+      <ellipse cx="38" cy="-10" rx="12" ry="9" fill="#5b6650" ${k3}/><circle cx="43" cy="-12" r="2.5" fill="#2d3436"/>`;
+  }
+  if (sp === 'croc') {
+    return `<path d="M-60,-8 Q-90,-6 -100,4 Q-80,0 -58,2 Z" fill="#6d7a3a" ${k3}/><ellipse cx="-20" cy="-12" rx="44" ry="14" fill="#7d8a44" ${K}/>
+      ${[-44, -28, -12, 4].map((x) => `<path d="M${x},-24 l6,-6 l6,6" fill="#5d6a2a" stroke="#2d3436" stroke-width="2"/>`).join('')}
+      <path d="M20,-20 Q60,-24 74,-12 Q60,-4 20,-4 Z" fill="#7d8a44" ${K}/><circle cx="34" cy="-22" r="6" fill="#ffd93d" stroke="#2d3436" stroke-width="2.5"/><ellipse cx="34" cy="-22" rx="1.6" ry="5" fill="#2d3436"/>
+      <path d="M26,-10 l40,-2" stroke="#2d3436" stroke-width="2"/><path d="M-36,-2 l-6,8 M0,-2 l6,8" stroke="#2d3436" stroke-width="5" stroke-linecap="round"/>
+      ${[-40, -20, 0].map((x) => `<path d="M${x},-12 h10" stroke="#3d4a1a" stroke-width="3"/>`).join('')}`;
+  }
+  if (sp === 'ostrich') {
+    const run = act === 'run' ? Math.sin(t * 20) * 25 : 0;
+    return `<g transform="rotate(${run} -6 -40)"><path d="M-6,-40 L-10,-4 l-10,4" fill="none" stroke="#c9a27a" stroke-width="7" stroke-linecap="round"/></g><g transform="rotate(${-run} 6 -40)"><path d="M6,-40 L10,-4 l12,4" fill="none" stroke="#c9a27a" stroke-width="7" stroke-linecap="round"/></g>
+      <ellipse cx="0" cy="-60" rx="36" ry="28" fill="#c9a27a" ${K}/>${[-20, -6, 8, 22].map((x) => `<path d="M${x},-84 l-4,-8 M${x},-36 l-4,8" stroke="#3d2e1e" stroke-width="3"/>`).join('')}
+      <path d="M-10,-58 h24 M-14,-68 h28" stroke="#3d2e1e" stroke-width="4" stroke-dasharray="4 4"/>
+      <path d="M22,-76 Q30,-110 28,-126" fill="none" stroke="#2d3436" stroke-width="16" stroke-linecap="round"/><path d="M22,-76 Q30,-110 28,-126" fill="none" stroke="#d9b48a" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="30" cy="-132" r="14" fill="#d9b48a" ${k3}/><path d="M42,-134 L58,-130 L42,-126 Z" fill="#8d7a5a" ${k3}/><circle cx="34" cy="-136" r="3" fill="#2d3436"/>`;
+  }
+  // emperor penguin chick: silver-grey down, black head, white face mask
+  return `<ellipse cx="0" cy="-46" rx="40" ry="46" fill="#b8bfc6" ${K}/><path d="M-30,-60 q-16,20 -10,40 M30,-60 q16,20 10,40" fill="none" ${k3}/>
+    <circle cx="0" cy="-104" r="30" fill="#2d3436"/><path d="M-22,-104 Q-20,-82 0,-80 Q20,-82 22,-104 Q12,-94 0,-96 Q-12,-94 -22,-104 Z" fill="#fafafa"/>
+    <circle cx="-10" cy="-100" r="4" fill="#fff"/><circle cx="-10" cy="-100" r="2.2" fill="#2d3436"/><circle cx="10" cy="-100" r="4" fill="#fff"/><circle cx="10" cy="-100" r="2.2" fill="#2d3436"/>
+    <path d="M-4,-90 L0,-80 L4,-90 Z" fill="#555"/><ellipse cx="-12" cy="0" rx="12" ry="5" fill="#555"/><ellipse cx="12" cy="0" rx="12" ry="5" fill="#555"/>`;
+}
+
+// ---- embryo seen when candling: grows with the day ----
+function embryo(sp, u, rx, ry) {
+  if (u < 0.15) return `<circle cx="0" cy="${ry * 0.1}" r="${rx * 0.35}" fill="#ffb347" opacity=".8"/>`;
+  if (u < 0.4) return `<circle cx="0" cy="${ry * 0.1}" r="${rx * 0.38}" fill="#ffb347" opacity=".7"/>${[0, 1, 2, 3, 4, 5].map((i) => { const a = i * 1.05; return `<path d="M0,${ry * 0.1} q${Math.cos(a) * rx * 0.4},${Math.sin(a) * ry * 0.3} ${Math.cos(a + 0.4) * rx * 0.7},${Math.sin(a + 0.4) * ry * 0.55}" fill="none" stroke="#c0392b" stroke-width="2.5" opacity=".7"/>`; }).join('')}<circle cx="0" cy="${ry * 0.05}" r="${rx * 0.12}" fill="#5d3a1a" opacity=".7"/>`;
+  const k = (u - 0.4) / 0.6;
+  return `<ellipse cx="0" cy="${ry * 0.15}" rx="${rx * (0.35 + 0.45 * k)}" ry="${ry * (0.3 + 0.45 * k)}" fill="#3d2a1a" opacity=".75"/><circle cx="${rx * 0.15}" cy="${-ry * (0.05 + 0.35 * k)}" r="${rx * (0.15 + 0.15 * k)}" fill="#3d2a1a" opacity=".75"/>
+    <path d="M${-rx * 0.8},${-ry * 0.72} Q0,${-ry * 0.9} ${rx * 0.8},${-ry * 0.72}" fill="none" stroke="#fff" stroke-width="3" opacity=".6"/>`;
+}
+
+// ---- backdrops ----
+function backdrop(kind, t) {
+  const sky = (c1, c2) => `<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="1000" height="640" fill="url(#bg)"/>`;
+  if (kind === 'barn') return sky('#e9c49a', '#d8ae7e') + `${[0, 1, 2, 3, 4, 5, 6].map((i) => `<path d="M${i * 150},0 v640" stroke="#c49a6c" stroke-width="6"/>`).join('')}<rect x="760" y="70" width="170" height="130" fill="#bfe6ff" stroke="#8d5a2b" stroke-width="10"/><path d="M845,70 v130 M760,135 h170" stroke="#8d5a2b" stroke-width="8"/>
+    <path d="M0,500 L1000,500 L1000,640 L0,640 Z" fill="#e8c86a"/>${[...Array(30)].map((_, i) => `<path d="M${(i * 37) % 1000},${520 + (i * 13) % 100} l${10 + i % 7},-8" stroke="#c9a227" stroke-width="3"/>`).join('')}`;
+  if (kind === 'pond') return sky('#9fdcff', '#dff4ff') + `<path d="M0,420 Q300,390 600,420 Q800,440 1000,410 L1000,640 L0,640 Z" fill="#8bc34a"/><ellipse cx="820" cy="560" rx="200" ry="60" fill="#3a9ad9" stroke="#2d6fa3" stroke-width="6"/><path d="M60,430 v-80 M80,430 v-100 M100,430 v-70" stroke="#558b2f" stroke-width="6"/>`;
+  if (kind === 'beach') return sky('#1b2160', '#3a4a8a') + `<circle cx="820" cy="110" r="44" fill="#fdf6d8"/>${starsOf(20)}<path d="M0,330 L1000,330 L1000,430 L0,430 Z" fill="#1e5fa8"/><path d="M820,330 l-30,100 h60 Z" fill="#fdf6d8" opacity=".25"/>
+    <path d="M0,420 Q250,400 500,420 Q750,440 1000,410 L1000,640 L0,640 Z" fill="#d9c08a"/><path d="M0,428 q50,-10 100,0 t100,0 t100,0 t100,0 t100,0 t100,0 t100,0 t100,0 t100,0 t100,0" fill="none" stroke="#fff" stroke-width="5" opacity=".7"/>`;
+  if (kind === 'mound') return sky('#b8e0c8', '#e0f2e4') + `<path d="M0,430 L1000,430 L1000,640 L0,640 Z" fill="#7a9a4a"/><path d="M0,520 Q160,500 300,520 L300,640 L0,640 Z" fill="#4a8ab8"/>${[60, 920, 980].map((x) => `<path d="M${x},430 v-200" stroke="#5d7a3a" stroke-width="12"/><path d="M${x},240 q-50,-30 -90,0 M${x},240 q50,-30 90,0 M${x},250 q-30,-50 -70,-60 M${x},250 q30,-50 70,-60" fill="none" stroke="#4caf50" stroke-width="10" stroke-linecap="round"/>`).join('')}`;
+  if (kind === 'savanna') return sky('#ffd9a0', '#fff1d6') + `<path d="M0,440 Q400,410 1000,440 L1000,640 L0,640 Z" fill="#d4b86a"/><path d="M820,440 v-140 M760,300 Q820,250 880,300 Z" stroke="#6d4c41" stroke-width="10" fill="#7cb342"/>`;
+  // ice: dark polar winter with blowing snow
+  let snow = '';
+  for (let i = 0; i < 50; i++) { const x = ((i * 97 + t * 220) % 1100) - 50, y = (i * 53 + t * 40 * (1 + i % 3)) % 640; snow += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${2 + i % 3}" fill="#fff" opacity=".85"/>`; }
+  return sky('#2a3a6a', '#7f97c0') + `<path d="M0,450 L1000,450 L1000,640 L0,640 Z" fill="#e8f2ff"/>${snow}`;
+}
+function starsOf(n) { let s = ''; for (let i = 0; i < n; i++) s += `<circle cx="${(i * 137) % 1000}" cy="${20 + (i * 71) % 280}" r="${1 + i % 2}" fill="#fff" opacity=".8"/>`; return s; }
+
+// ============================================================================
+// GAME STATE
+// ============================================================================
+let sp = null, phase = 'pick', day = 0, candle = false, crack = 0, wob = 0, T = 0, hatchT0 = 0;
+let babies = [], feed = [], finger = null, mom = null, dadFeed = 0, album = {};
+try { album = JSON.parse(localStorage.getItem('hatchAlbum') || '{}'); } catch (e) {}
+const TAPS = 14;                                         // taps to hatch, whatever the species
+function pick(s) {
+  sp = s; phase = 'warm'; day = 0; candle = false; crack = 0; babies = []; feed = []; mom = null; dadFeed = 0;
+  $('fact').textContent = SPECIES[s].fact;
+  renderCtrls();
+  speak(WARM_SAY[s]);
+}
+const WARM_SAY = {
+  chicken: 'แตะไข่ไก่ ให้แม่ไก่กกไข่ให้อุ่น', duck: 'แตะไข่เป็ด ให้อุ่น', turtle: 'แตะดวงอาทิตย์ ให้แดดอุ่นทราย ไข่เต่าทะเลฟักด้วยความอุ่นของทราย',
+  croc: 'แตะรังใบไม้ ให้รังอุ่น แม่จระเข้เฝ้าอยู่ใกล้ๆ', ostrich: 'แตะไข่นกกระจอกเทศ ให้อุ่น', penguin: 'แตะพ่อเพนกวิน ให้กกไข่บนเท้าให้อุ่น',
+};
+function warm() {
+  if (phase !== 'warm') return;
+  const S = SPECIES[sp];
+  day = Math.min(S.days, day + S.days / TAPS);
+  if (day > S.days - 0.01) day = S.days;                 // float sums must not leave it at 79.999
+  wob = 1; buzz(10); tone(420 + day / S.days * 300, 0.1, 'sine', 0.08);
+  if (day >= S.days) { phase = 'pip'; crack = 0; speak(S.hard ? 'ได้ยินเสียงไหม ลูกเริ่มเจาะเปลือกแล้ว แตะช่วยดู' : sp === 'croc' ? 'ได้ยินเสียงร้องจากในไข่ ลูกจระเข้เรียกแม่แล้ว' : 'ไข่เริ่มขยับ ลูกเต่ากำลังใช้ปุ่มที่ปลายปากกรีดเปลือก'); chirp(); }
+  else if (Math.round(day) % 7 === 0 || day / S.days > 0.85) speak('วันที่ ' + Math.round(day));
+  renderCtrls();
+}
+function tapCrack() {
+  if (phase !== 'pip') return;
+  crack = Math.min(1, crack + 0.2); wob = 1; buzz(12); tone(900 + crack * 300, 0.06, 'square', 0.05);
+  if (crack >= 1) { phase = 'out'; hatchT0 = performance.now(); chirp(); setTimeout(hatched, 2600); }
+}
+function hatched() {
+  if (phase !== 'out') return;
+  phase = 'baby';
+  const S = SPECIES[sp], n = S.many || 1;
+  babies = [...Array(n)].map((_, i) => ({ x: eggX(i, n), y: eggY(i, n) + (S.many ? 0 : 60), dir: 1, act: '', t: Math.random() * 5, tx: null, ty: null, gone: false }));
+  if (sp === 'croc') mom = { x: 820, state: 'wait', t0: 0 };
+  album[sp] = (album[sp] || 0) + 1; try { localStorage.setItem('hatchAlbum', JSON.stringify(album)); } catch (e) {}
+  cheer(); celebrate(70); buzz([30, 20, 40]);
+  speak(S.done);
+  renderCtrls();
+}
+function eggX(i, n) { return n === 1 ? (sp === 'penguin' ? 520 : 500) : 330 + i * (340 / (n - 1)); }
+function eggY(i, n) { return sp === 'penguin' ? 470 : n === 1 ? 430 : 470 + (i % 2) * 40; }
+function chirp() { [0, 160, 320].forEach((d) => setTimeout(() => tone(sp === 'croc' ? 520 : 1400, 0.08, sp === 'croc' ? 'sawtooth' : 'sine', 0.06), d)); }
+
+function renderCtrls() {
+  if (phase === 'pick') {
+    ctrls.innerHTML = '';
+  } else {
+    const S = SPECIES[sp];
+    ctrls.innerHTML = `<button class="chip" id="back">🥚 เลือกไข่ใหม่</button>` +
+      (phase === 'warm' && sp !== 'turtle' ? `<button class="chip ${candle ? 'on' : ''}" id="candle">🔦 ส่องไข่</button>` : '');
+    $('back').addEventListener('click', () => { ensureAudio(); buzz(8); phase = 'pick'; renderCtrls(); $('fact').textContent = PICK_FACT; speak('เลือกไข่ที่จะฟัก'); });
+    const c = $('candle'); if (c) c.addEventListener('click', () => { ensureAudio(); buzz(8); candle = !candle; renderCtrls(); if (candle) speak(candleLine()); });
+  }
+}
+function candleLine() {
+  const u = day / SPECIES[sp].days;
+  return u < 0.15 ? 'ส่องไฟดูในไข่ ยังเห็นแต่ไข่แดง' : u < 0.4 ? 'เห็นเส้นเลือดเล็กๆ และจุดหัวใจ ลูกเริ่มเติบโตแล้ว' : 'ลูกตัวใหญ่ขึ้นจนเกือบเต็มไข่แล้ว';
+}
+const PICK_FACT = 'ไข่แต่ละชนิดวาดตามขนาดจริงเทียบกัน และใช้เวลาฟักไม่เท่ากัน ไข่นกกระจอกเทศใหญ่ที่สุด ไข่เต่าทะเลกลมเหมือนลูกปิงปอง';
+
+// ============================================================================
+// RENDER
+// ============================================================================
+function renderPick() {
+  // eggs side by side at TRUE relative size (16 px per cm)
+  let s = `<rect width="1000" height="640" fill="#fff8ee"/><path d="M0,470 L1000,470" stroke="#e0c9a6" stroke-width="6"/>`;
+  s += `<text x="500" y="70" text-anchor="middle" font-family="Mitr" font-size="34" font-weight="700" fill="#e54b82">🥚 เลือกไข่ที่จะฟัก</text><text x="500" y="108" text-anchor="middle" font-family="Mitr" font-size="20" fill="#8a7a6a">ขนาดไข่เทียบกันตามจริง</text>`;
+  const xs = { chicken: 90, duck: 230, turtle: 360, croc: 480, ostrich: 650, penguin: 880 };
+  for (const id of ORDER) {
+    const S = SPECIES[id], k = (S.cm * 16) / (S.ry * 2), e = eggOf(id, k), h = S.ry * k;
+    s += `<g data-egg="${id}" style="cursor:pointer"><rect x="${xs[id] - 85}" y="${470 - 290}" width="170" height="380" fill="transparent"/><g transform="translate(${xs[id]} ${470 - h})">${e.s}</g>
+      <text x="${xs[id]}" y="512" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="700" fill="#2d3436">${S.th.replace('จักรพรรดิ', '')}</text>
+      <text x="${xs[id]}" y="542" text-anchor="middle" font-family="Mitr" font-size="18" fill="#8a7a6a">${S.days} วัน</text><text x="${xs[id]}" y="566" text-anchor="middle" font-family="Mitr" font-size="18" fill="#8a7a6a">${S.cm} ซม.</text>${album[id] ? `<text x="${xs[id]}" y="604" text-anchor="middle" font-size="26">${'⭐'.repeat(Math.min(3, album[id]))}</text>` : ''}</g>`;
+  }
+  scene.innerHTML = s;
+  for (const g of scene.querySelectorAll('[data-egg]')) g.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); ensureAudio(); buzz(10); blip(600); pick(g.dataset.egg); });
+}
+function renderGame(now, dt) {
+  const S = SPECIES[sp];
+  let s = backdrop(S.scene, T);
+  const n = S.many || 1, u = day / S.days;
+  wob = Math.max(0, wob - dt * 3);
+  // nests & parents behind the eggs
+  if (sp === 'chicken') s += `<ellipse cx="500" cy="500" rx="170" ry="50" fill="#c9a227" ${K}/>${[...Array(18)].map((_, i) => `<path d="M${350 + i * 17},${480 + (i % 3) * 8} l${(i % 2 ? 1 : -1) * 22},-14" stroke="#a88a1a" stroke-width="4"/>`).join('')}`;
+  if (sp === 'duck') s += `<ellipse cx="500" cy="500" rx="150" ry="44" fill="#a5d66b" ${K}/><ellipse cx="500" cy="494" rx="110" ry="28" fill="#f2f2e8"/>`;
+  if (sp === 'turtle' && phase !== 'baby') s += `<ellipse cx="500" cy="500" rx="230" ry="60" fill="#c9ad74" ${K}/>`;
+  if (sp === 'croc' && phase !== 'baby') s += `<path d="M260,520 Q300,360 500,350 Q700,360 740,520 Z" fill="#8d6e3f" ${K}/>${[...Array(26)].map((_, i) => `<ellipse cx="${300 + (i * 61) % 400}" cy="${380 + (i * 37) % 130}" rx="22" ry="9" fill="${i % 2 ? '#a0522d' : '#6d8a3a'}" transform="rotate(${i * 40} ${300 + (i * 61) % 400} ${380 + (i * 37) % 130})"/>`).join('')}`;
+  if (sp === 'ostrich') s += `<ellipse cx="500" cy="540" rx="220" ry="40" fill="#c9a96a" ${K}/>`;
+  // eggs
+  let eggsSvg = '';
+  if (phase !== 'baby') {
+    for (let i = 0; i < n; i++) {
+      const ek = sp === 'penguin' ? 0.45 : 1, SS = { ...S, rx: S.rx * ek, ry: S.ry * ek };   // the penguin egg sits small on dad's feet
+      const e = eggOf(sp, ek), x = eggX(i, n), y = sp === 'penguin' ? 480 - SS.ry : eggY(i, n);
+      const tilt = Math.sin(now / 90 + i) * (wob * 10 + (phase === 'pip' ? 6 : 0) + (u > 0.8 && phase === 'warm' ? 2 : 0));
+      let inner = e.s;
+      if (candle && phase === 'warm') inner = `<clipPath id="ec${i}"><path d="${e.d}"/></clipPath><path d="${e.d}" fill="#ffe6b0" ${K}/><g clip-path="url(#ec${i})">${embryo(sp, u, SS.rx, SS.ry)}</g>`;
+      if (phase === 'pip' || phase === 'out') inner += crackArt(SS, phase === 'out' ? 1 : crack, phase === 'out' ? clamp((now - hatchT0) / 1600) : 0, i);
+      if (sp === 'turtle' && phase === 'warm') inner += `<path d="${e.d}" fill="#c9ad74" opacity="${clamp(0.9 - u) .toFixed(2)}"/>`;
+      eggsSvg += `<g transform="translate(${x} ${y}) rotate(${tilt.toFixed(1)} 0 ${SS.ry})" data-tap="egg" style="cursor:pointer">${inner}</g>`;
+      if (phase === 'out' && !S.many) { const k = clamp((now - hatchT0) / 2400); eggsSvg += `<g transform="translate(${x} ${y + SS.ry - 6 - 40 * k})" opacity="${k.toFixed(2)}">${baby(sp, 1, T)}</g>`; }
+    }
+  }
+  // hen / penguin dad (the penguin's egg is drawn in front of him, on his feet)
+  if (sp !== 'penguin') { s += eggsSvg; eggsSvg = ''; }
+  if (sp === 'chicken' && phase === 'warm') s += hen(wob > 0.3);
+  if (sp === 'penguin') s += penguinDad(phase, now);
+  s += eggsSvg;
+  if (sp === 'croc') s += crocMom(now);
+  if (sp === 'turtle' && phase === 'warm') s += `<g data-tap="sun" style="cursor:pointer"><circle cx="160" cy="110" r="${60 + wob * 10}" fill="#ffd93d" opacity="${0.2 + wob * 0.6}"/><circle cx="160" cy="110" r="46" fill="#ffd93d" ${K}/><text x="160" y="190" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="700" fill="#fff">👆 แตะดวงอาทิตย์</text></g>`;
+  // babies
+  if (phase === 'baby') s += babyLayer(now, dt);
+  // feed crumbs
+  s += feed.map((f) => `<circle cx="${f.x}" cy="${f.y}" r="5" fill="#c9a227" stroke="#8a6a12" stroke-width="1.5"/>`).join('');
+  // day counter
+  if (phase === 'warm' || phase === 'pip') s += `<g font-family="Mitr" font-weight="700"><rect x="20" y="20" width="300" height="86" rx="20" fill="rgba(255,255,255,.88)" ${k3}/><text x="40" y="58" font-size="26" fill="#e54b82">🗓️ วันที่ ${Math.round(day)} / ${S.days}</text>
+    <rect x="40" y="72" width="260" height="18" rx="9" fill="#eee"/><rect x="40" y="72" width="${(260 * u).toFixed(0)}" height="18" rx="9" fill="#ffd93d"/></g>`;
+  if (phase === 'warm' && sp !== 'turtle' && sp !== 'croc' && sp !== 'penguin' && day === 0) s += `<text x="500" y="200" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#e54b82" stroke="#fff" stroke-width="6" paint-order="stroke">👆 แตะไข่ให้อุ่น</text>`;
+  if (phase === 'warm' && sp === 'croc' && day === 0) s += `<text x="500" y="300" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#fff" stroke="#3d2e1e" stroke-width="6" paint-order="stroke">👆 แตะรังใบไม้</text>`;
+  if (phase === 'pip') s += `<text x="500" y="200" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#e54b82" stroke="#fff" stroke-width="6" paint-order="stroke">👆 แตะช่วยให้ไข่แตก</text>`;
+  scene.innerHTML = s;
+}
+function crackArt(S, c, open, i) {
+  const rx = S.rx, ry = S.ry;
+  if (S.soft) return `<path d="M${-rx * 0.5 * c},${-ry * 0.3} L${rx * 0.5 * c},${-ry * 0.5}" stroke="#2d3436" stroke-width="4"/>${open > 0.3 ? `<g transform="translate(0 ${-ry * 0.4}) scale(.6)">${baby(sp, 1, T)}</g>` : ''}`;
+  // pip hole first, then the "zip" crack around the top
+  let s = `<path d="M${rx * 0.2},${-ry * 0.45} l6,-8 l6,8 l6,-6" fill="none" stroke="#2d3436" stroke-width="3"/>`;
+  if (c > 0.2) s += `<circle cx="${rx * 0.3}" cy="${-ry * 0.42}" r="${4 + c * 4}" fill="#3d2a1a"/>`;
+  if (c > 0.3) { const len = (c - 0.3) / 0.7; let d = `M${-rx},${-ry * 0.25}`; for (let k = 1; k <= 12 * len; k++) d += ` L${(-rx + k * rx / 6).toFixed(0)},${(-ry * 0.25 + (k % 2 ? -10 : 8)).toFixed(0)}`; s += `<path d="${d}" fill="none" stroke="#2d3436" stroke-width="4"/>`; }
+  if (open > 0) s = `<g transform="translate(${-rx * 0.6 * open} ${-ry * 0.9 * open}) rotate(${-50 * open})"><path d="M${-rx},${-ry * 0.25} C${-rx},${-ry * 0.9} ${rx},${-ry * 0.9} ${rx},${-ry * 0.25} Z" fill="${S.fill}" ${k3}/></g><path d="M${-rx},${-ry * 0.25} L${rx},${-ry * 0.25}" stroke="#2d3436" stroke-width="3"/>`;
+  return s;
+}
+function hen(onNest) {
+  const y = onNest ? 440 : 420, x = onNest ? 500 : 720;
+  return `<g transform="translate(${x} ${y})"><path d="M-110,-20 C-130,-70 -110,-110 -80,-120 L-60,-80 Z" fill="#8d3b1a" ${K}/><ellipse cx="0" cy="-50" rx="110" ry="70" fill="#a0522d" ${K}/><path d="M-60,-60 q50,30 100,0" fill="none" stroke="#7a3a14" stroke-width="5"/>
+    <circle cx="90" cy="-120" r="36" fill="#a0522d" ${K}/><path d="M80,-156 q6,-18 14,-4 q6,-18 14,0 q8,-14 12,4" fill="#e74c3c" ${k3}/><path d="M122,-122 L146,-114 L122,-106 Z" fill="#f0a030" ${k3}/><path d="M118,-100 q6,18 -4,22 q-10,-6 -4,-22 Z" fill="#e74c3c" ${k3}/><circle cx="102" cy="-126" r="5" fill="#2d3436"/>
+    ${onNest ? '' : '<path d="M-20,20 v40 M20,20 v40" stroke="#f0a030" stroke-width="7"/>'}</g>`;
+}
+function penguinDad(ph, now) {
+  const feeding = dadFeed > 0, bow = feeding ? Math.sin(clamp(dadFeed) * Math.PI) * 30 : 0;
+  const lift = ph === 'warm' || ph === 'pip' ? 0 : 1;
+  let s = `<g transform="translate(560 480)">`;
+  s += `<ellipse cx="-30" cy="0" rx="28" ry="9" fill="#555"/><ellipse cx="30" cy="0" rx="28" ry="9" fill="#555"/>`;
+  s += `<path d="M-90,-40 C-110,-160 -80,-300 0,-310 C80,-300 110,-160 90,-40 C60,-6 -60,-6 -90,-40 Z" fill="#2d3436" ${K}/>`;
+  s += `<path d="M-60,-60 C-80,-150 -60,-250 0,-256 C60,-250 80,-150 60,-60 C${30},${-40 + lift * 10} -30,${-40 + lift * 10} -60,-60 Z" fill="#fafafa"/>`;
+  s += `<path d="M-50,-250 C-30,-262 30,-262 50,-250" fill="#ffd27a" opacity=".8"/>`;
+  s += `<g transform="rotate(${bow} 0 -280)"><ellipse cx="0" cy="-300" rx="46" ry="40" fill="#2d3436" ${K}/><path d="M-40,-300 q-6,30 14,40 l10,-24 Z M40,-300 q6,30 -14,40 l-10,-24 Z" fill="#ffb84a"/>
+    <path d="M30,-312 L84,-300 L30,-292 Z" fill="#2d3436" ${k3}/><path d="M40,-302 L76,-300" stroke="#e98a6a" stroke-width="4"/><circle cx="18" cy="-312" r="5" fill="#fff"/><circle cx="19" cy="-312" r="2.5" fill="#2d3436"/>
+    ${feeding && dadFeed > 0.4 && dadFeed < 0.8 ? '<ellipse cx="70" cy="-286" rx="12" ry="6" fill="#ff9f9f"/>' : ''}</g>`;
+  s += `<path d="M-86,-200 C-120,-150 -124,-90 -108,-60" fill="none" stroke="#2d3436" stroke-width="20" stroke-linecap="round"/><path d="M86,-200 C120,-150 124,-90 108,-60" fill="none" stroke="#2d3436" stroke-width="20" stroke-linecap="round"/>`;
+  s += `</g>`;
+  return s;
+}
+function crocMom(now) {
+  if (!mom && phase !== 'warm' && phase !== 'pip') return '';
+  const m = mom || { x: 820, state: 'wait' };
+  const open = m.state === 'carry' && m.k < 0.25 ? m.k / 0.25 : m.state === 'carry' ? 0.15 : 0;
+  const x = m.state === 'carry' ? lerp(m.x0 || 600, 140, clamp((m.k - 0.3) / 0.7)) : m.x, flip = m.state === 'carry' && m.k > 0.3 ? -1 : -1;
+  let s = `<g transform="translate(${x} 470) scale(${flip} 1)" data-tap="mom" style="cursor:pointer">`;
+  s += `<path d="M-60,-10 Q-200,-20 -260,10 Q-190,4 -60,20 Z" fill="#5d6a2a" ${K}/><ellipse cx="0" cy="-10" rx="110" ry="36" fill="#6d7a3a" ${K}/>`;
+  s += [-70, -40, -10, 20, 50].map((xx) => `<path d="M${xx},-44 l10,-12 l10,12" fill="#4d5a1a" ${k3}/>`).join('');
+  s += `<path d="M-50,20 l-14,24 M40,20 l14,24" stroke="#2d3436" stroke-width="12" stroke-linecap="round"/>`;
+  s += `<g transform="rotate(${-open * 25} 100 -20)"><path d="M90,-34 Q200,-44 250,-20 Q200,-10 96,-12 Z" fill="#6d7a3a" ${K}/><path d="M120,-12 l8,8 l8,-8 l8,8 l8,-8 l8,8 l8,-8 l8,8" fill="none" stroke="#fff" stroke-width="3"/></g>`;
+  s += `<path d="M96,-8 Q200,0 250,-14 Q200,14 96,12 Z" fill="#7d8a44" ${K}/><circle cx="118" cy="-40" r="9" fill="#ffd93d" stroke="#2d3436" stroke-width="3"/><ellipse cx="118" cy="-40" rx="2.5" ry="8" fill="#2d3436"/>`;
+  if (m.state === 'carry' && m.k > 0.25) s += `<g transform="translate(190 -4) scale(.45)">${baby('croc', 0, T)}</g>`;
+  s += `</g>`;
+  return s;
+}
+function babyLayer(now, dt) {
+  let s = '';
+  for (const b of babies) {
+    if (b.gone) continue;
+    b.t += dt;
+    const sx = b.dir < 0 ? -1 : 1;
+    if (sp === 'chicken') {
+      const f = feed[0];
+      if (f) { const dx = f.x - b.x; if (Math.abs(dx) > 30) { b.x += Math.sign(dx) * 70 * dt; b.dir = Math.sign(dx); b.act = ''; } else { b.act = 'peck'; if (Math.random() < dt * 1.2) { feed.shift(); tone(1500, 0.05, 'sine', 0.05); } } }
+      else b.act = Math.sin(b.t * 0.7) > 0.6 ? 'peck' : '';
+    } else if (sp === 'duck') {
+      if (finger) { const dx = finger.x - b.x, dy = finger.y - b.y, d = Math.hypot(dx, dy); if (d > 70) { b.x += dx / d * 110 * dt; b.y += dy / d * 110 * dt; b.dir = Math.sign(dx) || 1; } }
+      b.y = clamp(b.y, 440, 600);
+    } else if (sp === 'turtle') {
+      if (b.go) { b.y -= 34 * dt; b.dir = 1; if (b.y < 420) { b.gone = true; splashAt(b.x); } }
+    } else if (sp === 'ostrich') {
+      if (b.act === 'run') { b.x += b.dir * 420 * dt; if (b.x > 900 || b.x < 100) b.dir *= -1; if (b.t > b.until) b.act = ''; }
+    }
+    const inWater = sp === 'duck' && b.x > 640 && b.y > 520;
+    const y = sp === 'turtle' ? b.y : b.y + (inWater ? 10 : 0);
+    let art = baby(sp, 0, b.t, b.act);
+    if (sp === 'turtle') art = `<g transform="rotate(-90)">${art}</g>`;
+    if (sp === 'penguin') { s += ''; continue; }
+    s += `<g transform="translate(${b.x.toFixed(0)} ${y.toFixed(0)}) scale(${sx * (sp === 'turtle' ? 1 : 1)} 1)" data-tap="baby" data-i="${babies.indexOf(b)}" style="cursor:pointer">${inWater ? `<clipPath id="wcl"><rect x="-80" y="-200" width="160" height="190"/></clipPath><g clip-path="url(#wcl)">${art}</g>` : art}</g>`;
+  }
+  if (sp === 'penguin') { const b = babies[0]; s += `<g transform="translate(560 ${468 - (dadFeed > 0 ? 6 : 0)}) scale(.9)" data-tap="baby" data-i="0">${baby('penguin', 0, b.t)}</g>`; }
+  if (sp === 'turtle' && babies.every((b) => b.gone) && !babies.done) { babies.done = true; speak('ลูกเต่าทุกตัวลงทะเลแล้ว ว่ายไปตามแสงจันทร์'); cheer(); }
+  if (sp === 'croc' && mom && mom.state === 'carry') {
+    mom.k = clamp((now - mom.t0) / 3500);
+    if (mom.k >= 1) { const left = babies.find((b) => !b.gone); if (left) { left.gone = true; } mom.state = 'wait'; mom.x = 820; if (babies.every((b) => b.gone)) { speak('แม่จระเข้พาลูกทุกตัวไปที่น้ำแล้ว'); cheer(); } }
+  }
+  return s;
+}
+function splashAt(x) { tone(900, 0.08, 'sine', 0.06); }
+
+// ---- input ----
+scene.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  if (phase === 'pick') return;
+  const q = svgPt(ev), tgt = ev.target.closest('[data-tap]'), kind = tgt && tgt.dataset.tap;
+  if (phase === 'warm') {
+    if (sp === 'turtle') { if (kind === 'sun') warm(); return; }
+    if (sp === 'penguin') { warm(); return; }
+    if (sp === 'croc') { warm(); return; }
+    if (kind === 'egg' || Math.hypot(q.x - 500, q.y - 430) < 220) warm();
+    return;
+  }
+  if (phase === 'pip') { tapCrack(); return; }
+  if (phase !== 'baby') return;
+  if (sp === 'chicken') { if (q.y > 420) { for (let i = 0; i < 6; i++) feed.push({ x: q.x + (Math.random() - 0.5) * 40, y: Math.max(470, q.y) + (Math.random() - 0.5) * 20 }); tone(700, 0.05, 'sine', 0.05); buzz(6); if (!feedSaid) { feedSaid = 1; speak('ลูกเจี๊ยบจิกกินอาหาร จิ๊บ จิ๊บ'); } } return; }
+  if (sp === 'duck') { finger = { x: q.x, y: q.y }; try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
+  if (sp === 'turtle') { const i = tgt && +tgt.dataset.i; const b = kind === 'baby' ? babies[i] : babies.find((o) => !o.go && !o.gone); if (b) { b.go = true; buzz(8); tone(500, 0.08, 'sine', 0.06); } return; }
+  if (sp === 'croc') { if (kind === 'mom' && mom && mom.state === 'wait' && babies.some((b) => !b.gone)) { mom.state = 'carry'; mom.t0 = performance.now(); mom.x0 = 600; mom.k = 0; buzz(10); if (!momSaid) { momSaid = 1; speak('แม่จระเข้คาบลูกไว้ในปากอย่างเบามือ ไม่กัดลูกเลย'); } } else chirp(); return; }
+  if (sp === 'ostrich') { const b = babies[0]; b.act = 'run'; b.until = b.t + 2; b.dir = q.x > b.x ? 1 : -1; buzz(8); speak('ลูกนกกระจอกเทศวิ่งเร็วมาก'); return; }
+  if (sp === 'penguin') { if (dadFeed <= 0) { dadFeed = 0.001; buzz(8); speak('พ่อเพนกวินป้อนอาหารให้ลูก จากปากสู่ปาก'); } }
+});
+let feedSaid = 0, momSaid = 0;
+scene.addEventListener('pointermove', (ev) => { if (finger) { const q = svgPt(ev); finger = { x: q.x, y: q.y }; } });
+const endPtr = () => { finger = null; };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+$('fact').addEventListener('click', () => { ensureAudio(); speak($('fact').textContent); });
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
+  if (!document.hidden) {
+    if (dadFeed > 0) { dadFeed += dt / 2.4; if (dadFeed >= 1) dadFeed = 0; }
+    if (phase === 'pick') { if (!scene.querySelector('[data-egg]')) renderPick(); }
+    else renderGame(now, dt);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+$('fact').textContent = PICK_FACT;
+renderPick();
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['เลือกไข่ที่จะฟัก', PICK_FACT, 'ได้ยินเสียงไหม ลูกเริ่มเจาะเปลือกแล้ว แตะช่วยดู', 'ได้ยินเสียงร้องจากในไข่ ลูกจระเข้เรียกแม่แล้ว',
+    'ไข่เริ่มขยับ ลูกเต่ากำลังใช้ปุ่มที่ปลายปากกรีดเปลือก', 'ส่องไฟดูในไข่ ยังเห็นแต่ไข่แดง', 'เห็นเส้นเลือดเล็กๆ และจุดหัวใจ ลูกเริ่มเติบโตแล้ว', 'ลูกตัวใหญ่ขึ้นจนเกือบเต็มไข่แล้ว',
+    'ลูกเจี๊ยบจิกกินอาหาร จิ๊บ จิ๊บ', 'ลูกเต่าทุกตัวลงทะเลแล้ว ว่ายไปตามแสงจันทร์', 'แม่จระเข้พาลูกทุกตัวไปที่น้ำแล้ว', 'แม่จระเข้คาบลูกไว้ในปากอย่างเบามือ ไม่กัดลูกเลย',
+    'ลูกนกกระจอกเทศวิ่งเร็วมาก', 'พ่อเพนกวินป้อนอาหารให้ลูก จากปากสู่ปาก'];
+  for (const id of ORDER) { const S = SPECIES[id]; L.push(S.fact, S.done, WARM_SAY[id]); for (let k = 1; k <= TAPS; k++) L.push('วันที่ ' + Math.round(S.days * k / TAPS)); }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
