@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎨 ระบายแล้วมีชีวิต — คิดส์เล่น</title>
+<meta name="description" content="ระบายสีสัตว์ แล้วสัตว์จะมีชีวิตเดินเข้าไปอยู่ในทุ่งหญ้าของหนู แมว หมา ช้าง ปลา ผีเสื้อ นก เต่า สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ระบายแล้วมีชีวิต">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .modes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 600;
+    min-height: 64px; min-width: 64px; padding: 0 22px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
+  .hidden { display: none !important; }
+
+  .pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .pcard {
+    background: #fff; border: 4px solid var(--card-border); border-radius: 26px; cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.15); padding: 6px; font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 600; color: var(--ink);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .pcard svg { width: 100%; height: auto; }
+  .pcard:active { transform: scale(.96); }
+
+  .palette { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0 4px; }
+  .sw {
+    width: 64px; height: 64px; border-radius: 50%; border: 4px solid #fff; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .12s;
+  }
+  .sw.on { transform: scale(1.18); border-color: var(--ink); }
+  .done-btn {
+    font-family: 'Mitr', sans-serif; font-size: 26px; font-weight: 700;
+    min-height: 80px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .done-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .region { cursor: pointer; transition: fill .15s; }
+  .pop { animation: pop .35s ease; transform-box: fill-box; transform-origin: center; }
+  @keyframes pop { 50% { transform: scale(1.06); } }
+  .alive { animation: alive 1.2s ease; transform-box: fill-box; transform-origin: center bottom; }
+  @keyframes alive { 15% { transform: scale(1.06, .92); } 30% { transform: scale(.95, 1.06) translateY(-10px); } 45% { transform: scale(1.03, .97); } 60%, 100% { transform: none; } }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🎨 ระบายแล้วมีชีวิต</h1></header>
+  <div class="modes">
+    <button class="chip on" id="tabPaint">🎨 ระบายสี</button>
+    <button class="chip" id="tabWorld">🌳 ทุ่งของหนู</button>
+  </div>
+  <div id="pickScreen"><div class="pick" id="pick"></div></div>
+  <div id="paintScreen" class="hidden">
+    <div class="view"><svg id="canvas" viewBox="0 0 400 300" aria-label="ระบายสี"></svg></div>
+    <div class="palette" id="palette"></div>
+    <button class="done-btn" id="doneBtn">✨ ให้มีชีวิต!</button>
+  </div>
+  <div id="worldScreen" class="hidden">
+    <div class="view"><svg id="world" viewBox="0 0 1000 640" aria-label="ทุ่งของหนู"></svg></div>
+    <button class="done-btn" id="newBtn">🎨 ระบายตัวใหม่</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const INK = 'stroke="#2d3436" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"';
+const THIN = 'stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" fill="none"';
+
+// ============================================================================
+// ANIMALS — side view facing right in a 400×300 box, feet on y≈282.
+// Each animal = parts drawn back→front. A part has a pivot (for its animation),
+// paintable regions [id, path] and fixed decoration (eyes, whiskers, claws…).
+// Anatomy kept true: the cat's slit pupils and whiskers, the dog's floppy ear,
+// the ASIAN elephant (small ears, twin-domed head, arched back, one trunk "finger"),
+// a fish with all five fin types, a butterfly with 4 wings + clubbed antennae,
+// a sparrow (3 toes forward, 1 back), a tortoise (domed shell, elephant-like feet).
+// ============================================================================
+function leg(x, top, bottom, w = 26) {         // tapers from the hip, ends in a rounded paw pointing forward
+  const h = w / 2, m = h * 0.78;
+  return `M${x - h},${top} L${x + h},${top} C${x + h},${top + 30} ${x + m},${bottom - 34} ${x + m},${bottom - 14} Q${x + m + 7},${bottom} ${x + 2},${bottom} L${x - m + 2},${bottom} Q${x - m - 3},${bottom} ${x - m},${bottom - 12} C${x - m},${bottom - 34} ${x - h},${top + 30} ${x - h},${top} Z`;
+}
+const ANIMALS = {
+  cat: {
+    th: 'แมว', say: 'แมวเหมียว', sound: 'เมี้ยว', defaults: { body: '#f2a65a' },
+    parts: [
+      { id: 'tail', pivot: [112, 160], regions: [['tail', 'M112,168 C80,165 60,140 58,105 C57,88 72,84 76,98 C78,128 92,146 118,150 Z']] },
+      { id: 'legFB', pivot: [124, 198], regions: [['legFB', leg(124, 190, 282)]], far: true },
+      { id: 'legFF', pivot: [252, 198], regions: [['legFF', leg(252, 190, 282)]], far: true },
+      { id: 'legNB', pivot: [144, 198], regions: [['legNB', leg(144, 190, 282)]], deco: `<path d="M136,280 v-6 M144,281 v-6 M152,280 v-6" ${THIN}/>` },
+      { id: 'legNF', pivot: [272, 198], regions: [['legNF', leg(272, 190, 282)]], deco: `<path d="M264,280 v-6 M272,281 v-6 M280,280 v-6" ${THIN}/>` },
+      { id: 'body', pivot: [200, 180], regions: [['body', 'M105,180 A95,48 0 1 0 295,180 A95,48 0 1 0 105,180 Z'], ['belly', 'M150,212 Q200,232 262,210 Q205,218 150,212 Z']] },
+      { id: 'head', pivot: [282, 152], regions: [['earL', 'M268,100 L272,50 L304,82 Z'], ['earR', 'M312,78 L346,46 L350,102 Z'], ['head', 'M255,125 A50,50 0 1 0 355,125 A50,50 0 1 0 255,125 Z'], ['muzzle', 'M298,148 A26,18 0 1 0 350,148 A26,18 0 1 0 298,148 Z']],
+        deco: `<path d="M274,92 L276,64 L294,82 Z M320,80 L340,62 L342,94 Z" fill="#ffb3c1"/>
+          <g class="eyes"><ellipse cx="292" cy="118" rx="9" ry="11" fill="#9bd16b" stroke="#2d3436" stroke-width="2.5"/><ellipse cx="292" cy="118" rx="2.6" ry="9" fill="#2d3436"/>
+          <ellipse cx="330" cy="116" rx="9" ry="11" fill="#9bd16b" stroke="#2d3436" stroke-width="2.5"/><ellipse cx="330" cy="116" rx="2.6" ry="9" fill="#2d3436"/></g>
+          <path d="M318,136 L334,136 L326,145 Z" fill="#ff8fa3" stroke="#2d3436" stroke-width="2"/><path d="M326,145 v6 q-8,8 -14,2 M326,151 q8,8 14,2" ${THIN}/>
+          <path d="M306,148 L262,140 M306,153 L260,156 M344,146 L388,136 M344,151 L390,152" stroke="#2d3436" stroke-width="1.8"/>` },
+    ],
+  },
+  dog: {
+    th: 'หมา', say: 'น้องหมา', sound: 'โฮ่ง โฮ่ง', defaults: { body: '#c98b4f' },
+    parts: [
+      { id: 'tail', pivot: [112, 155], regions: [['tail', 'M110,160 C90,140 80,110 92,86 C98,78 108,84 104,94 C96,118 104,138 124,148 Z']] },
+      { id: 'legFB', pivot: [126, 196], regions: [['legFB', leg(126, 188, 282, 24)]], far: true },
+      { id: 'legFF', pivot: [256, 196], regions: [['legFF', leg(256, 188, 282, 24)]], far: true },
+      { id: 'legNB', pivot: [146, 196], regions: [['legNB', leg(146, 188, 282, 24)]] },
+      { id: 'legNF', pivot: [276, 196], regions: [['legNF', leg(276, 188, 282, 24)]] },
+      { id: 'body', pivot: [200, 175], regions: [['body', 'M105,175 A96,44 0 1 0 297,175 A96,44 0 1 0 105,175 Z'], ['patch', 'M160,140 Q190,128 215,142 Q205,165 172,162 Q156,155 160,140 Z']] },
+      { id: 'head', pivot: [282, 150], regions: [['head', 'M258,118 A44,42 0 1 0 346,118 A44,42 0 1 0 258,118 Z'], ['snout', 'M318,108 L370,116 Q384,124 378,140 L328,152 Z']],
+        deco: `<circle cx="306" cy="108" r="6" fill="#2d3436"/><circle cx="308" cy="106" r="2" fill="#fff"/><ellipse cx="376" cy="122" rx="9" ry="7" fill="#2d3436"/>
+          <path d="M376,130 q-4,12 -22,14" ${THIN}/><path class="tongue" d="M352,144 q4,22 14,18 q6,-4 2,-18 Z" fill="#ff8fa3" stroke="#2d3436" stroke-width="2"/>` },
+      { id: 'ear', pivot: [286, 88], regions: [['ear', 'M272,90 Q262,140 282,156 Q300,124 296,88 Z']] },
+    ],
+  },
+  elephant: {
+    th: 'ช้าง', say: 'ช้างไทย', sound: 'แปร๊นนน', defaults: { body: '#9aa0a8' },
+    parts: [
+      { id: 'tail', pivot: [86, 150], regions: [['tail', 'M86,148 Q64,175 68,212 L75,212 Q73,178 93,152 Z']], deco: `<path d="M66,210 l-3,14 M71,212 l0,14 M76,210 l3,14" stroke="#2d3436" stroke-width="3"/>` },
+      { id: 'legFB', pivot: [122, 196], regions: [['legFB', leg(122, 186, 282, 44)]], far: true },
+      { id: 'legFF', pivot: [256, 196], regions: [['legFF', leg(256, 186, 282, 44)]], far: true },
+      { id: 'legNB', pivot: [150, 196], regions: [['legNB', leg(150, 186, 282, 46)]], deco: `<path d="M134,280 q5,-7 10,0 M146,281 q5,-7 10,0" fill="#fffef0" stroke="#2d3436" stroke-width="2"/>` },
+      { id: 'legNF', pivot: [286, 196], regions: [['legNF', leg(286, 186, 282, 46)]], deco: `<path d="M270,280 q5,-7 10,0 M282,281 q5,-7 10,0 M294,280 q5,-7 10,0" fill="#fffef0" stroke="#2d3436" stroke-width="2"/>` },
+      { id: 'body', pivot: [200, 150], regions: [['body', 'M80,170 C80,95 150,66 220,70 C285,74 322,100 324,150 C326,200 302,215 220,218 C140,220 80,215 80,170 Z']] },
+      { id: 'trunk', pivot: [356, 146], regions: [['trunk', 'M362,138 C380,170 386,210 380,250 C378,266 386,272 393,268 L398,280 C376,290 362,276 364,252 C368,214 360,182 344,156 Z']], deco: `<path d="M368,180 q8,2 14,0 M370,200 q8,2 14,0 M370,220 q8,2 13,0" ${THIN}/>` },
+      { id: 'head', pivot: [320, 140], regions: [['head', 'M300,92 C300,58 330,48 350,60 C362,48 382,56 384,80 C394,112 382,140 364,150 L330,162 C306,152 298,124 300,92 Z']],
+        deco: `<circle class="eyes" cx="352" cy="102" r="5" fill="#2d3436"/><path d="M346,96 l-4,-5 M352,94 l0,-6 M358,96 l4,-5" stroke="#2d3436" stroke-width="2"/><path d="M340,140 q8,10 18,4" ${THIN}/>` },
+      { id: 'ear', pivot: [318, 98], regions: [['ear', 'M318,96 C300,96 290,120 298,150 C304,170 330,168 336,150 C342,128 336,100 318,96 Z']] },
+    ],
+  },
+  fish: {
+    th: 'ปลา', say: 'ปลาน้อย', sound: 'บุ๋ง บุ๋ง', water: true, defaults: { body: '#ff9f43' },
+    parts: [
+      { id: 'tail', pivot: [100, 150], regions: [['tail', 'M104,150 L38,96 Q62,128 58,150 Q62,172 38,204 Z']] },
+      { id: 'fins', pivot: [200, 150], regions: [['dorsal', 'M160,98 Q198,46 252,94 Z'], ['anal', 'M150,196 Q140,222 116,224 Q128,206 132,192 Z'], ['pelvic', 'M206,200 Q194,226 176,230 Q184,212 190,200 Z']] },
+      { id: 'body', pivot: [200, 150], regions: [['body', 'M88,150 C120,88 250,80 302,120 C322,135 322,165 302,180 C250,220 120,212 88,150 Z']],
+        deco: `<path d="M262,112 Q246,150 262,188" ${THIN}/>${[[150, 130], [180, 120], [210, 118], [165, 160], [195, 152], [225, 150], [180, 188], [210, 182]].map(([x, y]) => `<path d="M${x},${y} q10,8 0,16" stroke="#2d3436" stroke-width="1.6" fill="none" opacity=".5"/>`).join('')}
+          <circle class="eyes" cx="286" cy="136" r="9" fill="#fff" stroke="#2d3436" stroke-width="2.5"/><circle cx="288" cy="136" r="5" fill="#2d3436"/><path d="M314,154 q-6,4 -10,0" ${THIN}/>` },
+      { id: 'pec', pivot: [250, 158], regions: [['pec', 'M252,158 Q232,190 214,196 Q230,172 236,154 Z']] },
+    ],
+  },
+  butterfly: {
+    th: 'ผีเสื้อ', say: 'ผีเสื้อแสนสวย', sound: '', air: true, defaults: { foreL: '#ff9f43' },
+    parts: [
+      { id: 'wingL', pivot: [200, 150], regions: [['hindL', 'M190,155 C130,150 70,175 80,215 C88,248 140,240 186,175 Z'], ['foreL', 'M192,128 C140,70 60,60 40,95 C28,125 70,160 188,150 Z'], ['spotFL', 'M84,100 A16,16 0 1 0 116,100 A16,16 0 1 0 84,100 Z'], ['spotHL', 'M102,205 A13,13 0 1 0 128,205 A13,13 0 1 0 102,205 Z']] },
+      { id: 'wingR', pivot: [200, 150], regions: [['hindR', 'M210,155 C270,150 330,175 320,215 C312,248 260,240 214,175 Z'], ['foreR', 'M208,128 C260,70 340,60 360,95 C372,125 330,160 212,150 Z'], ['spotFR', 'M284,100 A16,16 0 1 0 316,100 A16,16 0 1 0 284,100 Z'], ['spotHR', 'M272,205 A13,13 0 1 0 298,205 A13,13 0 1 0 272,205 Z']] },
+      { id: 'body', pivot: [200, 150], regions: [['bodyB', 'M190,112 A10,10 0 1 0 210,112 A10,10 0 1 0 190,112 Z M190,140 A10,22 0 1 0 210,140 A10,22 0 1 0 190,140 Z M192,192 A8,34 0 1 0 208,192 A8,34 0 1 0 192,192 Z']],
+        deco: `<path d="M196,104 Q182,74 170,62 M204,104 Q218,74 230,62" ${THIN}/><circle cx="170" cy="62" r="5" fill="#2d3436"/><circle cx="230" cy="62" r="5" fill="#2d3436"/><circle class="eyes" cx="195" cy="110" r="2.5" fill="#2d3436"/><circle cx="205" cy="110" r="2.5" fill="#2d3436"/>` },
+    ],
+  },
+  bird: {
+    th: 'นก', say: 'นกกระจอก', sound: 'จิ๊บ จิ๊บ', defaults: { body: '#a0703c' },
+    parts: [
+      { id: 'tail', pivot: [136, 172], regions: [['tail', 'M135,165 L60,142 L68,160 L58,180 L132,186 Z']] },
+      { id: 'legs', pivot: [200, 215], regions: [], deco: `<path d="M196,214 L192,262 M188,262 l-10,6 M192,262 l2,10 M192,262 l12,4 M192,262 l-6,-4 M218,212 L222,262 M218,262 l-10,6 M222,262 l2,10 M222,262 l12,4" stroke="#e08a3a" stroke-width="4" stroke-linecap="round"/>` },
+      { id: 'body', pivot: [200, 165], regions: [['body', 'M128,170 C128,120 190,100 240,115 C270,125 282,150 272,180 C257,215 172,226 128,170 Z'], ['belly', 'M168,182 C200,212 248,204 268,178 C252,166 210,166 168,182 Z']] },
+      { id: 'head', pivot: [262, 140], regions: [['head', 'M241,120 A34,34 0 1 0 309,120 A34,34 0 1 0 241,120 Z'], ['beak', 'M302,110 L338,121 L302,131 Z'], ['cheek', 'M268,128 Q282,142 300,134 Q290,124 268,128 Z']],
+        deco: `<circle class="eyes" cx="286" cy="112" r="5" fill="#2d3436"/><circle cx="287" cy="110" r="1.6" fill="#fff"/><path d="M302,121 L330,121" stroke="#2d3436" stroke-width="2"/>` },
+      { id: 'wing', pivot: [232, 144], regions: [['wing', 'M168,140 C210,124 256,140 250,170 C230,192 180,192 148,178 Z']], deco: `<path d="M180,165 q20,8 50,4 M172,176 q24,8 52,4" ${THIN}/>` },
+    ],
+  },
+  turtle: {
+    th: 'เต่า', say: 'เต่าบก', sound: '', defaults: { shell: '#8d6e3f' },
+    parts: [
+      { id: 'legFB', pivot: [122, 222], regions: [['legFB', leg(122, 214, 282, 34)]], far: true },
+      { id: 'legFF', pivot: [276, 222], regions: [['legFF', leg(276, 214, 282, 34)]], far: true },
+      { id: 'head', pivot: [326, 210], regions: [['head', 'M318,206 C326,186 362,176 386,192 C398,202 392,220 375,223 C355,226 334,222 318,216 Z']],
+        deco: `<circle class="eyes" cx="368" cy="196" r="4.5" fill="#2d3436"/><path d="M380,212 q-8,4 -14,2" ${THIN}/>` },
+      { id: 'legNB', pivot: [148, 222], regions: [['legNB', leg(148, 214, 282, 36)]], deco: `<path d="M134,279 l2,-6 M144,281 l1,-6 M154,279 l0,-6" ${THIN}/>` },
+      { id: 'legNF', pivot: [302, 222], regions: [['legNF', leg(302, 214, 282, 36)]], deco: `<path d="M290,279 l2,-6 M300,281 l1,-6 M310,279 l0,-6" ${THIN}/>` },
+      { id: 'body', pivot: [214, 200], regions: [['shell', 'M90,228 C95,138 160,98 220,98 C285,98 335,143 338,228 Z'],
+        ...[[165, 152, 'v1'], [218, 132, 'v2'], [272, 152, 'v3'], [130, 198, 'c1'], [190, 192, 'c2'], [248, 192, 'c3'], [304, 198, 'c4']].map(([x, y, id]) => [id, hex(x, y, 25)]),
+        ['rim', 'M88,228 L340,228 L332,212 L96,212 Z']],
+        clip: 'M90,228 C95,138 160,98 220,98 C285,98 335,143 338,228 Z' },
+    ],
+  },
+};
+function hex(cx, cy, r) {
+  let d = '';
+  for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; d += (i ? ' L' : 'M') + (cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1); }
+  return d + ' Z';
+}
+const ORDER = ['cat', 'dog', 'elephant', 'fish', 'butterfly', 'bird', 'turtle'];
+
+// draw an animal: colors = { regionId: '#hex' } (missing = white); pose = { partId: 'transform' }
+function drawAnimal(type, colors, pose = {}, opts = {}) {
+  const A = ANIMALS[type];
+  let s = '';
+  for (const p of A.parts) {
+    const clipId = p.clip ? 'c' + (++clipN) : null;
+    let inner = '';
+    if (p.clip) inner += `<clipPath id="${clipId}"><path d="${p.clip}"/></clipPath>`;
+    p.regions.forEach(([rid, d], i) => {
+      const fill = colors[rid] || '#ffffff';
+      const shade = p.far ? ' filter="url(#far)"' : '';
+      const clip = p.clip && i > 0 && rid !== 'rim' ? ` clip-path="url(#${clipId})"` : '';
+      inner += `<path class="${opts.paint ? 'region' : ''}" data-r="${rid}" d="${d}" fill="${fill}" ${INK}${clip}${shade}/>`;
+    });
+    if (p.deco) inner += p.deco;
+    s += `<g data-part="${p.id}" transform="${pose[p.id] || ''}">${inner}</g>`;
+  }
+  return s;
+}
+let clipN = 0;
+const FAR_DEF = `<filter id="far"><feComponentTransfer><feFuncR type="linear" slope=".82"/><feFuncG type="linear" slope=".82"/><feFuncB type="linear" slope=".82"/></feComponentTransfer></filter>`;
+
+// ---- motion: per-part transforms for a moment in a gait ----
+const rot = (a, [x, y]) => `rotate(${a.toFixed(1)} ${x} ${y})`;
+function poseOf(type, act, t, extra = {}) {
+  const A = ANIMALS[type], P = Object.fromEntries(A.parts.map((p) => [p.id, p.pivot]));
+  const o = {}, w = Math.sin(t), w2 = Math.sin(t * 2);
+  const blink = (Math.floor(t * 0.6) % 7 === 0 && (t * 0.6 % 1) < 0.12);
+  if (type === 'cat' || type === 'dog' || type === 'elephant' || type === 'turtle') {
+    const amp = act === 'walk' ? (type === 'elephant' ? 12 : type === 'turtle' ? 14 : 20) : 0;
+    // diagonal gait: near-front with far-back, near-back with far-front
+    o.legNF = rot(amp * w, P.legNF); o.legFB = rot(amp * w, P.legFB);
+    o.legNB = rot(-amp * w, P.legNB); o.legFF = rot(-amp * w, P.legFF);
+    const bob = act === 'walk' ? Math.abs(w) * (type === 'elephant' ? 3 : 4) : 0;
+    o.body = `translate(0 ${(-bob).toFixed(1)})`;
+    if (type === 'cat') { o.tail = rot(act === 'happy' ? 14 * Math.sin(t * 6) : 10 * Math.sin(t * 0.9), P.tail); o.head = `translate(0 ${(-bob).toFixed(1)}) ` + rot(act === 'happy' ? 6 : 3 * Math.sin(t * 0.7), P.head); }
+    if (type === 'dog') { o.tail = rot(18 * Math.sin(t * (act === 'happy' ? 18 : 9)), P.tail); o.head = `translate(0 ${(-bob).toFixed(1)})`; o.ear = `translate(0 ${(-bob).toFixed(1)}) ` + rot(8 * Math.sin(t * 2.2), P.ear); }
+    if (type === 'elephant') {
+      o.tail = rot(8 * Math.sin(t * 1.3), P.tail);
+      o.ear = rot(act === 'happy' ? 18 * Math.sin(t * 8) : 6 * Math.sin(t * 1.6), P.ear);
+      o.trunk = act === 'happy' ? rot(-70, P.trunk) : rot(7 * Math.sin(t * 1.1), P.trunk);
+    }
+    if (type === 'turtle') {
+      const tuck = extra.tuck || 0;                                  // 0 out … 1 hidden in the shell
+      o.head = `translate(${(-48 * tuck).toFixed(1)} ${(4 * tuck).toFixed(1)}) ` + rot(3 * Math.sin(t * 0.8), P.head);
+      if (tuck > 0.5) { o.legNF = o.legNB = o.legFF = o.legFB = 'translate(0 214) scale(1 .25) translate(0 -214)'; }
+    }
+  } else if (type === 'fish') {
+    const k = act === 'happy' ? 3 : 1;
+    o.tail = rot(16 * Math.sin(t * 5 * k), P.tail);
+    o.pec = rot(14 * Math.sin(t * 4), P.pec);
+    o.fins = rot(1.5 * Math.sin(t * 5 * k), P.fins);
+  } else if (type === 'butterfly') {
+    const f = act === 'rest' ? 0.5 + 0.5 * Math.sin(t * 1.4) : 0.5 + 0.5 * Math.sin(t * 22);   // resting = slow open/close
+    const sx = 0.15 + 0.85 * f;
+    o.wingL = `translate(200 0) scale(${sx.toFixed(2)} 1) translate(-200 0)`;
+    o.wingR = `translate(200 0) scale(${sx.toFixed(2)} 1) translate(-200 0)`;
+  } else if (type === 'bird') {
+    if (act === 'fly') { o.wing = rot(-50 + 55 * Math.sin(t * 24), P.wing); o.legs = 'translate(0 -18) scale(1 .5)'; }
+    else if (act === 'peck') { o.head = rot(28 * Math.max(0, Math.sin(t * 9)), [P.head[0] - 30, P.head[1] + 30]); }
+    o.tail = (o.tail || '') + rot(act === 'fly' ? 0 : 6 * Math.sin(t * 3), P.tail);
+  }
+  if (blink) o._blink = true;
+  return o;
+}
+
+// ============================================================================
+// PICK + PAINT
+// ============================================================================
+const PALETTE = [['#e74c3c', 'สีแดง'], ['#ff9f43', 'สีส้ม'], ['#ffd93d', 'สีเหลือง'], ['#7ed957', 'สีเขียว'], ['#3a9ad9', 'สีฟ้า'], ['#5b4bd1', 'สีน้ำเงิน'],
+  ['#b06ad9', 'สีม่วง'], ['#ff8fb1', 'สีชมพู'], ['#8d5a2b', 'สีน้ำตาล'], ['#9aa0a8', 'สีเทา'], ['#2d3436', 'สีดำ'], ['#fff8e7', 'สีขาว']];
+let cur = null, colors = {}, brush = PALETTE[0][0];
+function showScreen(s) {
+  $('pickScreen').classList.toggle('hidden', s !== 'pick');
+  $('paintScreen').classList.toggle('hidden', s !== 'paint');
+  $('worldScreen').classList.toggle('hidden', s !== 'world');
+  $('tabPaint').classList.toggle('on', s !== 'world'); $('tabWorld').classList.toggle('on', s === 'world');
+  worldOn = s === 'world';
+}
+function buildPick() {
+  $('pick').innerHTML = ORDER.map((id) => `<button class="pcard" data-id="${id}"><svg viewBox="0 0 400 300"><defs>${FAR_DEF}</defs>${drawAnimal(id, {})}</svg>${ANIMALS[id].th}</button>`).join('');
+  for (const b of $('pick').children) b.addEventListener('click', () => { ensureAudio(); buzz(10); blip(600); startPaint(b.dataset.id); });
+}
+function startPaint(id) {
+  cur = id; colors = {};
+  showScreen('paint');
+  drawCanvas();
+  speak('ระบายสี' + ANIMALS[id].th + 'เลย แตะสีแล้วแตะที่รูป');
+}
+function drawCanvas() {
+  $('canvas').innerHTML = `<defs>${FAR_DEF}</defs><rect width="400" height="300" fill="#fffef9"/><g id="art">${drawAnimal(cur, colors, {}, { paint: true })}</g>`;
+  for (const r of $('canvas').querySelectorAll('.region')) r.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); ensureAudio();
+    const id = r.dataset.r;
+    colors[id] = brush;
+    for (const o of $('canvas').querySelectorAll(`[data-r="${id}"]`)) { o.setAttribute('fill', brush); o.classList.remove('pop'); void o.getBBox(); o.classList.add('pop'); }
+    tone(420 + Object.keys(colors).length * 25, 0.1, 'sine', 0.1); buzz(8);
+  });
+}
+function buildPalette() {
+  $('palette').innerHTML = PALETTE.map(([c, n], i) => `<button class="sw ${i === 0 ? 'on' : ''}" data-c="${c}" data-n="${n}" style="background:${c}" aria-label="${n}"></button>`).join('');
+  for (const b of $('palette').children) b.addEventListener('click', () => {
+    ensureAudio(); buzz(8); brush = b.dataset.c;
+    for (const o of $('palette').children) o.classList.toggle('on', o === b);
+    blip(700); speak(b.dataset.n);
+  });
+}
+$('doneBtn').addEventListener('click', () => {
+  ensureAudio(); buzz([20, 30, 20]);
+  const art = $('art'); art.classList.add('alive');
+  cheer(); speak(ANIMALS[cur].say + ' มีชีวิตแล้ว');
+  setTimeout(() => {
+    addCritter(cur, { ...colors }, true);
+    saveWorld(); showScreen('world');
+  }, 1300);
+});
+$('tabPaint').addEventListener('click', () => { ensureAudio(); buzz(8); showScreen('pick'); speak('เลือกสัตว์ที่จะระบายสี'); });
+$('tabWorld').addEventListener('click', () => { ensureAudio(); buzz(8); showScreen('world'); speak(critters.length ? 'ทุ่งของหนู' : 'ยังไม่มีสัตว์ ระบายสีตัวแรกก่อนนะ'); });
+$('newBtn').addEventListener('click', () => { ensureAudio(); buzz(8); showScreen('pick'); speak('เลือกสัตว์ที่จะระบายสี'); });
+
+// ============================================================================
+// WORLD — a meadow with a pond, flowers and a tree. Each critter has its own life:
+// walkers wander and rest (the tortoise very slowly), the bird hops, pecks and flies,
+// the butterfly drifts and lands on flowers, the fish stays in the pond.
+// Relative sizes are true in order (elephant ≫ dog > cat > tortoise > bird).
+// ============================================================================
+const SIZE = { elephant: 0.82, dog: 0.42, cat: 0.34, turtle: 0.28, bird: 0.18, butterfly: 0.16, fish: 0.24 };
+const SPEED = { elephant: 34, dog: 72, cat: 52, turtle: 7, bird: 0, butterfly: 90, fish: 46 };
+const POND = { x: 210, y: 545, rx: 170, ry: 58 };
+const FLOWERS = [[470, 470], [560, 520], [700, 480], [820, 540], [930, 470], [380, 600]];
+const BRANCH = [860, 205];
+let critters = [], worldOn = false;
+function addCritter(type, cols, fresh) {
+  const c = { type, cols, t: Math.random() * 10, act: 'walk', until: 0, dir: Math.random() < 0.5 ? 1 : -1, tuck: 0 };
+  if (type === 'fish') { c.x = POND.x; c.y = POND.y; }
+  else if (type === 'butterfly') { c.x = 500; c.y = 300; c.tx = 600; c.ty = 250; }
+  else if (type === 'bird') { c.x = 500; c.y = 560; c.act = 'hop'; }
+  else { c.x = 420 + Math.random() * 400; c.y = (type === 'elephant' ? 440 : 470) + Math.random() * 110; }
+  if (fresh) { c.x = 520; c.y = type === 'fish' ? POND.y : type === 'butterfly' ? 360 : 560; c.act = 'idle'; c.until = performance.now() + 1500; c.say = true; }
+  critters.push(c);
+  if (critters.length > 12) critters.shift();
+  buildWorld();
+}
+function saveWorld() { try { localStorage.setItem('colorAlive', JSON.stringify(critters.map((c) => ({ type: c.type, cols: c.cols })))); } catch (e) {} }
+function loadWorld() {
+  try { const a = JSON.parse(localStorage.getItem('colorAlive') || '[]'); for (const c of a) if (ANIMALS[c.type]) addCritter(c.type, c.cols, false); } catch (e) {}
+}
+function buildWorld() {
+  const w = $('world');
+  w.innerHTML = `<defs>${FAR_DEF}<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="url(#sky)"/>
+    <circle cx="120" cy="90" r="50" fill="#ffd93d"/><circle cx="120" cy="90" r="68" fill="#ffd93d" opacity=".3"/>
+    <g id="clouds"></g>
+    <path d="M0,390 Q160,330 330,380 Q520,320 700,375 Q860,330 1000,370 L1000,640 L0,640 Z" fill="#9bd96a"/>
+    <path d="M0,430 Q250,405 500,425 Q760,445 1000,420 L1000,640 L0,640 Z" fill="#7ed957"/>
+    <rect x="845" y="190" width="34" height="230" rx="10" fill="#8d5a2b" stroke="#2d3436" stroke-width="4"/>
+    <path d="M862,${BRANCH[1] + 12} L930,${BRANCH[1] - 10}" stroke="#8d5a2b" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="862" cy="150" r="90" fill="#4caf50" stroke="#2d3436" stroke-width="4"/><circle cx="800" cy="185" r="55" fill="#5cbf60" stroke="#2d3436" stroke-width="4"/><circle cx="925" cy="180" r="50" fill="#5cbf60" stroke="#2d3436" stroke-width="4"/>
+    <ellipse cx="${POND.x}" cy="${POND.y}" rx="${POND.rx}" ry="${POND.ry}" fill="#3a9ad9" stroke="#2d6fa3" stroke-width="6"/>
+    <ellipse cx="${POND.x - 90}" cy="${POND.y - 18}" rx="26" ry="9" fill="#5cbf60"/><ellipse cx="${POND.x + 100}" cy="${POND.y + 22}" rx="22" ry="8" fill="#5cbf60"/>
+    ${FLOWERS.map(([x, y], i) => `<path d="M${x},${y} v40" stroke="#3e8e41" stroke-width="5"/>${[0, 72, 144, 216, 288].map((a) => `<circle cx="${(x + 11 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(y + 11 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="9" fill="${['#ff8fb1', '#ffd93d', '#fff', '#b06ad9', '#ff9f43', '#e74c3c'][i]}" stroke="#2d3436" stroke-width="2"/>`).join('')}<circle cx="${x}" cy="${y}" r="7" fill="#ffd93d" stroke="#2d3436" stroke-width="2"/>`).join('')}
+    <g id="critters"></g><g id="fx"></g>
+    ${critters.length ? '' : `<text x="500" y="300" text-anchor="middle" font-family="Mitr" font-size="34" font-weight="700" fill="#e54b82" stroke="#fff" stroke-width="6" paint-order="stroke">🎨 ระบายสีสัตว์ แล้วมันจะมาอยู่ที่นี่</text>`}`;
+  const g = $('critters');
+  for (const c of critters) {
+    c.el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    c.el.style.cursor = 'pointer';
+    g.appendChild(c.el);
+    c.el.addEventListener('pointerdown', (e) => { e.stopPropagation(); ensureAudio(); poke(c); });
+  }
+}
+function poke(c) {
+  buzz(15);
+  const A = ANIMALS[c.type], now = performance.now();
+  if (c.type === 'turtle') { c.act = 'hide'; c.until = now + 3000; boop(); speak('เต่าตกใจ หดหัวเข้ากระดองแล้ว'); return; }
+  if (c.type === 'butterfly') { c.act = 'fly'; c.tx = 100 + Math.random() * 800; c.ty = 120 + Math.random() * 200; speak('ผีเสื้อบินหนีแล้ว'); return; }
+  if (c.type === 'bird') { c.act = 'fly'; c.tx = BRANCH[0] + 40; c.ty = BRANCH[1]; speak('จิ๊บ จิ๊บ นกบินขึ้นไปเกาะกิ่งไม้'); return; }
+  if (c.type === 'fish') { c.act = 'jump'; c.until = now + 900; c.j0 = now; splash(c.x, POND.y - 20); speak('ปลากระโดดขึ้นมาจากน้ำ'); return; }
+  c.act = 'happy'; c.until = now + 1800;
+  if (c.type === 'elephant') speak('แปร๊นนน ช้างชูงวงทักทาย');
+  else if (c.type === 'dog') speak('โฮ่ง โฮ่ง หมากระดิกหางดีใจ');
+  else speak('เมี้ยว แมวชอบให้ลูบหัว');
+  tone(c.type === 'elephant' ? 180 : 520, 0.2, 'triangle', 0.1);
+}
+function splash(x, y) {
+  const fx = $('fx');
+  fx.insertAdjacentHTML('beforeend', `<g class="sp">${[-30, -12, 8, 28].map((dx) => `<circle cx="${x + dx}" cy="${y}" r="7" fill="#9fd3ff"><animate attributeName="cy" from="${y}" to="${y - 40}" dur=".45s" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur=".7s" fill="freeze"/></circle>`).join('')}</g>`);
+  setTimeout(() => { const s = fx.querySelector('.sp'); if (s) s.remove(); }, 800);
+  tone(900, 0.08, 'sine', 0.06);
+}
+function lifeTick(c, dt, now) {
+  const sp = SPEED[c.type];
+  c.t += dt;
+  if (c.type === 'fish') {
+    if (c.act === 'jump') { if (now > c.until) { c.act = 'walk'; splash(c.x, POND.y - 10); } }
+    else {
+      c.x += c.dir * sp * dt;
+      if (c.x > POND.x + POND.rx - 50 || c.x < POND.x - POND.rx + 50) c.dir *= -1;
+      c.y = POND.y + 8 * Math.sin(c.t * 0.7);
+    }
+    return;
+  }
+  if (c.type === 'butterfly') {
+    if (c.act === 'rest') { if (now > c.until) { c.act = 'fly'; c.tx = 100 + Math.random() * 800; c.ty = 100 + Math.random() * 250; } return; }
+    const dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
+    c.x += (dx / d) * sp * dt + Math.sin(c.t * 7) * 1.2; c.y += (dy / d) * sp * dt + Math.cos(c.t * 9) * 1.6;
+    c.dir = dx >= 0 ? 1 : -1;
+    if (d < 8) {
+      if (c.landing) { c.act = 'rest'; c.until = now + 2500 + Math.random() * 3000; c.landing = false; }
+      else if (Math.random() < 0.6) { const f = FLOWERS[Math.floor(Math.random() * FLOWERS.length)]; c.tx = f[0]; c.ty = f[1] - 14; c.landing = true; }
+      else { c.tx = 100 + Math.random() * 800; c.ty = 100 + Math.random() * 250; }
+    }
+    return;
+  }
+  if (c.type === 'bird') {
+    if (c.act === 'fly') {
+      const dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
+      c.x += (dx / d) * 260 * dt; c.y += (dy / d) * 260 * dt; c.dir = dx >= 0 ? 1 : -1;
+      if (d < 10) { c.act = c.ty < 300 ? 'perch' : 'hop'; c.until = now + 2500 + Math.random() * 3000; }
+      return;
+    }
+    if (c.act === 'perch') { if (now > c.until) { c.act = 'fly'; c.tx = 380 + Math.random() * 450; c.ty = 470 + Math.random() * 120; } return; }
+    if (now > c.until) {
+      const r = Math.random();
+      c.act = r < 0.45 ? 'hop' : r < 0.85 ? 'peck' : 'flyup';
+      c.until = now + (c.act === 'peck' ? 1400 : 1600);
+      if (c.act === 'flyup') { c.act = 'fly'; c.tx = BRANCH[0] + 40; c.ty = BRANCH[1]; }
+      if (Math.random() < 0.3) c.dir *= -1;
+    }
+    if (c.act === 'hop') { c.x += c.dir * 60 * dt; c.hopY = Math.abs(Math.sin(c.t * 9)) * 14; } else c.hopY = 0;
+    if (c.x < 380 || c.x > 960) c.dir *= -1;
+    return;
+  }
+  // walkers
+  if (c.act === 'hide') { c.tuck = Math.min(1, c.tuck + dt * 4); if (now > c.until) c.act = 'idle', c.until = now + 1500; return; }
+  if (c.type === 'turtle' && c.tuck > 0) c.tuck = Math.max(0, c.tuck - dt * 0.8);
+  if ((c.act === 'idle' || c.act === 'happy') && now > c.until) { c.act = 'walk'; c.until = now + 3000 + Math.random() * 5000; if (Math.random() < 0.4) c.dir *= -1; }
+  else if (c.act === 'walk') {
+    c.x += c.dir * sp * dt;
+    const half = 200 * SIZE[c.type] * 1.6;
+    if (c.x < 400 + half * 0.5) { c.dir = 1; } if (c.x > 1000 - half) { c.dir = -1; }
+    if (now > c.until) { c.act = 'idle'; c.until = now + 1800 + Math.random() * 3000; }
+  }
+}
+function drawCritter(c, now) {
+  const k = SIZE[c.type], A = ANIMALS[c.type];
+  let act = c.act, extra = { tuck: c.tuck };
+  if (c.type === 'bird') act = c.act === 'fly' ? 'fly' : c.act;
+  const speedK = c.type === 'turtle' ? 0.25 : c.type === 'elephant' ? 0.55 : 1;
+  const pose = poseOf(c.type, act === 'idle' ? 'idle' : act, c.t * (act === 'walk' ? 6 * speedK : 1) * (c.type === 'fish' || c.type === 'butterfly' ? 1 : 1), extra);
+  let y = c.y, rotz = 0;
+  if (c.type === 'fish' && c.act === 'jump') { const u = (now - c.j0) / 900; y = POND.y - 120 * 4 * u * (1 - u); rotz = -40 + 80 * u; }
+  if (c.type === 'bird') y -= c.hopY || 0;
+  // the box origin: feet at (200, 282) for walkers; centre for fish/butterfly
+  const ox = 200, oy = c.type === 'fish' || c.type === 'butterfly' ? 150 : 282;
+  const flip = c.dir < 0 ? -1 : 1;
+  let inner = drawAnimal(c.type, c.cols, pose);
+  if (pose._blink) inner = inner.replace(/class="eyes"/g, 'class="eyes" style="transform-box:fill-box;transform-origin:center;transform:scaleY(.12)"');
+  const shadow = c.type === 'fish' || (c.type === 'butterfly') || (c.type === 'bird' && c.act === 'fly') ? '' : `<ellipse cx="0" cy="2" rx="${150 * k}" ry="${14 * k}" fill="#000" opacity=".15"/>`;
+  c.el.innerHTML = `<g transform="translate(${c.x.toFixed(1)} ${y.toFixed(1)})">${shadow}<g transform="rotate(${rotz}) scale(${(flip * k).toFixed(3)} ${k}) translate(${-ox} ${-oy})">${inner}</g>${c.type === 'fish' ? '' : ''}</g>`;
+  if (c.type === 'fish') {
+    // fish lives under water: clip to the pond unless jumping
+    if (c.act === 'jump') c.el.removeAttribute('clip-path'); else c.el.setAttribute('clip-path', 'url(#pondClip)');
+  }
+}
+function worldTick(dt, now) {
+  if (!worldOn) return;
+  const w = $('world');
+  if (!w.querySelector('#pondClip')) w.querySelector('defs').insertAdjacentHTML('beforeend', `<clipPath id="pondClip"><ellipse cx="${POND.x}" cy="${POND.y}" rx="${POND.rx - 4}" ry="${POND.ry - 4}"/></clipPath>`);
+  // depth: farther (higher on screen) first
+  const sorted = critters.slice().sort((a, b) => a.y - b.y);
+  const g = $('critters');
+  for (const c of sorted) { lifeTick(c, dt, now); drawCritter(c, now); g.appendChild(c.el); }
+  for (const c of critters) if (c.say) { c.say = false; }
+  $('clouds').innerHTML = [0, 1, 2].map((i) => { const x = ((now / 1000 * (8 + i * 3) + i * 380) % 1300) - 150; return `<g opacity=".9"><ellipse cx="${x}" cy="${70 + i * 45}" rx="70" ry="26" fill="#fff"/><circle cx="${x - 25}" cy="${60 + i * 45}" r="26" fill="#fff"/><circle cx="${x + 20}" cy="${54 + i * 45}" r="32" fill="#fff"/></g>`; }).join('');
+}
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden) worldTick(dt, now);
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+buildPick(); buildPalette(); loadWorld(); buildWorld(); showScreen('pick');
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['เลือกสัตว์ที่จะระบายสี', 'ทุ่งของหนู', 'ยังไม่มีสัตว์ ระบายสีตัวแรกก่อนนะ', 'เต่าตกใจ หดหัวเข้ากระดองแล้ว', 'ผีเสื้อบินหนีแล้ว',
+    'จิ๊บ จิ๊บ นกบินขึ้นไปเกาะกิ่งไม้', 'ปลากระโดดขึ้นมาจากน้ำ', 'แปร๊นนน ช้างชูงวงทักทาย', 'โฮ่ง โฮ่ง หมากระดิกหางดีใจ', 'เมี้ยว แมวชอบให้ลูบหัว'];
+  for (const [, n] of PALETTE) L.push(n);
+  for (const id of ORDER) L.push('ระบายสี' + ANIMALS[id].th + 'เลย แตะสีแล้วแตะที่รูป', ANIMALS[id].say + ' มีชีวิตแล้ว');
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

@@ -166,6 +166,10 @@ Life on the ISS + rocket building. 🎈 ลอยตัว: fling objects in the
 
 Wind, rain and storms, all drag/tap. 💨 ลม: sea vs land with a circulating stream of air dots — day = ลมทะเล (land heats faster), night = ลมบก; flag + sailboat follow the wind; Thai monsoon seasons per TMD. 🌧️ ฝน: water cycle — tap the sea for vapour, it feeds a cloud that grows and greys; it rains when full (sooner over the mountain), the river runs back to the sea, a rainbow follows; tap a full cloud to squeeze it. ⚡ ฟ้าแลบ ฟ้าร้อง: drag the cloud up into a cumulonimbus, tap for lightning, the game counts seconds to the thunder (3 s per km, distance chips 1/2/3 km) + safety card. 🌀 พายุไต้ฝุ่น: circle counter-clockwise around the storm over warm sea to strengthen it (TMD scale: ดีเปรสชัน < 63, โซนร้อน 63–117, ไต้ฝุ่น ≥ 118 km/h, eye appears), drag its eye onto land and it weakens.
 
+### ระบายแล้วมีชีวิต (`/color-alive/`)
+
+Tap-to-fill 7 animals (cat, dog, Asian elephant, fish, butterfly, sparrow, tortoise), then they come alive in a meadow saved to localStorage (`colorAlive`, last 12). Animals are part rigs in `ANIMALS` (400×300 box, facing right, feet y≈282): each part has a pivot + paintable regions + fixed decoration; `poseOf` animates a diagonal walking gait, tail/ear/trunk sway, wing flaps, blinking. Anatomy is deliberate — slit cat pupils, Asian elephant (small ears, twin-domed head, arched back), fish with all 5 fin types, butterfly 4 wings + clubbed antennae, sparrow 3+1 toes, tortoise elephant-like feet. World behaviours: walkers wander/rest (tortoise ~7 px/s), bird hops/pecks/flies to the branch, butterfly lands on flowers and slowly opens/closes its wings, fish stays in the pond; taps trigger species reactions (tortoise hides in its shell, elephant raises its trunk…).
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
