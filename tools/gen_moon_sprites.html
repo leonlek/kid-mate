@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><pre id="out"></pre>
+<script>
+// Near side of the Moon as seen from Earth (orthographic, centred on 0°N 0°E, north up)
+// from solar-system/tex/2k_moon.jpg → moon/img/nearside.webp (run tools/gen_moon_sprites.sh)
+const img = new Image();
+img.onload = () => {
+  const W = img.width, H = img.height, src = document.createElement('canvas');
+  src.width = W; src.height = H;
+  const sx = src.getContext('2d'); sx.drawImage(img, 0, 0);
+  const px = sx.getImageData(0, 0, W, H).data;
+  const S = 512, out = document.createElement('canvas'); out.width = out.height = S;
+  const ox = out.getContext('2d'), od = ox.createImageData(S, S);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const X = (x + 0.5 - S / 2) / (S / 2), Y = (S / 2 - y - 0.5) / (S / 2), r2 = X * X + Y * Y;
+    if (r2 > 1) continue;
+    const Z = Math.sqrt(1 - r2), lat = Math.asin(Y), lon = Math.atan2(X, Z);
+    const u = Math.min(W - 1, Math.floor((lon / (2 * Math.PI) + 0.5) * W)), v = Math.min(H - 1, Math.floor((0.5 - lat / Math.PI) * H));
+    const i = (v * W + u) * 4, o = (y * S + x) * 4, edge = Math.min(1, (1 - Math.sqrt(r2)) * S / 2);   // anti-aliased rim
+    const k = 1.12 * (0.86 + 0.14 * Z);
+    od.data[o] = Math.min(255, px[i] * k); od.data[o + 1] = Math.min(255, px[i + 1] * k); od.data[o + 2] = Math.min(255, px[i + 2] * k * 0.97); od.data[o + 3] = 255 * edge;
+  }
+  ox.putImageData(od, 0, 0);
+  document.getElementById('out').textContent = JSON.stringify({ nearside: out.toDataURL('image/webp', 0.82) });
+};
+img.src = '../solar-system/tex/2k_moon.jpg';
+</script>

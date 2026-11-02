@@ -154,6 +154,10 @@ Front-view child SVG (400×780; viewer's left = the child's right, so the heart 
 
 5 cycles in `CYCLES` (ผีเสื้อ, กบ, ไก่, ถั่วเขียว, คน) drawn as a ring of stage nodes; custom SVG in `DRAW` for stages with no emoji (eggs on a leaf, chrysalis, frog spawn, tadpoles, froglet, seed, sprout, flowering plant, pods). 🔄 watch = step through with voice; 🧩 order = tap shuffled cards in sequence. Timings are typical ranges and the card says so.
 
+### ดวงจันทร์ (`/moon/`)
+
+Five modes. 🔭 คืนนี้: the real phase for any date — new/full moon instants from Meeus ch. 49 (checked against NASA to ~2 min), Thai ขึ้น/แรม ค่ำ counted from the true new-moon day in Thai time (the card says the official Thai calendar can be a day off); 34-day strip of mini moons; face = `img/nearside.webp` (real near side, `tools/gen_moon_sprites.sh`), dark part keeps faint earthshine. 🚀 ลงจอด: hold 🔥 to land (gravity 1.62 m/s², ≤2.5 m/s ⭐⭐⭐, ≤4 ⭐⭐, faster bounces), then hop around leaving footprints / plant a flag. 🌑 สุริยุปราคา: drag the Moon over the Sun; near Moon (33.5′) → total with corona + stars, far (29.4′) → annular ring; Wakor 18 Aug 2411. 🌊 น้ำขึ้นน้ำลง: drag Earth/Moon, tidal bulge (exaggerated) + beach water level; Sun adds 46 % → น้ำเกิด/น้ำตาย. 🪐 ดวงจันทร์ดาวอื่น: 10 moons (NASA diameters, drawn art) + true-scale compare with Mercury. Every card is tap-to-hear (same `sayKit` as ท่องอวกาศ).
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🌙 ดวงจันทร์ — คิดส์เล่น</title>
+<meta name="description" content="เกมดวงจันทร์สำหรับเด็กไทย ดูดวงจันทร์คืนนี้ ลงจอดบนดวงจันทร์ สุริยุปราคา น้ำขึ้นน้ำลง และดวงจันทร์ของดาวดวงอื่น">
+<meta name="theme-color" content="#0b1033">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ดวงจันทร์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+    --space: #0b1033; --space-2: #1b2160;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 35%, var(--space-2) 0%, var(--space) 60%, #05071c 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  /* brand cloud strip — here it drifts like space dust */
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.12; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--gold); text-shadow: 3px 3px 0 var(--brand-dark);
+  }
+  .modes, .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .row .chip.on { background: var(--gold); border-color: #e0b400; color: var(--ink); }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) { .main { grid-template-columns: minmax(0, 1fr) 360px; } }
+  .view { position: relative; background: #05071c; border: 4px solid rgba(255,255,255,.18); border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.35); }
+  .view svg { display: block; width: 100%; height: auto; }
+  #scene { max-height: 70vh; touch-action: none; }
+  #scene2 { touch-action: manipulation; }
+  .hidden { display: none !important; }
+
+  .days { display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .day {
+    flex: 0 0 auto; width: 78px; min-height: 100px; border-radius: 20px; scroll-snap-align: center;
+    border: 3px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; cursor: pointer;
+    font-family: 'Mitr', sans-serif; font-size: 14px; font-weight: 600; padding: 6px 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .day svg { width: 58px; height: 58px; }
+  .day.on { border-color: var(--gold); background: rgba(255,217,61,.22); }
+  .day.today span { color: var(--gold); }
+  .day:active { transform: scale(.95); }
+  .burn {
+    font-family: 'Mitr', sans-serif; font-size: 26px; font-weight: 700; color: #fff;
+    width: 100%; min-height: 96px; border-radius: 999px; margin-top: 10px; cursor: pointer;
+    border: 4px solid #c0392b; background: #ff6b3d; box-shadow: 0 6px 0 #c0392b; touch-action: none;
+  }
+  .burn.on { transform: translateY(4px); box-shadow: 0 2px 0 #c0392b; background: #ffb347; }
+  .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; margin-top: 10px; }
+  .mbtn {
+    min-height: 104px; border-radius: 20px; border: 3px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08);
+    color: #fff; font-family: 'Mitr', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px 2px;
+  }
+  .mbtn svg { width: 60px; height: 60px; }
+  .mbtn.on { border-color: var(--gold); background: rgba(255,217,61,.22); }
+  .mbtn:active { transform: scale(.95); }
+
+  /* info panel — inline, never a popup */
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.35);
+  }
+  .p-head { display: flex; align-items: center; gap: 12px; }
+  .p-head svg { width: 84px; height: 84px; flex-shrink: 0; }
+  .p-name { font-family: 'Itim', cursive; font-size: 32px; line-height: 1.05; color: var(--brand-dark); }
+  .p-sub { font-size: 14px; color: #777; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .say.on { background: var(--gold); border-color: #e0b400; }
+  .sayrow { display: flex; justify-content: flex-end; }
+  .sayrow .say { width: auto; padding: 0 18px; border-radius: 999px; font-family: inherit; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .sayable { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s; }
+  .sayable:active { transform: scale(0.97); }
+  .fact.sayable { position: relative; padding-right: 26px; }
+  .fact.sayable::after { content: '🔈'; position: absolute; top: 6px; right: 6px; font-size: 13px; opacity: .55; }
+  .know li.sayable::after { content: ' 🔈'; font-size: 13px; opacity: .55; }
+  .reading { outline: 4px solid var(--gold); outline-offset: 2px; border-radius: 16px; background-color: #fff3b0 !important; }
+  .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0 8px; }
+  .fact { background: #f6f7ff; border-radius: 16px; padding: 8px 10px; }
+  .fact .k { font-size: 13px; color: #6b7280; }
+  .fact .v { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 16px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .q-text { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .q-hint { text-align: center; font-size: 15px; color: #6b7280; }
+  .clockbig { font-family: 'Itim', cursive; font-size: 40px; text-align: center; color: var(--brand-dark); line-height: 1.1; }
+  .badge { display: block; width: fit-content; margin: 6px auto 0; font-size: 18px; font-weight: 700; padding: 4px 16px; border-radius: 999px; background: #fff3b0; }
+  .res { font-size: 18px; line-height: 1.45; margin-top: 10px; }
+  .res b { color: var(--brand-dark); }
+  .warn { background: #ffe1e1; border-radius: 16px; padding: 8px 12px; margin-top: 10px; font-size: 16px; line-height: 1.4; font-weight: 600; }
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🌙 ดวงจันทร์</h1></header>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="tonight">🔭 คืนนี้</button>
+    <button class="chip" data-mode="land">🚀 ลงจอด</button>
+    <button class="chip" data-mode="solar">🌑 สุริยุปราคา</button>
+    <button class="chip" data-mode="tide">🌊 น้ำขึ้นน้ำลง</button>
+    <button class="chip" data-mode="moons">🪐 ดวงจันทร์ดาวอื่น</button>
+  </div>
+  <div class="main">
+    <div>
+      <div class="view">
+        <svg id="scene" viewBox="0 0 1000 640" aria-label="ดวงจันทร์"></svg>
+        <svg id="scene2" class="hidden" viewBox="0 0 1000 230"></svg>
+      </div>
+      <div id="ctrls"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene'), scene2 = $('scene2'), ctrls = $('ctrls'), panel = $('panel');
+const MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+const MSHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const WDAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+let mode = 'tonight';
+
+function starfield(seed, n, w = 1000, h = 700) {
+  let s = '', x = seed;
+  const rnd = () => (x = (x * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) s += `<circle cx="${(rnd() * w).toFixed(0)}" cy="${(rnd() * h).toFixed(0)}" r="${(0.8 + rnd() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.25 + rnd() * 0.55).toFixed(2)}"/>`;
+  return s;
+}
+function svgPt(svg, ev) {
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+let uidN = 0;
+const uid = () => 'u' + (++uidN);
+
+// ---- the Moon's face ----
+// img/nearside.webp = the real near side (tools/gen_moon_sprites.sh). The dark part
+// keeps a faint image: earthshine. e = 0 new → π full → 2π; waxing lights the RIGHT
+// side (as seen from Thailand, north up).
+function litPath(e, R) {
+  const k = (1 - Math.cos(e)) / 2, waxing = ((e % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) < Math.PI;
+  if (k < 0.006) return null;
+  if (k > 0.994) return 'full';
+  const rx = (Math.abs(1 - 2 * k) * R).toFixed(1), cres = k < 0.5;
+  return waxing
+    ? `M 0 ${-R} A ${R} ${R} 0 0 1 0 ${R} A ${rx} ${R} 0 0 ${cres ? 0 : 1} 0 ${-R} Z`
+    : `M 0 ${-R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 ${cres ? 1 : 0} 0 ${-R} Z`;
+}
+function moonFace(R, opt = '') {
+  return `<image href="img/nearside.webp" x="${-R}" y="${-R}" width="${2 * R}" height="${2 * R}" ${opt}/>`;
+}
+function moonDisc(R, e) {
+  const d = litPath(e, R), id = uid();
+  let s = `<circle r="${R}" fill="#151830"/>` + moonFace(R, 'opacity=".14"');
+  if (d === 'full') s += moonFace(R);
+  else if (d) s += `<clipPath id="${id}"><path d="${d}"/></clipPath>` + moonFace(R, `clip-path="url(#${id})"`);
+  return s;
+}
+
+// ============================================================================
+// 🔭 TONIGHT — the real phase for any date. New/full moon instants from Meeus,
+// Astronomical Algorithms ch. 49 (main periodic terms, good to a few minutes).
+// Thai lunar days are counted from the day of the true new moon (Thai time); the
+// official Thai calendar is computed differently and can be a day off — the card says so.
+// ============================================================================
+const SYN = 29.530588861, DAY = 864e5;
+const jdOf = (ms) => ms / DAY + 2440587.5, msOf = (jd) => (jd - 2440587.5) * DAY;
+const rad = (d) => d * Math.PI / 180;
+function phaseJDE(k, full) {
+  const kk = k + (full ? 0.5 : 0), T = kk / 1236.85, E = 1 - 0.002516 * T;
+  const M = rad(2.5534 + 29.1053567 * kk), Mp = rad(201.5643 + 385.81693528 * kk), F = rad(160.7108 + 390.67050284 * kk), O = rad(124.7746 - 1.56375588 * kk);
+  const S = Math.sin;
+  let jd = 2451550.09766 + 29.530588861 * kk + 0.00015437 * T * T;
+  jd += (full ? -0.40614 : -0.40720) * S(Mp) + (full ? 0.17302 : 0.17241) * E * S(M) + (full ? 0.01614 : 0.01608) * S(2 * Mp)
+    + (full ? 0.01043 : 0.01039) * S(2 * F) + (full ? 0.00734 : 0.00739) * E * S(Mp - M) - (full ? 0.00515 : 0.00514) * E * S(Mp + M)
+    + (full ? 0.00209 : 0.00208) * E * E * S(2 * M) - 0.00111 * S(Mp - 2 * F) - 0.00057 * S(Mp + 2 * F) + 0.00056 * E * S(2 * Mp + M)
+    - 0.00042 * S(3 * Mp) + 0.00042 * E * S(M + 2 * F) + 0.00038 * E * S(M - 2 * F) - 0.00024 * E * S(2 * Mp - M) - 0.00017 * S(O);
+  return jd;
+}
+function lunation(ms) {
+  const jd = jdOf(ms);
+  let k = Math.floor((jd - 2451550.09766) / SYN), a = phaseJDE(k, false);
+  while (a > jd) { k--; a = phaseJDE(k, false); }
+  let b = phaseJDE(k + 1, false);
+  while (b <= jd) { k++; a = b; b = phaseJDE(k + 1, false); }
+  return { k, prev: msOf(a), next: msOf(b), full: msOf(phaseJDE(k, true)) };
+}
+const dayIdx = (ms) => Math.floor(ms / DAY + 7 / 24);            // Thai calendar day number
+const eveMs = (di) => (di - 7 / 24 + 20 / 24) * DAY;            // 8 pm Thai time that day
+const today = dayIdx(Date.now());
+let selDay = today;
+function thDate(di, short) {
+  const d = new Date(di * DAY);                                  // UTC fields = the Thai date
+  return short ? d.getUTCDate() + ' ' + MSHORT[d.getUTCMonth()]
+    : 'วัน' + WDAYS[d.getUTCDay()] + 'ที่ ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + (d.getUTCFullYear() + 543);
+}
+function timeTH(h) {
+  if (h === 0) return 'เที่ยงคืน';
+  if (h < 6) return 'ตี ' + h;
+  if (h < 12) return h + ' โมงเช้า';
+  if (h === 12) return 'เที่ยงวัน';
+  if (h === 13) return 'บ่ายโมง';
+  if (h < 16) return 'บ่าย ' + (h - 12) + ' โมง';
+  if (h < 19) return (h - 12) + ' โมงเย็น';
+  return (h - 18) + ' ทุ่ม';
+}
+const PH_NAMES = ['คืนเดือนเพ็ญ', 'เดือนดับ'];
+for (let i = 1; i <= 15; i++) PH_NAMES.push('ขึ้น ' + i + ' ค่ำ', 'แรม ' + i + ' ค่ำ');
+function moonInfo(di) {
+  const ms = eveMs(di), L = lunation(ms);
+  const f = (ms - L.prev) / (L.next - L.prev), e = 2 * Math.PI * f;
+  const n = di - dayIdx(L.prev), newDay = dayIdx(L.next), fullDay = dayIdx(L.full);
+  const nextFull = fullDay >= di ? fullDay : dayIdx(msOf(phaseJDE(L.k + 1, true)));
+  const isFull = di === fullDay, isNew = n === 0 || di === newDay;
+  const name = isFull ? 'คืนเดือนเพ็ญ' : isNew ? 'เดือนดับ' : n <= 15 ? 'ขึ้น ' + n + ' ค่ำ' : 'แรม ' + (n - 15) + ' ค่ำ';
+  return {
+    e, f, name, isFull, isNew,
+    pct: Math.round((1 - Math.cos(e)) / 2 * 20) * 5,
+    rise: Math.round(6 + f * 24.84) % 24,                       // the Moon rises ~50 min later each day
+    nextFull, toFull: nextFull - di, newDay: n === 0 ? di : newDay, toNew: n === 0 ? 0 : newDay - di,
+  };
+}
+const VIS = [
+  [0.034, 'คืนนี้มองไม่เห็นดวงจันทร์ เพราะด้านที่สว่างหันไปทางดวงอาทิตย์ และดวงจันทร์ขึ้นตกพร้อมดวงอาทิตย์'],
+  [0.22, 'ดูได้ตอนหัวค่ำ ทางทิศตะวันตก หลังดวงอาทิตย์ตก แล้วดวงจันทร์จะตกตามไป'],
+  [0.28, 'ดูได้ตอนหัวค่ำ ดวงจันทร์ครึ่งดวงอยู่สูงกลางฟ้า แล้วตกตอนเที่ยงคืน'],
+  [0.47, 'ดวงจันทร์ขึ้นตอนบ่าย ดูได้ตั้งแต่หัวค่ำจนดึก'],
+  [0.53, 'ดวงจันทร์เต็มดวงขึ้นทางทิศตะวันออกตอนดวงอาทิตย์ตก และอยู่บนฟ้าทั้งคืน'],
+  [0.72, 'ดวงจันทร์ขึ้นตอนค่ำ ดูได้ตั้งแต่ดึกจนถึงเช้า'],
+  [0.78, 'ดวงจันทร์ขึ้นตอนเที่ยงคืน ตอนเช้ายังเห็นอยู่บนฟ้า แม้เป็นกลางวันแล้ว'],
+  [0.966, 'ดูได้ตอนเช้ามืด ทางทิศตะวันออก ก่อนดวงอาทิตย์ขึ้น'],
+  [1.01, 'คืนนี้มองไม่เห็นดวงจันทร์ เพราะด้านที่สว่างหันไปทางดวงอาทิตย์ และดวงจันทร์ขึ้นตกพร้อมดวงอาทิตย์'],
+];
+const visOf = (f) => VIS.find((v) => f < v[0])[1];
+const TONIGHT_KNOW = [
+  'ดวงจันทร์ไม่มีแสงในตัวเอง แสงที่เห็นคือแสงอาทิตย์ที่สะท้อนมา',
+  'ดวงจันทร์โดนแสงอาทิตย์ครึ่งดวงเสมอ ข้างขึ้นข้างแรมเกิดจากเรามองเห็นด้านสว่างจากมุมที่ต่างกัน',
+  'จากเดือนดับถึงเดือนดับครั้งต่อไป ใช้เวลาราว 29 วันครึ่ง',
+  'ลายสีเข้มบนดวงจันทร์คือที่ราบลาวาที่เย็นตัวแล้ว คนไทยมองเห็นเป็นรูปกระต่าย',
+  'เมืองไทยอยู่ใกล้เส้นศูนย์สูตร พระจันทร์เสี้ยวตอนหัวค่ำจึงนอนตะแคง ดูเหมือนเรือหรือรอยยิ้ม',
+  'ส่วนมืดที่เห็นจางๆ เกิดจากแสงที่โลกสะท้อนไปตกบนดวงจันทร์ เรียกว่าแสงโลก',
+];
+const whenOf = (di) => di === today ? 'คืนนี้' : 'คืนนั้น';
+function buildTonight() {
+  const m = moonInfo(selDay);
+  scene.setAttribute('viewBox', '0 0 1000 640');
+  scene.innerHTML = `<defs><linearGradient id="nsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070a26"/><stop offset="1" stop-color="#26306e"/></linearGradient>
+      <radialGradient id="mglow"><stop offset=".55" stop-color="#fff6cf" stop-opacity=".4"/><stop offset="1" stop-color="#fff6cf" stop-opacity="0"/></radialGradient></defs>
+    <rect width="1000" height="640" fill="url(#nsky)"/>${starfield(5, 130, 1000, 560)}
+    <circle cx="500" cy="285" r="285" fill="url(#mglow)" opacity="${(m.pct / 100).toFixed(2)}"/>
+    <g id="bigMoon" transform="translate(500 285)" style="cursor:pointer">${moonDisc(205, m.e)}</g>
+    <path d="M0,640 L0,582 Q90,560 180,578 Q260,592 330,575 L360,575 L360,560 L372,560 L372,540 L420,515 L468,540 L468,560 L480,560 L480,575 Q600,588 700,570 Q820,552 1000,584 L1000,640 Z" fill="#05071a"/>
+    <path d="M405,522 L380,505 M435,522 L460,505" stroke="#05071a" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="120" cy="560" r="26" fill="#05071a"/><rect x="116" y="560" width="8" height="30" fill="#05071a"/>
+    <circle cx="860" cy="552" r="34" fill="#05071a"/><rect x="855" y="552" width="10" height="36" fill="#05071a"/>
+    <text x="500" y="44" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#ffd93d" stroke="#05071a" stroke-width="6" paint-order="stroke">${whenOf(selDay)} · ${m.name}</text>`;
+  $('bigMoon').addEventListener('click', () => { ensureAudio(); buzz(8); blip(700); speak(whenOf(selDay) + ' ' + m.name); });
+}
+function buildDays() {
+  let s = '<div class="days" id="days">';
+  for (let di = today - 3; di <= today + 30; di++) {
+    const m = moonInfo(di);
+    s += `<button class="day${di === selDay ? ' on' : ''}${di === today ? ' today' : ''}" data-di="${di}"><svg viewBox="-32 -32 64 64">${moonDisc(29, m.e)}</svg>
+      <span>${di === today ? 'วันนี้' : di === today + 1 ? 'พรุ่งนี้' : thDate(di, true)}</span></button>`;
+  }
+  ctrls.innerHTML = s + '</div>';
+  for (const b of ctrls.querySelectorAll('.day')) b.addEventListener('click', () => {
+    ensureAudio(); buzz(8); blip(620);
+    selDay = +b.dataset.di;
+    for (const o of ctrls.querySelectorAll('.day')) o.classList.toggle('on', o === b);
+    buildTonight(); renderTonight();
+    speak(whenOf(selDay) + ' ' + moonInfo(selDay).name);
+  });
+  const on = ctrls.querySelector('.day.on');
+  if (on) { const box = $('days'); box.scrollLeft = on.offsetLeft - box.clientWidth / 2 + on.offsetWidth / 2; }
+}
+function renderTonight() {
+  const m = moonInfo(selDay), w = whenOf(selDay);
+  panel.innerHTML = `
+    <div class="clockbig" data-say="${w} ${m.name}">${m.name}</div>
+    <div class="q-hint">${thDate(selDay)} · ภาพที่เห็นจากเมืองไทย</div>
+    <div class="facts">
+      <div class="fact" data-say="ดวงจันทร์สว่างราว ${m.pct} เปอร์เซ็นต์"><div class="k">💡 ส่วนที่สว่าง</div><div class="v">ราว ${m.pct}%</div></div>
+      <div class="fact" data-say="${m.isNew ? 'วันนี้มองไม่เห็นดวงจันทร์' : 'ดวงจันทร์ขึ้นราว ' + timeTH(m.rise)}"><div class="k">🌄 ดวงจันทร์ขึ้น</div><div class="v">${m.isNew ? 'มองไม่เห็น' : 'ราว ' + timeTH(m.rise)}</div></div>
+      <div class="fact" data-say="${m.toFull === 0 ? w + 'เป็นคืนเพ็ญ' : 'อีก ' + m.toFull + ' วัน จะถึงคืนเพ็ญ'}"><div class="k">🌕 เพ็ญครั้งหน้า</div><div class="v">${m.toFull === 0 ? 'คืนนี้เลย!' : thDate(m.nextFull, true) + '<br><small>อีก ' + m.toFull + ' วัน</small>'}</div></div>
+      <div class="fact" data-say="${m.toNew === 0 ? 'วันนี้เป็นวันเดือนดับ' : 'อีก ' + m.toNew + ' วัน จะถึงเดือนดับ'}"><div class="k">🌑 เดือนดับครั้งหน้า</div><div class="v">${m.toNew === 0 ? 'วันนี้' : thDate(m.newDay, true) + '<br><small>อีก ' + m.toNew + ' วัน</small>'}</div></div>
+    </div>
+    <div class="res">🔭 ${visOf(m.f)}</div>
+    <ul class="know">${TONIGHT_KNOW.map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">เวลาจันทร์ดับ/จันทร์เพ็ญคำนวณตามสูตรดาราศาสตร์ (Meeus) · นับค่ำจากวันจันทร์ดับจริง ปฏิทินจันทรคติไทยอาจต่างได้ 1 วัน · เวลาขึ้นเป็นค่าประมาณ</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🚀 LANDING — hold the engine to slow down. Real lunar gravity 1.62 m/s².
+// ============================================================================
+const G_MOON = 1.62, THRUST = 3.4, BURN = 9, PX_M = 4.8, GROUND = 600;
+let lm = { state: 'ready', alt: 100, v: 4, fuel: 100, hold: false, vHit: 0 };
+let astro = null;                     // { x, hop: {x0, x1, t0, dur, h} | null, queue: [] }
+function lander() {
+  return `<g id="flame" opacity="0"><path d="M-17,-22 L17,-22 L0,46 Z" fill="#ff9f43"/><path d="M-9,-22 L9,-22 L0,22 Z" fill="#fff3b0"/></g>
+    <path d="M-40,-50 L-80,0 M40,-50 L80,0" stroke="#bfc3cc" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-96,0 h32 M64,0 h32" stroke="#bfc3cc" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-14,-42 L14,-42 L22,-20 L-22,-20 Z" fill="#555b66" stroke="#2d3436" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="-58" y="-90" width="116" height="48" rx="6" fill="#e0a92a" stroke="#2d3436" stroke-width="4"/>
+    <path d="M-40,-90 L-34,-42 M-6,-90 L2,-42 M30,-90 L36,-42" stroke="#b57f12" stroke-width="3"/>
+    <path d="M-46,-90 L-46,-132 L-22,-154 L26,-154 L48,-130 L48,-90 Z" fill="#e8e9f0" stroke="#2d3436" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-26,-138 L-8,-148 L-8,-124 L-26,-118 Z" fill="#2b3a67"/>
+    <path d="M26,-154 L38,-178" stroke="#2d3436" stroke-width="4"/><circle cx="39" cy="-181" r="7" fill="#e8e9f0" stroke="#2d3436" stroke-width="3"/>`;
+}
+function astronaut() {
+  return `<g transform="scale(.55)">
+    <rect x="-34" y="-96" width="20" height="52" rx="8" fill="#cfd6e6" stroke="#2d3436" stroke-width="4"/>
+    <rect x="-26" y="-100" width="52" height="64" rx="18" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="-12" y="-82" width="24" height="16" rx="5" fill="#ff6b9d" stroke="#2d3436" stroke-width="3"/>
+    <rect x="-24" y="-40" width="20" height="40" rx="8" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="4" y="-40" width="20" height="40" rx="8" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <rect x="-44" y="-92" width="18" height="40" rx="9" fill="#fff" stroke="#2d3436" stroke-width="5" transform="rotate(20 -35 -92)"/>
+    <rect x="26" y="-92" width="18" height="40" rx="9" fill="#fff" stroke="#2d3436" stroke-width="5" transform="rotate(-20 35 -92)"/>
+    <circle cx="0" cy="-128" r="34" fill="#fff" stroke="#2d3436" stroke-width="5"/>
+    <ellipse cx="2" cy="-126" rx="22" ry="17" fill="#d9a520"/>
+    <ellipse cx="-6" cy="-132" rx="7" ry="4" fill="#fff" opacity=".8"/></g>`;
+}
+function buildLand() {
+  scene.setAttribute('viewBox', '0 0 1000 700');
+  let craters = '';
+  for (const [x, y, rx] of [[90, 650, 46], [250, 680, 30], [700, 660, 52], [880, 640, 34], [960, 690, 26], [330, 640, 18], [610, 690, 22]]) {
+    craters += `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${rx * 0.28}" fill="#6f6f74"/><ellipse cx="${x}" cy="${y - 2}" rx="${rx * 0.86}" ry="${rx * 0.2}" fill="#5d5d62"/>`;
+  }
+  scene.innerHTML = `<rect width="1000" height="700" fill="#000"/>${starfield(9, 120, 1000, 560)}
+    <image href="../solar-system/img/earth.webp" x="790" y="56" width="110" height="110"/>
+    <text x="845" y="192" text-anchor="middle" font-family="Mitr" font-size="20" fill="#9fb4ff">โลก</text>
+    <path d="M0,612 Q120,592 250,606 Q330,612 400,${GROUND} L600,${GROUND} Q700,598 820,614 Q900,620 1000,604 L1000,700 L0,700 Z" fill="#9b9ba1"/>
+    ${craters}
+    <g id="prints"></g><g id="flagG"></g>
+    <g id="lmG">${lander()}</g>
+    <g id="astroG"></g>
+    <g font-family="Mitr" font-weight="700">
+      <rect x="16" y="16" width="400" height="172" rx="22" fill="rgba(255,255,255,.12)"/>
+      <text id="gSpd" x="36" y="72" font-size="44" fill="#7ed957"></text>
+      <text id="gAlt" x="36" y="124" font-size="32" fill="#cfd6ff"></text>
+      <rect x="36" y="146" width="360" height="22" rx="11" fill="rgba(255,255,255,.2)"/><rect id="gFuel" x="36" y="146" width="360" height="22" rx="11" fill="#ffd93d"/>
+    </g>
+    <text id="landMsg" x="500" y="250" text-anchor="middle" font-family="Mitr" font-size="40" font-weight="700" fill="#ffd93d" stroke="#000" stroke-width="8" paint-order="stroke"></text>`;
+  placeLand();
+}
+function placeLand() {
+  const y = GROUND - Math.max(0, lm.alt) * PX_M;
+  $('lmG').setAttribute('transform', `translate(500 ${y.toFixed(1)})`);
+  $('flame').setAttribute('opacity', lm.state === 'fly' && lm.hold && lm.fuel > 0 ? (0.75 + Math.random() * 0.25).toFixed(2) : 0);
+  const sp = Math.abs(lm.v), col = sp <= 2.5 ? '#7ed957' : sp <= 4 ? '#ffd93d' : '#ff6b6b';
+  $('gSpd').textContent = (sp <= 2.5 ? '😊 ' : sp <= 4 ? '😬 ' : '😱 ') + sp.toFixed(1) + ' ม./วินาที';
+  $('gSpd').setAttribute('fill', col);
+  $('gAlt').textContent = '⬇ สูง ' + Math.max(0, Math.round(lm.alt)) + ' ม. · ⛽';
+  $('gFuel').setAttribute('width', (3.6 * Math.max(0, lm.fuel)).toFixed(0));
+  const msg = $('landMsg');
+  if (lm.state === 'fly') msg.textContent = lm.alt < 40 && sp > 4 ? 'ช้าลงหน่อย! 🔥' : '';
+}
+let engine = null;
+function engineOn() {
+  if (!AC || engine) return;
+  try {
+    const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0);
+    let l = 0;
+    for (let i = 0; i < d.length; i++) { l = (l + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; }
+    const n = AC.createBufferSource(), g = AC.createGain();
+    n.buffer = b; n.loop = true; g.gain.value = 0.35; n.connect(g).connect(AC.destination); n.start();
+    engine = n;
+  } catch (e) {}
+}
+function engineOff() { if (engine) { try { engine.stop(); } catch (e) {} engine = null; } }
+function setHold(on) {
+  lm.hold = on;
+  const b = $('burnBtn'); if (b) b.classList.toggle('on', on);
+  if (on && lm.state === 'fly' && lm.fuel > 0) { engineOn(); buzz(15); } else engineOff();
+}
+function startLanding() {
+  lm = { state: 'fly', alt: 100, v: 4, fuel: 100, hold: false, vHit: 0 };
+  astro = null; buildLand(); renderLandCtrls(); renderLand();
+  speak('กดปุ่มไฟค้างไว้ เพื่อชะลอยาน ค่อยๆ ลงจอดนะ');
+}
+function landTick(dt) {
+  if (lm.state !== 'fly' && lm.state !== 'bounce') return;
+  const burning = lm.state === 'fly' && lm.hold && lm.fuel > 0;
+  if (lm.hold && lm.fuel <= 0) engineOff();
+  lm.v += (G_MOON - (burning ? THRUST : 0)) * dt;
+  lm.alt -= lm.v * dt;
+  if (burning) lm.fuel -= BURN * dt;
+  if (lm.alt > 130) { lm.alt = 130; lm.v = Math.max(lm.v, 0); }
+  if (lm.alt <= 0) {
+    lm.alt = 0;
+    if (lm.state === 'fly') {
+      lm.vHit = lm.v;
+      if (lm.v > 4) { lm.state = 'bounce'; lm.v = -lm.v * 0.35; boop(); buzz([40, 30, 40]); setHold(false); dust(); }
+      else touchdown(lm.v <= 2.5 ? 3 : 2);
+    } else if (Math.abs(lm.v) < 1.2) touchdown(0);
+    else { lm.v = -lm.v * 0.35; boop(); }
+  }
+  placeLand();
+}
+function dust() {
+  const g = $('prints');
+  g.insertAdjacentHTML('beforeend', `<g class="puff"><ellipse cx="420" cy="${GROUND - 6}" rx="60" ry="12" fill="#c9c9cf" opacity=".7"/><ellipse cx="580" cy="${GROUND - 6}" rx="60" ry="12" fill="#c9c9cf" opacity=".7"/></g>`);
+  setTimeout(() => { const p = g.querySelector('.puff'); if (p) p.remove(); }, 900);
+}
+function touchdown(stars) {
+  lm.state = stars ? 'landed' : 'hard'; lm.v = 0; setHold(false); placeLand();
+  dust();
+  $('landMsg').textContent = stars ? 'ลงจอดสำเร็จ! ' + '⭐'.repeat(stars) : 'แรงไปหน่อย ลองใหม่นะ';
+  if (stars) { cheer(); celebrate(stars === 3 ? 90 : 50); buzz([30, 20, 40]); speak(stars === 3 ? 'ลงจอดนุ่มนวลมาก เก่งที่สุด' : 'ลงจอดสำเร็จ เก่งมาก'); }
+  else speak('ยานกระแทกพื้นแรงไปหน่อย ลองใหม่นะ');
+  renderLandCtrls(); renderLand();
+}
+function walkOut() {
+  lm.state = 'walk';
+  astro = { x: 600, y: 0, hop: null, queue: [] };
+  $('landMsg').textContent = '';
+  drawAstro(); renderLandCtrls(); renderLand();
+  speak('แตะพื้นเพื่อเดิน แล้วดูรอยเท้านะ');
+}
+function drawAstro() {
+  if (!astro) { $('astroG').innerHTML = ''; return; }
+  $('astroG').innerHTML = `<g transform="translate(${astro.x.toFixed(1)} ${(GROUND - astro.y).toFixed(1)})">${astronaut()}</g>`;
+}
+function hopTo(x, h, dur) {
+  astro.queue.push({ x, h, dur });
+  if (!astro.hop) nextHop();
+}
+function nextHop() {
+  const q = astro.queue.shift();
+  if (!q) { astro.hop = null; return; }
+  astro.hop = { x0: astro.x, x1: q.x, h: q.h, dur: q.dur, t0: performance.now() };
+}
+function astroTick(now) {
+  if (!astro || !astro.hop) return;
+  const hp = astro.hop, u = Math.min(1, (now - hp.t0) / hp.dur);
+  astro.x = hp.x0 + (hp.x1 - hp.x0) * u; astro.y = hp.h * 4 * u * (1 - u);
+  if (u >= 1) {
+    astro.y = 0;
+    $('prints').insertAdjacentHTML('beforeend', `<g transform="translate(${astro.x.toFixed(0)} ${GROUND + 6})"><ellipse cx="-9" cy="0" rx="7" ry="3.5" fill="#6b6b70"/><ellipse cx="9" cy="2" rx="7" ry="3.5" fill="#6b6b70"/></g>`);
+    tone(180, 0.08, 'sine', 0.06);
+    nextHop();
+  }
+  drawAstro();
+}
+function walkToward(tx) {
+  tx = Math.max(60, Math.min(940, tx));
+  astro.queue = [];
+  let x = astro.hop ? astro.hop.x1 : astro.x;
+  const steps = Math.max(1, Math.round(Math.abs(tx - x) / 70));
+  for (let i = 1; i <= steps; i++) hopTo(x + (tx - x) * i / steps, 34, 820);
+  buzz(8);
+}
+function plantFlag() {
+  const x = Math.max(60, Math.min(940, astro.x + 46));
+  $('flagG').innerHTML = `<g transform="translate(${x.toFixed(0)} ${GROUND + 4})"><path d="M0,0 L0,-120" stroke="#ddd" stroke-width="5"/><path d="M2,-118 L74,-118 L74,-70 L2,-70 Z" fill="#ff6b9d" stroke="#2d3436" stroke-width="3"/><text x="38" y="-84" text-anchor="middle" font-size="30">⭐</text><path d="M0,-118 L76,-118" stroke="#ddd" stroke-width="4"/></g>`;
+  cheer(); buzz(20);
+  speak('ปักธงแล้ว บนดวงจันทร์ไม่มีลม ธงจริงของนักบินอวกาศจึงต้องมีคานค้ำไว้ไม่ให้ห้อย');
+}
+function renderLandCtrls() {
+  if (lm.state === 'fly' || lm.state === 'bounce') {
+    ctrls.innerHTML = `<button class="burn" id="burnBtn">🔥 กดค้างเพื่อชะลอ</button>`;
+    const b = $('burnBtn');
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); try { b.setPointerCapture(e.pointerId); } catch (_) {} setHold(true); });
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => setHold(false));
+  } else if (lm.state === 'walk') {
+    ctrls.innerHTML = `<div class="row"><button class="chip" id="jumpBtn">🦘 กระโดดสูง</button><button class="chip" id="flagBtn">🚩 ปักธง</button><button class="chip" id="againBtn">🔁 ลงจอดใหม่</button></div>`;
+    $('jumpBtn').addEventListener('click', () => { ensureAudio(); buzz(10); if (!astro.hop) { hopTo(astro.x, 170, 2600); speak('บนดวงจันทร์ตัวเบา กระโดดได้สูงกว่าบนโลกราว 6 เท่า'); } });
+    $('flagBtn').addEventListener('click', () => { ensureAudio(); plantFlag(); });
+    $('againBtn').addEventListener('click', () => { ensureAudio(); buzz(8); startLanding(); });
+  } else ctrls.innerHTML = '';
+}
+const LAND_KNOW = [
+  'มีคนเคยเดินบนดวงจันทร์ 12 คน กับยานอะพอลโล ช่วงปี พ.ศ. 2512 ถึง 2515',
+  'คนแรกที่เดินบนดวงจันทร์คือ นีล อาร์มสตรอง เมื่อเดือนกรกฎาคม พ.ศ. 2512',
+  'รอยเท้าบนดวงจันทร์อยู่ได้นานเป็นล้านปี เพราะไม่มีลมและฝนมาลบ',
+  'บนดวงจันทร์ไม่มีอากาศ ท้องฟ้าจึงมืดสนิทแม้เป็นกลางวัน และต้องใส่ชุดอวกาศตลอดเวลา',
+  'แรงโน้มถ่วงบนดวงจันทร์มีแค่ราว 1 ใน 6 ของโลก ตัวจึงเบาและกระโดดได้สูง',
+];
+function renderLand() {
+  const st = lm.state;
+  let top;
+  if (st === 'ready') top = `<div class="q-text">🚀 พายานลงจอดบนดวงจันทร์</div>
+      <div class="res">ยานจะตกลงมาเอง กดปุ่ม 🔥 ค้างไว้เพื่อจุดเครื่องชะลอ ให้แตะพื้นช้ากว่า <b>4 เมตรต่อวินาที</b> หน้ายิ้ม 😊 คือกำลังดี</div>
+      <button class="big-btn" id="goBtn">🚀 เริ่มลงจอด</button>`;
+  else if (st === 'fly' || st === 'bounce') top = `<div class="q-text">🔥 ค่อยๆ ลงนะ</div><div class="res">ดูความเร็วมุมซ้ายบน สีเขียว 😊 ปลอดภัย สีแดง 😱 เร็วเกินไป</div>`;
+  else if (st === 'landed') top = `<div class="q-text" data-say="${lm.vHit <= 2.5 ? 'ลงจอดนุ่มนวลมาก' : 'ลงจอดสำเร็จ'}">${lm.vHit <= 2.5 ? '⭐⭐⭐ นุ่มนวลมาก!' : '⭐⭐ ลงจอดสำเร็จ!'}</div>
+      <div class="res" data-say="">แตะพื้นด้วยความเร็ว <b>${lm.vHit.toFixed(1)} ม./วินาที</b> · ยานจริงของอะพอลโลแตะพื้นช้าราว 1 เมตรต่อวินาที</div>
+      <button class="big-btn" id="walkBtn">👨‍🚀 ออกไปเดินบนดวงจันทร์</button><button class="big-btn" id="goBtn" style="background:#fff;color:var(--brand-dark)">🔁 ลงจอดใหม่</button>`;
+  else if (st === 'hard') top = `<div class="q-text">💥 แรงไปหน่อย</div>
+      <div class="res" data-say="">แตะพื้นด้วยความเร็ว <b>${lm.vHit.toFixed(1)} ม./วินาที</b> ลองกดไฟค้างให้เร็วขึ้นอีกนิด</div>
+      <button class="big-btn" id="goBtn">🔁 ลองใหม่</button>`;
+  else top = `<div class="q-text">👣 เดินบนดวงจันทร์</div><div class="res">แตะพื้นเพื่อพานักบินอวกาศเดินแบบกระโดดเบาๆ แล้วดูรอยเท้าที่ทิ้งไว้</div>`;
+  panel.innerHTML = top + `<ul class="know">${LAND_KNOW.map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">แรงโน้มถ่วงดวงจันทร์ 1.62 ม./วินาที² (NASA) · ภารกิจอะพอลโล 11–17 (ยกเว้น 13) ลงจอดรวม 6 ครั้ง</div>`;
+  const go = $('goBtn'); if (go) go.addEventListener('click', () => { ensureAudio(); buzz(8); startLanding(); });
+  const wk = $('walkBtn'); if (wk) wk.addEventListener('click', () => { ensureAudio(); buzz(8); walkOut(); });
+  sayKit();
+}
+
+// ============================================================================
+// 🌑 SOLAR ECLIPSE — drag the (new) Moon over the Sun. The Sun is ~400× wider than
+// the Moon and ~400× farther away, so they look the same size. Near the Moon looks
+// a bit bigger (total), far it looks a bit smaller (annular ring).
+// ============================================================================
+const SUNC = { x: 500, y: 290, r: 110 };
+let sMoon = { x: 190, y: 340 }, sNear = true, sDrag = null, sState = '';
+const sMoonR = () => sNear ? 116 : 101;            // apparent size: Moon 29.4′–33.5′ vs Sun ~32′
+function overlapArea(d, R, r) {
+  if (d >= R + r) return 0;
+  if (d <= Math.abs(R - r)) return Math.PI * Math.min(R, r) ** 2;
+  return r * r * Math.acos((d * d + r * r - R * R) / (2 * d * r)) + R * R * Math.acos((d * d + R * R - r * r) / (2 * d * R))
+    - 0.5 * Math.sqrt((-d + r + R) * (d + r - R) * (d - r + R) * (d + r + R));
+}
+function mix(a, b, t) {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const A = p(a), B = p(b);
+  return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+function buildSolar() {
+  scene.setAttribute('viewBox', '0 0 1000 640');
+  let rays = '';
+  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8 + 0.2, l = 150 + (i % 3) * 70; rays += `<path d="M${SUNC.x},${SUNC.y} L${(SUNC.x + Math.cos(a - 0.05) * l).toFixed(0)},${(SUNC.y + Math.sin(a - 0.05) * l).toFixed(0)} L${(SUNC.x + Math.cos(a + 0.05) * l).toFixed(0)},${(SUNC.y + Math.sin(a + 0.05) * l).toFixed(0)} Z" fill="#fff"/>`; }
+  scene.innerHTML = `<defs>
+      <radialGradient id="sglow"><stop offset=".45" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient>
+      <radialGradient id="corona"><stop offset=".42" stop-color="#fff" stop-opacity="1"/><stop offset=".6" stop-color="#e8f0ff" stop-opacity=".55"/><stop offset="1" stop-color="#e8f0ff" stop-opacity="0"/></radialGradient>
+      <clipPath id="sunClip"><circle cx="${SUNC.x}" cy="${SUNC.y}" r="${SUNC.r}"/></clipPath>
+      <linearGradient id="hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43" stop-opacity="0"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".9"/></linearGradient></defs>
+    <rect id="ssky" width="1000" height="640" fill="#6ec6ff"/>
+    <g id="sstars" opacity="0">${starfield(21, 90, 1000, 520)}<circle cx="300" cy="190" r="6" fill="#fffbe6"/><text x="300" y="222" text-anchor="middle" font-family="Mitr" font-size="18" fill="#fff">ดาวศุกร์</text></g>
+    <rect id="shz" x="0" y="430" width="1000" height="150" fill="url(#hz)" opacity="0"/>
+    <circle id="sglowC" cx="${SUNC.x}" cy="${SUNC.y}" r="${SUNC.r * 1.9}" fill="url(#sglow)"/>
+    <g id="coronaG" opacity="0"><g opacity=".5">${rays}</g><circle cx="${SUNC.x}" cy="${SUNC.y}" r="${SUNC.r * 2.1}" fill="url(#corona)"/></g>
+    <image href="../solar-system/img/sun.webp" x="${SUNC.x - SUNC.r}" y="${SUNC.y - SUNC.r}" width="${2 * SUNC.r}" height="${2 * SUNC.r}"/>
+    <circle id="sMoonDark" r="${sMoonR()}" fill="#0d1022" clip-path="url(#sunClip)"/>
+    <circle id="sMoonBody" r="${sMoonR()}" fill="#0d1022"/>
+    <g id="sMoonHint"><circle id="sMoonRing" r="${sMoonR()}" fill="rgba(20,24,50,.25)" stroke="#fff" stroke-width="3" stroke-dasharray="10 9"/>
+      <text id="sMoonLab" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="600" fill="#fff" stroke="#1b2160" stroke-width="5" paint-order="stroke">👆 ลากดวงจันทร์</text></g>
+    <path d="M0,640 L0,580 Q120,560 240,575 L300,575 L300,548 L340,520 L380,548 L380,575 Q520,590 640,570 Q780,550 1000,578 L1000,640 Z" id="sground" fill="#2e7d32"/>
+    <text id="sMsg" x="500" y="48" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#fff" stroke="#1b2160" stroke-width="7" paint-order="stroke"></text>`;
+  scene2.setAttribute('viewBox', '0 0 1000 230');
+  scene2.innerHTML = `<rect width="1000" height="230" fill="#05071c"/>${starfield(4, 40, 1000, 230)}
+    <circle cx="-120" cy="115" r="200" fill="#ffd93d"/><text x="40" y="215" font-family="Mitr" font-size="18" fill="#ffd93d">ดวงอาทิตย์</text>
+    <path d="M520,104 L520,126 L905,118 L905,112 Z" fill="#000" opacity=".9"/>
+    <path d="M80,-85 L520,104 M80,315 L520,126" stroke="#ffd93d" stroke-width="2" stroke-dasharray="6 8" opacity=".5"/>
+    <circle cx="520" cy="115" r="12" fill="#c9c9cf"/><text x="520" y="160" text-anchor="middle" font-family="Mitr" font-size="18" fill="#cfd6ff">ดวงจันทร์</text>
+    <circle cx="905" cy="115" r="48" fill="#3d8bfd"/><path d="M880,96 q12,-10 22,-2 q6,10 -6,16 q-12,2 -16,-14 Z" fill="#5fb85a"/>
+    <circle cx="858" cy="115" r="6" fill="#000"/><text x="905" y="195" text-anchor="middle" font-family="Mitr" font-size="18" fill="#cfd6ff">โลก</text>
+    <text x="760" y="40" text-anchor="middle" font-family="Mitr" font-size="17" fill="#fff">เงาดวงจันทร์ตกบนโลกเป็นจุดเล็กๆ</text>
+    <text x="500" y="222" text-anchor="middle" font-family="Mitr" font-size="15" fill="#9aa3c5">ภาพย่อ ระยะจริงห่างกันมากกว่านี้มาก</text>`;
+  placeSolar();
+}
+function placeSolar() {
+  const r = sMoonR(), R = SUNC.r, d = Math.hypot(sMoon.x - SUNC.x, sMoon.y - SUNC.y);
+  const cov = overlapArea(d, R, r) / (Math.PI * R * R);
+  const total = d + R <= r, ring = r < R && d + r <= R;
+  const dark = total ? 1 : Math.pow(cov, 6);
+  for (const id of ['sMoonDark', 'sMoonBody', 'sMoonRing']) { const c = $(id); c.setAttribute('cx', sMoon.x.toFixed(1)); c.setAttribute('cy', sMoon.y.toFixed(1)); c.setAttribute('r', r); }
+  $('sMoonBody').setAttribute('opacity', total ? 1 : (dark * 0.85).toFixed(2));        // a dark disc only shows against a darkened sky
+  $('sMoonLab').setAttribute('x', sMoon.x.toFixed(1)); $('sMoonLab').setAttribute('y', (sMoon.y + r + 32).toFixed(1));
+  $('sMoonHint').setAttribute('opacity', cov > 0.02 ? 0.35 : 1);
+  $('sMoonLab').setAttribute('opacity', cov > 0.02 ? 0 : 1);
+  $('ssky').setAttribute('fill', mix('#6ec6ff', '#0e1433', dark));
+  $('sground').setAttribute('fill', mix('#2e7d32', '#0b1a10', dark));
+  $('sstars').setAttribute('opacity', Math.max(0, (dark - 0.55) / 0.45).toFixed(2));
+  $('shz').setAttribute('opacity', total ? 1 : 0);
+  $('sglowC').setAttribute('opacity', (1 - Math.min(1, cov * 1.05)).toFixed(2));
+  $('coronaG').setAttribute('opacity', total ? 1 : 0);
+  const st = total ? 'total' : ring ? 'ring' : cov > 0.004 ? 'part' : 'none';
+  $('sMsg').textContent = st === 'total' ? '🌑 สุริยุปราคาเต็มดวง!' : st === 'ring' ? '💍 สุริยุปราคาวงแหวน!' : st === 'part' ? 'บังไปแล้ว ' + Math.round(cov * 100) + '%' : 'ลากดวงจันทร์ไปบังดวงอาทิตย์';
+  if (st !== sState) {
+    const was = sState; sState = st;
+    if (st === 'total') { cheer(); buzz([30, 20, 40]); speak('สุริยุปราคาเต็มดวง ฟ้ามืด เห็นดาว และเห็นแสงเรืองรอบดวงอาทิตย์'); }
+    else if (st === 'ring') { cheer(); buzz(20); speak('สุริยุปราคาวงแหวน ดวงจันทร์อยู่ไกล จึงบังไม่มิด เหลือแสงเป็นวงแหวน'); }
+    else if (st === 'part' && was === 'none') { blip(520); speak('เริ่มบังแล้ว นี่คือสุริยุปราคาบางส่วน'); }
+  }
+}
+scene.addEventListener('pointerdown', (e) => {
+  if (mode === 'solar') {
+    ensureAudio();
+    const q = svgPt(scene, e), near = Math.hypot(q.x - sMoon.x, q.y - sMoon.y) < sMoonR() + 40;
+    sDrag = near ? { dx: sMoon.x - q.x, dy: sMoon.y - q.y } : { dx: 0, dy: 0 };
+    if (!near) { sMoon.x = q.x; sMoon.y = q.y; placeSolar(); }
+    try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+  } else if (mode === 'tide') tideDown(e);
+  else if (mode === 'land') {
+    const q = svgPt(scene, e);
+    if (lm.state === 'fly') { ensureAudio(); setHold(true); try { scene.setPointerCapture(e.pointerId); } catch (_) {} }
+    else if (lm.state === 'walk' && astro) { ensureAudio(); walkToward(q.x); }
+  }
+});
+scene.addEventListener('pointermove', (e) => {
+  if (mode === 'solar' && sDrag) {
+    const q = svgPt(scene, e);
+    sMoon.x = Math.max(0, Math.min(1000, q.x + sDrag.dx)); sMoon.y = Math.max(0, Math.min(620, q.y + sDrag.dy));
+    placeSolar();
+  } else if (mode === 'tide') tideMove(e);
+});
+const endScenePtr = () => {
+  sDrag = null; tDrag = null;
+  if (mode === 'land' && lm.state === 'fly' && lm.hold) setHold(false);
+};
+scene.addEventListener('pointerup', endScenePtr); scene.addEventListener('pointercancel', endScenePtr);
+function renderSolarCtrls() {
+  ctrls.innerHTML = `<div class="row"><button class="chip ${sNear ? 'on' : ''}" data-near="1">🌕 ดวงจันทร์ใกล้โลก (ดูใหญ่)</button><button class="chip ${sNear ? '' : 'on'}" data-near="0">🌖 ไกลโลก (ดูเล็ก)</button></div>`;
+  for (const b of ctrls.querySelectorAll('[data-near]')) b.addEventListener('click', () => {
+    ensureAudio(); buzz(8); sNear = b.dataset.near === '1'; sState = 'x'; renderSolarCtrls(); placeSolar();
+    speak(sNear ? 'ดวงจันทร์อยู่ใกล้โลก ดูใหญ่กว่าดวงอาทิตย์นิดหนึ่ง' : 'ดวงจันทร์อยู่ไกลโลก ดูเล็กกว่าดวงอาทิตย์นิดหนึ่ง');
+  });
+}
+const SOLAR_KNOW = [
+  'ดวงอาทิตย์ใหญ่กว่าดวงจันทร์ราว 400 เท่า แต่ก็อยู่ไกลกว่าราว 400 เท่า เราจึงเห็นทั้งสองดวงขนาดเท่าๆ กัน',
+  'สุริยุปราคาเกิดได้เฉพาะวันเดือนดับ ตอนดวงจันทร์เข้ามาอยู่ระหว่างดวงอาทิตย์กับโลกพอดี',
+  'เงาของดวงจันทร์เล็กกว่าโลกมาก คนที่อยู่ในแนวเงาเท่านั้นจึงจะเห็นเต็มดวง และมืดอยู่ได้นานที่สุดแค่ราว 7 นาทีครึ่ง',
+  'พระบาทสมเด็จพระจอมเกล้าเจ้าอยู่หัว ทรงคำนวณสุริยุปราคาเต็มดวงที่หว้ากอ จังหวัดประจวบคีรีขันธ์ ได้แม่นยำ เมื่อวันที่ 18 สิงหาคม พ.ศ. 2411 วันนี้จึงเป็นวันวิทยาศาสตร์แห่งชาติ',
+  'ถ้าเงาโลกไปบังดวงจันทร์ตอนคืนเพ็ญ เรียกว่าจันทรุปราคา ลองดูได้ในเกมท่องอวกาศ',
+];
+function renderSolar() {
+  panel.innerHTML = `<div class="q-text">🌑 สุริยุปราคา</div>
+    <div class="res">ดวงจันทร์วิ่งมาบังดวงอาทิตย์ ลากดวงจันทร์ให้ทับดวงอาทิตย์พอดี แล้วดูท้องฟ้าเปลี่ยนไป</div>
+    <div class="warn">⚠️ ห้ามมองดวงอาทิตย์ด้วยตาเปล่า แม้ตอนเกิดสุริยุปราคา ต้องใช้แว่นสำหรับดูดวงอาทิตย์โดยเฉพาะ</div>
+    <ul class="know">${SOLAR_KNOW.map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">ขนาดปรากฏ: ดวงจันทร์ 29.4′–33.5′ ดวงอาทิตย์ราว 32′ (NASA) · เต็มดวงนานที่สุดราว 7 นาที 32 วินาที</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🌊 TIDES — the Moon's pull makes the ocean bulge toward it AND on the far side.
+// The Sun adds ~46% as much: lined up (new/full) = spring tide น้ำเกิด,
+// at right angles (half moon) = neap tide น้ำตาย. Bulges hugely exaggerated.
+// ============================================================================
+const EC = { x: 560, y: 345, R: 118 }, ORB = 262;
+let tMoon = Math.PI / 2, tRot = 0, tDrag = null, tPlay = false, tLast = '';
+const PIN0 = 0;
+function buildTide() {
+  scene.setAttribute('viewBox', '0 0 1000 700');
+  let rays = '';
+  for (let i = -4; i <= 4; i++) rays += `<path d="M40,${EC.y + i * 62} L210,${EC.y + i * 62}" stroke="#ffd93d" stroke-width="5" stroke-dasharray="14 14" opacity=".5"/>`;
+  scene.innerHTML = `<rect width="1000" height="700" fill="#05071c"/>${starfield(13, 100)}
+    <circle cx="-60" cy="${EC.y}" r="120" fill="#ffd93d"/><text x="20" y="${EC.y + 160}" font-family="Mitr" font-size="20" fill="#ffd93d">☀️ ดวงอาทิตย์</text>${rays}
+    <circle cx="${EC.x}" cy="${EC.y}" r="${ORB}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="3" stroke-dasharray="8 10"/>
+    <ellipse id="bulge" cx="${EC.x}" cy="${EC.y}" rx="150" ry="125" fill="#5bc0eb" opacity=".55"/>
+    <g id="earthT">
+      <circle cx="${EC.x}" cy="${EC.y}" r="${EC.R}" fill="#2f7fd8" stroke="#9ec9ff" stroke-width="4"/>
+      <path d="M${EC.x - 60},${EC.y - 40} q30,-40 70,-14 q20,26 -12,44 q-40,10 -58,-30 Z M${EC.x + 18},${EC.y + 22} q34,-12 52,16 q-6,34 -40,28 Z M${EC.x - 70},${EC.y + 40} q20,-6 30,12 q-8,18 -26,8 Z" fill="#5fb85a"/>
+      <g transform="translate(${EC.x + EC.R - 8} ${EC.y})"><circle r="16" fill="#ff6b9d" stroke="#fff" stroke-width="4"/><text x="0" y="-24" text-anchor="middle" font-size="30">🏖️</text></g>
+    </g>
+    <path d="M${EC.x},${EC.y} m0,${EC.R + 46}" />
+    <g id="moonT">${moonFace(30)}<path d="M0,-30 A30,30 0 0 1 0,30 Z" fill="#000" opacity=".65"/><circle r="64" fill="transparent"/></g>
+    <text id="moonTLab" font-family="Mitr" font-size="20" fill="#fff" text-anchor="middle">👆 ลากดวงจันทร์</text>
+    <text x="${EC.x}" y="${EC.y + EC.R + 44}" text-anchor="middle" font-family="Mitr" font-size="19" fill="#cfd6ff">มองโลกจากด้านบน · ลากโลกให้หมุน</text>
+    <text id="tMsg" x="500" y="44" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#ffd93d" stroke="#05071c" stroke-width="7" paint-order="stroke"></text>`;
+  scene2.setAttribute('viewBox', '0 0 1000 230');
+  scene2.innerHTML = `<defs><linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient></defs>
+    <rect width="1000" height="230" fill="url(#bsky)"/>
+    <polygon id="sea" points="" fill="#2f86d1" opacity=".9"/>
+    <polygon points="200,230 1000,230 1000,58 200,214" fill="#f2d48b"/>
+    <path d="M200,214 L1000,58" stroke="#d9b45f" stroke-width="4"/>
+    <text id="boat" x="110" y="120" font-size="56" text-anchor="middle">⛵</text>
+    <text x="560" y="152" font-size="40" text-anchor="middle">🦀</text>
+    <text x="850" y="98" font-size="48" text-anchor="middle">🏰</text>
+    <text x="500" y="30" text-anchor="middle" font-family="Mitr" font-size="20" font-weight="600" fill="#1b2160">ชายหาด 🏖️</text>
+    <text id="beachLab" x="20" y="214" font-family="Mitr" font-size="22" font-weight="700" fill="#fff"></text>`;
+  placeTide();
+}
+const tideAlign = () => Math.cos(2 * (tMoon - Math.PI));       // +1 Sun, Moon, Earth in a line
+function tideLevel() {
+  const A = (1 + 0.46 * tideAlign()) / 1.46;
+  return A * Math.cos(2 * (tRot + PIN0 - tMoon));
+}
+function tideState() {
+  const L = tideLevel(), rising = -Math.sin(2 * (tRot + PIN0 - tMoon)) > 0;
+  return L > 0.62 ? 'high' : L < -0.62 ? 'low' : rising ? 'up' : 'down';
+}
+const TIDE_TXT = { high: '🌊 น้ำขึ้น', low: '🏝️ น้ำลง', up: '⬆️ น้ำกำลังขึ้น', down: '⬇️ น้ำกำลังลง' };
+const springOf = () => { const a = tideAlign(); return a > 0.7 ? 'spring' : a < -0.7 ? 'neap' : ''; };
+function placeTide() {
+  const A = 1 + 0.46 * tideAlign(), b = 10 + 16 * A;
+  const bl = $('bulge');
+  bl.setAttribute('rx', (EC.R + b).toFixed(1)); bl.setAttribute('ry', (EC.R + 4).toFixed(1));
+  bl.setAttribute('transform', `rotate(${(-tMoon * 180 / Math.PI).toFixed(1)} ${EC.x} ${EC.y})`);
+  $('earthT').setAttribute('transform', `rotate(${(-tRot * 180 / Math.PI).toFixed(1)} ${EC.x} ${EC.y})`);
+  const mx = EC.x + ORB * Math.cos(tMoon), my = EC.y - ORB * Math.sin(tMoon);
+  $('moonT').setAttribute('transform', `translate(${mx.toFixed(1)} ${my.toFixed(1)})`);
+  $('moonTLab').setAttribute('x', mx.toFixed(1)); $('moonTLab').setAttribute('y', (my + 58).toFixed(1));
+  const L = tideLevel(), yw = 136 - L * 50;
+  const xw = 200 + (214 - yw) / (156 / 800);
+  $('sea').setAttribute('points', `0,${yw.toFixed(1)} ${xw.toFixed(1)},${yw.toFixed(1)} 200,214 200,230 0,230`);
+  $('boat').setAttribute('y', (yw + 8).toFixed(1));
+  const st = tideState(), sp = springOf();
+  $('beachLab').textContent = TIDE_TXT[st];
+  $('tMsg').textContent = sp === 'spring' ? '🌊🌊 น้ำเกิด (น้ำขึ้นมาก ลงมาก)' : sp === 'neap' ? '〰️ น้ำตาย (ขึ้นลงน้อย)' : '';
+  const key = st + sp;
+  if (key !== tLast) { tLast = key; if (mode === 'tide') renderTide(); }
+}
+function tideDown(e) {
+  ensureAudio();
+  const q = svgPt(scene, e), dx = q.x - EC.x, dy = EC.y - q.y, r = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
+  tDrag = r > EC.R + 50 ? { kind: 'moon' } : { kind: 'earth', a, rot: tRot };
+  tPlay = false; markTidePlay();
+  if (tDrag.kind === 'moon') { tMoon = a; placeTide(); }
+  try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+}
+function tideMove(e) {
+  if (!tDrag) return;
+  const q = svgPt(scene, e), a = Math.atan2(EC.y - q.y, q.x - EC.x);
+  if (tDrag.kind === 'moon') tMoon = a;
+  else { let d = a - tDrag.a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; tDrag.a = a; tRot += d; }
+  placeTide();
+}
+function markTidePlay() { const b = $('tidePlay'); if (b) b.classList.toggle('on', tPlay); }
+function renderTideCtrls() {
+  ctrls.innerHTML = `<div class="row"><button class="chip" id="tidePlay">▶️ ให้โลกหมุนเอง</button></div>`;
+  $('tidePlay').addEventListener('click', () => { ensureAudio(); buzz(8); tPlay = !tPlay; markTidePlay(); });
+}
+function tideTick(dt) {
+  if (mode !== 'tide' || !tPlay || tDrag) return;
+  tRot += dt * 2 * Math.PI / 12;                                  // a day in 12 s
+  tMoon += dt * 2 * Math.PI / (12 * 27.32);                        // the Moon goes round once in 27.3 days
+  placeTide();
+}
+const TIDE_SAY = {
+  high: 'ชายหาดหันเข้าหาส่วนที่น้ำป่อง น้ำจึงขึ้น', low: 'ชายหาดอยู่ด้านข้าง น้ำถูกดึงไปทางอื่น น้ำจึงลง',
+  up: 'โลกหมุนพาชายหาดเข้าหาน้ำที่ป่อง น้ำกำลังขึ้น', down: 'โลกหมุนพาชายหาดออกจากน้ำที่ป่อง น้ำกำลังลง',
+};
+const TIDE_KNOW = [
+  'ดวงจันทร์ดึงน้ำทะเลให้ป่องออกไปทางดวงจันทร์ และอีกฝั่งของโลกก็ป่องด้วย',
+  'โลกหมุนพาชายหาดผ่านน้ำที่ป่อง 2 ฝั่ง ส่วนใหญ่น้ำจึงขึ้นวันละ 2 ครั้ง ห่างกันราว 12 ชั่วโมง 25 นาที',
+  'ดวงจันทร์เดินหน้าไปทุกวัน น้ำขึ้นจึงมาช้าลงวันละราว 50 นาที',
+  'ดวงอาทิตย์ก็ดึงน้ำด้วย แต่แรงไม่ถึงครึ่งของดวงจันทร์ เพราะอยู่ไกลมาก',
+  'วันเดือนดับและคืนเพ็ญ ดวงอาทิตย์กับดวงจันทร์ดึงไปทางเดียวกัน เรียกว่าน้ำเกิด ส่วนวันขึ้นหรือแรม 8 ค่ำ เรียกว่าน้ำตาย',
+  'บางที่ เช่นบางส่วนของอ่าวไทย น้ำขึ้นวันละครั้ง เพราะรูปร่างของอ่าวและทะเล',
+];
+function renderTide() {
+  const st = tideState(), sp = springOf();
+  panel.innerHTML = `<div class="clockbig" data-say="${TIDE_SAY[st]}">${TIDE_TXT[st]}</div>
+    ${sp ? `<span class="badge" data-say="${sp === 'spring' ? 'ดวงอาทิตย์ ดวงจันทร์ และโลก เรียงเป็นแนวเดียวกัน น้ำขึ้นมากและลงมาก เรียกว่าน้ำเกิด' : 'ดวงจันทร์อยู่ตั้งฉากกับดวงอาทิตย์ แรงดึงหักล้างกัน น้ำขึ้นลงน้อย เรียกว่าน้ำตาย'}">${sp === 'spring' ? '🌊🌊 น้ำเกิด' : '〰️ น้ำตาย'}</span>` : ''}
+    <div class="res">ลากโลกให้หมุน ดูชายหาด 🏖️ ผ่านส่วนที่น้ำป่อง แล้วลองลากดวงจันทร์ไปเรียงกับดวงอาทิตย์</div>
+    <ul class="know">${TIDE_KNOW.map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">วาดน้ำที่ป่องให้ใหญ่กว่าจริงมาก (จริงๆ สูงแค่ราวครึ่งเมตรกลางมหาสมุทร) · แรงน้ำขึ้นลงจากดวงอาทิตย์ราว 46% ของดวงจันทร์ (NOAA)</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🪐 OTHER WORLDS' MOONS — diameters from NASA (mean). Art is drawn, not photos.
+// ============================================================================
+const MOONS = [
+  { id: 'moon', th: 'ดวงจันทร์ของเรา', of: 'โลก', d: 3475, say: 'ดวงจันทร์ของเรา โคจรรอบโลก',
+    know: ['เป็นดวงจันทร์ดวงเดียวที่มนุษย์เคยไปเดิน', 'อยู่ห่างโลกราว 384,400 กิโลเมตร ใหญ่เป็นอันดับ 5 ในบรรดาดวงจันทร์ของระบบสุริยะ'] },
+  { id: 'io', th: 'ไอโอ', of: 'ดาวพฤหัสบดี', d: 3643, say: 'ไอโอ ดวงจันทร์ภูเขาไฟของดาวพฤหัสบดี',
+    know: ['มีภูเขาไฟปะทุมากที่สุดในระบบสุริยะ ราว 400 ลูก', 'สีเหลืองส้มมาจากกำมะถันที่ภูเขาไฟพ่นออกมา'] },
+  { id: 'europa', th: 'ยูโรปา', of: 'ดาวพฤหัสบดี', d: 3122, say: 'ยูโรปา ดวงจันทร์น้ำแข็ง มีมหาสมุทรซ่อนอยู่',
+    know: ['ผิวเป็นน้ำแข็ง ข้างใต้มีมหาสมุทรน้ำเค็ม', 'อาจมีน้ำมากกว่ามหาสมุทรทั้งหมดบนโลกราว 2 เท่า', 'ยานยูโรปาคลิปเปอร์กำลังเดินทางไปสำรวจ จะไปถึงราวปี พ.ศ. 2573'] },
+  { id: 'ganymede', th: 'แกนีมีด', of: 'ดาวพฤหัสบดี', d: 5268, say: 'แกนีมีด ดวงจันทร์ที่ใหญ่ที่สุดในระบบสุริยะ',
+    know: ['ใหญ่ที่สุดในบรรดาดวงจันทร์ทั้งหมด ใหญ่กว่าดาวพุธเสียอีก', 'เป็นดวงจันทร์ดวงเดียวที่มีสนามแม่เหล็กของตัวเอง'] },
+  { id: 'callisto', th: 'คัลลิสโต', of: 'ดาวพฤหัสบดี', d: 4821, say: 'คัลลิสโต ดวงจันทร์ที่มีหลุมเต็มไปหมด',
+    know: ['มีหลุมอุกกาบาตมากที่สุดในระบบสุริยะ', 'ผิวแทบไม่เปลี่ยนเลยมาราว 4 พันล้านปี'] },
+  { id: 'titan', th: 'ไททัน', of: 'ดาวเสาร์', d: 5150, say: 'ไททัน ดวงจันทร์ที่มีอากาศหนาและมีทะเลสาบ',
+    know: ['มีอากาศหนาทึบ ใหญ่เป็นอันดับ 2 รองจากแกนีมีด', 'มีทะเลสาบ แต่เป็นมีเทนเหลว ไม่ใช่น้ำ เพราะหนาวจัดราว ลบ 179 องศา', 'ยานไฮเกนส์ลงจอดบนไททันเมื่อปี พ.ศ. 2548'] },
+  { id: 'enceladus', th: 'เอนเซลาดัส', of: 'ดาวเสาร์', d: 504, say: 'เอนเซลาดัส ดวงจันทร์จิ๋วที่พ่นน้ำพุน้ำแข็ง',
+    know: ['พ่นน้ำแข็งเป็นน้ำพุออกมาจากขั้วใต้', 'ขาวสะอาด สะท้อนแสงได้มากที่สุดในระบบสุริยะ', 'ข้างใต้ผิวน้ำแข็งมีมหาสมุทรน้ำเค็ม'] },
+  { id: 'triton', th: 'ไทรทัน', of: 'ดาวเนปจูน', d: 2707, say: 'ไทรทัน ดวงจันทร์ที่โคจรถอยหลัง',
+    know: ['เป็นดวงจันทร์ใหญ่ดวงเดียวที่โคจรสวนทางกับการหมุนของดาวแม่', 'หนาวมาก ราว ลบ 235 องศา และมีน้ำพุไนโตรเจนพ่นขึ้นมา'] },
+  { id: 'charon', th: 'คารอน', of: 'ดาวพลูโต', d: 1212, say: 'คารอน ดวงจันทร์คู่หูของดาวพลูโต',
+    know: ['ใหญ่ราวครึ่งหนึ่งของดาวพลูโต ทั้งคู่จึงหมุนวนรอบกันเหมือนเต้นรำ', 'ขั้วเหนือมีรอยสีแดงเข้ม'] },
+  { id: 'phobos', th: 'โฟบอส', of: 'ดาวอังคาร', d: 22.5, size: 'ยาวราว 27 กม.', say: 'โฟบอส ดวงจันทร์รูปมันฝรั่งของดาวอังคาร',
+    know: ['รูปร่างเหมือนมันฝรั่ง ยาวราว 27 กิโลเมตร', 'เข้าใกล้ดาวอังคารราว 1.8 เมตรทุก 100 ปี อีกราว 50 ล้านปีจะชนหรือแตกเป็นวงแหวน'] },
+];
+const MBY = Object.fromEntries(MOONS.map((m) => [m.id, m]));
+function seeded(seed) { let x = seed; return () => (x = (x * 16807) % 2147483647) / 2147483647; }
+function moonArt(id, R) {
+  const c = uid(), clip = `<clipPath id="${c}"><circle r="${R}"/></clipPath>`, inC = (s) => `<g clip-path="url(#${c})">${s}</g>`;
+  const shade = `<circle r="${R}" fill="url(#mshade)"/>`;
+  const rnd = seeded(id.length * 97 + R);
+  const dots = (n, col, rmin, rmax, op = 1) => { let s = ''; for (let i = 0; i < n; i++) { const a = rnd() * 6.283, rr = Math.sqrt(rnd()) * R; s += `<circle cx="${(rr * Math.cos(a)).toFixed(1)}" cy="${(rr * Math.sin(a)).toFixed(1)}" r="${(R * (rmin + rnd() * (rmax - rmin))).toFixed(1)}" fill="${col}" opacity="${op}"/>`; } return s; };
+  switch (id) {
+    case 'moon': return moonFace(R);
+    case 'io': return clip + `<circle r="${R}" fill="#e6c34f"/>` + inC(dots(14, '#c46a1c', .05, .14, .8) + dots(10, '#3a2a1a', .03, .07) + dots(8, '#fff3c0', .04, .1, .8)) + shade;
+    case 'europa': {
+      let cr = '';
+      for (let i = 0; i < 12; i++) { const y = -R + rnd() * 2 * R, x = -R; cr += `<path d="M${x},${y.toFixed(0)} Q0,${(y + (rnd() - .5) * R).toFixed(0)} ${R},${(y + (rnd() - .5) * R * .8).toFixed(0)}" fill="none" stroke="#a5683f" stroke-width="${(R * .03).toFixed(1)}" opacity=".75"/>`; }
+      return clip + `<circle r="${R}" fill="#efe4d0"/>` + inC(dots(5, '#d9c3a3', .15, .3, .6) + cr) + shade;
+    }
+    case 'ganymede': return clip + `<circle r="${R}" fill="#8a7d6c"/>` + inC(dots(7, '#c7bba7', .18, .35, .8) + dots(14, '#fff', .02, .05, .8)) + shade;
+    case 'callisto': return clip + `<circle r="${R}" fill="#54473a"/>` + inC(dots(40, '#d8d0c4', .015, .05, .85)) + shade;
+    case 'titan': return `<circle r="${R * 1.08}" fill="#f2c574" opacity=".45"/><circle r="${R}" fill="#d9952f"/>` + clip + inC(`<ellipse cx="0" cy="${-R * .3}" rx="${R}" ry="${R * .25}" fill="#e8ad4a" opacity=".6"/><ellipse cx="0" cy="${R * .35}" rx="${R}" ry="${R * .2}" fill="#c27f25" opacity=".5"/>`) + shade;
+    case 'enceladus': return `<path d="M${-R * .25},${R * .9} L${-R * .6},${R * 1.5} L${R * .6},${R * 1.5} L${R * .25},${R * .9} Z" fill="#e8f4ff" opacity=".55"/>` + clip + `<circle r="${R}" fill="#f6faff"/>` + inC([.45, .58, .7, .82].map((y) => `<path d="M${-R * .7},${(R * y).toFixed(1)} q${R * .7},${-R * .12} ${R * 1.4},0" fill="none" stroke="#7fb2e6" stroke-width="${(R * .05).toFixed(1)}"/>`).join('') + dots(6, '#dde6f2', .04, .1)) + shade;
+    case 'triton': return clip + `<circle r="${R}" fill="#e7cdbd"/>` + inC(`<ellipse cx="0" cy="${R * .55}" rx="${R}" ry="${R * .5}" fill="#f4e6dc"/>` + dots(10, '#8f6f60', .03, .08, .7)) + shade;
+    case 'charon': return clip + `<circle r="${R}" fill="#9a958f"/>` + inC(`<ellipse cx="0" cy="${-R * .92}" rx="${R * .7}" ry="${R * .35}" fill="#7a3b2a" opacity=".9"/>` + dots(8, '#b6b1aa', .04, .1, .8)) + shade;
+    case 'phobos': return `<path d="M${-R},${-R * .1} Q${-R * .9},${-R * .75} ${-R * .1},${-R * .7} Q${R * .8},${-R * .8} ${R},${-R * .05} Q${R * .95},${R * .7} ${R * .05},${R * .68} Q${-R * .85},${R * .75} ${-R},${-R * .1} Z" fill="#7d7064" stroke="#4d4238" stroke-width="${(R * .03).toFixed(1)}"/>
+      <circle cx="${-R * .45}" cy="${-R * .05}" r="${R * .28}" fill="#5f544a"/><circle cx="${R * .3}" cy="${R * .25}" r="${R * .1}" fill="#5f544a"/><circle cx="${R * .5}" cy="${-R * .3}" r="${R * .08}" fill="#5f544a"/>`;
+  }
+  return '';
+}
+const SHADE_DEF = `<defs><radialGradient id="mshade" cx="38%" cy="35%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient></defs>`;
+let selMoon = 'ganymede', mCompare = false;
+function buildMoons() {
+  scene.setAttribute('viewBox', '0 0 1000 640');
+  if (!mCompare) {
+    const m = MBY[selMoon];
+    scene.innerHTML = SHADE_DEF + `<rect width="1000" height="640" fill="#05071c"/>${starfield(17, 120, 1000, 640)}
+      <g transform="translate(500 300)">${moonArt(m.id, 200)}</g>
+      <text x="500" y="590" text-anchor="middle" font-family="Mitr" font-size="34" font-weight="700" fill="#ffd93d" stroke="#05071c" stroke-width="7" paint-order="stroke">${m.th} · ดวงจันทร์ของ${m.of}</text>`;
+    return;
+  }
+  // true scale: Ganymede = 210 px wide
+  const k = 210 / 5268;
+  const rows = [[['ganymede'], ['titan'], ['mercury'], ['callisto']], [['io'], ['moon'], ['europa'], ['triton'], ['charon'], ['enceladus'], ['phobos']]];
+  let s = SHADE_DEF + `<rect width="1000" height="640" fill="#05071c"/>${starfield(17, 90, 1000, 640)}`;
+  rows.forEach((row, ri) => {
+    const ds = row.map(([id]) => (id === 'mercury' ? 4879 : MBY[id].d) * k), gap = ri ? 56 : 40;
+    let x = 500 - (ds.reduce((a, b) => a + b, 0) + gap * (row.length - 1)) / 2;
+    const cy = ri ? 470 : 190;
+    row.forEach(([id], i) => {
+      const r = ds[i] / 2, cx = x + r;
+      if (id === 'mercury') s += `<image href="../solar-system/img/mercury.webp" x="${(cx - r).toFixed(1)}" y="${(cy - r).toFixed(1)}" width="${(2 * r).toFixed(1)}" height="${(2 * r).toFixed(1)}"/>`;
+      else s += `<g data-moon="${id}" transform="translate(${cx.toFixed(1)} ${cy})" style="cursor:pointer">${moonArt(id, Math.max(r, 0.8))}<circle r="${Math.max(r, 26)}" fill="transparent"/></g>`;
+      const lab = id === 'mercury' ? 'ดาวพุธ (ดาวเคราะห์)' : MBY[id].th;
+      s += `<text x="${cx.toFixed(1)}" y="${(cy + Math.max(r, 8) + 32 + (id === 'phobos' ? 30 : 0)).toFixed(1)}" text-anchor="middle" font-family="Mitr" font-size="${id === 'mercury' ? 20 : 23}" font-weight="600" fill="${id === selMoon ? '#ffd93d' : id === 'mercury' ? '#9aa3c5' : '#fff'}">${lab}</text>`;
+      x += ds[i] + gap;
+    });
+  });
+  s += `<text x="500" y="44" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="700" fill="#ffd93d">📏 ขนาดเทียบกันตามจริง</text>
+    <text x="500" y="620" text-anchor="middle" font-family="Mitr" font-size="17" fill="#9aa3c5">โฟบอสเล็กจนเป็นแค่จุดเดียว!</text>`;
+  scene.innerHTML = s;
+  for (const g of scene.querySelectorAll('[data-moon]')) g.addEventListener('click', () => pickMoon(g.dataset.moon));
+}
+function pickMoon(id) {
+  ensureAudio(); buzz(8); blip(640);
+  selMoon = id; buildMoons(); renderMoonsCtrls(); renderMoons();
+  speak(MBY[id].say);
+}
+function renderMoonsCtrls() {
+  ctrls.innerHTML = `<div class="row"><button class="chip ${mCompare ? 'on' : ''}" id="cmpBtn">📏 เทียบขนาดจริง</button></div>
+    <div class="mgrid">${MOONS.map((m) => `<button class="mbtn ${m.id === selMoon ? 'on' : ''}" data-id="${m.id}"><svg viewBox="-34 -34 68 68">${SHADE_DEF}${moonArt(m.id, 26)}</svg>${m.th.replace('ของเรา', '')}</button>`).join('')}</div>`;
+  $('cmpBtn').addEventListener('click', () => { ensureAudio(); buzz(8); mCompare = !mCompare; buildMoons(); renderMoonsCtrls(); if (mCompare) speak('ขนาดเทียบกันตามจริง แกนีมีดใหญ่กว่าดาวพุธเสียอีก'); });
+  for (const b of ctrls.querySelectorAll('.mbtn')) b.addEventListener('click', () => pickMoon(b.dataset.id));
+}
+function moonSizeLines(m) {
+  if (m.size) return [m.size, m.th + ' ' + m.size.replace('กม.', 'กิโลเมตร')];
+  const r = m.d / 3475;
+  const rel = m.id === 'moon' ? '' : r >= 1.05 ? `ใหญ่กว่าดวงจันทร์ของเรา ${r.toFixed(1)} เท่า` : r > 0.95 ? 'ใกล้เคียงดวงจันทร์ของเรา' : `เล็กกว่าดวงจันทร์ของเรา ${(1 / r).toFixed(1)} เท่า`;
+  return [m.d.toLocaleString('th-TH') + ' กม.' + (rel ? '<br><small>' + rel + '</small>' : ''), m.th + 'กว้าง ' + m.d.toLocaleString('en-US') + ' กิโลเมตร ' + rel];
+}
+function renderMoons() {
+  const m = MBY[selMoon], [sz, szSay] = moonSizeLines(m);
+  panel.innerHTML = `<div class="p-head"><svg viewBox="-40 -40 80 80">${SHADE_DEF}${moonArt(m.id, 34)}</svg>
+      <div data-say="${m.say}"><div class="p-name">${m.th}</div><div class="p-sub">ดวงจันทร์ของ${m.of}</div></div></div>
+    <div class="facts">
+      <div class="fact" data-say="${szSay.trim()}"><div class="k">📏 ขนาด</div><div class="v">${sz}</div></div>
+      <div class="fact" data-say="${m.th}โคจรรอบ${m.of}"><div class="k">🔄 โคจรรอบ</div><div class="v">${m.of}</div></div>
+    </div>
+    <ul class="know">${m.know.map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">ข้อมูล: NASA Science · ภาพวาดประกอบ ไม่ใช่ภาพถ่าย</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// MODES
+// ============================================================================
+function setMode(m) {
+  mode = m; stopReading(); setHold(false); engineOff(); tPlay = false;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  scene2.classList.toggle('hidden', m !== 'solar' && m !== 'tide');
+  if (m === 'tonight') { buildTonight(); buildDays(); renderTonight(); speak(whenOf(selDay) + ' ' + moonInfo(selDay).name); }
+  else if (m === 'land') { if (lm.state === 'fly' || lm.state === 'bounce') lm.state = 'ready'; if (lm.state === 'walk') lm.state = 'ready'; astro = null; buildLand(); renderLandCtrls(); renderLand(); speak('พายานลงจอดบนดวงจันทร์ กดปุ่มเริ่มลงจอดเลย'); }
+  else if (m === 'solar') { sState = 'x'; buildSolar(); renderSolarCtrls(); renderSolar(); speak('ลากดวงจันทร์ไปบังดวงอาทิตย์'); }
+  else if (m === 'tide') { tLast = ''; buildTide(); renderTideCtrls(); renderTide(); speak('ลากโลกให้หมุน ดูน้ำขึ้นน้ำลงที่ชายหาด'); }
+  else if (m === 'moons') { buildMoons(); renderMoonsCtrls(); renderMoons(); speak(MBY[selMoon].say); }
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
+document.addEventListener('keydown', (e) => { if (e.code === 'Space' && mode === 'land' && lm.state === 'fly') { e.preventDefault(); if (!lm.hold) { ensureAudio(); setHold(true); } } });
+document.addEventListener('keyup', (e) => { if (e.code === 'Space' && mode === 'land') setHold(false); });
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (mode === 'land' && !document.hidden) { landTick(dt); astroTick(now); }
+  tideTick(dt);
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) { stopReading(); sayNow(text); }
+// Resolves when the line has finished (or was cut off) — lets 🔊 read a card line by line.
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+  } catch (e) { end(); }
+  setTimeout(end, 1500 + text.length * 140);          // Safari sometimes never fires onend
+}
+
+// ---- 🔊 tap-to-hear on every info card (same as ท่องอวกาศ) ----
+function sayable(t) {                    // card text → speech: no emoji/English, symbols as words
+  return String(t)
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}️‍]/gu, '')
+    .replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').replace(/[A-Za-z][A-Za-z’' ]*[A-Za-z]/g, '')
+    .replace(/กม\.\/ชม\./g, 'กิโลเมตรต่อชั่วโมง').replace(/กม\./g, 'กิโลเมตร').replace(/ชม\./g, 'ชั่วโมง')
+    .replace(/ม\.\/วินาที/g, 'เมตรต่อวินาที')
+    .replace(/กก\./g, 'กิโลกรัม').replace(/ซม\./g, 'เซนติเมตร').replace(/พ\.ศ\./g, 'พุทธศักราช')
+    .replace(/°C/g, ' องศาเซลเซียส').replace(/°/g, ' องศา').replace(/%/g, ' เปอร์เซ็นต์')
+    .replace(/(^|[\s~(])-(?=\d)/g, '$1ลบ ').replace(/~/g, 'ประมาณ ').replace(/¼/g, 'หนึ่งในสี่')
+    .replace(/–/g, ' ถึง ').replace(/[—·:→()]/g, ' ').replace(/ฯ/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function plainText(el) {
+  const c = el.cloneNode(true);
+  for (const x of c.querySelectorAll('br')) x.replaceWith(' ');
+  for (const x of c.querySelectorAll('div')) x.append(' ');
+  return c.textContent;
+}
+const sayOf = (el) => el.dataset.say !== undefined ? el.dataset.say : sayable(plainText(el));
+let readTok = 0, readBtn = null;
+function clearReading() { for (const e of document.querySelectorAll('.reading')) e.classList.remove('reading'); }
+function stopReading() {
+  if (readBtn) { readBtn.classList.remove('on'); readBtn = null; }
+  clearReading();
+  return ++readTok;
+}
+function hear(el) {
+  const my = stopReading();
+  el.classList.add('reading');
+  sayNow(sayOf(el)).then(() => { if (my === readTok) clearReading(); });
+}
+async function readAll(btn) {
+  if (readBtn === btn) {                 // tap again = stop
+    stopReading(); if (window.VoiceClips) VoiceClips.stop();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    return;
+  }
+  const my = stopReading(); readBtn = btn; btn.classList.add('on');
+  for (const el of panel.querySelectorAll('.sayable')) {
+    if (my !== readTok || !el.isConnected) return;
+    clearReading(); el.classList.add('reading');
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    await sayNow(sayOf(el));
+    if (my !== readTok) return;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  if (my === readTok) stopReading();
+}
+const SAY_SEL = '.p-head > div, .q-text, .clockbig, .badge, .res, .warn, .fact, .know li, [data-sayme]';
+function sayKit() {
+  stopReading();
+  const items = [...panel.querySelectorAll(SAY_SEL)].filter((el) => sayOf(el));
+  for (const el of items) {
+    el.classList.add('sayable');
+    el.addEventListener('click', () => { ensureAudio(); buzz(8); hear(el); });
+  }
+  if (items.length < 2) return;
+  let btn = panel.querySelector('.p-head .say');
+  if (!btn) {
+    const head = panel.querySelector('.p-head');
+    if (head) head.insertAdjacentHTML('beforeend', '<button class="say">🔊</button>');
+    else panel.insertAdjacentHTML('afterbegin', '<div class="sayrow"><button class="say">🔊 ฟังทั้งการ์ด</button></div>');
+    btn = panel.querySelector('.p-head .say, .sayrow .say');
+  }
+  btn.setAttribute('aria-label', 'ฟังทั้งการ์ด');
+  btn.addEventListener('click', () => { ensureAudio(); buzz(8); readAll(btn); });
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+setMode('tonight');
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['กดปุ่มไฟค้างไว้ เพื่อชะลอยาน ค่อยๆ ลงจอดนะ', 'ลงจอดนุ่มนวลมาก เก่งที่สุด', 'ลงจอดสำเร็จ เก่งมาก', 'ยานกระแทกพื้นแรงไปหน่อย ลองใหม่นะ',
+    'แตะพื้นเพื่อเดิน แล้วดูรอยเท้านะ', 'บนดวงจันทร์ตัวเบา กระโดดได้สูงกว่าบนโลกราว 6 เท่า',
+    'ปักธงแล้ว บนดวงจันทร์ไม่มีลม ธงจริงของนักบินอวกาศจึงต้องมีคานค้ำไว้ไม่ให้ห้อย', 'พายานลงจอดบนดวงจันทร์ กดปุ่มเริ่มลงจอดเลย',
+    'สุริยุปราคาเต็มดวง ฟ้ามืด เห็นดาว และเห็นแสงเรืองรอบดวงอาทิตย์', 'สุริยุปราคาวงแหวน ดวงจันทร์อยู่ไกล จึงบังไม่มิด เหลือแสงเป็นวงแหวน',
+    'เริ่มบังแล้ว นี่คือสุริยุปราคาบางส่วน', 'ลากดวงจันทร์ไปบังดวงอาทิตย์',
+    'ดวงจันทร์อยู่ใกล้โลก ดูใหญ่กว่าดวงอาทิตย์นิดหนึ่ง', 'ดวงจันทร์อยู่ไกลโลก ดูเล็กกว่าดวงอาทิตย์นิดหนึ่ง',
+    'ลากโลกให้หมุน ดูน้ำขึ้นน้ำลงที่ชายหาด', 'ขนาดเทียบกันตามจริง แกนีมีดใหญ่กว่าดาวพุธเสียอีก'];
+  for (const w of ['คืนนี้', 'คืนนั้น']) { for (const n of PH_NAMES) L.push(w + ' ' + n); L.push(w + 'เป็นคืนเพ็ญ'); }
+  for (let p = 0; p <= 100; p += 5) L.push('ดวงจันทร์สว่างราว ' + p + ' เปอร์เซ็นต์');
+  for (let h = 0; h < 24; h++) L.push('ดวงจันทร์ขึ้นราว ' + timeTH(h));
+  L.push('วันนี้มองไม่เห็นดวงจันทร์', 'วันนี้เป็นวันเดือนดับ');
+  for (let d = 1; d <= 31; d++) L.push('อีก ' + d + ' วัน จะถึงคืนเพ็ญ', 'อีก ' + d + ' วัน จะถึงเดือนดับ');
+  for (const v of VIS) L.push(v[1]);
+  for (const m of MOONS) L.push(m.say);
+  const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
+  renderTonight(); grab();
+  for (const st of ['ready', 'fly', 'landed', 'hard', 'walk']) for (const v of [1, 3, 5]) { lm.state = st; lm.vHit = v; renderLand(); grab(); }
+  renderSolar(); grab();
+  for (const s of TIDE_KNOW) L.push(s);
+  for (const k in TIDE_SAY) L.push(TIDE_SAY[k]);
+  L.push('ดวงอาทิตย์ ดวงจันทร์ และโลก เรียงเป็นแนวเดียวกัน น้ำขึ้นมากและลงมาก เรียกว่าน้ำเกิด', 'ดวงจันทร์อยู่ตั้งฉากกับดวงอาทิตย์ แรงดึงหักล้างกัน น้ำขึ้นลงน้อย เรียกว่าน้ำตาย');
+  renderTide(); grab();
+  for (const m of MOONS) { selMoon = m.id; renderMoons(); grab(); }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
