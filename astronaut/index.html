@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🧑‍🚀 นักบินอวกาศ — คิดส์เล่น</title>
+<meta name="description" content="เกมนักบินอวกาศสำหรับเด็กไทย ลอยตัวในสถานีอวกาศ กิน นอน ออกกำลังกาย ห้องน้ำ มองโลกจากหน้าต่าง และประกอบจรวดปล่อยขึ้นอวกาศ">
+<meta name="theme-color" content="#0b1033">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="นักบินอวกาศ">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+    --space: #0b1033; --space-2: #1b2160;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 35%, var(--space-2) 0%, var(--space) 60%, #05071c 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  /* brand cloud strip — here it drifts like space dust */
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.12; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--gold); text-shadow: 3px 3px 0 var(--brand-dark);
+  }
+  .modes, .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .row .chip.on { background: var(--gold); border-color: #e0b400; color: var(--ink); }
+  .chip:disabled { opacity: .45; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) { .main { grid-template-columns: minmax(0, 1fr) 360px; } }
+  .view { position: relative; background: #05071c; border: 4px solid rgba(255,255,255,.18); border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.35); }
+  .view svg { display: block; width: 100%; height: auto; }
+  #scene { max-height: 70vh; touch-action: none; }
+  .hold {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700; color: #fff;
+    width: 100%; min-height: 88px; border-radius: 999px; margin-top: 10px; cursor: pointer;
+    border: 4px solid #1e8449; background: #2ecc71; box-shadow: 0 6px 0 #1e8449; touch-action: none;
+  }
+  .hold.on { transform: translateY(4px); box-shadow: 0 2px 0 #1e8449; background: #7ed957; }
+  .parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .part {
+    min-height: 150px; border-radius: 22px; border: 3px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08);
+    color: #fff; font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px;
+  }
+  .part svg { width: 100%; height: 108px; }
+  .part:active { transform: scale(.95); }
+  .prompt { text-align: center; font-size: 20px; font-weight: 700; color: var(--gold); margin-top: 10px; }
+
+  /* info panel — inline, never a popup */
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.35);
+  }
+  .p-head { display: flex; align-items: center; gap: 12px; }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .say.on { background: var(--gold); border-color: #e0b400; }
+  .sayrow { display: flex; justify-content: flex-end; }
+  .sayrow .say { width: auto; padding: 0 18px; border-radius: 999px; font-family: inherit; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .sayable { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s; }
+  .sayable:active { transform: scale(0.97); }
+  .fact.sayable { position: relative; padding-right: 26px; }
+  .fact.sayable::after { content: '🔈'; position: absolute; top: 6px; right: 6px; font-size: 13px; opacity: .55; }
+  .know li.sayable::after { content: ' 🔈'; font-size: 13px; opacity: .55; }
+  .reading { outline: 4px solid var(--gold); outline-offset: 2px; border-radius: 16px; background-color: #fff3b0 !important; }
+  .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0 8px; }
+  .fact { background: #f6f7ff; border-radius: 16px; padding: 8px 10px; }
+  .fact .k { font-size: 13px; color: #6b7280; }
+  .fact .v { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 16px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .q-text { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .res { font-size: 18px; line-height: 1.45; margin-top: 10px; }
+  .res b { color: var(--brand-dark); }
+  .big-btn {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 72px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .big-btn:disabled { opacity: .5; }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🧑‍🚀 นักบินอวกาศ</h1></header>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="float">🎈 ลอยตัว</button>
+    <button class="chip" data-mode="eat">🍽️ กินข้าว</button>
+    <button class="chip" data-mode="sleep">😴 นอน</button>
+    <button class="chip" data-mode="gym">🏃 ออกกำลังกาย</button>
+    <button class="chip" data-mode="toilet">🚽 ห้องน้ำ</button>
+    <button class="chip" data-mode="window">🌍 หน้าต่าง</button>
+    <button class="chip" data-mode="rocket">🚀 ประกอบจรวด</button>
+  </div>
+  <div class="main">
+    <div>
+      <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="สถานีอวกาศ"></svg></div>
+      <div id="ctrls"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene'), ctrls = $('ctrls'), panel = $('panel');
+let mode = 'float';
+function svgPt(ev) {
+  const pt = scene.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(scene.getScreenCTM().inverse());
+}
+function starfield(seed, n, w = 1000, h = 640) {
+  let s = '', x = seed;
+  const rnd = () => (x = (x * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) s += `<circle cx="${(rnd() * w).toFixed(0)}" cy="${(rnd() * h).toFixed(0)}" r="${(0.8 + rnd() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.25 + rnd() * 0.55).toFixed(2)}"/>`;
+  return s;
+}
+const knowList = (a) => `<ul class="know">${a.map((k) => `<li>${k}</li>`).join('')}</ul>`;
+
+// ============================================================================
+// ART — the station cabin and the crew member (indoor clothes, no spacesuit)
+// ============================================================================
+const INK = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+function cabin(dim = 0) {
+  let s = `<rect width="1000" height="640" fill="#dfe5ee"/>
+    <rect x="0" y="0" width="1000" height="60" fill="#c3cbd8"/><rect x="0" y="580" width="1000" height="60" fill="#c3cbd8"/>`;
+  for (let x = 40; x < 1000; x += 160) s += `<rect x="${x}" y="70" width="140" height="80" rx="10" fill="#eef2f7" stroke="#b7c0ce" stroke-width="3"/><rect x="${x}" y="490" width="140" height="80" rx="10" fill="#eef2f7" stroke="#b7c0ce" stroke-width="3"/>`;
+  s += `<rect x="60" y="160" width="12" height="320" rx="6" fill="#f2c94c"/><rect x="928" y="160" width="12" height="320" rx="6" fill="#f2c94c"/>
+    <path d="M120,150 q60,30 120,0 t120,0" fill="none" stroke="#4a6fa5" stroke-width="6"/><path d="M640,490 q60,-30 120,0 t120,0" fill="none" stroke="#d35454" stroke-width="6"/>
+    <rect x="780" y="80" width="90" height="60" rx="6" fill="#2d3436"/><rect x="786" y="86" width="78" height="44" rx="4" fill="#5bc0eb"/>
+    <rect x="200" y="500" width="70" height="60" rx="10" fill="#4a6fa5"/><rect x="290" y="500" width="70" height="60" rx="10" fill="#6c8ebf"/>
+    <circle cx="500" cy="34" r="22" fill="#05071c" stroke="#9aa3b5" stroke-width="5"/><circle cx="494" cy="28" r="5" fill="#fff" opacity=".7"/>`;
+  if (dim) s += `<rect width="1000" height="640" fill="#0b1033" opacity="${dim}"/>`;
+  return s;
+}
+// crew member, centred at the belly, ~220 units tall; pose: 'float' | 'eat' | 'run' | 'sleep'
+function crew(pose = 'float', t = 0) {
+  const sw = Math.sin(t * 8), legA = pose === 'run' ? 26 * sw : 12, legB = pose === 'run' ? -26 * sw : -10;
+  const armA = pose === 'eat' ? -60 : pose === 'run' ? -24 * sw : -30, armB = pose === 'run' ? 24 * sw : 40;
+  return `<g>
+    <g transform="rotate(${legA} -14 30)"><rect x="-26" y="30" width="24" height="76" rx="11" fill="#33415c" ${INK}/><ellipse cx="-14" cy="110" rx="18" ry="10" fill="#f2f2f2" ${INK}/></g>
+    <g transform="rotate(${legB} 14 30)"><rect x="2" y="30" width="24" height="76" rx="11" fill="#33415c" ${INK}/><ellipse cx="14" cy="110" rx="18" ry="10" fill="#f2f2f2" ${INK}/></g>
+    <g transform="rotate(${armA} -34 -48)"><rect x="-46" y="-50" width="22" height="70" rx="11" fill="#4a90d9" ${INK}/><circle cx="-35" cy="24" r="12" fill="#f5c9a0" ${INK}/></g>
+    <rect x="-38" y="-62" width="76" height="100" rx="26" fill="#4a90d9" ${INK}/>
+    <rect x="-18" y="-40" width="36" height="22" rx="6" fill="#ff6b9d" stroke="#2d3436" stroke-width="3"/><text x="0" y="-23" text-anchor="middle" font-size="16">⭐</text>
+    <g transform="rotate(${armB} 34 -48)"><rect x="24" y="-50" width="22" height="70" rx="11" fill="#4a90d9" ${INK}/><circle cx="35" cy="24" r="12" fill="#f5c9a0" ${INK}/></g>
+    <circle cx="0" cy="-104" r="40" fill="#f5c9a0" ${INK}/>
+    <path d="M-40,-110 q4,-46 44,-40 q34,2 38,40 q-8,-22 -22,-24 q-14,10 -36,4 q-14,6 -24,20 Z" fill="#3b2a20" ${INK}/>
+    ${pose === 'sleep' ? `<path d="M-20,-102 q8,6 16,0 M6,-102 q8,6 16,0" fill="none" stroke="#2d3436" stroke-width="4" stroke-linecap="round"/>`
+      : `<circle cx="-14" cy="-102" r="5" fill="#2d3436"/><circle cx="14" cy="-102" r="5" fill="#2d3436"/>`}
+    ${pose === 'eat' ? `<ellipse cx="0" cy="-82" rx="10" ry="8" fill="#7a2d2d"/>` : `<path d="M-12,-84 q12,10 24,0" fill="none" stroke="#2d3436" stroke-width="4" stroke-linecap="round"/>`}
+    <circle cx="-26" cy="-90" r="6" fill="#ff9aa8" opacity=".6"/><circle cx="26" cy="-90" r="6" fill="#ff9aa8" opacity=".6"/>
+  </g>`;
+}
+
+// ============================================================================
+// 🎈 FLOAT — everything (and everyone) floats: fling things, they glide until a wall.
+// ============================================================================
+const WALL = { x0: 90, x1: 910, y0: 80, y1: 560 };
+let things = [], held = null, crewSpin = 0;
+function resetFloat() {
+  things = [
+    { id: 'crew', x: 360, y: 330, vx: 6, vy: -4, r: 90, rot: 0, vr: 0 },
+    { id: 'apple', e: '🍎', x: 640, y: 220, vx: -18, vy: 10, r: 34, rot: 0, vr: 20 },
+    { id: 'wrench', e: '🔧', x: 760, y: 400, vx: 12, vy: -14, r: 34, rot: 0, vr: -30 },
+    { id: 'book', e: '📘', x: 220, y: 180, vx: 10, vy: 8, r: 34, rot: 0, vr: 12 },
+    { id: 'bear', e: '🧸', x: 560, y: 470, vx: -10, vy: -12, r: 38, rot: 0, vr: 16 },
+    { id: 'sock', e: '🧦', x: 820, y: 170, vx: -8, vy: 14, r: 32, rot: 0, vr: -18 },
+    { id: 'water', x: 470, y: 160, vx: 8, vy: 6, r: 36, rot: 0, vr: 0 },
+  ];
+}
+function buildFloat() {
+  scene.innerHTML = `<defs><radialGradient id="wball" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#a8ddff" stop-opacity=".8"/><stop offset="1" stop-color="#3a9ad9" stop-opacity=".85"/></radialGradient></defs>
+    ${cabin()}<g id="things"></g>
+    <text x="500" y="625" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="#5b6475">👆 ลากแล้วปล่อย ของจะลอยไปเรื่อยๆ</text>`;
+  const g = $('things');
+  for (const t of things) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.dataset.id = t.id;
+    el.innerHTML = t.id === 'crew' ? `<g transform="scale(.8)">${crew('float')}</g><circle r="100" fill="transparent"/>`
+      : t.id === 'water' ? `<ellipse class="wb" rx="34" ry="34" fill="url(#wball)" stroke="#3a9ad9" stroke-width="2"/><circle r="50" fill="transparent"/>`
+      : `<text font-size="64" text-anchor="middle" dominant-baseline="central">${t.e}</text><circle r="50" fill="transparent"/>`;
+    g.appendChild(el); t.el = el;
+  }
+  placeFloat(0);
+}
+function placeFloat(now) {
+  for (const t of things) {
+    t.el.setAttribute('transform', `translate(${t.x.toFixed(1)} ${t.y.toFixed(1)}) rotate(${t.rot.toFixed(1)})`);
+    if (t.id === 'water') { const w = Math.sin(now / 180) * 3; const e = t.el.querySelector('.wb'); e.setAttribute('rx', 34 + w); e.setAttribute('ry', 34 - w); }
+  }
+}
+function floatTick(dt, now) {
+  for (const t of things) {
+    if (t === held) continue;
+    t.x += t.vx * dt; t.y += t.vy * dt; t.rot += t.vr * dt;
+    const k = Math.pow(0.97, dt);                                  // a little air drag in the cabin
+    t.vx *= k; t.vy *= k; t.vr *= Math.pow(0.9, dt);
+    const r = t.id === 'crew' ? 80 : t.r;
+    if (t.x < WALL.x0 + r) { t.x = WALL.x0 + r; t.vx = Math.abs(t.vx) * 0.8; bump(t); }
+    if (t.x > WALL.x1 - r) { t.x = WALL.x1 - r; t.vx = -Math.abs(t.vx) * 0.8; bump(t); }
+    if (t.y < WALL.y0 + r) { t.y = WALL.y0 + r; t.vy = Math.abs(t.vy) * 0.8; bump(t); }
+    if (t.y > WALL.y1 - r) { t.y = WALL.y1 - r; t.vy = -Math.abs(t.vy) * 0.8; bump(t); }
+  }
+  if (crewSpin > 0) { const c = things[0]; const step = Math.min(crewSpin, 240 * dt); c.rot += step; crewSpin -= step; }
+  placeFloat(now);
+}
+function bump(t) { if (Math.hypot(t.vx, t.vy) > 60) tone(260 + Math.random() * 80, 0.06, 'triangle', 0.05); }
+const FLOAT_SAY = {
+  crew: 'ตีลังกาในอวกาศ ง่ายมากเลย', apple: 'แอปเปิลลอยได้ นักบินอวกาศได้กินผลไม้สด ตอนยานขนของมาส่ง',
+  wrench: 'เครื่องมือต้องผูกหรือติดตีนตุ๊กแกไว้ ไม่งั้นลอยหายไป', book: 'หนังสือลอยไปเรื่อยๆ จนกว่าจะชนผนัง',
+  bear: 'ตุ๊กตาลอยได้ นักบินอวกาศมักเอาตุ๊กตาไปด้วย ถ้าตุ๊กตาเริ่มลอย แปลว่าถึงอวกาศแล้ว', sock: 'ถุงเท้าก็ลอย ต้องเก็บใส่ถุงให้ดี',
+  water: 'น้ำในอวกาศไม่ไหล แต่จับตัวเป็นลูกกลมๆ ลอยอยู่',
+};
+let pick = null;
+function floatDown(e) {
+  const q = svgPt(e);
+  let best = null, bd = 1e9;
+  for (const t of things) { const d = Math.hypot(q.x - t.x, q.y - t.y); if (d < (t.id === 'crew' ? 110 : 64) && d < bd) { bd = d; best = t; } }
+  if (!best) return;
+  held = best; pick = { dx: best.x - q.x, dy: best.y - q.y, hist: [[performance.now(), q.x, q.y]], moved: 0 };
+  try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+  buzz(8); blip(560);
+}
+function floatMove(e) {
+  if (!held) return;
+  const q = svgPt(e);
+  pick.moved += Math.hypot(q.x + pick.dx - held.x, q.y + pick.dy - held.y);
+  held.x = q.x + pick.dx; held.y = q.y + pick.dy;
+  pick.hist.push([performance.now(), q.x, q.y]); if (pick.hist.length > 6) pick.hist.shift();
+}
+function floatUp() {
+  if (!held) return;
+  const h = pick.hist, a = h[0], b = h[h.length - 1], dt = Math.max(0.016, (b[0] - a[0]) / 1000);
+  held.vx = Math.max(-900, Math.min(900, (b[1] - a[1]) / dt)); held.vy = Math.max(-900, Math.min(900, (b[2] - a[2]) / dt));
+  held.vr = (Math.random() - 0.5) * 120;
+  if (pick.moved < 12) {                                            // a tap, not a fling
+    held.vx = held.vy = 0;
+    if (held.id === 'crew') { crewSpin = 360; cheer(); }
+    speak(FLOAT_SAY[held.id]);
+  }
+  held = null; pick = null;
+}
+const FLOAT_KNOW = [
+  'บนสถานีอวกาศของทุกอย่างลอยได้ ผลักนิดเดียวก็ลอยไปเรื่อยๆ จนกว่าจะชนอะไร',
+  'ที่จริงที่สถานีอวกาศยังมีแรงดึงดูดของโลกราว 90 เปอร์เซ็นต์ แต่สถานีและทุกคนกำลังตกรอบโลกไปพร้อมกัน จึงลอยเหมือนไม่มีน้ำหนัก',
+  'สถานีอวกาศนานาชาติใหญ่ราวสนามฟุตบอล ปกติมีนักบินอวกาศอยู่ราว 7 คน',
+  'อยู่ในอวกาศนานๆ หลังจะยืดออก ตัวสูงขึ้นได้ราว 3 เปอร์เซ็นต์ แล้วหดกลับเมื่อกลับมาโลก',
+  'ร้องไห้ในอวกาศ น้ำตาไม่ไหลลงแก้ม แต่จะเกาะเป็นก้อนกลมๆ ที่ดวงตา',
+];
+function renderFloat() {
+  panel.innerHTML = `<div class="q-text">🎈 ลอยตัวในอวกาศ</div>
+    <div class="res">ลากของแล้วปล่อยให้ลอยไป แตะนักบินอวกาศเพื่อตีลังกา แตะลูกน้ำดูสิว่าเป็นยังไง</div>
+    ${knowList(FLOAT_KNOW)}<div class="src">ข้อมูล: NASA</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🍽️ EAT — drag food to the mouth. Bread is the odd one out: crumbs float everywhere.
+// ============================================================================
+const MOUTH = { x: 300, y: 262 };
+const FOODS = [
+  { id: 'tortilla', e: '🌯', th: 'แผ่นแป้งตอร์ตียา', say: 'นักบินอวกาศกินแผ่นแป้งตอร์ตียาแทนขนมปัง เพราะไม่มีเศษร่วง' },
+  { id: 'pouch', e: '🥫', th: 'อาหารซอง', say: 'อาหารส่วนใหญ่อยู่ในซอง เติมน้ำร้อนแล้วบีบกินได้เลย' },
+  { id: 'water', e: '💧', th: 'น้ำ', say: 'ดื่มน้ำต้องดูดจากถุงผ่านหลอด ไม่งั้นน้ำลอยออกมาเป็นลูกกลมๆ' },
+  { id: 'apple', e: '🍎', th: 'ผลไม้สด', say: 'ผลไม้สดมากับยานขนส่ง ต้องรีบกินก่อนเสีย' },
+  { id: 'salt', e: '🧂', th: 'เกลือกับพริกไทย', say: 'เกลือและพริกไทยต้องผสมเป็นน้ำ ไม่งั้นผงจะลอยเข้าตาและจมูก' },
+  { id: 'bread', e: '🍞', th: 'ขนมปัง', say: 'โอ๊ะ เศษขนมปังลอยเต็มไปหมด อาจเข้าตาหรือเข้าไปในเครื่องมือได้ นี่แหละเหตุผลที่ไม่กินขนมปังในอวกาศ' },
+];
+let foods = [], crumbs = [], chew = 0, fHeld = null;
+function resetEat() {
+  foods = FOODS.map((f, i) => ({ ...f, x: 580 + (i % 3) * 130, y: 210 + Math.floor(i / 3) * 190, bx: 580 + (i % 3) * 130, by: 210 + Math.floor(i / 3) * 190, ph: i * 1.3, gone: false }));
+  crumbs = []; chew = 0;
+}
+function buildEat() {
+  scene.innerHTML = `${cabin()}<g id="crewEat" transform="translate(300 360)"></g><g id="foods"></g><g id="crumbs"></g>
+    <text x="500" y="625" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="#5b6475">👆 ลากอาหารไปที่ปาก</text>`;
+  const g = $('foods');
+  for (const f of foods) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.innerHTML = `<circle r="56" fill="#fff" opacity=".7" stroke="#b7c0ce" stroke-width="3"/><text font-size="66" text-anchor="middle" dominant-baseline="central">${f.e}</text>`;
+    g.appendChild(el); f.el = el;
+  }
+  drawEat(0);
+}
+function drawEat(now) {
+  $('crewEat').innerHTML = crew(chew > 0 ? 'eat' : 'float', now / 1000);
+  for (const f of foods) {
+    if (f.gone) { f.el.setAttribute('opacity', 0); continue; }
+    if (f !== fHeld) { f.x = f.bx + Math.sin(now / 900 + f.ph) * 10; f.y = f.by + Math.cos(now / 1100 + f.ph) * 12; }
+    f.el.setAttribute('transform', `translate(${f.x.toFixed(1)} ${f.y.toFixed(1)})`);
+  }
+  $('crumbs').innerHTML = crumbs.map((c) => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r}" fill="#c98a3a"/>`).join('');
+}
+function eatTick(dt, now) {
+  if (chew > 0) chew -= dt;
+  for (const c of crumbs) {
+    c.x += c.vx * dt; c.y += c.vy * dt;
+    if (c.x < WALL.x0 || c.x > WALL.x1) c.vx *= -1;
+    if (c.y < WALL.y0 || c.y > WALL.y1) c.vy *= -1;
+  }
+  drawEat(now);
+}
+function eatDown(e) {
+  const q = svgPt(e);
+  const f = foods.find((o) => !o.gone && Math.hypot(q.x - o.x, q.y - o.y) < 64);
+  if (!f) return;
+  fHeld = f; f.dx = f.x - q.x; f.dy = f.y - q.y;
+  try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+  buzz(8); blip(560);
+}
+function eatMove(e) { if (!fHeld) return; const q = svgPt(e); fHeld.x = q.x + fHeld.dx; fHeld.y = q.y + fHeld.dy; }
+function eatUp() {
+  if (!fHeld) return;
+  const f = fHeld; fHeld = null;
+  if (Math.hypot(f.x - MOUTH.x, f.y - MOUTH.y) < 110) {
+    f.gone = true; chew = 1.6; buzz([15, 40, 15]);
+    [300, 360, 300].forEach((fr, i) => setTimeout(() => tone(fr, 0.08, 'square', 0.05), i * 160));
+    if (f.id === 'bread') { for (let i = 0; i < 26; i++) crumbs.push({ x: MOUTH.x + 30, y: MOUTH.y, vx: (Math.random() - 0.4) * 260, vy: (Math.random() - 0.5) * 260, r: 3 + Math.random() * 4 }); boop(); }
+    speak(f.say);
+    eaten = f.id; renderEat();
+    if (foods.every((o) => o.gone)) setTimeout(() => { cheer(); celebrate(60); }, 600);
+  } else speak(f.th);
+}
+let eaten = null;
+const EAT_KNOW = [
+  'อาหารในอวกาศส่วนใหญ่ทำให้แห้งหรือใส่ซองไว้ เก็บได้นาน แล้วเติมน้ำก่อนกิน',
+  'ในอวกาศจมูกจะตันนิดๆ เพราะของเหลวในร่างกายลอยขึ้นมาที่หัว นักบินอวกาศเลยชอบกินอาหารรสจัด',
+  'โต๊ะกินข้าวมีที่ยึด และช้อนส้อมติดแม่เหล็กหรือตีนตุ๊กแก',
+];
+function renderEat() {
+  const f = eaten && FOODS.find((o) => o.id === eaten);
+  panel.innerHTML = `<div class="q-text">${f ? f.e + ' ' + f.th : '🍽️ ป้อนข้าวนักบินอวกาศ'}</div>
+    <div class="res">${f ? f.say : 'ลากอาหารไปที่ปากนักบินอวกาศ ลองดูว่าอันไหนกินในอวกาศไม่ได้'}</div>
+    ${knowList(EAT_KNOW)}<button class="big-btn" id="eatAgain">🔁 เติมอาหารใหม่</button><div class="src">ข้อมูล: NASA Space Food</div>`;
+  $('eatAgain').addEventListener('click', () => { ensureAudio(); buzz(8); resetEat(); eaten = null; buildEat(); renderEat(); });
+  sayKit();
+}
+
+// ============================================================================
+// 😴 SLEEP — tap to zip into the sleeping bag on the wall; lights dim.
+// ============================================================================
+let asleep = false, zz = [];
+function buildSleep() {
+  scene.innerHTML = `${cabin(asleep ? 0.55 : 0)}
+    <rect x="380" y="90" width="240" height="460" rx="40" fill="#5b7db8" stroke="#2d3436" stroke-width="5"/>
+    <rect x="410" y="110" width="180" height="420" rx="30" fill="#6f92cc"/>
+    <path d="M400,160 L360,140 M600,160 L640,140 M400,480 L360,500 M600,480 L640,500" stroke="#2d3436" stroke-width="5"/>
+    <g id="sleeper" transform="translate(500 ${asleep ? 330 : 330})" style="cursor:pointer">${asleep ? `
+      <g transform="translate(0 -40)">${crew('sleep')}</g>
+      <rect x="-80" y="-30" width="160" height="230" rx="40" fill="#3f63a6" stroke="#2d3436" stroke-width="5"/>
+      <path d="M0,-28 L0,196" stroke="#ffd93d" stroke-width="5" stroke-dasharray="8 6"/>
+      <rect x="-40" y="-152" width="80" height="22" rx="10" fill="#2d3436"/>` : `<g transform="translate(110 30) rotate(-12)">${crew('float')}</g><circle cx="110" r="130" fill="transparent"/>`}
+    </g>
+    <g id="zz"></g>
+    <text x="500" y="625" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="${asleep ? '#cfd6ff' : '#5b6475'}">👆 แตะนักบินอวกาศ${asleep ? 'เพื่อปลุก' : 'เพื่อเข้านอน'}</text>`;
+  $('sleeper').addEventListener('click', () => { ensureAudio(); buzz(10); asleep = !asleep; zz = []; buildSleep(); renderSleep(); speak(asleep ? 'ฝันดีนะ นอนในถุงนอนที่ผูกไว้กับผนัง' : 'ตื่นแล้ว อรุณสวัสดิ์'); });
+}
+function sleepTick(dt, now) {
+  if (!asleep) return;
+  if (!zz.length || now - zz[zz.length - 1].t0 > 900) zz.push({ t0: now, x: 540 });
+  zz = zz.filter((z) => now - z.t0 < 3000);
+  $('zz').innerHTML = zz.map((z) => { const u = (now - z.t0) / 3000; return `<text x="${(z.x + u * 120).toFixed(0)}" y="${(160 - u * 120).toFixed(0)}" font-family="Itim" font-size="${(30 + u * 30).toFixed(0)}" fill="#fff" opacity="${(1 - u).toFixed(2)}">Z</text>`; }).join('');
+}
+const SLEEP_KNOW = [
+  'นักบินอวกาศนอนในถุงนอนที่ผูกไว้กับผนัง ไม่งั้นจะลอยไปชนของระหว่างหลับ',
+  'ในอวกาศไม่มีข้างบนข้างล่าง จะนอนตั้ง นอนคว่ำ หรือกลับหัวก็ได้',
+  'สถานีวิ่งรอบโลกเร็วมาก เห็นพระอาทิตย์ขึ้นวันละ 16 ครั้ง จึงต้องใช้ผ้าปิดตาตอนนอน',
+  'เสียงพัดลมในสถานีดังตลอดเวลา หลายคนจึงใส่ที่อุดหู',
+];
+function renderSleep() {
+  panel.innerHTML = `<div class="q-text">${asleep ? '😴 หลับฝันดี' : '🛏️ ได้เวลานอน'}</div>
+    <div class="res">${asleep ? 'นักบินอวกาศหลับอยู่ในถุงนอน แตะเพื่อปลุก' : 'แตะนักบินอวกาศ ให้เข้าไปนอนในถุงนอนที่ผนัง'}</div>
+    ${knowList(SLEEP_KNOW)}<div class="src">ข้อมูล: NASA</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🏃 GYM — hold to run on the treadmill (bungee straps hold the runner down)
+// ============================================================================
+let running = false, steps = 0, runT = 0, lastStep = 0;
+function buildGym() {
+  scene.innerHTML = `${cabin()}
+    <rect x="300" y="500" width="400" height="40" rx="14" fill="#2d3436"/><rect x="316" y="508" width="368" height="24" rx="10" fill="#555b66"/>
+    <g id="belt"></g>
+    <path d="M330,500 L310,580 M670,500 L690,580" stroke="#2d3436" stroke-width="8"/>
+    <g id="runner" transform="translate(500 370)"></g>
+    <path id="bungee1" d="M440,500 L470,330" stroke="#ff9f43" stroke-width="6"/><path id="bungee2" d="M560,500 L530,330" stroke="#ff9f43" stroke-width="6"/>
+    <rect x="740" y="380" width="170" height="120" rx="20" fill="#fff" stroke="#b7c0ce" stroke-width="4"/>
+    <text x="825" y="424" text-anchor="middle" font-family="Mitr" font-size="22" fill="#5b6475">ก้าว</text>
+    <text id="stepN" x="825" y="478" text-anchor="middle" font-family="Itim" font-size="48" fill="#e54b82">0</text>`;
+  drawGym(0);
+}
+function drawGym(now) {
+  $('runner').innerHTML = crew(running ? 'run' : 'float', runT);
+  let b = '';
+  const off = (runT * 200) % 40;
+  for (let x = 316 - off; x < 684; x += 40) if (x > 316) b += `<path d="M${x.toFixed(0)},508 v24" stroke="#777" stroke-width="3"/>`;
+  $('belt').innerHTML = b;
+  $('stepN').textContent = steps;
+}
+function gymTick(dt, now) {
+  if (running) {
+    runT += dt;
+    if (now - lastStep > 330) { lastStep = now; steps++; tone(200 + (steps % 2) * 40, 0.05, 'square', 0.04); if (steps % 50 === 0) { cheer(); speak('วิ่งได้ ' + steps + ' ก้าวแล้ว เก่งมาก'); } }
+  }
+  drawGym(now);
+}
+function setRun(on) {
+  running = on;
+  const b = $('runBtn'); if (b) b.classList.toggle('on', on);
+  if (on) buzz(10);
+}
+const GYM_KNOW = [
+  'นักบินอวกาศต้องออกกำลังกายวันละราว 2 ชั่วโมง',
+  'ในอวกาศไม่ต้องแบกน้ำหนักตัว กระดูกและกล้ามเนื้อจะอ่อนแอลง ถ้าไม่ออกกำลังกาย',
+  'ลู่วิ่งในอวกาศต้องมีสายยางยืดรัดตัวไว้ ไม่งั้นก้าวเดียวก็ลอยหลุดออกไป',
+  'มีเครื่องยกน้ำหนักที่ใช้แรงดูดของอากาศแทนลูกตุ้ม เพราะลูกตุ้มเหล็กไม่มีน้ำหนักในอวกาศ',
+];
+function renderGym() {
+  panel.innerHTML = `<div class="q-text">🏃 ออกกำลังกาย</div>
+    <div class="res">กดปุ่มค้างไว้ ให้นักบินอวกาศวิ่งบนลู่วิ่ง ดูสายสีส้มที่รั้งตัวไว้ไม่ให้ลอย</div>
+    ${knowList(GYM_KNOW)}<div class="src">ข้อมูล: NASA</div>`;
+  sayKit();
+}
+function renderGymCtrls() {
+  ctrls.innerHTML = `<button class="hold" id="runBtn">🏃 กดค้างเพื่อวิ่ง</button>`;
+  const b = $('runBtn');
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); try { b.setPointerCapture(e.pointerId); } catch (_) {} setRun(true); });
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => setRun(false));
+}
+
+// ============================================================================
+// 🚽 TOILET + WATER — air suction instead of a flush; urine is cleaned back into
+// drinking water (NASA's water recovery reached 98% in 2023).
+// ============================================================================
+let recyc = null, recycN = 0;
+const RECYC_STEPS = [
+  { at: 0, th: '🚽 ห้องน้ำใช้ลมดูด แทนการกดชักโครก', say: 'ห้องน้ำในอวกาศใช้พัดลมดูดลม ดึงทุกอย่างลงไป เพราะน้ำไม่ไหลลงเอง' },
+  { at: 0.33, th: '⚙️ เครื่องกรองแยกน้ำออกมา', say: 'ฉี่ถูกส่งไปที่เครื่องกรอง เครื่องจะต้มและกรองจนเหลือแต่น้ำ' },
+  { at: 0.66, th: '✨ ฆ่าเชื้อจนสะอาด', say: 'จากนั้นน้ำจะถูกทำให้สะอาดอีกหลายรอบ จนดื่มได้ปลอดภัย' },
+  { at: 0.95, th: '💧 ได้น้ำดื่มสะอาด!', say: 'ได้น้ำดื่มสะอาดแล้ว น้ำในสถานีอวกาศถูกนำกลับมาใช้ใหม่ได้ราว 98 เปอร์เซ็นต์' },
+];
+function buildToilet() {
+  scene.innerHTML = `${cabin()}
+    <rect x="80" y="250" width="160" height="230" rx="30" fill="#f4f6fa" stroke="#2d3436" stroke-width="5"/>
+    <ellipse cx="160" cy="260" rx="62" ry="22" fill="#cfd6e6" stroke="#2d3436" stroke-width="5"/>
+    <path d="M226,300 q60,-10 70,40 L300,420" fill="none" stroke="#f2c94c" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="300" cy="430" r="26" fill="#f2c94c" stroke="#2d3436" stroke-width="4"/>
+    <g id="fan" transform="translate(160 380)"><circle r="40" fill="#cfd6e6" stroke="#2d3436" stroke-width="4"/><path d="M0,0 L0,-32 A32,32 0 0 1 28,-15 Z M0,0 L28,16 A32,32 0 0 1 -1,32 Z M0,0 L-28,16 A32,32 0 0 1 -28,-15 Z" fill="#7f8c9d"/></g>
+    <path id="pipe" d="M326,430 L420,430 Q450,430 450,400 L450,330 Q450,300 480,300 L560,300" fill="none" stroke="#9aa3b5" stroke-width="14"/>
+    <rect x="560" y="230" width="150" height="150" rx="20" fill="#5b6475" stroke="#2d3436" stroke-width="5"/>
+    <text x="635" y="296" text-anchor="middle" font-size="48">⚙️</text><text x="635" y="350" text-anchor="middle" font-family="Mitr" font-size="20" fill="#fff">เครื่องกรอง</text>
+    <path d="M710,300 L790,300 Q820,300 820,330 L820,380" fill="none" stroke="#9aa3b5" stroke-width="14"/>
+    <path d="M770,380 h100 v120 q0,30 -30,30 h-40 q-30,0 -30,-30 Z" fill="#cfe9ff" stroke="#2d3436" stroke-width="5"/>
+    <rect id="waterLvl" x="776" y="530" width="88" height="0" fill="#3a9ad9"/>
+    <text x="820" y="570" text-anchor="middle" font-family="Mitr" font-size="20" fill="#5b6475">น้ำดื่ม</text>
+    <g id="drop"></g>
+    <text id="recMsg" x="500" y="200" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#e54b82" stroke="#fff" stroke-width="6" paint-order="stroke"></text>`;
+  placeToilet(0);
+}
+const PATH_PTS = [[160, 300], [226, 300], [296, 340], [300, 430], [450, 430], [450, 300], [635, 300], [820, 300], [820, 460]];
+function pathAt(u) {
+  const seg = [], L = [];
+  let tot = 0;
+  for (let i = 1; i < PATH_PTS.length; i++) { const d = Math.hypot(PATH_PTS[i][0] - PATH_PTS[i - 1][0], PATH_PTS[i][1] - PATH_PTS[i - 1][1]); seg.push(d); tot += d; }
+  let s = u * tot;
+  for (let i = 0; i < seg.length; i++) { if (s <= seg[i]) { const k = s / seg[i], a = PATH_PTS[i], b = PATH_PTS[i + 1]; return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; } s -= seg[i]; }
+  return PATH_PTS[PATH_PTS.length - 1];
+}
+function placeToilet(now) {
+  $('fan').setAttribute('transform', `translate(160 380) rotate(${recyc ? (now / 3) % 360 : 0})`);
+  $('waterLvl').setAttribute('height', Math.min(110, recycN * 22)); $('waterLvl').setAttribute('y', 530 - Math.min(110, recycN * 22));
+  if (!recyc) { $('drop').innerHTML = ''; return; }
+  const u = Math.min(1, (now - recyc.t0) / 9000), [x, y] = pathAt(u), col = u < 0.33 ? '#f2c94c' : u < 0.66 ? '#cde7a8' : '#5bc0eb';
+  $('drop').innerHTML = `<path transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" d="M0,-22 C14,-4 16,4 16,8 A16,16 0 0 1 -16,8 C-16,4 -14,-4 0,-22 Z" fill="${col}" stroke="#2d3436" stroke-width="3"/>`;
+  const st = RECYC_STEPS.filter((s) => s.at <= u).pop();
+  if (st !== recyc.step) { recyc.step = st; $('recMsg').textContent = st.th; speak(st.say); }
+  if (u >= 1) { recyc = null; recycN++; cheer(); buzz([20, 30, 20]); placeToilet(now); const b = $('recBtn'); if (b) b.disabled = false; }
+}
+const TOILET_KNOW = [
+  'ห้องน้ำในอวกาศมีที่จับและสายรัดขา ไม่ให้ตัวลอยออกจากโถ',
+  'ฉี่ของนักบินอวกาศถูกกรองกลับมาเป็นน้ำดื่ม สะอาดกว่าน้ำประปาบางที่บนโลกเสียอีก',
+  'น้ำในสถานีอวกาศนำกลับมาใช้ใหม่ได้ราว 98 เปอร์เซ็นต์ ช่วยให้ไม่ต้องขนน้ำจากโลกมามาก',
+];
+function renderToilet() {
+  panel.innerHTML = `<div class="q-text">🚽 ห้องน้ำในอวกาศ</div>
+    <div class="res">กดปุ่ม แล้วดูหยดน้ำเดินทางจากห้องน้ำ ผ่านเครื่องกรอง จนกลายเป็นน้ำดื่ม</div>
+    ${knowList(TOILET_KNOW)}<div class="src">ข้อมูล: NASA Environmental Control and Life Support System (2023)</div>`;
+  sayKit();
+}
+function renderToiletCtrls() {
+  ctrls.innerHTML = `<button class="big-btn" id="recBtn">💧 เริ่มรีไซเคิลน้ำ</button>`;
+  $('recBtn').addEventListener('click', () => { ensureAudio(); buzz(10); if (recyc) return; recyc = { t0: performance.now(), step: null }; $('recBtn').disabled = true; });
+}
+
+// ============================================================================
+// 🌍 WINDOW — the cupola. One orbit ≈ 92 min (12 s here): half in sunlight,
+// half in Earth's shadow → ~16 sunrises a day. Speed ~28,000 km/h, ~400 km up.
+// ============================================================================
+const ORBIT_S = 12;
+let wT = 0, wPlay = true, sunrises = 0, wasDay = true;
+function buildWindow() {
+  let frames = '';
+  const cx = 500, cy = 330;
+  scene.innerHTML = `<defs><clipPath id="cup"><polygon points="${[...Array(8)].map((_, i) => { const a = Math.PI / 8 + i * Math.PI / 4; return `${(cx + 290 * Math.cos(a)).toFixed(0)},${(cy + 290 * Math.sin(a)).toFixed(0)}`; }).join(' ')}"/></clipPath>
+      <linearGradient id="atm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05071c"/><stop offset=".55" stop-color="#05071c"/><stop offset=".62" stop-color="#5aa9ff"/><stop offset="1" stop-color="#5aa9ff"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="#c3cbd8"/>
+    <g clip-path="url(#cup)">
+      <rect width="1000" height="640" fill="#05071c"/>${starfield(3, 80, 1000, 300)}
+      <g id="earthStrip"><image href="../solar-system/tex/2k_earth_daymap.jpg" x="0" y="110" width="2000" height="700" preserveAspectRatio="none"/><image href="../solar-system/tex/2k_earth_daymap.jpg" x="2000" y="110" width="2000" height="700" preserveAspectRatio="none"/></g>
+      <ellipse cx="500" cy="1500" rx="1600" ry="1196" fill="none" stroke="#7fc3ff" stroke-width="18" opacity=".7"/>
+      <path d="M-200,300 Q500,250 1200,300 L1200,0 L-200,0 Z" fill="#05071c"/>
+      <rect id="night" width="1000" height="640" fill="#050a2a" opacity="0"/>
+      <circle id="sunW" cx="880" cy="250" r="34" fill="#fff6c2" opacity="0"/>
+      <rect id="glowW" x="0" y="240" width="1000" height="80" fill="#ff9f43" opacity="0"/>
+    </g>
+    ${[...Array(8)].map((_, i) => { const a = Math.PI / 8 + i * Math.PI / 4, b = a + Math.PI / 4; return `<path d="M${cx},${cy} m${(110 * Math.cos(a)).toFixed(0)},${(110 * Math.sin(a)).toFixed(0)} L${(cx + 290 * Math.cos(a)).toFixed(0)},${(cy + 290 * Math.sin(a)).toFixed(0)}" stroke="#9aa3b5" stroke-width="14"/>`; }).join('')}
+    <circle cx="${cx}" cy="${cy}" r="110" fill="none" stroke="#9aa3b5" stroke-width="14"/>
+    <polygon points="${[...Array(8)].map((_, i) => { const a = Math.PI / 8 + i * Math.PI / 4; return `${(cx + 290 * Math.cos(a)).toFixed(0)},${(cy + 290 * Math.sin(a)).toFixed(0)}`; }).join(' ')}" fill="none" stroke="#7f8c9d" stroke-width="18"/>
+    <g font-family="Mitr" font-weight="700"><rect x="16" y="16" width="290" height="100" rx="20" fill="rgba(0,0,0,.45)"/>
+      <text x="34" y="58" font-size="26" fill="#ffd93d">🌅 พระอาทิตย์ขึ้น</text><text id="srN" x="34" y="100" font-size="32" fill="#fff">0 ครั้ง</text></g>
+    <text id="wMsg" x="500" y="620" text-anchor="middle" font-family="Mitr" font-size="26" font-weight="700" fill="#2d3436"></text>`;
+  placeWindow();
+}
+function placeWindow() {
+  const u = (wT / ORBIT_S) % 1;
+  $('earthStrip').setAttribute('transform', `translate(${(-(wT / ORBIT_S) * 2000 % 2000).toFixed(1)} 0)`);
+  // day for the first ~62% of the orbit, then Earth's shadow (≈ 36 of 92 min dark)
+  const night = u > 0.62 ? Math.min(1, (u - 0.62) / 0.03) * (u > 0.97 ? (1 - u) / 0.03 : 1) : 0;
+  $('night').setAttribute('opacity', (night * 0.82).toFixed(2));
+  const dawn = u < 0.04 ? 1 - u / 0.04 : 0, dusk = u > 0.58 && u < 0.64 ? 1 - Math.abs(u - 0.61) / 0.03 : 0;
+  $('glowW').setAttribute('opacity', (Math.max(dawn, dusk) * 0.6).toFixed(2));
+  $('sunW').setAttribute('opacity', u < 0.6 ? 1 : 0); $('sunW').setAttribute('cx', (900 - u * 1300).toFixed(0));
+  const isDay = u < 0.62;
+  if (isDay && !wasDay) {
+    sunrises++; tone(660, 0.15, 'sine', 0.08); tone(880, 0.2, 'sine', 0.06);
+    if (sunrises === 16) { cheer(); celebrate(80); speak('ครบ 16 ครั้งแล้ว นี่คือ 1 วันบนโลก นักบินอวกาศเห็นพระอาทิตย์ขึ้นวันละ 16 ครั้ง'); renderWindow(); }
+    else speak('พระอาทิตย์ขึ้นครั้งที่ ' + sunrises);
+  }
+  wasDay = isDay;
+  $('srN').textContent = sunrises + ' ครั้ง';
+  $('wMsg').textContent = isDay ? '☀️ กลางวัน · บินเหนือโลก 400 กม.' : '🌙 กลางคืน · อยู่ในเงาโลก';
+}
+function windowTick(dt) { if (wPlay) { wT += dt; placeWindow(); } }
+const WINDOW_KNOW = [
+  'สถานีอวกาศอยู่สูงจากพื้นโลกราว 400 กิโลเมตร',
+  'บินเร็วราว 28,000 กิโลเมตรต่อชั่วโมง เร็วกว่าเครื่องบินราว 30 เท่า',
+  'วิ่งรอบโลกครบ 1 รอบในราว 90 นาที จึงเห็นพระอาทิตย์ขึ้นและตกวันละ 16 ครั้ง',
+  'หน้าต่างนี้มี 7 บาน เรียกว่าคิวโพลา เป็นที่ที่นักบินอวกาศชอบมาชมโลกที่สุด',
+  'ตอนหัวค่ำหรือเช้ามืด เรามองเห็นสถานีอวกาศด้วยตาเปล่า เป็นจุดสว่างวิ่งผ่านฟ้าโดยไม่กะพริบ',
+];
+function renderWindow() {
+  panel.innerHTML = `<div class="q-text">🌍 มองโลกจากหน้าต่าง</div>
+    <div class="res">ดูโลกเลื่อนผ่านใต้หน้าต่าง แล้วนับว่าพระอาทิตย์ขึ้นกี่ครั้ง${sunrises >= 16 ? ' <b>ครบ 16 ครั้ง = 1 วันบนโลก!</b>' : ''}</div>
+    ${knowList(WINDOW_KNOW)}<div class="src">ข้อมูล: NASA · ภาพนี้เร่งเวลา 1 รอบโลกเหลือ ${ORBIT_S} วินาที</div>`;
+  sayKit();
+}
+function renderWindowCtrls() {
+  ctrls.innerHTML = `<div class="row"><button class="chip ${wPlay ? 'on' : ''}" id="wPlay">${wPlay ? '⏸ หยุด' : '▶️ บินต่อ'}</button><button class="chip" id="wReset">🔁 นับใหม่</button></div>`;
+  $('wPlay').addEventListener('click', () => { ensureAudio(); buzz(8); wPlay = !wPlay; renderWindowCtrls(); });
+  $('wReset').addEventListener('click', () => { ensureAudio(); buzz(8); sunrises = 0; wT = 0; wasDay = true; placeWindow(); renderWindow(); });
+}
+
+// ============================================================================
+// 🚀 ROCKET — stack 3 stages bottom-to-top, launch, watch the stages drop away.
+// Real numbers: stage 1 drops ~70 km up; orbit ~400 km; ~8–9 minutes to orbit.
+// ============================================================================
+const PARTS = {
+  s1: [{ id: 'bw', th: 'ลายขาวดำ' }, { id: 'reuse', th: 'บินกลับมาลงจอดได้' }, { id: 'orange', th: 'ถังสีส้ม' }],
+  s2: [{ id: 'white', th: 'สีขาว' }, { id: 'band', th: 'คาดสีดำ' }, { id: 'silver', th: 'สีเงิน' }],
+  top: [{ id: 'crew', th: 'ยานนักบินอวกาศ' }, { id: 'sat', th: 'ดาวเทียม' }, { id: 'probe', th: 'ยานไปดวงจันทร์' }],
+};
+const SLOT_TH = { s1: 'ท่อนแรก (ล่างสุด)', s2: 'ท่อนที่สอง', top: 'ส่วนบนสุด' };
+let rk = { s1: null, s2: null, top: null, side: false }, flight = null;
+function drawS1(id, legs) {
+  const body = id === 'orange' ? '#e67e22' : '#f4f6fa';
+  let s = `<rect x="-36" y="-230" width="72" height="230" fill="${body}" stroke="#2d3436" stroke-width="4"/>`;
+  if (id === 'bw') s += `<rect x="-36" y="-150" width="36" height="40" fill="#2d3436"/><rect x="0" y="-70" width="36" height="40" fill="#2d3436"/><rect x="-36" y="-230" width="72" height="16" fill="#2d3436"/>`;
+  if (id === 'reuse') s += `<rect x="-36" y="-230" width="72" height="26" fill="#2d3436"/><path d="M-36,-222 h-14 v14 h14 M36,-222 h14 v14 h-14" fill="#7f8c9d" stroke="#2d3436" stroke-width="3"/>
+    ${legs ? '<path d="M-30,-20 L-70,26 M30,-20 L70,26" stroke="#2d3436" stroke-width="7" stroke-linecap="round"/>' : '<path d="M-36,-60 L-44,-4 M36,-60 L44,-4" stroke="#2d3436" stroke-width="6"/>'}`;
+  if (id === 'orange') s += `<rect x="-36" y="-230" width="72" height="20" fill="#f4f6fa" stroke="#2d3436" stroke-width="4"/>`;
+  s += `<path d="M-30,0 L-24,22 L-12,22 L-6,0 M6,0 L12,22 L24,22 L30,0" fill="#555b66" stroke="#2d3436" stroke-width="3"/>`;
+  return s;
+}
+function drawS2(id) {
+  const body = id === 'silver' ? '#c8d0dc' : '#f4f6fa';
+  let s = `<rect x="-32" y="-120" width="64" height="120" fill="${body}" stroke="#2d3436" stroke-width="4"/>`;
+  if (id === 'band') s += `<rect x="-32" y="-70" width="64" height="22" fill="#2d3436"/>`;
+  s += `<path d="M-14,0 L-10,16 L10,16 L14,0" fill="#555b66" stroke="#2d3436" stroke-width="3"/>`;
+  return s;
+}
+function drawTop(id, cover = true) {
+  if (id === 'crew') return `<path d="M-32,0 L-20,-70 L20,-70 L32,0 Z" fill="#e8e9f0" stroke="#2d3436" stroke-width="4"/><circle cx="0" cy="-36" r="9" fill="#2b3a67"/>
+    ${cover ? '<path d="M0,-70 L0,-120 M-8,-100 L8,-100" stroke="#e74c3c" stroke-width="6"/><path d="M-8,-120 L0,-138 L8,-120 Z" fill="#e74c3c"/>' : ''}`;
+  if (id === 'sat') return cover ? `<path d="M-34,0 L-34,-70 Q-34,-130 0,-150 Q34,-130 34,-70 L34,0 Z" fill="#f4f6fa" stroke="#2d3436" stroke-width="4"/><text x="0" y="-60" text-anchor="middle" font-size="34">🛰️</text>`
+    : `<rect x="-18" y="-60" width="36" height="50" rx="4" fill="#d9a520" stroke="#2d3436" stroke-width="4"/>`;
+  return cover ? `<path d="M-34,0 L-34,-60 Q-34,-120 0,-140 Q34,-120 34,-60 L34,0 Z" fill="#f4f6fa" stroke="#2d3436" stroke-width="4"/><text x="0" y="-54" text-anchor="middle" font-size="34">🌙</text>`
+    : `<rect x="-20" y="-56" width="40" height="44" rx="6" fill="#c0c7d4" stroke="#2d3436" stroke-width="4"/><circle cx="0" cy="-34" r="10" fill="#2d3436"/>`;
+}
+const BOOSTER = `<rect x="-14" y="-150" width="28" height="150" fill="#f4f6fa" stroke="#2d3436" stroke-width="4"/><path d="M-14,-150 L0,-176 L14,-150 Z" fill="#f4f6fa" stroke="#2d3436" stroke-width="4"/><path d="M-10,0 L-6,14 L6,14 L10,0" fill="#555b66"/>`;
+function drawSide() { return [-1, 1].map((k) => `<g transform="translate(${k * 52} 0)">${BOOSTER}</g>`).join(''); }
+function rocketSVG(part) {               // stack drawn with base at y=0, rising upward
+  let s = '';
+  if (rk.s1) s += (rk.side ? drawSide() : '') + drawS1(rk.s1, false);
+  if (rk.s2) s += `<g transform="translate(0 -230)">${drawS2(rk.s2)}</g>`;
+  if (rk.top) s += `<g transform="translate(0 -350)">${drawTop(rk.top)}</g>`;
+  return s;
+}
+function buildRocket() {
+  flight = null;
+  const next = !rk.s1 ? 's1' : !rk.s2 ? 's2' : !rk.top ? 'top' : null;
+  const ghostY = next === 's1' ? -230 : next === 's2' ? -350 : -490;
+  const ghostH = next === 's1' ? 230 : next === 's2' ? 120 : 140;
+  scene.innerHTML = `<defs><linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ec6ff"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="url(#dsky)"/>
+    <rect x="0" y="560" width="1000" height="80" fill="#7ed957"/>
+    <rect x="380" y="540" width="240" height="24" fill="#7f8c9d"/>
+    <path d="M640,560 L640,120 M640,160 h-60 M640,300 h-60 M640,440 h-60" stroke="#c0392b" stroke-width="12"/>
+    <g transform="translate(500 540)">
+      ${next ? `<rect x="-40" y="${ghostY}" width="80" height="${ghostH}" rx="8" fill="rgba(255,255,255,.5)" stroke="#fff" stroke-width="4" stroke-dasharray="12 10"><animate attributeName="opacity" values="1;.4;1" dur="1.2s" repeatCount="indefinite"/></rect>` : ''}
+      ${rocketSVG()}
+    </g>
+    <text x="230" y="300" text-anchor="middle" font-family="Mitr" font-size="26" font-weight="700" fill="#1b2160">${next ? '👇 เลือก' + SLOT_TH[next] : '🚀 พร้อมปล่อยแล้ว!'}</text>`;
+}
+function renderRocketCtrls() {
+  const next = !rk.s1 ? 's1' : !rk.s2 ? 's2' : !rk.top ? 'top' : null;
+  if (flight) { ctrls.innerHTML = ''; return; }
+  if (next) {
+    ctrls.innerHTML = `<div class="prompt">เลือก${SLOT_TH[next]}</div><div class="parts">${PARTS[next].map((p) => `<button class="part" data-id="${p.id}"><svg viewBox="${next === 's1' ? '-80 -250 160 290' : next === 's2' ? '-60 -140 120 170' : '-60 -160 120 175'}">${next === 's1' ? drawS1(p.id) : next === 's2' ? drawS2(p.id) : drawTop(p.id, true)}</svg>${p.th}</button>`).join('')}</div>
+      ${rk.s1 ? '<div class="row"><button class="chip" id="rkUndo">↩️ ถอยกลับ</button></div>' : ''}`;
+    for (const b of ctrls.querySelectorAll('.part')) b.addEventListener('click', () => {
+      ensureAudio(); buzz(10); tone(440 + (next === 's2' ? 110 : next === 'top' ? 220 : 0), 0.12, 'triangle', 0.1);
+      rk[next] = b.dataset.id; buildRocket(); renderRocketCtrls(); renderRocket();
+      const p = PARTS[next].find((o) => o.id === b.dataset.id);
+      speak(next === 'top' ? 'ใส่' + p.th + 'ไว้บนสุด พร้อมปล่อยจรวดแล้ว' : 'ต่อ' + (next === 's1' ? 'ท่อนแรก' : 'ท่อนที่สอง') + 'แล้ว');
+    });
+    const u = $('rkUndo'); if (u) u.addEventListener('click', () => { buzz(8); if (rk.top) rk.top = null; else if (rk.s2) rk.s2 = null; else rk.s1 = null; buildRocket(); renderRocketCtrls(); renderRocket(); });
+  } else {
+    ctrls.innerHTML = `<div class="row"><button class="chip ${rk.side ? 'on' : ''}" id="rkSide">💪 จรวดเสริม 2 ข้าง</button><button class="chip" id="rkNew">🔁 สร้างใหม่</button></div>
+      <button class="big-btn" id="rkGo">🚀 ปล่อยจรวด!</button>`;
+    $('rkSide').addEventListener('click', () => { ensureAudio(); buzz(8); rk.side = !rk.side; buildRocket(); renderRocketCtrls(); if (rk.side) speak('จรวดเสริมช่วยดันตอนออกตัว แล้วหลุดออกก่อน'); });
+    $('rkNew').addEventListener('click', () => { buzz(8); rk = { s1: null, s2: null, top: null, side: false }; buildRocket(); renderRocketCtrls(); renderRocket(); });
+    $('rkGo').addEventListener('click', () => { ensureAudio(); launch(); });
+  }
+}
+// ---- flight ----
+// timeline (s after liftoff): 0–4 stage 1 (0→70 km, boosters drop at 2 s), 4 stage sep,
+// 4–8.5 stage 2 (70→400 km, nose cover drops at 5.5), 8.5 payload free, then the finale.
+function launch() {
+  flight = { t0: performance.now() + 3000, phase: 'count', said: {} };
+  ctrls.innerHTML = '';
+  ['สาม', 'สอง', 'หนึ่ง'].forEach((w, i) => setTimeout(() => { if (!flight) return; tone(440, 0.15, 'square', 0.08); buzz(15); speak(w); flight.big = 3 - i; }, i * 1000));
+  scene.innerHTML = `<defs><linearGradient id="hz2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient></defs>
+    <rect id="fsky" width="1000" height="640" fill="#6ec6ff"/><g id="fstars" opacity="0">${starfield(8, 120)}</g>
+    <g id="fworld"></g><g id="fdrop"></g><g id="frocket"></g><g id="fsmoke"></g>
+    <g font-family="Mitr" font-weight="700"><rect x="16" y="16" width="300" height="96" rx="20" fill="rgba(0,0,0,.4)"/>
+      <text id="fAlt" x="34" y="56" font-size="28" fill="#fff"></text><text id="fT" x="34" y="94" font-size="20" fill="#cfd6ff"></text></g>
+    <text id="fBig" x="500" y="330" text-anchor="middle" font-family="Itim" font-size="180" fill="#fff" stroke="#e54b82" stroke-width="10" paint-order="stroke"></text>
+    <text id="fMsg" x="500" y="600" text-anchor="middle" font-family="Mitr" font-size="28" font-weight="700" fill="#ffd93d" stroke="#05071c" stroke-width="7" paint-order="stroke"></text>`;
+  renderRocket();
+}
+function mixC(a, b, t) {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)), A = p(a), B = p(b);
+  return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * Math.max(0, Math.min(1, t))).toString(16).padStart(2, '0')).join('');
+}
+const FLIGHT_SAY = {
+  lift: 'ปล่อยตัวแล้ว จรวดพุ่งขึ้นฟ้า', side: 'จรวดเสริมหลุดออกไปแล้ว', sep: 'ท่อนแรกหมดเชื้อเพลิง หลุดออกไป ทำให้จรวดเบาลง',
+  reuse: 'ท่อนแรกบินกลับไปลงจอด เอากลับมาใช้ใหม่ได้', nose: 'ฝาครอบหัวจรวดหลุดออก เพราะพ้นอากาศแล้ว', tower: 'หอกู้ภัยบนหัวยานหลุดออก เพราะผ่านช่วงอันตรายแล้ว', sep2: 'ท่อนที่สองหลุดออก ถึงอวกาศแล้ว',
+  crew: 'ยานนักบินอวกาศ เข้าไปเชื่อมต่อกับสถานีอวกาศ สำเร็จ', sat: 'ดาวเทียมกางแผงโซลาร์เซลล์ โคจรรอบโลกแล้ว', probe: 'ยานสำรวจมุ่งหน้าไปดวงจันทร์แล้ว',
+};
+function flightTick(now) {
+  if (!flight) return;
+  const t = (now - flight.t0) / 1000;
+  const say = (k) => { if (!flight.said[k]) { flight.said[k] = 1; speak(FLIGHT_SAY[k]); $('fMsg').textContent = FLIGHT_SAY[k]; } };
+  $('fBig').textContent = t < 0 && flight.big ? flight.big : '';
+  if (t < 0) { drawFlight(0, 0, now); return; }
+  if (!flight.said.go) { flight.said.go = 1; tone(880, 0.35, 'square', 0.1); buzz([30, 20, 60]); engineOn(); }
+  let alt;
+  if (t < 4) alt = 70 * Math.pow(t / 4, 2);
+  else if (t < 8.5) alt = 70 + 330 * (1 - Math.pow(1 - (t - 4) / 4.5, 2));
+  else alt = 400;
+  if (t > 0.3) say('lift');
+  if (rk.side && t > 2) say('side');
+  if (t > 4) say(rk.s1 === 'reuse' ? 'reuse' : 'sep');
+  if (t > 5.5 && rk.top !== 'crew') say('nose');
+  if (t > 5.5 && rk.top === 'crew') say('tower');
+  if (t > 8.5) { say('sep2'); engineOff(); }
+  if (t > 10.5 && !flight.done) { flight.done = 1; say(rk.top); cheer(); celebrate(90); buzz([30, 20, 40]); renderRocket(); setTimeout(() => { if (mode === 'rocket' && flight && flight.done) { ctrls.innerHTML = '<button class="big-btn" id="rkAgain">🔁 สร้างจรวดใหม่</button>'; $('rkAgain').addEventListener('click', () => { buzz(8); engineOff(); rk = { s1: null, s2: null, top: null, side: false }; buildRocket(); renderRocketCtrls(); renderRocket(); }); } }, 1500); }
+  drawFlight(t, alt, now);
+}
+function drawFlight(t, alt, now) {
+  $('fsky').setAttribute('fill', mixC('#6ec6ff', '#05071c', alt / 90));
+  $('fstars').setAttribute('opacity', Math.max(0, Math.min(1, (alt - 40) / 50)).toFixed(2));
+  $('fAlt').textContent = '⬆ ' + Math.round(alt) + ' กม.';
+  $('fT').textContent = t > 0 ? 'เวลาจริงราว ' + Math.min(9, Math.round(t / 8.5 * 9)) + ' นาที' : 'เตรียมปล่อย';
+  // world: ground + pad slide down and away in the first km; clouds pass up to ~12 km; Earth curve when high
+  const gy = 560 + Math.min(1, alt) * 900 + alt * 40;
+  let w = '';
+  if (gy < 700) w += `<rect x="0" y="${gy}" width="1000" height="200" fill="#7ed957"/><rect x="380" y="${gy - 20}" width="240" height="24" fill="#7f8c9d"/><path d="M640,${gy} L640,${gy - 440}" stroke="#c0392b" stroke-width="12"/>`;
+  if (alt > 0.5 && alt < 25) for (let i = 0; i < 5; i++) { const cy = ((alt * 60 + i * 180) % 900) - 150; w += `<text x="${120 + i * 190}" y="${cy.toFixed(0)}" font-size="${70 + (i % 2) * 30}">☁️</text>`; }
+  if (alt > 60) { const k = Math.min(1, (alt - 60) / 200); const ey = (1500 - k * 170).toFixed(0); w += `<ellipse cx="500" cy="${ey}" rx="1100" ry="860" fill="#2f7fd8"/><ellipse cx="500" cy="${ey}" rx="1100" ry="860" fill="none" stroke="#7fc3ff" stroke-width="16" opacity=".7"/>`; }
+  $('fworld').innerHTML = w;
+  // rocket: the remaining stack, fixed on screen
+  const burn = t > 0 && t < 8.5, fl = (0.75 + Math.random() * 0.25).toFixed(2);
+  const flame = (y, s) => `<path d="M-${16 * s},${y} L${16 * s},${y} L0,${y + (60 + Math.random() * 30) * s} Z" fill="#ff9f43" opacity="${fl}"/><path d="M-${8 * s},${y} L${8 * s},${y} L0,${y + 34 * s} Z" fill="#fff3b0"/>`;
+  let r = '';
+  const baseY = t < 0 ? 540 : 470 - Math.min(1, t / 1.5) * 60;
+  if (t < 4) {
+    r = `<g transform="translate(500 ${baseY})">${burn ? flame(22, 1.6) + (rk.side && t < 2 ? `<g transform="translate(-52 0)">${flame(14, .8)}</g><g transform="translate(52 0)">${flame(14, .8)}</g>` : '') : ''}
+      ${rk.side && t < 2 ? drawSide() : ''}${drawS1(rk.s1, false)}<g transform="translate(0 -230)">${drawS2(rk.s2)}</g><g transform="translate(0 -350)">${drawTop(rk.top, true)}</g></g>`;
+  } else if (t < 8.5) {
+    r = `<g transform="translate(500 ${baseY - 230})">${flame(16, 1)}${drawS2(rk.s2)}<g transform="translate(0 -120)">${drawTop(rk.top, t < 5.5)}</g></g>`;
+  } else r = finale(t, baseY);
+  $('frocket').innerHTML = r;
+  // dropped parts tumble away down the screen
+  let d = '';
+  if (rk.side && t > 2 && t < 5) { const u = t - 2; d += [-1, 1].map((k) => `<g transform="translate(${500 + k * (52 + u * 60)} ${baseY + u * u * 90}) rotate(${k * u * 40})">${BOOSTER}</g>`).join(''); }
+  if (t > 4 && t < 8) { const u = t - 4; d += `<g transform="translate(${500 - u * 30} ${baseY + u * u * 70}) rotate(${rk.s1 === 'reuse' ? -u * 45 : -u * 20})">${drawS1(rk.s1, rk.s1 === 'reuse' && u > 2)}</g>`; }
+  if (t > 5.5 && t < 8 && rk.top !== 'crew') { const u = t - 5.5; d += `<text x="${500 - 60 - u * 120}" y="${baseY - 330 + u * u * 80}" font-size="40">◀</text><text x="${500 + 40 + u * 120}" y="${baseY - 330 + u * u * 80}" font-size="40">▶</text>`; }
+  if (t > 5.5 && t < 8 && rk.top === 'crew') { const u = t - 5.5; d += `<g transform="translate(${500 + u * 80} ${baseY - 400 - u * 60}) rotate(${u * 90})"><path d="M0,0 L0,-50 M-8,-30 L8,-30" stroke="#e74c3c" stroke-width="6"/></g>`; }
+  if (t > 8.5 && t < 11) { const u = t - 8.5; d += `<g transform="translate(500 ${baseY - 230 + u * u * 60}) rotate(${u * 25})">${drawS2(rk.s2)}</g>`; }
+  $('fdrop').innerHTML = d;
+}
+function finale(t, baseY) {
+  const u = Math.min(1, (t - 8.5) / 3);
+  if (rk.top === 'crew') {
+    return `<g transform="translate(700 220)"><rect x="-160" y="-10" width="320" height="20" fill="#c8d0dc" stroke="#2d3436" stroke-width="3"/>
+      <rect x="-150" y="-60" width="70" height="120" fill="#2b3a67" stroke="#ffd93d" stroke-width="3"/><rect x="80" y="-60" width="70" height="120" fill="#2b3a67" stroke="#ffd93d" stroke-width="3"/>
+      <rect x="-50" y="-24" width="100" height="48" rx="10" fill="#e8e9f0" stroke="#2d3436" stroke-width="4"/><text x="0" y="56" text-anchor="middle" font-family="Mitr" font-size="22" fill="#fff">สถานีอวกาศ</text></g>
+      <g transform="translate(${(380 + u * 190).toFixed(0)} ${(330 - u * 110).toFixed(0)}) rotate(90)">${drawTop('crew', false)}</g>`;
+  }
+  if (rk.top === 'sat') {
+    const p = Math.min(1, u * 1.6);
+    return `<g transform="translate(500 320)">${drawTop('sat', false)}<rect x="${-18 - 110 * p}" y="-46" width="${110 * p}" height="24" fill="#2b3a67" stroke="#ffd93d" stroke-width="2"/><rect x="18" y="-46" width="${110 * p}" height="24" fill="#2b3a67" stroke="#ffd93d" stroke-width="2"/></g>`;
+  }
+  return `<g transform="translate(${(500 + u * 330).toFixed(0)} ${(320 - u * 180).toFixed(0)}) rotate(${(u * 50).toFixed(0)})">${drawTop('probe', false)}${flameSmall()}</g>
+    <g transform="translate(900 110)"><image href="../moon/img/nearside.webp" x="-50" y="-50" width="100" height="100"/></g>`;
+}
+function flameSmall() { return `<path d="M-6,-12 L6,-12 L0,12 Z" fill="#ff9f43"/>`; }
+let engine = null;
+function engineOn() {
+  if (!AC || engine) return;
+  try {
+    const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0);
+    let l = 0;
+    for (let i = 0; i < d.length; i++) { l = (l + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; }
+    const n = AC.createBufferSource(), g = AC.createGain();
+    n.buffer = b; n.loop = true; g.gain.value = 0.4; n.connect(g).connect(AC.destination); n.start();
+    engine = n;
+  } catch (e) {}
+}
+function engineOff() { if (engine) { try { engine.stop(); } catch (e) {} engine = null; } }
+const ROCKET_KNOW = [
+  'จรวดแบ่งเป็นท่อน ท่อนที่เชื้อเพลิงหมดจะหลุดทิ้ง ทำให้ส่วนที่เหลือเบาและบินเร็วขึ้น',
+  'ต้องเร็วราว 28,000 กิโลเมตรต่อชั่วโมง ถึงจะโคจรรอบโลกได้โดยไม่ตกลงมา',
+  'จากพื้นดินถึงวงโคจรใช้เวลาแค่ราว 8 ถึง 9 นาที',
+  'จรวดแซตเทิร์นไฟว์ที่พาคนไปดวงจันทร์ สูงราว 110 เมตร เท่ากับตึกราว 36 ชั้น',
+  'จรวดบางรุ่นบินกลับมาลงจอดเองได้ แล้วนำกลับมาใช้ใหม่ ช่วยประหยัดเงิน',
+  'ประเทศไทยมีดาวเทียมสำรวจโลกชื่อ ไทยโชต ส่งขึ้นไปเมื่อปี พ.ศ. 2551',
+];
+function renderRocket() {
+  const ready = rk.s1 && rk.s2 && rk.top;
+  const top = flight ? (flight.done ? `<div class="q-text">🎉 ภารกิจสำเร็จ!</div><div class="res">${FLIGHT_SAY[rk.top]}</div>` : `<div class="q-text">🚀 กำลังบินขึ้น</div><div class="res">ดูท่อนจรวดหลุดออกทีละท่อน และท้องฟ้าเปลี่ยนเป็นสีดำเมื่อพ้นอากาศ</div>`)
+    : `<div class="q-text">🔧 ประกอบจรวด</div><div class="res">${ready ? 'ครบแล้ว! กดปุ่มปล่อยจรวดได้เลย' : 'เลือกชิ้นส่วนเรียงจากล่างขึ้นบน ท่อนแรก ท่อนที่สอง แล้วใส่ยานไว้บนสุด'}</div>`;
+  panel.innerHTML = top + knowList(ROCKET_KNOW) + `<div class="src">ข้อมูล: NASA · ภาพนี้เร่งเวลา จริงๆ ใช้เวลาราว 9 นาที</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// MODES + POINTER
+// ============================================================================
+function setMode(m) {
+  mode = m; stopReading(); engineOff(); setRun(false); flight = null; held = null; fHeld = null;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  ctrls.innerHTML = '';
+  if (m === 'float') { resetFloat(); buildFloat(); renderFloat(); speak('ในอวกาศทุกอย่างลอยได้ ลากของแล้วปล่อยดูสิ'); }
+  else if (m === 'eat') { resetEat(); eaten = null; buildEat(); renderEat(); speak('ลากอาหารไปที่ปากนักบินอวกาศ'); }
+  else if (m === 'sleep') { buildSleep(); renderSleep(); speak('แตะนักบินอวกาศ ให้เข้านอน'); }
+  else if (m === 'gym') { buildGym(); renderGymCtrls(); renderGym(); speak('กดปุ่มค้างไว้ ให้นักบินอวกาศวิ่ง'); }
+  else if (m === 'toilet') { recyc = null; buildToilet(); renderToiletCtrls(); renderToilet(); speak('ห้องน้ำในอวกาศ กดปุ่มดูน้ำรีไซเคิล'); }
+  else if (m === 'window') { buildWindow(); renderWindowCtrls(); renderWindow(); speak('มองโลกจากหน้าต่างสถานีอวกาศ นับดูว่าพระอาทิตย์ขึ้นกี่ครั้ง'); }
+  else if (m === 'rocket') { buildRocket(); renderRocketCtrls(); renderRocket(); speak('ประกอบจรวด เลือกท่อนแรกก่อนเลย'); }
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
+scene.addEventListener('pointerdown', (e) => { ensureAudio(); if (mode === 'float') floatDown(e); else if (mode === 'eat') eatDown(e); });
+scene.addEventListener('pointermove', (e) => { if (mode === 'float') floatMove(e); else if (mode === 'eat') eatMove(e); });
+const endPtr = () => { if (mode === 'float') floatUp(); else if (mode === 'eat') eatUp(); };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden) {
+    if (mode === 'float') floatTick(dt, now);
+    else if (mode === 'eat') eatTick(dt, now);
+    else if (mode === 'sleep') sleepTick(dt, now);
+    else if (mode === 'gym') gymTick(dt, now);
+    else if (mode === 'toilet') placeToilet(now);
+    else if (mode === 'window') windowTick(dt);
+    else if (mode === 'rocket') flightTick(now);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) { stopReading(); sayNow(text); }
+// Resolves when the line has finished (or was cut off) — lets 🔊 read a card line by line.
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+  } catch (e) { end(); }
+  setTimeout(end, 1500 + text.length * 140);          // Safari sometimes never fires onend
+}
+
+// ---- 🔊 tap-to-hear on every info card (same as ท่องอวกาศ) ----
+function sayable(t) {                    // card text → speech: no emoji/English, symbols as words
+  return String(t)
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}️‍]/gu, '')
+    .replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').replace(/[A-Za-z][A-Za-z’' ]*[A-Za-z]/g, '')
+    .replace(/กม\.\/ชม\./g, 'กิโลเมตรต่อชั่วโมง').replace(/กม\./g, 'กิโลเมตร').replace(/ชม\./g, 'ชั่วโมง')
+    .replace(/กก\./g, 'กิโลกรัม').replace(/ซม\./g, 'เซนติเมตร').replace(/พ\.ศ\./g, 'พุทธศักราช')
+    .replace(/°C/g, ' องศาเซลเซียส').replace(/°/g, ' องศา').replace(/%/g, ' เปอร์เซ็นต์')
+    .replace(/(^|[\s~(])-(?=\d)/g, '$1ลบ ').replace(/~/g, 'ประมาณ ').replace(/¼/g, 'หนึ่งในสี่')
+    .replace(/–/g, ' ถึง ').replace(/[—·:→()]/g, ' ').replace(/ฯ/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function plainText(el) {
+  const c = el.cloneNode(true);
+  for (const x of c.querySelectorAll('br')) x.replaceWith(' ');
+  for (const x of c.querySelectorAll('div')) x.append(' ');
+  return c.textContent;
+}
+const sayOf = (el) => el.dataset.say !== undefined ? el.dataset.say : sayable(plainText(el));
+let readTok = 0, readBtn = null;
+function clearReading() { for (const e of document.querySelectorAll('.reading')) e.classList.remove('reading'); }
+function stopReading() {
+  if (readBtn) { readBtn.classList.remove('on'); readBtn = null; }
+  clearReading();
+  return ++readTok;
+}
+function hear(el) {
+  const my = stopReading();
+  el.classList.add('reading');
+  sayNow(sayOf(el)).then(() => { if (my === readTok) clearReading(); });
+}
+async function readAll(btn) {
+  if (readBtn === btn) {                 // tap again = stop
+    stopReading(); if (window.VoiceClips) VoiceClips.stop();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    return;
+  }
+  const my = stopReading(); readBtn = btn; btn.classList.add('on');
+  for (const el of panel.querySelectorAll('.sayable')) {
+    if (my !== readTok || !el.isConnected) return;
+    clearReading(); el.classList.add('reading');
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    await sayNow(sayOf(el));
+    if (my !== readTok) return;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  if (my === readTok) stopReading();
+}
+const SAY_SEL = '.p-head > div, .q-text, .res, .fact, .know li, [data-sayme]';
+function sayKit() {
+  stopReading();
+  const items = [...panel.querySelectorAll(SAY_SEL)].filter((el) => sayOf(el));
+  for (const el of items) {
+    el.classList.add('sayable');
+    el.addEventListener('click', () => { ensureAudio(); buzz(8); hear(el); });
+  }
+  if (items.length < 2) return;
+  panel.insertAdjacentHTML('afterbegin', '<div class="sayrow"><button class="say">🔊 ฟังทั้งการ์ด</button></div>');
+  const btn = panel.querySelector('.sayrow .say');
+  btn.setAttribute('aria-label', 'ฟังทั้งการ์ด');
+  btn.addEventListener('click', () => { ensureAudio(); buzz(8); readAll(btn); });
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+setMode('float');
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['ในอวกาศทุกอย่างลอยได้ ลากของแล้วปล่อยดูสิ', 'ลากอาหารไปที่ปากนักบินอวกาศ', 'แตะนักบินอวกาศ ให้เข้านอน', 'กดปุ่มค้างไว้ ให้นักบินอวกาศวิ่ง',
+    'ห้องน้ำในอวกาศ กดปุ่มดูน้ำรีไซเคิล', 'มองโลกจากหน้าต่างสถานีอวกาศ นับดูว่าพระอาทิตย์ขึ้นกี่ครั้ง', 'ประกอบจรวด เลือกท่อนแรกก่อนเลย',
+    'ฝันดีนะ นอนในถุงนอนที่ผูกไว้กับผนัง', 'ตื่นแล้ว อรุณสวัสดิ์', 'ครบ 16 ครั้งแล้ว นี่คือ 1 วันบนโลก นักบินอวกาศเห็นพระอาทิตย์ขึ้นวันละ 16 ครั้ง',
+    'ต่อท่อนแรกแล้ว', 'ต่อท่อนที่สองแล้ว', 'จรวดเสริมช่วยดันตอนออกตัว แล้วหลุดออกก่อน', 'สาม', 'สอง', 'หนึ่ง'];
+  for (const k in FLOAT_SAY) L.push(FLOAT_SAY[k]);
+  for (const f of FOODS) L.push(f.say, f.th);
+  for (let n = 50; n <= 1000; n += 50) L.push('วิ่งได้ ' + n + ' ก้าวแล้ว เก่งมาก');
+  for (const s of RECYC_STEPS) L.push(s.say);
+  for (let n = 1; n <= 40; n++) L.push('พระอาทิตย์ขึ้นครั้งที่ ' + n);
+  for (const p of PARTS.top) L.push('ใส่' + p.th + 'ไว้บนสุด พร้อมปล่อยจรวดแล้ว');
+  for (const k in FLIGHT_SAY) L.push(FLIGHT_SAY[k]);
+  const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
+  renderFloat(); grab();
+  eaten = null; renderEat(); grab(); for (const f of FOODS) { eaten = f.id; renderEat(); grab(); }
+  for (const a of [false, true]) { asleep = a; renderSleep(); grab(); }
+  renderGym(); grab(); renderToilet(); grab();
+  for (const n of [0, 16]) { sunrises = n; renderWindow(); grab(); }
+  rk = { s1: null, s2: null, top: null }; renderRocket(); grab();
+  rk = { s1: 'bw', s2: 'white', top: 'crew' }; renderRocket(); grab();
+  flight = { done: 0 }; renderRocket(); grab();
+  for (const p of PARTS.top) { rk.top = p.id; flight = { done: 1 }; renderRocket(); grab(); }
+  flight = null;
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

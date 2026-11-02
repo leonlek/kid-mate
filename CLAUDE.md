@@ -158,6 +158,10 @@ Front-view child SVG (400×780; viewer's left = the child's right, so the heart 
 
 Five modes. 🔭 คืนนี้: the real phase for any date — new/full moon instants from Meeus ch. 49 (checked against NASA to ~2 min), Thai ขึ้น/แรม ค่ำ counted from the true new-moon day in Thai time (the card says the official Thai calendar can be a day off); 34-day strip of mini moons; face = `img/nearside.webp` (real near side, `tools/gen_moon_sprites.sh`), dark part keeps faint earthshine. 🚀 ลงจอด: hold 🔥 to land (gravity 1.62 m/s², ≤2.5 m/s ⭐⭐⭐, ≤4 ⭐⭐, faster bounces), then hop around leaving footprints / plant a flag. 🌑 สุริยุปราคา: drag the Moon over the Sun; near Moon (33.5′) → total with corona + stars, far (29.4′) → annular ring; Wakor 18 Aug 2411. 🌊 น้ำขึ้นน้ำลง: drag Earth/Moon, tidal bulge (exaggerated) + beach water level; Sun adds 46 % → น้ำเกิด/น้ำตาย. 🪐 ดวงจันทร์ดาวอื่น: 10 moons (NASA diameters, drawn art) + true-scale compare with Mercury. Every card is tap-to-hear (same `sayKit` as ท่องอวกาศ).
 
+### นักบินอวกาศ (`/astronaut/`)
+
+Life on the ISS + rocket building. 🎈 ลอยตัว: fling objects in the cabin (they glide and bounce, light drag), tap the crew member to somersault, water floats as a wobbling ball. 🍽️ กินข้าว: drag food to the mouth — tortilla/pouch/water/fruit/liquid salt are fine, 🍞 bread sprays floating crumbs (why bread isn't flown). 😴 นอน: sleeping bag on the wall. 🏃 ออกกำลังกาย: hold to run on the treadmill (bungee straps). 🚽 ห้องน้ำ: air-suction toilet → water recovery (98 %, NASA 2023). 🌍 หน้าต่าง: cupola, real Earth texture scrolling, one orbit = 12 s with ~38 % in Earth's shadow, sunrise counter to 16. 🚀 ประกอบจรวด: pick stage 1 / stage 2 / payload (crew capsule → docks with ISS, satellite → unfolds panels, probe → heads to the Moon), optional side boosters; flight timeline in `flightTick` (stage 1 drops at 70 km, orbit 400 km, "real time ≈ 9 min").
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
