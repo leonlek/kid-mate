@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🦒 ผู้ดูแลสวนสัตว์ — คิดส์เล่น</title>
+<meta name="description" content="ป้อนอาหารสัตว์ในสวนสัตว์ให้ถูกชนิด ลิงกินกล้วย ช้างใช้งวงหยิบอ้อย แพนด้ากินไผ่ เพนกวินกลืนปลา ยีราฟใช้ลิ้นม้วนใบไม้ สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ผู้ดูแลสวนสัตว์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .animals { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .abtn {
+    position: relative; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card-border);
+    background: #fff; font-size: 38px; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+  }
+  .abtn.on { border-color: var(--brand); background: #ffe3ee; transform: scale(1.08); }
+  .abtn .st { position: absolute; right: -6px; top: -8px; font-size: 22px; }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
+  .cart {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px;
+    background: #c98b4f; border: 4px solid #8d5a2b; border-radius: 24px; padding: 12px; box-shadow: 0 6px 0 #8d5a2b;
+  }
+  .food {
+    min-height: 86px; border-radius: 20px; border: 3px solid #fff3e0; background: #fff8ee; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  }
+  .food svg { width: 78px; height: 78px; }
+  .food:active { transform: scale(.92); }
+  .food.gone { visibility: hidden; }
+  .next {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 76px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .next:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .fact::before { content: '💡 '; }
+  .hidden { display: none !important; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🦒 ผู้ดูแลสวนสัตว์</h1></header>
+  <div class="animals" id="animals"></div>
+  <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="สวนสัตว์"></svg></div>
+  <div class="cart" id="cart"></div>
+  <button class="next hidden" id="nextBtn">➡️ ไปคอกต่อไป</button>
+  <div class="fact" id="fact"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene');
+const K = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const k3 = 'stroke="#2d3436" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const P = (d, f, x = '') => `<path d="${d}" fill="${f}" ${K} ${x}/>`;
+const E = (cx, cy, rx, ry, f, x = '') => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}" ${K} ${x}/>`;
+const C = (cx, cy, r, f, x = '') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}" ${K} ${x}/>`;
+const lerp = (a, b, u) => a + (b - a) * u;
+
+// ============================================================================
+// FOODS — drawn at (0,0), ~90 units wide. Real zoo diets.
+// ============================================================================
+const FOODS = {
+  banana: { th: 'กล้วย', draw: () => `<path d="M-38,-18 Q-30,30 22,32 Q40,30 40,22 Q0,22 -20,-22 Z" fill="#ffd93d" ${K}/><path d="M-20,-22 L-26,-34 L-34,-30 L-38,-18" fill="#8d6e3f" ${k3}/><path d="M36,24 l8,2" ${k3}/>` },
+  cane: { th: 'อ้อย', draw: () => `<g transform="rotate(-30)"><rect x="-9" y="-46" width="18" height="92" rx="6" fill="#7b3f61" ${K}/>${[-26, -2, 22].map((y) => `<path d="M-9,${y} h18" stroke="#c9a227" stroke-width="5"/>`).join('')}</g>` },
+  bamboo: { th: 'ไผ่', draw: () => `<g transform="rotate(-25)"><rect x="-8" y="-46" width="16" height="92" rx="5" fill="#7cb342" ${K}/>${[-20, 8, 34].map((y) => `<path d="M-9,${y} h18" stroke="#33691e" stroke-width="4"/>`).join('')}<path d="M8,-20 q24,-12 34,-4 q-18,10 -34,4 Z M-8,8 q-26,-6 -34,4 q20,6 34,-4 Z" fill="#8bc34a" ${k3}/></g>` },
+  fish: { th: 'ปลา', draw: () => `<path d="M-30,0 C-18,-20 18,-22 32,0 C18,22 -18,20 -30,0 Z" fill="#b0bec5" ${K}/><path d="M-28,0 L-46,-16 L-44,16 Z" fill="#90a4ae" ${K}/><circle cx="20" cy="-4" r="4" fill="#2d3436"/><path d="M6,-14 q-6,14 0,28" fill="none" ${k3}/>` },
+  leaves: { th: 'กิ่งใบไม้', draw: () => `<path d="M-40,30 L36,-30" stroke="#6d4c41" stroke-width="7" stroke-linecap="round"/>${[[-20, 14], [-4, 1], [12, -12], [26, -23]].map(([x, y]) => `<ellipse cx="${x - 10}" cy="${y - 10}" rx="12" ry="7" fill="#7cb342" transform="rotate(-40 ${x - 10} ${y - 10})" ${k3}/><ellipse cx="${x + 8}" cy="${y + 8}" rx="12" ry="7" fill="#8bc34a" transform="rotate(-40 ${x + 8} ${y + 8})" ${k3}/><path d="M${x},${y} l-6,8" stroke="#fff" stroke-width="2.5"/>`).join('')}` },
+  meat: { th: 'เนื้อ', draw: () => `<path d="M-34,-12 C-30,-34 20,-36 34,-14 C44,6 30,30 0,30 C-30,30 -40,8 -34,-12 Z" fill="#c0392b" ${K}/><path d="M-20,-16 Q0,-26 22,-16 M-24,4 Q0,-4 26,6" stroke="#f5d0c5" stroke-width="5" fill="none"/>` },
+  grass: { th: 'หญ้า', draw: () => `${[-24, -12, 0, 12, 24].map((x, i) => `<path d="M${x},34 Q${x + (i - 2) * 6},-4 ${x + (i - 2) * 12},-36" stroke="#558b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`).join('')}<rect x="-30" y="16" width="60" height="12" rx="5" fill="#c9a227" ${k3}/>` },
+  shrimp: { th: 'กุ้ง', draw: () => `<path d="M30,-10 C20,-34 -24,-30 -30,0 C-34,22 -14,32 4,26 L-6,16 C-18,18 -20,4 -12,-8 C-2,-20 18,-16 22,-4 Z" fill="#ff8a65" ${K}/><path d="M30,-10 l14,-16 M28,-6 l18,-8" stroke="#2d3436" stroke-width="2.5"/><circle cx="20" cy="-14" r="3" fill="#2d3436"/><path d="M4,26 l-4,12 l10,-4 Z" fill="#ff8a65" ${k3}/>` },
+};
+const FOOD_ORDER = ['banana', 'cane', 'bamboo', 'fish', 'leaves', 'meat', 'grass', 'shrimp'];
+
+// ============================================================================
+// ANIMALS — each draws itself for a state: t (s), eat (0→1 while eating, else -1),
+// no (0→1 while refusing), food (the item being eaten). mouth = where food goes.
+// ============================================================================
+function blinkAt(t) { return (t % 4.3) < 0.13; }
+const eye = (x, y, r, t, lash) => blinkAt(t) ? `<path d="M${x - r},${y} q${r},${r * 0.6} ${2 * r},0" fill="none" ${k3}/>` : `<circle cx="${x}" cy="${y}" r="${r}" fill="#2d3436"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.35}" r="${r * 0.35}" fill="#fff"/>${lash ? `<path d="M${x - r},${y - r} l-5,-5 M${x},${y - r - 1} l0,-7 M${x + r},${y - r} l5,-5" stroke="#2d3436" stroke-width="2.5"/>` : ''}`;
+const shake = (no, t) => no >= 0 ? Math.sin(no * Math.PI * 6) * 14 * (1 - no) : 0;
+const chewing = (eat) => eat > 0.15 && eat < 0.92;
+const ANIMALS = {
+  monkey: {
+    th: 'ลิง', emoji: '🐒', eats: ['banana'], mouth: [500, 300], bg: 'trees',
+    yum: 'ลิงใช้มือจับกล้วย ปอกเปลือกก่อนกิน', no: 'ลิงไม่กินอันนี้ ลิงชอบผลไม้ อย่างกล้วย',
+    fact: 'ลิงมีนิ้วโป้งที่หยิบจับของได้เหมือนมือคน ลิงในสวนสัตว์กินผลไม้ ผัก และใบไม้',
+    draw(s) {
+      const ch = chewing(s.eat) ? Math.abs(Math.sin(s.t * 12)) : 0, hs = shake(s.no, s.t);
+      const armUp = s.eat >= 0 ? Math.min(1, s.eat * 4) * (s.eat > 0.9 ? (1 - s.eat) * 10 : 1) : 0;
+      const tail = Math.sin(s.t * 1.2) * 10;
+      let g = `<path d="M440,470 C360,480 330,420 350,360 C360,330 ${380 + tail},320 ${392 + tail},300" fill="none" stroke="#2d3436" stroke-width="16" stroke-linecap="round"/><path d="M440,470 C360,480 330,420 350,360 C360,330 ${380 + tail},320 ${392 + tail},300" fill="none" stroke="#a47148" stroke-width="9" stroke-linecap="round"/>`;
+      g += P('M430,480 C410,400 430,330 500,326 C570,330 590,400 570,480 Z', '#a47148');
+      g += P('M462,470 C450,420 470,380 500,378 C530,380 550,420 538,470 Z', '#d7b48c');
+      g += E(440, 478, 40, 26, '#a47148') + E(560, 478, 40, 26, '#a47148') + E(418, 498, 20, 11, '#f4a6a0') + E(582, 498, 20, 11, '#f4a6a0');
+      // left arm rests on the knee; right arm brings the food up to the mouth
+      g += `<path d="M450,360 C430,390 428,430 444,452" fill="none" stroke="#2d3436" stroke-width="22" stroke-linecap="round"/><path d="M450,360 C430,390 428,430 444,452" fill="none" stroke="#a47148" stroke-width="14" stroke-linecap="round"/>`;
+      const hx = lerp(548, 520, armUp), hy = lerp(452, 320, armUp);
+      g += `<path d="M550,360 Q${lerp(580, 560, armUp)},${lerp(410, 340, armUp)} ${hx},${hy}" fill="none" stroke="#2d3436" stroke-width="22" stroke-linecap="round"/><path d="M550,360 Q${lerp(580, 560, armUp)},${lerp(410, 340, armUp)} ${hx},${hy}" fill="none" stroke="#a47148" stroke-width="14" stroke-linecap="round"/>`;
+      if (s.eat >= 0 && s.eat < 0.92) {
+        const left = 1 - Math.max(0, (s.eat - 0.25) / 0.65);       // banana gets shorter bite by bite
+        const peel = Math.min(1, Math.max(0, (s.eat - 0.08) / 0.15));
+        g += `<g transform="translate(${hx} ${hy - 30}) rotate(-15)"><rect x="-9" y="${-50 * left}" width="18" height="${50 * left + 14}" rx="9" fill="#fff6c8" ${k3}/>
+          <path d="M-9,10 Q${-9 - 22 * peel},${-10} ${-12 - 20 * peel},${-30 * peel + 8}" fill="#ffd93d" ${k3}/><path d="M9,10 Q${9 + 22 * peel},${-10} ${12 + 20 * peel},${-30 * peel + 8}" fill="#ffd93d" ${k3}/><rect x="-11" y="6" width="22" height="20" rx="6" fill="#ffd93d" ${k3}/></g>`;
+        g += C(hx, hy, 13, '#8a5a35');
+      } else g += C(hx, hy, 13, '#8a5a35');
+      // head
+      let h = C(436, 248, 18, '#f4a6a0') + C(564, 248, 18, '#f4a6a0') + C(500, 248, 66, '#a47148');
+      h += P('M458,252 C456,214 544,214 542,252 C542,292 520,306 500,306 C480,306 458,292 458,252 Z', '#f4a6a0');
+      h += `<path d="M468,232 q16,-10 30,0 M502,232 q16,-10 30,0" fill="none" stroke="#7a4e2d" stroke-width="5" stroke-linecap="round"/>` + eye(482, 246, 7, s.t) + eye(518, 246, 7, s.t);
+      h += `<circle cx="494" cy="272" r="3" fill="#2d3436"/><circle cx="506" cy="272" r="3" fill="#2d3436"/>`;
+      h += ch ? E(500, 290, 10, 3 + 6 * ch, '#7a2d2d') : `<path d="M488,288 q12,${s.no >= 0 ? -6 : 8} 24,0" fill="none" ${k3}/>`;
+      g += `<g transform="rotate(${hs} 500 300)">${h}</g>`;
+      return g;
+    },
+  },
+  elephant: {
+    th: 'ช้าง', emoji: '🐘', eats: ['cane', 'grass', 'banana'], mouth: [640, 300], bg: 'dirt',
+    yum: 'ช้างใช้งวงม้วนอ้อยส่งเข้าปาก', no: 'ช้างไม่กินอันนี้ ช้างกินพืช อย่างหญ้า อ้อย และกล้วย',
+    fact: 'งวงช้างคือจมูกกับริมฝีปากบนรวมกัน ช้างเอเชียมีติ่งปลายงวงอันเดียว ใช้หยิบของได้ ช้างกินอาหารวันละมากกว่า 100 กิโลกรัม',
+    draw(s) {
+      const hs = shake(s.no, s.t) * 0.5, ear = Math.sin(s.t * 1.7) * 6;
+      const curl = s.eat >= 0 ? (s.eat < 0.2 ? s.eat / 0.2 : s.eat > 0.85 ? (1 - s.eat) / 0.15 : 1) : 0;
+      let g = `<path d="M310,330 Q290,370 296,420" fill="none" stroke="#2d3436" stroke-width="9" stroke-linecap="round"/><path d="M310,330 Q290,370 296,420" fill="none" stroke="#8d939b" stroke-width="4"/>`;
+      for (const [x, far] of [[352, 1], [570, 1], [392, 0], [612, 0]]) g += P(`M${x - 34},380 L${x + 34},380 L${x + 30},552 Q${x + 36},566 ${x},566 Q${x - 36},566 ${x - 30},552 Z`, far ? '#7d838b' : '#9aa0a8');
+      for (const x of [392, 612]) g += `<path d="M${x - 24},562 q6,-9 12,0 M${x - 6},564 q6,-9 12,0 M${x + 12},562 q6,-9 12,0" fill="#fffef0" stroke="#2d3436" stroke-width="2.5"/>`;
+      g += P('M300,370 C300,250 400,206 500,210 C600,214 650,250 654,330 C658,420 620,440 500,442 C380,444 300,440 300,370 Z', '#9aa0a8');
+      // trunk: hanging ↔ curled up to the mouth
+      const pA = [[680, 300], [712, 380], [720, 460], [706, 540]], pB = [[680, 300], [760, 300], [770, 220], [690, 250]];
+      const pt = pA.map((p, i) => [lerp(p[0], pB[i][0], curl) + (i ? Math.sin(s.t * 1.3) * 4 * (1 - curl) * i : 0), lerp(p[1], pB[i][1], curl)]);
+      const d = `M${pt[0]} C${pt[1]} ${pt[2]} ${pt[3]}`;
+      let head = `<path d="${d}" fill="none" stroke="#2d3436" stroke-width="46" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#9aa0a8" stroke-width="37" stroke-linecap="round"/>`;
+      head += [0.3, 0.45, 0.6, 0.75].map((u) => { const x = (1 - u) ** 3 * pt[0][0] + 3 * (1 - u) ** 2 * u * pt[1][0] + 3 * (1 - u) * u * u * pt[2][0] + u ** 3 * pt[3][0], y = (1 - u) ** 3 * pt[0][1] + 3 * (1 - u) ** 2 * u * pt[1][1] + 3 * (1 - u) * u * u * pt[2][1] + u ** 3 * pt[3][1]; return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="2" fill="#5f656d"/>`; }).join('');
+      if (s.eat >= 0 && s.eat < 0.85) {
+        const [fx, fy] = pt[3], left = 1 - Math.max(0, (s.eat - 0.3) / 0.55);
+        head += `<g transform="translate(${fx} ${fy}) rotate(${-30 - curl * 40}) scale(${0.6 + 0.4 * left})">${FOODS[s.food].draw()}</g>`;
+      }
+      head += P('M600,250 C598,196 640,176 668,196 C682,178 712,186 714,216 C726,260 712,300 690,316 L650,330 C618,316 602,290 600,250 Z', '#9aa0a8');
+      head += `<path d="M668,196 Q672,208 668,222" fill="none" stroke="#7d838b" stroke-width="3"/>` + eye(676, 244, 6, s.t, true);
+      head += chewing(s.eat) ? E(660, 318, 12, 4 + 5 * Math.abs(Math.sin(s.t * 9)), '#c97b84') : '';
+      g += `<g transform="rotate(${hs} 640 300)">${head}<g transform="rotate(${ear} 630 230)">${P('M630,226 C604,226 592,262 600,300 C606,326 640,326 648,300 C656,268 648,228 630,226 Z', '#8d939b')}</g></g>`;
+      return g;
+    },
+  },
+  panda: {
+    th: 'แพนด้า', emoji: '🐼', eats: ['bamboo'], mouth: [500, 300], bg: 'bamboo',
+    yum: 'แพนด้านั่งกินไผ่ ใช้อุ้งมือจับต้นไผ่ เคี้ยวกรุบกรอบ', no: 'แพนด้าไม่กินอันนี้ อาหารเกือบทั้งหมดของแพนด้าคือไผ่',
+    fact: 'แพนด้ากินไผ่วันละหลายชั่วโมง มีกระดูกข้อมือยื่นออกมาเหมือนนิ้วโป้งพิเศษ ไว้จับไผ่ให้แน่น',
+    draw(s) {
+      const hs = shake(s.no, s.t), ch = chewing(s.eat) ? Math.abs(Math.sin(s.t * 10)) : 0;
+      const up = s.eat >= 0 ? Math.min(1, s.eat * 5) : 0;
+      let g = E(440, 500, 52, 38, '#2d3436') + E(560, 500, 52, 38, '#2d3436') + E(420, 520, 24, 14, '#4a4a4a') + E(580, 520, 24, 14, '#4a4a4a');
+      g += P('M410,500 C390,400 420,320 500,316 C580,320 610,400 590,500 Z', '#fafafa');
+      g += P('M420,350 C450,330 550,330 580,350 L590,390 C540,372 460,372 410,390 Z', '#2d3436');
+      g += `<path d="M430,360 C400,410 420,450 452,452" fill="none" stroke="#2d3436" stroke-width="40" stroke-linecap="round"/>`;
+      const hx = lerp(548, 530, up), hy = lerp(452, 330, up);
+      g += `<path d="M570,360 Q600,400 ${hx},${hy}" fill="none" stroke="#2d3436" stroke-width="40" stroke-linecap="round"/>`;
+      if (s.eat >= 0 && s.eat < 0.92) {
+        const left = 1 - Math.max(0, (s.eat - 0.2) / 0.7);
+        g += `<g transform="translate(${hx + 26} ${hy + 6}) rotate(-28)"><rect x="-9" y="${-150 * left}" width="18" height="${150 * left + 40}" rx="5" fill="#7cb342" ${K}/>${[0.25, 0.55, 0.85].filter((u) => u < left).map((u) => `<path d="M-9,${-150 * u} h18" stroke="#33691e" stroke-width="4"/>`).join('')}</g>`;
+      }
+      let h = C(446, 196, 28, '#2d3436') + C(554, 196, 28, '#2d3436') + E(500, 250, 82, 70, '#fafafa');
+      h += `<ellipse cx="470" cy="246" rx="18" ry="26" fill="#2d3436" transform="rotate(30 470 246)"/><ellipse cx="530" cy="246" rx="18" ry="26" fill="#2d3436" transform="rotate(-30 530 246)"/>`;
+      h += blinkAt(s.t) ? `<path d="M464,246 h12 M524,246 h12" stroke="#fff" stroke-width="3"/>` : `<circle cx="472" cy="244" r="6" fill="#fff"/><circle cx="473" cy="244" r="3.5" fill="#2d3436"/><circle cx="528" cy="244" r="6" fill="#fff"/><circle cx="527" cy="244" r="3.5" fill="#2d3436"/>`;
+      h += E(500, 274, 14, 9, '#2d3436') + (ch ? E(500, 296, 12, 3 + 6 * ch, '#7a2d2d') : `<path d="M500,283 v8 M488,294 q12,8 24,0" fill="none" ${k3}/>`);
+      g += `<g transform="rotate(${hs} 500 300)">${h}</g>`;
+      return g;
+    },
+  },
+  penguin: {
+    th: 'เพนกวิน', emoji: '🐧', eats: ['fish', 'shrimp'], mouth: [500, 236], bg: 'ice',
+    yum: 'เพนกวินกลืนปลาทั้งตัว เอาหัวปลาเข้าก่อน', no: 'เพนกวินไม่กินอันนี้ เพนกวินกินปลา กุ้ง และหมึก',
+    fact: 'เพนกวินบินไม่ได้ แต่ว่ายน้ำเก่งมาก ใช้ปีกเป็นครีบ ลิ้นของเพนกวินมีหนามเล็กๆ ช่วยไม่ให้ปลาลื่นหลุด',
+    draw(s) {
+      const hs = shake(s.no, s.t), sway = Math.sin(s.t * 2) * 2;
+      const tilt = s.eat >= 0 ? -Math.min(1, s.eat * 4) * 25 * (s.eat > 0.85 ? (1 - s.eat) / 0.15 : 1) : 0;
+      const flap = s.eat > 0.9 || s.happy ? Math.sin(s.t * 20) * 25 : Math.sin(s.t * 1.5) * 4;
+      let g = E(470, 552, 30, 10, '#e7a4a4') + E(530, 552, 30, 10, '#e7a4a4');
+      g += `<g transform="rotate(${sway} 500 550)">`;
+      g += `<g transform="rotate(${20 + flap} 420 340)">${P('M420,330 C380,370 372,430 388,470 C402,440 420,400 436,350 Z', '#2d3436')}</g>`;
+      g += `<g transform="rotate(${-20 - flap} 580 340)">${P('M580,330 C620,370 628,430 612,470 C598,440 580,400 564,350 Z', '#2d3436')}</g>`;
+      g += P('M420,300 C410,400 420,520 500,548 C580,520 590,400 580,300 C570,240 430,240 420,300 Z', '#2d3436');
+      g += P('M446,330 C440,410 452,500 500,526 C548,500 560,410 554,330 C540,300 460,300 446,330 Z', '#fafafa');
+      g += `<path d="M444,372 C470,392 530,392 556,372" fill="none" stroke="#2d3436" stroke-width="10"/>`;
+      g += [[470, 430], [530, 450], [490, 470], [520, 410]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4" fill="#2d3436"/>`).join('');
+      let h = E(500, 236, 58, 54, '#2d3436');
+      h += `<path d="M466,206 C446,222 446,262 474,282 M534,206 C554,222 554,262 526,282" fill="none" stroke="#fafafa" stroke-width="8" stroke-linecap="round"/>`;
+      h += `<ellipse cx="476" cy="238" rx="10" ry="8" fill="#e7a4a4"/><ellipse cx="524" cy="238" rx="10" ry="8" fill="#e7a4a4"/>` + eye(478, 236, 4, s.t) + eye(522, 236, 4, s.t);
+      h += P('M486,250 L500,286 L514,250 Z', '#2d3436', 'stroke="#555"');
+      if (s.eat >= 0 && s.eat < 0.85) {                             // fish goes in head first and disappears
+        const into = Math.max(0, (s.eat - 0.25) / 0.6);
+        h += `<g transform="translate(500 ${286 + 10 * into}) rotate(90) translate(${-28 + 60 * into} 0)"><clipPath id="beakC"><rect x="-200" y="-40" width="${228 - 60 * into + 60}" height="80"/></clipPath><g clip-path="url(#beakC)">${FOODS[s.food].draw()}</g></g>`;
+      }
+      g += `<g transform="rotate(${hs + tilt} 500 280)">${h}</g></g>`;
+      return g;
+    },
+  },
+  giraffe: {
+    th: 'ยีราฟ', emoji: '🦒', eats: ['leaves'], mouth: [690, 120], bg: 'savanna', high: true,
+    yum: 'ยีราฟใช้ลิ้นยาวสีม่วงเข้ม ม้วนใบไม้บนที่สูง', no: 'ยีราฟไม่กินอันนี้ ยีราฟกินใบไม้บนต้นไม้สูงๆ',
+    fact: 'ลิ้นยีราฟยาวราวครึ่งเมตร สีเข้มเกือบดำ ช่วยกันแดดเผา ยีราฟมีกระดูกคอ 7 ชิ้น เท่ากับคน แต่ละชิ้นยาวมาก',
+    draw(s) {
+      const hs = shake(s.no, s.t) * 0.6, tongue = s.eat >= 0 && s.eat < 0.85 ? Math.abs(Math.sin(s.eat * Math.PI * 3)) : 0;
+      let g = `<rect x="700" y="60" width="16" height="560" fill="#8d5a2b" ${k3}/><path d="M640,92 L780,92" stroke="#8d5a2b" stroke-width="10"/>`;
+      for (const [x, far] of [[370, 1], [520, 1], [400, 0], [550, 0]]) g += P(`M${x - 15},400 L${x + 15},400 L${x + 11},560 L${x - 11},560 Z`, far ? '#d9a441' : '#f2c14e') + `<rect x="${x - 13}" y="552" width="26" height="14" rx="4" fill="#5d4037"/>`;
+      g += `<path d="M340,380 Q326,420 330,460" fill="none" stroke="#2d3436" stroke-width="6"/><path d="M324,456 l6,22 l6,-22 Z" fill="#2d3436"/>`;
+      const body = 'M340,400 C330,340 400,320 470,322 C540,322 600,320 600,360 C604,420 570,436 470,436 C380,436 346,430 340,400 Z';
+      g += `<clipPath id="gb"><path d="${body}"/><path d="M560,350 L640,140 L690,150 L600,370 Z"/></clipPath>` + P(body, '#f2c14e') + P('M560,350 L640,140 L690,150 L600,370 Z', '#f2c14e');
+      g += `<g clip-path="url(#gb)">${[[380, 360], [430, 340], [480, 360], [530, 342], [410, 400], [470, 405], [540, 395], [590, 360], [600, 300], [620, 250], [640, 200], [658, 160]].map(([x, y], i) => `<path d="M${x - 20},${y - 14} L${x + 16},${y - 18} L${x + 22},${y + 10} L${x - 4},${y + 20} L${x - 24},${y + 6} Z" fill="#a0522d"/>`).join('')}</g>`;
+      g += `<path d="M560,350 L640,140" stroke="#5d4037" stroke-width="8" stroke-dasharray="4 6"/>`;
+      // head at the top of the neck, reaching the hanging branch
+      let h = P('M640,150 C640,118 668,104 700,110 C722,114 728,130 718,146 C708,160 668,170 640,150 Z', '#f2c14e');
+      h += `<path d="M652,118 L646,90 M668,112 L666,86" stroke="#2d3436" stroke-width="7" stroke-linecap="round"/><circle cx="646" cy="88" r="7" fill="#2d3436"/><circle cx="666" cy="84" r="7" fill="#2d3436"/>`;
+      h += P('M640,126 L616,116 L630,138 Z', '#f2c14e') + eye(668, 130, 5, s.t, true) + `<circle cx="712" cy="138" r="2.5" fill="#2d3436"/>`;
+      if (tongue > 0.05) h += `<path d="M718,146 Q${730 + 20 * tongue},${150 - 40 * tongue} ${712 + 10 * tongue},${110 - 40 * tongue}" fill="none" stroke="#3b2a6b" stroke-width="9" stroke-linecap="round"/>`;
+      g += `<g transform="rotate(${hs} 640 150)">${h}</g>`;
+      if (s.eat >= 0 && s.eat < 0.85) { const left = 1 - Math.max(0, (s.eat - 0.2) / 0.65); g += `<g transform="translate(730 104) scale(${(0.5 + 0.5 * left).toFixed(2)})">${FOODS.leaves.draw()}</g>`; }
+      else g += `<path d="M708,92 L708,104" stroke="#555" stroke-width="3"/>`;
+      return g;
+    },
+  },
+  lion: {
+    th: 'สิงโต', emoji: '🦁', eats: ['meat'], mouth: [500, 300], bg: 'savanna',
+    yum: 'สิงโตกินเนื้อ ใช้ฟันเขี้ยวคมๆ ฉีกเนื้อ', no: 'สิงโตไม่กินอันนี้ สิงโตเป็นสัตว์กินเนื้อ',
+    fact: 'สิงโตนอนพักวันละราว 20 ชั่วโมง เฉพาะสิงโตตัวผู้มีแผงคอ เสียงคำรามได้ยินไกลถึง 8 กิโลเมตร',
+    draw(s) {
+      const hs = shake(s.no, s.t), tail = Math.sin(s.t * 1.4) * 12;
+      const tear = s.eat > 0.15 && s.eat < 0.85 ? Math.sin(s.eat * Math.PI * 10) : 0;
+      const roar = s.roar ? Math.min(1, s.roar) : 0;
+      let g = `<path d="M600,500 C680,500 ${700 + tail},440 ${690 + tail},400" fill="none" stroke="#2d3436" stroke-width="16" stroke-linecap="round"/><path d="M600,500 C680,500 ${700 + tail},440 ${690 + tail},400" fill="none" stroke="#d9a441" stroke-width="8" stroke-linecap="round"/>${C(690 + tail, 396, 14, '#6d3b17')}`;
+      g += P('M400,520 C380,430 420,360 500,356 C580,360 620,430 600,520 Z', '#d9a441');
+      g += E(450, 530, 44, 24, '#d9a441') + E(550, 530, 44, 24, '#d9a441') + `<path d="M430,546 v-8 M446,550 v-8 M462,546 v-8 M538,546 v-8 M554,550 v-8 M570,546 v-8" ${k3}/>`;
+      if (s.eat >= 0 && s.eat < 0.85) { const left = 1 - Math.max(0, (s.eat - 0.2) / 0.65); g += `<g transform="translate(500 500) scale(${(0.7 + 0.5 * left).toFixed(2)})">${FOODS.meat.draw()}</g>`; }
+      const dip = s.eat >= 0 && s.eat < 0.85 ? 110 + tear * 10 : 0;
+      let h = '';
+      for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2, r = 112 + (i % 2) * 14; h += `<ellipse cx="${(500 + Math.cos(a) * r * 0.82).toFixed(0)}" cy="${(270 + Math.sin(a) * r * 0.8).toFixed(0)}" rx="40" ry="26" fill="${i % 2 ? '#8d4a1d' : '#a0582a'}" transform="rotate(${(a * 180 / Math.PI).toFixed(0)} ${(500 + Math.cos(a) * r * 0.82).toFixed(0)} ${(270 + Math.sin(a) * r * 0.8).toFixed(0)})" ${k3}/>`; }
+      h += C(500, 270, 96, '#8d4a1d') + E(500, 276, 74, 78, '#e0b05c');
+      h += C(436, 210, 16, '#e0b05c') + C(564, 210, 16, '#e0b05c');
+      h += eye(472, 258, 7, s.t) + eye(528, 258, 7, s.t) + `<path d="M462,244 q10,-6 20,0 M518,244 q10,-6 20,0" fill="none" stroke="#6d3b17" stroke-width="4"/>`;
+      h += E(500, 312, 30, 22, '#f5dcb0') + P('M488,290 L512,290 L500,304 Z', '#6d3b17');
+      h += [[478, 314], [470, 322], [522, 314], [530, 322]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#6d3b17"/>`).join('');
+      h += roar > 0.1 ? P(`M478,322 Q500,${330 + 50 * roar} 522,322 Z`, '#7a2d2d') + `<path d="M482,324 l4,10 M518,324 l-4,10" stroke="#fff" stroke-width="4"/>` : `<path d="M500,304 v10 M486,318 q14,8 28,0" fill="none" ${k3}/>`;
+      g += `<g transform="translate(0 ${dip}) rotate(${hs + tear * 6} 500 300)">${h}</g>`;
+      return g;
+    },
+  },
+  hippo: {
+    th: 'ฮิปโป', emoji: '🦛', eats: ['grass'], mouth: [500, 330], bg: 'water',
+    yum: 'ฮิปโปอ้าปากกว้างมาก แล้วงับหญ้าเข้าไป', no: 'ฮิปโปไม่กินอันนี้ ฮิปโปกินหญ้า',
+    fact: 'ตา หู และจมูกของฮิปโปอยู่บนหัว แช่ตัวในน้ำแต่ยังมองเห็นและหายใจได้ ฮิปโปขึ้นจากน้ำตอนกลางคืนเพื่อไปกินหญ้า',
+    draw(s) {
+      const hs = shake(s.no, s.t) * 0.5, wig = Math.sin(s.t * 14) * (Math.sin(s.t * 0.9) > 0.85 ? 18 : 0);
+      const open = s.eat >= 0 ? (s.eat < 0.3 ? s.eat / 0.3 : s.eat < 0.45 ? 1 - (s.eat - 0.3) / 0.15 : 0) : s.yawn || 0;
+      const ch = s.eat > 0.45 && s.eat < 0.92 ? Math.abs(Math.sin(s.t * 7)) : 0;
+      let h = '';
+      h += `<g transform="rotate(${wig} 420 196)">${E(420, 196, 18, 24, '#8e7f8f')}</g><g transform="rotate(${-wig} 580 196)">${E(580, 196, 18, 24, '#8e7f8f')}</g>`;
+      h += P('M400,240 C396,190 604,190 600,240 L610,300 C560,320 440,320 390,300 Z', '#8e7f8f');
+      h += C(450, 222, 18, '#8e7f8f') + C(550, 222, 18, '#8e7f8f') + eye(452, 220, 7, s.t) + eye(548, 220, 7, s.t);
+      const jaw = 120 * open;
+      // upper jaw lifts, lower jaw stays — the huge gape (about 150°) is real
+      h += `<g transform="rotate(${-open * 35} 500 300)">${P('M380,300 C380,260 620,260 620,300 C624,340 560,350 500,350 C440,350 376,340 380,300 Z', '#9d8e9e')}${E(470, 284, 10, 6, '#2d3436')}${E(530, 284, 10, 6, '#2d3436')}
+        ${open > 0.2 ? `<path d="M400,340 l10,24 l10,-24 M580,340 l10,24 l10,-24" fill="#fffef0" ${k3}/>` : ''}</g>`;
+      if (open > 0.2) h += P(`M392,350 Q500,${350 + jaw * 0.5} 608,350 Z`, '#d98b9b');
+      if (s.eat >= 0 && s.eat < 0.45) h += `<g transform="translate(500 ${340 + 40 * (s.eat / 0.45)}) scale(.9)">${FOODS.grass.draw()}</g>`;
+      h += P(`M384,350 C390,${386 + ch * 6} 610,${386 + ch * 6} 616,350 Z`, '#9d8e9e');
+      let g = `<g transform="rotate(${hs} 500 330)">${h}</g>`;
+      g += `<rect x="0" y="392" width="1000" height="248" fill="#3a9ad9" opacity=".92"/><path d="M0,392 q40,-10 80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0" fill="none" stroke="#9fd3ff" stroke-width="5"/>`;
+      g += `<ellipse cx="500" cy="440" rx="190" ry="40" fill="#7d6e7e" opacity=".5"/>`;
+      return g;
+    },
+  },
+  flamingo: {
+    th: 'นกฟลามิงโก', emoji: '🦩', eats: ['shrimp'], mouth: [600, 520], bg: 'lake',
+    yum: 'ฟลามิงโกก้มหัวกลับด้านลงในน้ำ ใช้ปากกรองกุ้งตัวเล็กๆ', no: 'ฟลามิงโกไม่กินอันนี้ ฟลามิงโกกินกุ้งตัวเล็กและสาหร่ายในน้ำ',
+    fact: 'ฟลามิงโกเป็นสีชมพูเพราะสีจากกุ้งและสาหร่ายที่กิน ชอบยืนขาเดียว ข้อที่ดูเหมือนเข่าพับไปข้างหลัง จริงๆ คือข้อเท้า',
+    draw(s) {
+      const hs = shake(s.no, s.t) * 0.6;
+      const dip = s.eat >= 0 ? (s.eat < 0.2 ? s.eat / 0.2 : s.eat > 0.85 ? (1 - s.eat) / 0.15 : 1) : 0;
+      const sweep = s.eat > 0.2 && s.eat < 0.85 ? Math.sin(s.t * 6) * 18 : 0;
+      let g = `<path d="M470,560 L470,470 L455,420" fill="none" stroke="#ef7c94" stroke-width="9" stroke-linecap="round"/><path d="M470,560 l-18,6 M470,560 l18,6" stroke="#ef7c94" stroke-width="7" stroke-linecap="round"/>`;
+      g += `<path d="M482,420 L498,470 L470,500" fill="none" stroke="#ef7c94" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
+      g += P('M380,380 C380,330 440,310 500,316 C560,322 570,360 548,392 C520,428 420,430 380,380 Z', '#f8a5b8');
+      g += P('M400,360 C430,340 480,342 520,360 C490,380 430,388 400,360 Z', '#ef7c94') + `<path d="M380,370 l-40,10 l38,8" fill="#2d3436" ${k3}/>`;
+      // neck: upright S-curve ↔ reaching down into the water, head upside down
+      const n0 = [[540, 340], [600, 300], [560, 200], [590, 160]], n1 = [[540, 340], [610, 360], [620, 440], [600 + sweep, 505]];
+      const n = n0.map((p, i) => [lerp(p[0], n1[i][0], dip), lerp(p[1], n1[i][1], dip)]);
+      const d = `M${n[0]} C${n[1]} ${n[2]} ${n[3]}`;
+      g += `<path d="${d}" fill="none" stroke="#2d3436" stroke-width="24" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#f8a5b8" stroke-width="16" stroke-linecap="round"/>`;
+      const [hx, hy] = n[3], rotH = lerp(0, 180, dip);
+      let h = C(0, 0, 20, '#f8a5b8') + `<path d="M14,-4 C40,-6 48,8 44,26 L36,30 C34,16 28,10 12,10 Z" fill="#f5f5f5" ${k3}/><path d="M44,26 L36,30 C38,22 42,20 46,18 Z" fill="#2d3436"/>` + eye(2, -4, 4, s.t);
+      g += `<g transform="translate(${hx} ${hy}) rotate(${hs + rotH})">${h}</g>`;
+      g += `<rect x="0" y="520" width="1000" height="120" fill="#5bb3e0" opacity=".75"/>`;
+      if (s.eat >= 0 && s.eat < 0.85) for (let i = 0; i < 6; i++) { const left = s.eat < 0.3 ? 1 : Math.max(0, 1 - (s.eat - 0.3) / 0.5); if (i / 6 < left) g += `<g transform="translate(${560 + i * 18} ${560 + (i % 2) * 14}) scale(.3)">${FOODS.shrimp.draw()}</g>`; }
+      return g;
+    },
+  },
+};
+const ORDER = ['monkey', 'elephant', 'panda', 'penguin', 'giraffe', 'lion', 'hippo', 'flamingo'];
+
+// ---- backdrops ----
+function backdrop(kind) {
+  const sky = `<rect width="1000" height="640" fill="#bfe6ff"/><circle cx="110" cy="90" r="46" fill="#ffd93d"/>`;
+  if (kind === 'ice') return `<rect width="1000" height="640" fill="#d6efff"/><path d="M0,420 L1000,420 L1000,640 L0,640 Z" fill="#eef8ff"/><path d="M0,560 L1000,560 L1000,640 L0,640 Z" fill="#5bb3e0"/><path d="M80,420 L160,300 L240,420 Z M760,420 L860,280 L960,420 Z" fill="#ffffff" stroke="#b3d4ea" stroke-width="5"/>`;
+  if (kind === 'water') return sky + `<path d="M0,330 Q200,300 400,330 Q700,360 1000,320 L1000,640 L0,640 Z" fill="#8bc34a"/>`;
+  if (kind === 'lake') return sky + `<path d="M0,380 Q300,350 600,380 Q800,400 1000,370 L1000,640 L0,640 Z" fill="#a5d66b"/><path d="M820,520 v-90 M840,520 v-110 M860,520 v-80" stroke="#558b2f" stroke-width="5"/>`;
+  if (kind === 'bamboo') return sky + `<path d="M0,470 L1000,470 L1000,640 L0,640 Z" fill="#8bc34a"/>${[90, 150, 820, 880, 940].map((x) => `<rect x="${x}" y="80" width="22" height="400" fill="#9ccc65" stroke="#33691e" stroke-width="4"/>${[160, 250, 340].map((y) => `<path d="M${x},${y} h22" stroke="#33691e" stroke-width="4"/>`).join('')}`).join('')}`;
+  if (kind === 'trees') return sky + `<path d="M0,500 L1000,500 L1000,640 L0,640 Z" fill="#8bc34a"/><rect x="120" y="180" width="30" height="330" fill="#8d5a2b"/><circle cx="135" cy="160" r="90" fill="#4caf50"/><path d="M150,300 L330,300" stroke="#8d5a2b" stroke-width="14"/><path d="M820,500 L820,240 M760,240 L880,240" stroke="#8d5a2b" stroke-width="12"/><path d="M780,240 q20,60 40,0 q20,60 40,0" fill="none" stroke="#c9a227" stroke-width="6"/>`;
+  if (kind === 'dirt') return sky + `<path d="M0,520 L1000,520 L1000,640 L0,640 Z" fill="#c9a26b"/><path d="M0,300 Q250,260 500,300 Q750,330 1000,290 L1000,520 L0,520 Z" fill="#8bc34a"/>`;
+  return sky + `<path d="M0,500 L1000,500 L1000,640 L0,640 Z" fill="#d4c06a"/><path d="M0,330 Q300,300 600,330 Q850,350 1000,320 L1000,500 L0,500 Z" fill="#e3cf7a"/><path d="M60,330 L60,250 M20,250 Q60,200 100,250" stroke="#6d4c41" stroke-width="8" fill="#7cb342"/>`;
+}
+
+// ============================================================================
+// GAME
+// ============================================================================
+let cur = 'monkey', st = null, fed = {}, fly = null, bubble = null;
+try { fed = JSON.parse(localStorage.getItem('zooFed') || '{}'); } catch (e) {}
+function pickAnimal(id, quiet) {
+  cur = id; st = { t: 0, eat: -1, no: -1, food: null, happy: 0, roar: 0, yawn: 0 }; fly = null; bubble = null;
+  for (const b of $('animals').children) b.classList.toggle('on', b.dataset.id === id);
+  $('nextBtn').classList.add('hidden');
+  buildCart();
+  $('fact').textContent = ANIMALS[id].fact;
+  if (!quiet) speak(ANIMALS[id].th + ' หิวแล้ว เลือกอาหารให้หน่อย');
+}
+function buildAnimals() {
+  $('animals').innerHTML = ORDER.map((id) => `<button class="abtn" data-id="${id}" aria-label="${ANIMALS[id].th}">${ANIMALS[id].emoji}${fed[id] ? '<span class="st">⭐</span>' : ''}</button>`).join('');
+  for (const b of $('animals').children) b.addEventListener('click', () => { ensureAudio(); buzz(8); blip(600); pickAnimal(b.dataset.id); });
+}
+function buildCart() {
+  $('cart').innerHTML = FOOD_ORDER.map((f) => `<button class="food" data-f="${f}" aria-label="${FOODS[f].th}"><svg viewBox="-55 -55 110 110">${FOODS[f].draw()}</svg></button>`).join('');
+  for (const b of $('cart').children) b.addEventListener('click', () => { ensureAudio(); give(b.dataset.f, b); });
+}
+function give(f, btn) {
+  if (fly || st.eat >= 0) return;
+  buzz(10); tone(520, 0.1, 'triangle', 0.08);
+  const A = ANIMALS[cur], r = btn.getBoundingClientRect(), sv = scene.getBoundingClientRect();
+  const sx = (r.left + r.width / 2 - sv.left) / sv.width * 1000, sy = Math.min(700, (r.top + r.height / 2 - sv.top) / sv.height * 640);
+  fly = { f, x0: sx, y0: sy, x1: A.mouth[0], y1: A.mouth[1], t0: performance.now(), ok: A.eats.includes(f), btn };
+  btn.classList.add('gone');
+  speak(FOODS[f].th);
+}
+function landFood() {
+  const A = ANIMALS[cur], f = fly.f;
+  if (fly.ok) {
+    st.eat = 0; st.food = f; st.eatT0 = performance.now();
+    speak(A.yum); munch();
+  } else {
+    st.no = 0; st.noT0 = performance.now(); bubble = { f: A.eats[0], until: performance.now() + 3200 };
+    boop(); buzz([30, 40, 30]); speak(A.no);
+    setTimeout(() => { if (fly && fly.btn) fly.btn.classList.remove('gone'); fly = null; }, 50);
+    return;
+  }
+  fly = null;
+}
+function munch() {
+  let n = 0;
+  const iv = setInterval(() => { if (st.eat < 0 || n++ > 8) return clearInterval(iv); tone(160 + Math.random() * 60, 0.07, 'square', 0.04); }, 340);
+}
+function done() {
+  st.eat = -1; st.happy = 1;
+  fed[cur] = 1; try { localStorage.setItem('zooFed', JSON.stringify(fed)); } catch (e) {}
+  buildAnimals();
+  for (const b of $('animals').children) b.classList.toggle('on', b.dataset.id === cur);
+  cheer(); celebrate(50); buzz([30, 20, 40]);
+  if (cur === 'lion') { st.roar = 0.01; setTimeout(() => speak('อิ่มแล้ว สิงโตคำราม โฮก'), 300); }
+  else if (cur === 'hippo') { st.yawn = 0.01; speak('อิ่มแล้ว ฮิปโปหาวกว้างๆ'); }
+  else speak(ANIMALS[cur].th + ' อิ่มแล้ว ขอบคุณนะ');
+  $('nextBtn').classList.remove('hidden');
+  for (const b of $('cart').children) b.classList.remove('gone');
+}
+$('nextBtn').addEventListener('click', () => { ensureAudio(); buzz(8); pickAnimal(ORDER[(ORDER.indexOf(cur) + 1) % ORDER.length]); });
+$('fact').addEventListener('click', () => { ensureAudio(); speak(ANIMALS[cur].fact); });
+scene.addEventListener('pointerdown', () => {
+  ensureAudio();
+  if (st.eat >= 0 || fly) return;
+  if (cur === 'lion') { st.roar = 0.01; speak('สิงโตคำราม โฮก'); }
+  else if (cur === 'hippo') { st.yawn = 0.01; speak('ฮิปโปอ้าปากกว้าง'); }
+  else if (cur === 'penguin') { st.happy = 1; speak('เพนกวินกระพือปีก'); }
+  else speak(ANIMALS[cur].th);
+  buzz(8);
+});
+
+function render(now) {
+  const A = ANIMALS[cur];
+  let s = backdrop(A.bg) + A.draw(st);
+  if (bubble && now < bubble.until) s += `<g transform="translate(${A.mouth[0] + 150 > 950 ? A.mouth[0] - 170 : A.mouth[0] + 150} ${Math.max(90, A.mouth[1] - 110)})"><circle cx="-80" cy="70" r="8" fill="#fff" ${k3}/><circle cx="-60" cy="50" r="13" fill="#fff" ${k3}/><ellipse cx="0" cy="0" rx="70" ry="58" fill="#fff" ${K}/><g transform="scale(.9)">${FOODS[bubble.f].draw()}</g></g>`;
+  if (fly) {
+    const u = Math.min(1, (now - fly.t0) / 650), e = u * u * (3 - 2 * u);
+    const x = lerp(fly.x0, fly.x1, e), y = lerp(fly.y0, fly.y1, e) - Math.sin(u * Math.PI) * 120;
+    s += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) rotate(${(u * 360).toFixed(0)})">${FOODS[fly.f].draw()}</g>`;
+  }
+  if (st.happy > 0.3) for (let i = 0; i < 3; i++) { const u = (now / 900 + i / 3) % 1; s += `<text x="${A.mouth[0] - 60 + i * 60}" y="${A.mouth[1] - 80 - u * 90}" font-size="40" opacity="${(1 - u).toFixed(2)}">❤️</text>`; }
+  scene.innerHTML = s;
+}
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden && st) {
+    st.t += dt;
+    if (fly && now - fly.t0 > 650) landFood();
+    if (st.eat >= 0) { st.eat = Math.min(1, (now - st.eatT0) / 4200); if (st.eat >= 1) done(); }
+    if (st.no >= 0) { st.no = (now - st.noT0) / 900; if (st.no >= 1) st.no = -1; }
+    if (st.happy > 0) st.happy = Math.max(0, st.happy - dt * 0.25);
+    if (st.roar > 0) { st.roar += dt * 2; if (st.roar > 2.2) st.roar = 0; }
+    if (st.yawn > 0) { st.yawn = Math.min(1, st.yawn + dt * 2); if (st.yawn >= 1) setTimeout(() => { st.yawn = 0; }, 900); }
+    render(now);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+buildAnimals(); pickAnimal('monkey', true);
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['อิ่มแล้ว สิงโตคำราม โฮก', 'อิ่มแล้ว ฮิปโปหาวกว้างๆ', 'สิงโตคำราม โฮก', 'ฮิปโปอ้าปากกว้าง', 'เพนกวินกระพือปีก'];
+  for (const f of FOOD_ORDER) L.push(FOODS[f].th);
+  for (const id of ORDER) { const A = ANIMALS[id]; L.push(A.th + ' หิวแล้ว เลือกอาหารให้หน่อย', A.yum, A.no, A.fact, A.th + ' อิ่มแล้ว ขอบคุณนะ', A.th); }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

@@ -170,6 +170,10 @@ Wind, rain and storms, all drag/tap. 💨 ลม: sea vs land with a circulating
 
 Tap-to-fill 7 animals (cat, dog, Asian elephant, fish, butterfly, sparrow, tortoise), then they come alive in a meadow saved to localStorage (`colorAlive`, last 12). Animals are part rigs in `ANIMALS` (400×300 box, facing right, feet y≈282): each part has a pivot + paintable regions + fixed decoration; `poseOf` animates a diagonal walking gait, tail/ear/trunk sway, wing flaps, blinking. Anatomy is deliberate — slit cat pupils, Asian elephant (small ears, twin-domed head, arched back), fish with all 5 fin types, butterfly 4 wings + clubbed antennae, sparrow 3+1 toes, tortoise elephant-like feet. World behaviours: walkers wander/rest (tortoise ~7 px/s), bird hops/pecks/flies to the branch, butterfly lands on flowers and slowly opens/closes its wings, fish stays in the pond; taps trigger species reactions (tortoise hides in its shell, elephant raises its trunk…).
 
+### ผู้ดูแลสวนสัตว์ (`/zoo-keeper/`)
+
+8 animals × 8 foods from a wooden cart; tap a food and it flies to the animal. Real diets in `ANIMALS[id].eats` and real eating behaviour drawn per animal (`draw(state)`): monkey peels the banana, Asian elephant curls its trunk (one "finger") to bring sugarcane to its mouth, panda sits holding bamboo, Humboldt penguin swallows the fish head first, giraffe's dark purple tongue wraps leaves on a high feeder, lion lowers its head to tear meat, hippo's huge gape takes grass (eyes/ears/nostrils on top, ears flick), flamingo on one leg feeds head-upside-down filtering shrimp. Wrong food → head shake + thought bubble of the right food. Fed animals get ⭐ (localStorage `zooFed`).
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
