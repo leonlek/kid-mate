@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>⛈️ ฟ้าฝน — คิดส์เล่น</title>
+<meta name="description" content="เกมลม ฝน พายุ สำหรับเด็กไทย ดูลมบกลมทะเล ลากเมฆให้ฝนตก นับฟ้าร้องหาระยะพายุ และหมุนพายุไต้ฝุ่นเอง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ฟ้าฝน">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .modes, .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .row .chip.on { background: var(--gold); border-color: #e0b400; color: var(--ink); }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+  .main > * { min-width: 0; }
+  @media (min-width: 900px) and (orientation: landscape) { .main { grid-template-columns: minmax(0, 1fr) 360px; } }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; }
+  #scene { max-height: 70vh; touch-action: none; }
+  .hold {
+    font-family: 'Mitr', sans-serif; font-size: 22px; font-weight: 700; color: #fff;
+    width: 100%; min-height: 84px; border-radius: 999px; margin-top: 10px; cursor: pointer;
+    border: 4px solid #c0392b; background: #ff7f50; box-shadow: 0 6px 0 #c0392b; touch-action: none;
+  }
+  .hold.on { transform: translateY(4px); box-shadow: 0 2px 0 #c0392b; background: #ffb347; }
+
+  /* info panel — inline, never a popup */
+  .panel {
+    background: var(--card); color: var(--ink);
+    border: 4px solid var(--card-border); border-radius: 28px;
+    padding: 16px 16px 18px; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .say {
+    margin-left: auto; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--card-border); background: #fff; font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .say:active { transform: translateY(2px); }
+  .say.on { background: var(--gold); border-color: #e0b400; }
+  .sayrow { display: flex; justify-content: flex-end; }
+  .sayrow .say { width: auto; padding: 0 18px; border-radius: 999px; font-family: inherit; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .sayable { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s; }
+  .sayable:active { transform: scale(0.97); }
+  .know li.sayable::after { content: ' 🔈'; font-size: 13px; opacity: .55; }
+  .reading { outline: 4px solid var(--gold); outline-offset: 2px; border-radius: 16px; background-color: #fff3b0 !important; }
+  .know { margin: 8px 0 0; padding: 0; list-style: none; }
+  .know li { background: #fff6d6; border-radius: 16px; padding: 8px 12px; margin-top: 8px; font-size: 16px; line-height: 1.4; }
+  .know li::before { content: '💡 '; }
+  .q-text { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); text-align: center; margin: 6px 0; line-height: 1.2; }
+  .res { font-size: 18px; line-height: 1.45; margin-top: 10px; }
+  .res b { color: var(--brand-dark); }
+  .warn { background: #ffe1e1; border-radius: 16px; padding: 8px 12px; margin-top: 10px; font-size: 16px; line-height: 1.4; font-weight: 600; }
+  .src { font-size: 11px; color: #9aa3b5; margin-top: 10px; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>⛈️ ฟ้าฝน</h1></header>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="wind">💨 ลม</button>
+    <button class="chip" data-mode="rain">🌧️ ฝน</button>
+    <button class="chip" data-mode="thunder">⚡ ฟ้าแลบ ฟ้าร้อง</button>
+    <button class="chip" data-mode="typhoon">🌀 พายุไต้ฝุ่น</button>
+  </div>
+  <div class="main">
+    <div>
+      <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="ฟ้าฝน"></svg></div>
+      <div id="ctrls"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene'), ctrls = $('ctrls'), panel = $('panel');
+let mode = 'wind';
+function svgPt(ev) {
+  const pt = scene.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(scene.getScreenCTM().inverse());
+}
+const knowList = (a) => `<ul class="know">${a.map((k) => `<li>${k}</li>`).join('')}</ul>`;
+function mix(a, b, t) {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)), A = p(a), B = p(b);
+  t = Math.max(0, Math.min(1, t));
+  return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+function cloudShape(cx, cy, s, fill, extra = '') {
+  return `<g ${extra}><ellipse cx="${cx}" cy="${cy + 18 * s}" rx="${110 * s}" ry="${34 * s}" fill="${fill}"/><circle cx="${cx - 52 * s}" cy="${cy + 4 * s}" r="${40 * s}" fill="${fill}"/>
+    <circle cx="${cx}" cy="${cy - 18 * s}" r="${56 * s}" fill="${fill}"/><circle cx="${cx + 54 * s}" cy="${cy + 2 * s}" r="${42 * s}" fill="${fill}"/></g>`;
+}
+
+// ============================================================================
+// 💨 WIND — land heats and cools faster than the sea. Day: warm air rises over the
+// land and cooler sea air flows in = sea breeze ลมทะเล. Night: the reverse = ลมบก.
+// ============================================================================
+let windDay = true, windK = 1;
+const LOOP = [[200, 450], [790, 450], [790, 175], [200, 175]];
+const LOOP_LEN = 2 * (590 + 275);
+let parts = [...Array(44)].map((_, i) => ({ s: i / 44 + Math.random() * 0.01, j: (Math.random() - 0.5) * 30 }));
+function loopAt(s) {
+  s = ((s % 1) + 1) % 1;
+  let d = s * LOOP_LEN;
+  for (let i = 0; i < 4; i++) {
+    const a = LOOP[i], b = LOOP[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (d <= L) return [a[0] + (b[0] - a[0]) * d / L, a[1] + (b[1] - a[1]) * d / L, i];
+    d -= L;
+  }
+  return [...LOOP[0], 0];
+}
+let boatX = 300;
+function buildWind() {
+  scene.innerHTML = `<defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop id="ws0" offset="0"/><stop id="ws1" offset="1"/></linearGradient>
+      <marker id="ah" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#fff"/></marker></defs>
+    <rect width="1000" height="640" fill="url(#wsky)"/>
+    <g id="wsun" style="cursor:pointer"></g>
+    <path d="M0,470 L500,470 L500,640 L0,640 Z" fill="#2f86d1"/>
+    <path d="M0,480 q40,-8 80,0 t80,0 t80,0 t80,0 t80,0 t80,0" fill="none" stroke="#9fd3ff" stroke-width="4" opacity=".7"/>
+    <path d="M480,470 Q520,462 560,462 L1000,440 L1000,640 L470,640 Z" fill="#f2d48b"/>
+    <path d="M600,458 L1000,436 L1000,640 L600,640 Z" fill="#7ed957"/>
+    <text x="700" y="455" font-size="90" text-anchor="middle">🌴</text><text x="900" y="440" font-size="80" text-anchor="middle">🏠</text>
+    <g id="flag"></g><g id="boat"></g>
+    <path id="bigArrow" d="" fill="none" stroke="#fff" stroke-width="10" stroke-dasharray="26 18" opacity=".55" marker-end="url(#ah)"/>
+    <g id="air"></g>
+    <g id="thermo"></g>
+    <text id="wMsg" x="500" y="54" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#fff" stroke="#1b2160" stroke-width="7" paint-order="stroke"></text>
+    <text x="250" y="560" text-anchor="middle" font-family="Mitr" font-size="28" font-weight="700" fill="#fff">ทะเล</text>
+    <text x="800" y="560" text-anchor="middle" font-family="Mitr" font-size="28" font-weight="700" fill="#2d5a2a">พื้นดิน</text>`;
+  $('wsun').addEventListener('click', () => { ensureAudio(); setWindDay(!windDay); });
+  placeWind(0, 0);
+}
+function thermo(x, hot, lab) {
+  const h = 30 + hot * 110, col = mix('#3a9ad9', '#e74c3c', hot);
+  return `<g transform="translate(${x} 250)"><rect x="-14" y="-140" width="28" height="160" rx="14" fill="#fff" stroke="#2d3436" stroke-width="4"/>
+    <rect x="-7" y="${10 - h}" width="14" height="${h}" rx="7" fill="${col}"/><circle cx="0" cy="26" r="20" fill="${col}" stroke="#2d3436" stroke-width="4"/>
+    <text x="0" y="74" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="700" fill="#fff" stroke="#1b2160" stroke-width="5" paint-order="stroke">${lab}</text></g>`;
+}
+function placeWind(dt, now) {
+  windK += ((windDay ? 1 : -1) - windK) * Math.min(1, dt * 1.5);
+  const night = (1 - windK) / 2;
+  $('ws0').setAttribute('stop-color', mix('#6ec6ff', '#0b1033', night)); $('ws1').setAttribute('stop-color', mix('#d8f1ff', '#2a3170', night));
+  $('wsun').innerHTML = windDay ? `<circle cx="120" cy="100" r="62" fill="#ffd93d"/><circle cx="120" cy="100" r="80" fill="#ffd93d" opacity=".3"/><circle r="90" cx="120" cy="100" fill="transparent"/>`
+    : `<circle cx="120" cy="100" r="50" fill="#fdf6d8"/><circle cx="142" cy="88" r="46" fill="${mix('#6ec6ff', '#0b1033', night)}"/><circle r="90" cx="120" cy="100" fill="transparent"/>`;
+  const speed = 0.055 * windK;
+  let s = '';
+  for (const p of parts) {
+    p.s += speed * dt;
+    const [x, y, side] = loopAt(p.s), horiz = side === 0 || side === 2;
+    const px = horiz ? x : x + p.j, py = horiz ? y + p.j : y;
+    s += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="7" fill="#fff" opacity=".85"/>`;
+  }
+  $('air').innerHTML = s;
+  // big circulation arrow (clockwise by day as seen here: along the sea surface toward the land)
+  const d = windK >= 0 ? 'M230,420 L760,420 L760,205 L230,205 L230,380' : 'M760,420 L230,420 L230,205 L760,205 L760,380';
+  $('bigArrow').setAttribute('d', d); $('bigArrow').setAttribute('stroke-dashoffset', (-now / 20 * Math.sign(windK)).toFixed(0));
+  $('thermo').innerHTML = thermo(90, windDay ? 0.5 : 0.55, 'ทะเล') + thermo(930, windDay ? 0.95 : 0.15, 'พื้นดิน');
+  // flag points the way the wind blows
+  const w = Math.sin(now / 150) * 6, dir = windK >= 0 ? 1 : -1, L = 70 * Math.min(1, Math.abs(windK) + 0.15);
+  $('flag').innerHTML = `<path d="M610,470 L610,330" stroke="#555" stroke-width="6"/><path d="M610,334 q${dir * L / 2},${w} ${dir * L},0 l0,40 q${-dir * L / 2},${-w} ${-dir * L},0 Z" fill="#ff6b9d" stroke="#2d3436" stroke-width="3"/>`;
+  boatX += windK * 22 * dt; if (boatX > 440) boatX = 60; if (boatX < 40) boatX = 430;
+  $('boat').innerHTML = `<text x="${boatX.toFixed(0)}" y="478" font-size="70" text-anchor="middle" transform="${windK < 0 ? `translate(${(2 * boatX).toFixed(0)} 0) scale(-1 1)` : ''}">⛵</text>`;
+  $('wMsg').textContent = windDay ? '☀️ กลางวัน: ลมทะเล พัดเข้าฝั่ง' : '🌙 กลางคืน: ลมบก พัดออกทะเล';
+}
+function setWindDay(d) {
+  windDay = d; buzz(10); blip(d ? 700 : 420);
+  renderWindCtrls(); renderWind();
+  speak(d ? WIND_SAY.day : WIND_SAY.night);
+}
+const WIND_SAY = {
+  day: 'กลางวัน พื้นดินร้อนเร็วกว่าน้ำทะเล อากาศร้อนลอยขึ้น อากาศเย็นจากทะเลไหลเข้ามาแทน เกิดเป็นลมทะเล',
+  night: 'กลางคืน พื้นดินเย็นเร็วกว่าน้ำทะเล อากาศเหนือทะเลอุ่นกว่าจึงลอยขึ้น อากาศจากฝั่งไหลออกไปแทน เกิดเป็นลมบก',
+};
+function renderWindCtrls() {
+  ctrls.innerHTML = `<div class="row"><button class="chip ${windDay ? 'on' : ''}" data-d="1">☀️ กลางวัน</button><button class="chip ${windDay ? '' : 'on'}" data-d="0">🌙 กลางคืน</button></div>`;
+  for (const b of ctrls.querySelectorAll('[data-d]')) b.addEventListener('click', () => { ensureAudio(); setWindDay(b.dataset.d === '1'); });
+}
+const WIND_KNOW = [
+  'ลมคืออากาศที่เคลื่อนที่ อากาศร้อนเบาจึงลอยขึ้น แล้วอากาศเย็นไหลเข้ามาแทนที่',
+  'พื้นดินร้อนเร็วและเย็นเร็วกว่าน้ำ ลมจึงเปลี่ยนทางระหว่างกลางวันกับกลางคืน',
+  'ชาวประมงพื้นบ้านออกเรือตอนกลางคืนหรือเช้ามืดด้วยลมบก แล้วกลับเข้าฝั่งตอนบ่ายด้วยลมทะเล',
+  'กลางเดือนพฤษภาคมถึงกลางเดือนตุลาคม ลมมรสุมตะวันตกเฉียงใต้พาความชื้นจากมหาสมุทรอินเดียมา ไทยจึงเข้าฤดูฝน',
+  'กลางเดือนตุลาคมถึงกลางเดือนกุมภาพันธ์ ลมมรสุมตะวันออกเฉียงเหนือพาอากาศเย็นและแห้งมา ไทยจึงเข้าฤดูหนาว',
+];
+function renderWind() {
+  panel.innerHTML = `<div class="q-text">${windDay ? '🌊➡️🏝️ ลมทะเล' : '🏝️➡️🌊 ลมบก'}</div>
+    <div class="res" data-say="${windDay ? WIND_SAY.day : WIND_SAY.night}">${windDay ? 'กลางวัน พื้นดิน<b>ร้อนเร็วกว่า</b>น้ำทะเล อากาศร้อนลอยขึ้น อากาศเย็นจากทะเลไหลเข้ามาแทน' : 'กลางคืน พื้นดิน<b>เย็นเร็วกว่า</b>น้ำทะเล อากาศเหนือทะเลอุ่นกว่าจึงลอยขึ้น อากาศจากฝั่งไหลออกไปแทน'}</div>
+    <div class="res">👆 แตะ${windDay ? 'ดวงอาทิตย์' : 'ดวงจันทร์'} หรือปุ่มด้านล่าง เพื่อสลับกลางวันกลางคืน ดูธงกับเรือใบ</div>
+    ${knowList(WIND_KNOW)}<div class="src">ฤดูมรสุมตามกรมอุตุนิยมวิทยา · ลูกศรและเม็ดอากาศวาดให้เห็นทางลม</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🌧️ RAIN — the water cycle: the Sun lifts water vapour off the sea (ระเหย), it
+// gathers into a cloud of tiny droplets (ควบแน่น), the cloud gets heavy and rains
+// (ฝนตก) — easier over the mountain — and rivers carry it back (ไหลกลับ).
+// ============================================================================
+const SEA_X = 520, MTN = 'M520,640 L560,520 Q640,400 700,330 Q760,250 800,240 Q850,250 900,330 Q960,420 1000,470 L1000,640 Z';
+let vapor = [], drops = [], cl = { x: 330, y: 150, water: 4 }, raining = false, rainbow = 0, riverFlow = 0, vapT = 0, clDrag = null, stage = '', saidStage = {};
+function resetRain() { vapor = []; drops = []; cl = { x: 330, y: 150, water: 4 }; raining = false; rainbow = 0; riverFlow = 0; stage = ''; saidStage = {}; }
+function buildRain() {
+  scene.innerHTML = `<defs><linearGradient id="rsky" x1="0" y1="0" x2="0" y2="1"><stop id="rs0" offset="0" stop-color="#6ec6ff"/><stop id="rs1" offset="1" stop-color="#d8f1ff"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="url(#rsky)"/>
+    <g id="rbow"></g>
+    <g id="rsun" style="cursor:pointer"><circle cx="100" cy="90" r="80" fill="#ffd93d" opacity=".3"/><circle cx="100" cy="90" r="58" fill="#ffd93d"/></g>
+    <path d="${MTN}" fill="#6aa84f"/><path d="M700,330 Q760,250 800,240 Q850,250 900,330 Q850,300 800,310 Q750,300 700,330 Z" fill="#4e8a3a"/>
+    <path d="M0,500 L${SEA_X},500 L560,640 L0,640 Z" fill="#2f86d1"/>
+    <path d="M0,510 q40,-8 80,0 t80,0 t80,0 t80,0 t80,0 t80,0" fill="none" stroke="#9fd3ff" stroke-width="4" opacity=".7"/>
+    <path id="river" d="M800,300 Q770,360 800,410 Q830,460 760,500 Q690,540 640,560 Q590,580 540,560" fill="none" stroke="#5bc0eb" stroke-width="14" stroke-linecap="round" stroke-dasharray="18 14"/>
+    <text x="230" y="590" text-anchor="middle" font-family="Mitr" font-size="28" font-weight="700" fill="#fff">ทะเล</text>
+    <text x="830" y="600" text-anchor="middle" font-family="Mitr" font-size="26" font-weight="700" fill="#2d5a2a">ภูเขา</text>
+    <g id="vap"></g><g id="cloudG" style="cursor:grab"></g><g id="drops"></g>
+    <text id="rMsg" x="500" y="50" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#fff" stroke="#1b2160" stroke-width="7" paint-order="stroke">👆 แตะทะเล ให้ไอน้ำลอยขึ้น</text>`;
+  $('rsun').addEventListener('click', () => { ensureAudio(); buzz(8); for (let i = 0; i < 6; i++) spawnVapor(); blip(700); setStage('evap'); });
+  placeRain(0, 0);
+}
+function spawnVapor(x) { vapor.push({ x: x !== undefined ? x + (Math.random() - 0.5) * 60 : 40 + Math.random() * 450, y: 500, ph: Math.random() * 6 }); }
+const clR = () => 1 + cl.water / 26;
+const overMtn = () => cl.x > 640;
+function setStage(s) {
+  if (stage === s) return;
+  stage = s;
+  $('rMsg').textContent = STAGE_TXT[s];
+  if (!saidStage[s]) { saidStage[s] = 1; speak(STAGE_SAY[s]); }
+  renderRain();
+}
+const STAGE_TXT = { evap: '☀️ การระเหย: น้ำกลายเป็นไอ', cond: '☁️ การควบแน่น: ไอน้ำรวมเป็นเมฆ', rain: '🌧️ ฝนตก!', flow: '🏞️ น้ำไหลกลับสู่ทะเล', bow: '🌈 รุ้งกินน้ำ!', mtn: '⛰️ ภูเขาดันเมฆขึ้นไป' };
+const STAGE_SAY = {
+  evap: 'แสงแดดทำให้น้ำทะเลอุ่น น้ำระเหยกลายเป็นไอน้ำ ลอยขึ้นไปบนฟ้า',
+  cond: 'ข้างบนอากาศเย็น ไอน้ำควบแน่นเป็นหยดน้ำเล็กๆ จำนวนมหาศาล รวมกันเป็นเมฆ',
+  rain: 'หยดน้ำในเมฆรวมกันจนใหญ่และหนัก ก็ตกลงมาเป็นฝน',
+  flow: 'น้ำฝนไหลลงแม่น้ำ แล้วไหลกลับสู่ทะเล เริ่มวัฏจักรใหม่',
+  bow: 'รุ้งกินน้ำ เกิดจากแสงแดดส่องผ่านเม็ดฝน เห็นได้เมื่อหันหลังให้ดวงอาทิตย์',
+  mtn: 'ภูเขาดันเมฆให้ลอยสูงขึ้น อากาศเย็นลง ฝนจึงตกง่ายขึ้น',
+};
+function placeRain(dt, now) {
+  vapT += dt;
+  if (vapT > 0.5) { vapT = 0; if (vapor.length < 40) spawnVapor(); }
+  let vs = '';
+  for (const v of vapor) {
+    const dx = cl.x - v.x, dy = cl.y - v.y, d = Math.hypot(dx, dy);
+    v.x += (dx / d) * 40 * dt + Math.sin(now / 300 + v.ph) * 0.6; v.y += (dy / d) * 90 * dt;
+    if (d < 70 * clR()) { v.dead = 1; cl.water = Math.min(40, cl.water + 1); if (stage === 'evap' || stage === '') setStage('cond'); }
+    else vs += `<path d="M${v.x.toFixed(0)},${v.y.toFixed(0)} q6,-8 0,-16 q-6,-8 0,-16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>`;
+  }
+  vapor = vapor.filter((v) => !v.dead);
+  $('vap').innerHTML = vs;
+  // rain
+  const need = overMtn() ? 14 : 26;
+  if (!raining && cl.water >= need) { raining = true; setStage(overMtn() ? 'mtn' : 'rain'); rainSound(true); }
+  if (raining) {
+    cl.water -= 5 * dt;
+    for (let i = 0; i < 3; i++) drops.push({ x: cl.x + (Math.random() - 0.5) * 180 * clR(), y: cl.y + 40 * clR() });
+    if (cl.water <= 2) { raining = false; rainSound(false); rainbow = 7; setStage('bow'); }
+  }
+  let ds = '';
+  for (const p of drops) {
+    p.y += 560 * dt;
+    const ground = p.x > SEA_X ? mtnY(p.x) : 500;
+    if (p.y >= ground) { p.dead = 1; if (p.x > 600) riverFlow = Math.min(1, riverFlow + 0.02); }
+    else ds += `<path d="M${p.x.toFixed(0)},${p.y.toFixed(0)} l-3,14" stroke="#3a7bd5" stroke-width="4" stroke-linecap="round"/>`;
+  }
+  drops = drops.filter((p) => !p.dead);
+  $('drops').innerHTML = ds;
+  if (riverFlow > 0.3 && !raining && stage === 'bow' && rainbow < 4) setStage('flow');
+  riverFlow = Math.max(0, riverFlow - dt * 0.05);
+  const rv = $('river');
+  rv.setAttribute('stroke-dashoffset', (-now / 15 * (0.3 + riverFlow)).toFixed(0)); rv.setAttribute('stroke', mix('#9fd3ff', '#1e6fd1', riverFlow));
+  // cloud: bigger and darker as it fills
+  const k = Math.min(1, cl.water / 26), s = clR();
+  const jig = raining ? Math.sin(now / 60) * 2 : 0;
+  $('cloudG').innerHTML = cloudShape(cl.x + jig, cl.y, s, mix('#ffffff', '#5b6475', k)) + `<circle cx="${cl.x}" cy="${cl.y}" r="${110 * s}" fill="transparent"/>`;
+  $('rs0').setAttribute('stop-color', mix('#6ec6ff', '#7d8ca3', raining ? k + 0.3 : 0)); $('rs1').setAttribute('stop-color', mix('#d8f1ff', '#aab4c3', raining ? k + 0.3 : 0));
+  rainbow = Math.max(0, rainbow - dt);
+  const ro = Math.min(1, rainbow / 2);
+  $('rbow').innerHTML = ro > 0 ? ['#ff4d4d', '#ff9f43', '#ffd93d', '#7ed957', '#3a9ad9', '#5b4bd1', '#9b59b6'].map((c, i) => `<path d="M${560 + i * 12},500 A${300 - i * 12},${300 - i * 12} 0 0 1 ${1160 - i * 12},500" fill="none" stroke="${c}" stroke-width="12" opacity="${(ro * 0.75).toFixed(2)}"/>`).join('') : '';
+}
+function mtnY(x) {                      // rough height of the mountain outline
+  if (x < 560) return 640 - (x - SEA_X) * 3;
+  if (x < 800) return 520 - (x - 560) * 1.17;
+  return 240 + (x - 800) * 1.15;
+}
+let rainNode = null;
+function rainSound(on) {
+  if (!AC) return;
+  if (on && !rainNode) {
+    try {
+      const b = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+      const n = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+      f.type = 'highpass'; f.frequency.value = 1500; g.gain.value = 0.12;
+      n.buffer = b; n.loop = true; n.connect(f).connect(g).connect(AC.destination); n.start();
+      rainNode = n;
+    } catch (e) {}
+  } else if (!on && rainNode) { try { rainNode.stop(); } catch (e) {} rainNode = null; }
+}
+function rainDown(e) {
+  const q = svgPt(e);
+  if (Math.hypot(q.x - cl.x, q.y - cl.y) < 120 * clR()) {
+    clDrag = { dx: cl.x - q.x, dy: cl.y - q.y, moved: 0 };
+    try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+    buzz(8);
+  } else if (q.y > 500 && q.x < SEA_X) {
+    for (let i = 0; i < 5; i++) spawnVapor(q.x);
+    tone(500 + Math.random() * 200, 0.1, 'sine', 0.07); buzz(8); setStage('evap');
+  }
+}
+function rainMove(e) {
+  if (!clDrag) return;
+  const q = svgPt(e), nx = Math.max(90, Math.min(910, q.x + clDrag.dx)), ny = Math.max(90, Math.min(260, q.y + clDrag.dy));
+  clDrag.moved += Math.hypot(nx - cl.x, ny - cl.y);
+  cl.x = nx; cl.y = ny;
+}
+function rainUp() {
+  if (!clDrag) return;
+  if (clDrag.moved < 10) {                                         // tap the cloud: squeeze it
+    if (cl.water > 8 && !raining) { raining = true; rainSound(true); setStage(overMtn() ? 'mtn' : 'rain'); }
+    else if (!raining) speak('เมฆยังมีน้ำน้อย แตะทะเลให้ไอน้ำลอยขึ้นมาก่อนนะ');
+  }
+  clDrag = null;
+}
+const RAIN_KNOW = [
+  'เมฆไม่ใช่ไอน้ำ แต่เป็นหยดน้ำเล็กๆ จำนวนมหาศาลที่ลอยอยู่',
+  'หยดน้ำในเมฆราว 1 ล้านหยด รวมกันได้เม็ดฝนแค่ 1 เม็ด',
+  'น้ำบนโลกหมุนเวียนแบบนี้มานานหลายพันล้านปี น้ำที่หนูดื่มอาจเคยเป็นฝนในยุคไดโนเสาร์',
+  'ฝั่งภูเขาที่รับลมฝนตกมาก จังหวัดระนองฝั่งทะเลอันดามันจึงมีฝนชุกที่สุดในประเทศไทย',
+  'อยากเห็นรุ้ง ให้หันหลังให้ดวงอาทิตย์ แล้วมองไปทางที่ฝนเพิ่งตก',
+];
+function renderRain() {
+  panel.innerHTML = `<div class="q-text">🌧️ ฝนมาจากไหน</div>
+    <div class="res" data-say="${stage ? STAGE_SAY[stage] : 'แตะทะเลให้ไอน้ำลอยขึ้น ลากเมฆไปที่ภูเขา หรือแตะเมฆที่อุ้มน้ำเต็มให้ฝนตก'}">${stage ? '<b>' + STAGE_TXT[stage] + '</b><br>' + STAGE_SAY[stage] : '👆 แตะทะเลให้ไอน้ำลอยขึ้น ลากเมฆไปที่ภูเขา หรือแตะเมฆที่อุ้มน้ำเต็มให้ฝนตก'}</div>
+    ${knowList(RAIN_KNOW)}<div class="src">วัฏจักรน้ำ: ระเหย → ควบแน่น → ฝน → ไหลกลับ (USGS, NOAA)</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// ⚡ THUNDER — grow a storm cloud, tap it for lightning, count to the thunder:
+// sound takes ~3 s per km (343 m/s), light arrives at once.
+// ============================================================================
+let cb = 0.15, tDist = 2, bolt = null, count = null, tDrag = null;
+function buildThunder() {
+  scene.innerHTML = `<defs><linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop id="ts0" offset="0"/><stop id="ts1" offset="1"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="url(#tsky)"/>
+    <g id="tcloud" style="cursor:pointer"></g><g id="train"></g><g id="tbolt"></g>
+    <path d="M0,520 Q250,500 500,515 Q750,530 1000,505 L1000,640 L0,640 Z" fill="#6aa84f"/>
+    <text x="150" y="530" font-size="90" text-anchor="middle">🏠</text><text x="880" y="525" font-size="96" text-anchor="middle">🌳</text>
+    <text x="150" y="590" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="600" fill="#fff">หนูอยู่ที่นี่</text>
+    <rect id="tflash" width="1000" height="640" fill="#fff" opacity="0" pointer-events="none"/>
+    <text id="tCount" x="500" y="300" text-anchor="middle" font-family="Itim" font-size="120" fill="#ffd93d" stroke="#1b2160" stroke-width="9" paint-order="stroke"></text>
+    <text id="tMsg" x="500" y="54" text-anchor="middle" font-family="Mitr" font-size="28" font-weight="700" fill="#fff" stroke="#1b2160" stroke-width="7" paint-order="stroke"></text>`;
+  placeThunder(0);
+}
+const tScale = () => 1.25 - tDist * 0.2;
+function placeThunder(now) {
+  const big = cb > 0.72, s = tScale(), cx = 560, base = 300 + tDist * 25;
+  const dark = Math.min(1, cb * 1.2);
+  $('ts0').setAttribute('stop-color', mix('#6ec6ff', '#7d8aa3', dark)); $('ts1').setAttribute('stop-color', mix('#d8f1ff', '#aab4c6', dark));
+  const h = (70 + cb * 170) * s, col = mix('#ffffff', '#353d4f', dark), top = base - h;
+  let c = `<path d="M${cx - 130 * s},${base} Q${cx - 150 * s},${base - 60 * s} ${cx - 90 * s},${base - 80 * s} L${cx - 70 * s},${top + 60 * s} Q${cx},${top - 10 * s} ${cx + 70 * s},${top + 60 * s} L${cx + 90 * s},${base - 80 * s} Q${cx + 150 * s},${base - 60 * s} ${cx + 130 * s},${base} Z" fill="${col}"/>`;
+  if (big) c += `<path d="M${cx - 80 * s},${top + 40 * s} Q${cx - 250 * s},${top + 10 * s} ${cx - 280 * s},${top - 10 * s} L${cx + 280 * s},${top - 10 * s} Q${cx + 250 * s},${top + 10 * s} ${cx + 80 * s},${top + 40 * s} Z" fill="${col}"/>`;
+  c += cloudShape(cx, base - 30 * s, s * 1.1, col);
+  if (!big) c += `<g transform="translate(${cx} ${top - 34})"><path d="M0,-30 L22,0 L8,0 L8,26 L-8,26 L-8,0 L-22,0 Z" fill="#ff6b9d" stroke="#fff" stroke-width="3"><animate attributeName="opacity" values="1;.4;1" dur="1s" repeatCount="indefinite"/></path></g>`;
+  c += `<rect x="${cx - 300 * s}" y="${top - 80}" width="${600 * s}" height="${h + 120}" fill="transparent"/>`;
+  $('tcloud').innerHTML = c;
+  let r = '';
+  if (big) for (let i = 0; i < 40; i++) { const x = cx - 120 * s + ((i * 67 + now / 3) % (240 * s)), y = base + ((i * 53 + now / 2) % (520 - base)); r += `<path d="M${x.toFixed(0)},${y.toFixed(0)} l-4,16" stroke="#9fc3e8" stroke-width="3"/>`; }
+  $('train').innerHTML = r;
+  if (bolt && now - bolt.t0 > 350) { bolt = null; $('tbolt').innerHTML = ''; }
+  $('tflash').setAttribute('opacity', bolt ? Math.max(0, 0.8 - (now - bolt.t0) / 200).toFixed(2) : 0);
+  if (count) {
+    const sec = (now - count.t0) / 1000, need = tDist * 3;
+    const n = Math.min(need, Math.floor(sec));
+    if (n > count.n) { count.n = n; if (n < need) { tone(880, 0.05, 'sine', 0.06); speak(String(n)); } }
+    $('tCount').textContent = count.n > 0 ? count.n : '';
+    if (sec >= need && !count.boom) { count.boom = 1; thunder(); speak(thunderLine(tDist)); $('tMsg').textContent = '🔊 ครืนนน! ' + need + ' วินาที = ห่างราว ' + tDist + ' กม.'; renderThunder(); }
+    if (sec > need + 3) { count = null; $('tCount').textContent = ''; }
+  } else if (!bolt) $('tMsg').textContent = big ? '⚡ แตะเมฆให้ฟ้าแลบ แล้วนับ!' : '⬆️ ลากเมฆขึ้นให้สูง';
+}
+const thunderLine = (d) => 'ฟ้าร้องตามมาหลัง ' + d * 3 + ' วินาที พายุอยู่ห่างราว ' + d + ' กิโลเมตร';
+function strike() {
+  const s = tScale(), base = 300 + tDist * 25, x0 = 560 + (Math.random() - 0.5) * 120 * s;
+  let x = x0, y = base, d = `M${x.toFixed(0)},${y}`;
+  while (y < 515) { x += (Math.random() - 0.5) * 70; y += 30 + Math.random() * 30; d += ` L${x.toFixed(0)},${Math.min(515, y).toFixed(0)}`; }
+  $('tbolt').innerHTML = `<path d="${d}" fill="none" stroke="#fff6a8" stroke-width="12" stroke-linejoin="round" opacity=".6"/><path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>`;
+  bolt = { t0: performance.now() };
+  $('tMsg').textContent = '⚡ นับเลย! 1 2 3 …';
+  count = { t0: performance.now(), n: 0 };
+  buzz([60]);
+}
+function thunder() {
+  if (!AC) return;
+  try {
+    const dur = 2.6, b = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate), d = b.getChannelData(0);
+    let l = 0;
+    for (let i = 0; i < d.length; i++) { l = (l + 0.04 * (Math.random() * 2 - 1)) / 1.04; d[i] = l * 6 * Math.pow(1 - i / d.length, 2) * (i < 2000 ? i / 2000 : 1); }
+    const n = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+    f.type = 'lowpass'; f.frequency.value = 260; g.gain.value = 0.9 - tDist * 0.2;
+    n.buffer = b; n.connect(f).connect(g).connect(AC.destination); n.start();
+  } catch (e) {}
+  buzz([80, 40, 120]);
+}
+function thunderDown(e) {
+  const q = svgPt(e);
+  tDrag = { y: q.y, cb0: cb, moved: 0 };
+  try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+}
+function thunderMove(e) {
+  if (!tDrag) return;
+  const q = svgPt(e), was = cb > 0.72;
+  tDrag.moved = Math.max(tDrag.moved, Math.abs(q.y - tDrag.y));
+  cb = Math.max(0.1, Math.min(1, tDrag.cb0 + (tDrag.y - q.y) / 320));
+  if (!was && cb > 0.72) { boop(); speak('อากาศร้อนชื้นลอยขึ้นสูงมาก กลายเป็นเมฆฝนฟ้าคะนอง แตะเมฆดูสิ'); renderThunder(); }
+}
+function thunderUp() {
+  if (!tDrag) return;
+  if (tDrag.moved < 10) { if (cb > 0.72) { if (!count) strike(); } else speak('ลากเมฆขึ้นไปให้สูงก่อน เมฆฝนฟ้าคะนองสูงมาก'); }
+  tDrag = null;
+}
+function renderThunderCtrls() {
+  ctrls.innerHTML = `<div class="row">${[1, 2, 3].map((d) => `<button class="chip ${d === tDist ? 'on' : ''}" data-d="${d}">${d === 1 ? '⛈️ ใกล้' : d === 3 ? '🌥️ ไกล' : '🌩️'} ${d} กม.</button>`).join('')}</div>`;
+  for (const b of ctrls.querySelectorAll('[data-d]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); tDist = +b.dataset.d; count = null; renderThunderCtrls(); speak('พายุอยู่ห่าง ' + tDist + ' กิโลเมตร แตะเมฆแล้วนับ'); });
+}
+const THUNDER_KNOW = [
+  'ฟ้าแลบคือไฟฟ้าที่วิ่งในเมฆหรือจากเมฆลงพื้น ร้อนกว่าผิวดวงอาทิตย์ราว 5 เท่า',
+  'อากาศรอบสายฟ้าร้อนจัดจนขยายตัวระเบิดออก เกิดเป็นเสียงฟ้าร้อง',
+  'แสงเดินทางเร็วมาก เราจึงเห็นฟ้าแลบก่อน ส่วนเสียงช้ากว่า ใช้เวลาราว 3 วินาทีต่อ 1 กิโลเมตร',
+  'นับวินาทีจากฟ้าแลบถึงฟ้าร้อง แล้วหารด้วย 3 จะรู้ว่าพายุอยู่ห่างกี่กิโลเมตร',
+];
+function renderThunder() {
+  panel.innerHTML = `<div class="q-text">⚡ ฟ้าแลบ ฟ้าร้อง</div>
+    <div class="res">${cb > 0.72 ? '👆 แตะเมฆให้ฟ้าแลบ แล้วนับ 1 2 3 จนได้ยินเสียงฟ้าร้อง' : '👆 ลากเมฆขึ้นไปให้สูง อากาศร้อนชื้นลอยขึ้นจนเป็นเมฆฝนฟ้าคะนอง'}</div>
+    ${count && count.boom ? `<div class="res" data-say="${thunderLine(tDist)}"><b>${tDist * 3} วินาที ÷ 3 = ${tDist} กม.</b> พายุอยู่ห่างราว ${tDist} กิโลเมตร</div>` : ''}
+    <div class="warn">⚠️ ได้ยินฟ้าร้องเมื่อไหร่ ให้รีบเข้าบ้านหรืออาคาร อย่าอยู่ใต้ต้นไม้สูง ในที่โล่ง หรือในน้ำ</div>
+    ${knowList(THUNDER_KNOW)}<div class="src">ความเร็วเสียงราว 343 เมตร/วินาที · ข้อมูลความปลอดภัย: NOAA National Weather Service</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// 🌀 TYPHOON — spin it over warm sea (counter-clockwise, as in the northern
+// hemisphere) to make it stronger; drag the eye onto land and it weakens.
+// TMD scale: depression < 63 km/h · tropical storm 63–117 · typhoon ≥ 118.
+// ============================================================================
+let ty = { x: 300, y: 330, v: 40, rot: 0 }, tyDrag = null, tyCat = '', tyLand = false, tyWarned = false;
+const coastX = (y) => 720 + Math.sin(y / 70) * 40;
+function catOf(v) { return v < 63 ? 'dep' : v < 118 ? 'ts' : 'ty'; }
+const CAT_TH = { dep: 'พายุดีเปรสชัน', ts: 'พายุโซนร้อน', ty: 'พายุไต้ฝุ่น' };
+const CAT_SAY = {
+  dep: 'ตอนนี้เป็นพายุดีเปรสชัน ลมแรงไม่ถึง 63 กิโลเมตรต่อชั่วโมง', ts: 'แรงขึ้นเป็นพายุโซนร้อนแล้ว ลมแรง 63 กิโลเมตรต่อชั่วโมงขึ้นไป',
+  ty: 'กลายเป็นพายุไต้ฝุ่นแล้ว ลมแรงตั้งแต่ 118 กิโลเมตรต่อชั่วโมง และเกิดตาพายุตรงกลาง',
+};
+function buildTyphoon() {
+  let coast = 'M1000,0 L' + coastX(0).toFixed(0) + ',0';
+  for (let y = 0; y <= 640; y += 20) coast += ` L${coastX(y).toFixed(0)},${y}`;
+  coast += ' L1000,640 Z';
+  scene.innerHTML = `<defs><radialGradient id="tyg"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".7" stop-color="#e8eef7" stop-opacity=".75"/><stop offset="1" stop-color="#e8eef7" stop-opacity="0"/></radialGradient></defs>
+    <rect width="1000" height="640" fill="#1e88c7"/>
+    <text x="200" y="600" text-anchor="middle" font-family="Mitr" font-size="26" font-weight="700" fill="#bfe6ff">🌡️ ทะเลอุ่น</text>
+    <path d="${coast}" fill="#7ed957"/>
+    <text x="850" y="200" font-size="60" text-anchor="middle">🏠</text><text x="900" y="420" font-size="70" text-anchor="middle" id="tree1">🌴</text><text x="820" y="560" font-size="60" text-anchor="middle">🏠</text>
+    <text x="860" y="610" text-anchor="middle" font-family="Mitr" font-size="26" font-weight="700" fill="#2d5a2a">แผ่นดิน</text>
+    <g id="storm"></g>
+    <g font-family="Mitr" font-weight="700"><rect x="16" y="16" width="380" height="104" rx="20" fill="rgba(0,0,0,.35)"/>
+      <text id="tyCatT" x="34" y="58" font-size="30" fill="#ffd93d"></text><text id="tyV" x="34" y="100" font-size="26" fill="#fff"></text></g>
+    <text id="tyMsg" x="500" y="620" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="700" fill="#fff" stroke="#0b3b5c" stroke-width="6" paint-order="stroke">👆 วาดวงกลมทวนเข็มนาฬิการอบพายุ</text>`;
+  placeTyphoon(0);
+}
+function placeTyphoon(dt) {
+  const onLand = ty.x > coastX(ty.y);
+  if (onLand) { ty.v = Math.max(25, ty.v * Math.pow(0.8, dt) - 4 * dt); }
+  else ty.v = Math.min(230, ty.v + 1.2 * dt);
+  ty.rot -= (25 + ty.v * 1.6) * dt;                               // counter-clockwise
+  const R = 70 + ty.v * 0.9, eye = ty.v >= 118 ? 14 + (ty.v - 118) * 0.08 : 0;
+  let arms = '';
+  for (let k = 0; k < 4; k++) {
+    let d = '';
+    for (let i = 0; i <= 24; i++) { const u = i / 24, a = k * Math.PI / 2 + u * 3.6, r = (eye + 10) + u * R; d += (i ? ' L' : 'M') + (r * Math.cos(a)).toFixed(1) + ',' + (r * Math.sin(a)).toFixed(1); }
+    arms += `<path d="${d}" fill="none" stroke="#fff" stroke-width="${(10 + ty.v / 12).toFixed(1)}" stroke-linecap="round" opacity=".85"/>`;
+  }
+  $('storm').innerHTML = `<g transform="translate(${ty.x.toFixed(1)} ${ty.y.toFixed(1)})"><circle r="${(R * 1.15).toFixed(1)}" fill="url(#tyg)" opacity="${Math.min(1, 0.4 + ty.v / 200).toFixed(2)}"/>
+    <g transform="rotate(${ty.rot.toFixed(1)})">${arms}</g>${eye ? `<circle r="${eye.toFixed(1)}" fill="#1e88c7" stroke="#fff" stroke-width="3"/>` : `<circle r="12" fill="#fff"/>`}</g>`;
+  const c = catOf(ty.v);
+  $('tyCatT').textContent = '🌀 ' + CAT_TH[c];
+  $('tyV').textContent = '💨 ลมแรง ' + Math.round(ty.v) + ' กม./ชม.';
+  const sway = Math.sin(performance.now() / 120) * Math.min(25, Math.max(0, 300 - Math.hypot(ty.x - 900, ty.y - 420)) / 300 * ty.v / 6);
+  $('tree1').setAttribute('transform', `rotate(${sway.toFixed(1)} 900 420)`);
+  if (c !== tyCat) { const up = !tyCat || ['dep', 'ts', 'ty'].indexOf(c) > ['dep', 'ts', 'ty'].indexOf(tyCat); tyCat = c; if (up) { blip(600 + ['dep', 'ts', 'ty'].indexOf(c) * 150); speak(CAT_SAY[c]); } renderTyphoon(); }
+  if (onLand && !tyLand) { tyLand = true; boop(); speak('ขึ้นฝั่งแล้ว พายุจะอ่อนกำลังลง เพราะไม่มีน้ำทะเลอุ่นเป็นพลังงาน'); $('tyMsg').textContent = '🏝️ ขึ้นฝั่งแล้ว พายุอ่อนกำลังลง'; }
+  if (!onLand && tyLand) { tyLand = false; $('tyMsg').textContent = '👆 วาดวงกลมทวนเข็มนาฬิการอบพายุ'; }
+}
+function tyDown(e) {
+  const q = svgPt(e), r = Math.hypot(q.x - ty.x, q.y - ty.y);
+  tyDrag = r < 60 ? { kind: 'move', dx: ty.x - q.x, dy: ty.y - q.y } : { kind: 'spin', a: Math.atan2(ty.y - q.y, q.x - ty.x) };
+  try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+  buzz(8);
+}
+function tyMove(e) {
+  if (!tyDrag) return;
+  const q = svgPt(e);
+  if (tyDrag.kind === 'move') { ty.x = Math.max(60, Math.min(960, q.x + tyDrag.dx)); ty.y = Math.max(60, Math.min(600, q.y + tyDrag.dy)); return; }
+  const a = Math.atan2(ty.y - q.y, q.x - ty.x);
+  let d = a - tyDrag.a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+  tyDrag.a = a;
+  if (ty.x > coastX(ty.y)) return;
+  if (d > 0) { ty.v = Math.min(230, ty.v + d * 14); if (Math.random() < 0.15) tone(300 + ty.v, 0.04, 'sine', 0.04); }
+  else if (d < -0.2 && !tyWarned) { tyWarned = true; speak('ทางซีกโลกเหนือ พายุหมุนทวนเข็มนาฬิกา ลองวนอีกทางนะ'); }
+}
+function tyUp() { tyDrag = null; }
+const TYPHOON_KNOW = [
+  'พายุหมุนเกิดเหนือทะเลที่อุ่นตั้งแต่ราว 26.5 องศาขึ้นไป น้ำอุ่นคือพลังงานของพายุ',
+  'ทางซีกโลกเหนือ พายุหมุนทวนเข็มนาฬิกา ส่วนซีกโลกใต้หมุนตามเข็มนาฬิกา',
+  'ตาพายุตรงกลางลมสงบ ฟ้าโปร่ง แต่รอบตาพายุมีลมแรงที่สุด',
+  'พายุที่เข้าประเทศไทยส่วนมากมาจากทะเลจีนใต้และมหาสมุทรแปซิฟิก พอขึ้นฝั่งก็อ่อนกำลังลง แต่ยังทำให้ฝนตกหนักได้',
+  'ชื่อพายุตั้งไว้ล่วงหน้าโดยหลายประเทศ ประเทศไทยก็ส่งชื่อไปด้วย เช่น เมขลา',
+];
+function renderTyphoon() {
+  const c = catOf(ty.v);
+  panel.innerHTML = `<div class="q-text">🌀 ${CAT_TH[c]}</div>
+    <div class="res" data-say="${CAT_SAY[c]}">${c === 'dep' ? 'ลมแรงไม่ถึง <b>63 กม./ชม.</b>' : c === 'ts' ? 'ลมแรง <b>63–117 กม./ชม.</b>' : 'ลมแรงตั้งแต่ <b>118 กม./ชม.</b> มีตาพายุ'}</div>
+    <div class="res">👆 วาดวงกลมทวนเข็มนาฬิการอบพายุให้แรงขึ้น แล้วลากตรงกลางพายุขึ้นฝั่งดูสิ</div>
+    ${knowList(TYPHOON_KNOW)}<div class="src">เกณฑ์ความแรงพายุตามกรมอุตุนิยมวิทยา · ภาพย่อ พายุจริงกว้างหลายร้อยกิโลเมตร</div>`;
+  sayKit();
+}
+
+// ============================================================================
+// MODES + POINTER
+// ============================================================================
+function setMode(m) {
+  mode = m; stopReading(); rainSound(false);
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  ctrls.innerHTML = '';
+  if (m === 'wind') { buildWind(); renderWindCtrls(); renderWind(); speak(windDay ? WIND_SAY.day : WIND_SAY.night); }
+  else if (m === 'rain') { resetRain(); buildRain(); renderRain(); speak('ฝนมาจากไหน แตะทะเลให้ไอน้ำลอยขึ้นดูสิ'); }
+  else if (m === 'thunder') { count = null; buildThunder(); renderThunderCtrls(); renderThunder(); speak('ลากเมฆขึ้นไปให้สูง จนเป็นเมฆฝนฟ้าคะนอง'); }
+  else if (m === 'typhoon') { ty = { x: 300, y: 330, v: 40, rot: 0 }; tyCat = 'dep'; tyLand = false; buildTyphoon(); renderTyphoon(); speak('วาดวงกลมทวนเข็มนาฬิการอบพายุ ให้พายุแรงขึ้น'); }
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
+scene.addEventListener('pointerdown', (e) => {
+  ensureAudio();
+  if (mode === 'rain') rainDown(e); else if (mode === 'thunder') thunderDown(e); else if (mode === 'typhoon') tyDown(e);
+});
+scene.addEventListener('pointermove', (e) => { if (mode === 'rain') rainMove(e); else if (mode === 'thunder') thunderMove(e); else if (mode === 'typhoon') tyMove(e); });
+const endPtr = () => { if (mode === 'rain') rainUp(); else if (mode === 'thunder') thunderUp(); else if (mode === 'typhoon') tyUp(); };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden) {
+    if (mode === 'wind') placeWind(dt, now);
+    else if (mode === 'rain') placeRain(dt, now);
+    else if (mode === 'thunder') placeThunder(now);
+    else if (mode === 'typhoon') placeTyphoon(dt);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) { stopReading(); sayNow(text); }
+// Resolves when the line has finished (or was cut off) — lets 🔊 read a card line by line.
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+  } catch (e) { end(); }
+  setTimeout(end, 1500 + text.length * 140);          // Safari sometimes never fires onend
+}
+
+// ---- 🔊 tap-to-hear on every info card (same as ท่องอวกาศ) ----
+function sayable(t) {                    // card text → speech: no emoji/English, symbols as words
+  return String(t)
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}️‍]/gu, '')
+    .replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').replace(/[A-Za-z][A-Za-z’' ]*[A-Za-z]/g, '')
+    .replace(/กม\.\/ชม\./g, 'กิโลเมตรต่อชั่วโมง').replace(/กม\./g, 'กิโลเมตร').replace(/ชม\./g, 'ชั่วโมง')
+    .replace(/กก\./g, 'กิโลกรัม').replace(/ซม\./g, 'เซนติเมตร').replace(/พ\.ศ\./g, 'พุทธศักราช')
+    .replace(/°C/g, ' องศาเซลเซียส').replace(/°/g, ' องศา').replace(/%/g, ' เปอร์เซ็นต์')
+    .replace(/(^|[\s~(])-(?=\d)/g, '$1ลบ ').replace(/~/g, 'ประมาณ ').replace(/¼/g, 'หนึ่งในสี่')
+    .replace(/–/g, ' ถึง ').replace(/[—·:→()]/g, ' ').replace(/ฯ/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function plainText(el) {
+  const c = el.cloneNode(true);
+  for (const x of c.querySelectorAll('br')) x.replaceWith(' ');
+  for (const x of c.querySelectorAll('div')) x.append(' ');
+  return c.textContent;
+}
+const sayOf = (el) => el.dataset.say !== undefined ? el.dataset.say : sayable(plainText(el));
+let readTok = 0, readBtn = null;
+function clearReading() { for (const e of document.querySelectorAll('.reading')) e.classList.remove('reading'); }
+function stopReading() {
+  if (readBtn) { readBtn.classList.remove('on'); readBtn = null; }
+  clearReading();
+  return ++readTok;
+}
+function hear(el) {
+  const my = stopReading();
+  el.classList.add('reading');
+  sayNow(sayOf(el)).then(() => { if (my === readTok) clearReading(); });
+}
+async function readAll(btn) {
+  if (readBtn === btn) {                 // tap again = stop
+    stopReading(); if (window.VoiceClips) VoiceClips.stop();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    return;
+  }
+  const my = stopReading(); readBtn = btn; btn.classList.add('on');
+  for (const el of panel.querySelectorAll('.sayable')) {
+    if (my !== readTok || !el.isConnected) return;
+    clearReading(); el.classList.add('reading');
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    await sayNow(sayOf(el));
+    if (my !== readTok) return;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  if (my === readTok) stopReading();
+}
+const SAY_SEL = '.q-text, .res, .warn, .know li, [data-sayme]';
+function sayKit() {
+  stopReading();
+  const items = [...panel.querySelectorAll(SAY_SEL)].filter((el) => sayOf(el));
+  for (const el of items) {
+    el.classList.add('sayable');
+    el.addEventListener('click', () => { ensureAudio(); buzz(8); hear(el); });
+  }
+  if (items.length < 2) return;
+  panel.insertAdjacentHTML('afterbegin', '<div class="sayrow"><button class="say">🔊 ฟังทั้งการ์ด</button></div>');
+  const btn = panel.querySelector('.sayrow .say');
+  btn.setAttribute('aria-label', 'ฟังทั้งการ์ด');
+  btn.addEventListener('click', () => { ensureAudio(); buzz(8); readAll(btn); });
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+setMode('wind');
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = [WIND_SAY.day, WIND_SAY.night, 'ฝนมาจากไหน แตะทะเลให้ไอน้ำลอยขึ้นดูสิ', 'เมฆยังมีน้ำน้อย แตะทะเลให้ไอน้ำลอยขึ้นมาก่อนนะ',
+    'ลากเมฆขึ้นไปให้สูง จนเป็นเมฆฝนฟ้าคะนอง', 'อากาศร้อนชื้นลอยขึ้นสูงมาก กลายเป็นเมฆฝนฟ้าคะนอง แตะเมฆดูสิ', 'ลากเมฆขึ้นไปให้สูงก่อน เมฆฝนฟ้าคะนองสูงมาก',
+    'วาดวงกลมทวนเข็มนาฬิการอบพายุ ให้พายุแรงขึ้น', 'ขึ้นฝั่งแล้ว พายุจะอ่อนกำลังลง เพราะไม่มีน้ำทะเลอุ่นเป็นพลังงาน', 'ทางซีกโลกเหนือ พายุหมุนทวนเข็มนาฬิกา ลองวนอีกทางนะ'];
+  for (const k in STAGE_SAY) L.push(STAGE_SAY[k]);
+  for (let n = 1; n <= 9; n++) L.push(String(n));
+  for (const d of [1, 2, 3]) L.push(thunderLine(d), 'พายุอยู่ห่าง ' + d + ' กิโลเมตร แตะเมฆแล้วนับ');
+  for (const k in CAT_SAY) L.push(CAT_SAY[k]);
+  const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
+  for (const d of [true, false]) { windDay = d; renderWind(); grab(); }
+  stage = ''; renderRain(); grab(); for (const s in STAGE_SAY) { stage = s; renderRain(); grab(); }
+  for (const c of [0.2, 0.9]) { cb = c; count = null; renderThunder(); grab(); }
+  for (const d of [1, 2, 3]) { tDist = d; count = { boom: 1 }; renderThunder(); grab(); }
+  count = null;
+  for (const v of [40, 90, 150]) { ty.v = v; renderTyphoon(); grab(); }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

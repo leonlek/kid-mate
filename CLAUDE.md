@@ -136,7 +136,7 @@ Interactive solar system: planets orbit at true relative speeds (1/period; 1 Ear
 
 🌗 กลางวันกลางคืน: Earth from above the North Pole (the real day-map texture re-projected to a polar disc at runtime, edge = 20°S), Sun on the left, drag to turn (15° = 1 h); Thailand + New York pins; sky strip from Thailand. 🍂 ฤดูกาล: Earth around the Sun with the axis fixed 23.4° toward Polaris (June = north leans sunward), Thai seasons per the Thai Meteorological Department, Bangkok day length / noon sun height computed (declination formula + −0.833° sunrise).
 
-**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs, 🌊 deep sea, 🫀 body and 🐛 life cycles are done — see below): 🔬 tiny-to-huge scale zoom.
+**Queued ideas (owner asked to keep these for later):** 🛂 astronaut passport stamps (localStorage), ⭐⭐⭐ mission "order the planets", 🛰️ ISS (90-min orbit, 16 sunrises/day). New games after space, in order of preference (🦖 dinosaurs, 🌊 deep sea, 🫀 body, 🐛 life cycles, 🌙 moon, 🧑‍🚀 astronaut and ⛈️ weather are done — see below): 🔬 tiny-to-huge scale zoom.
 
 ### โลกไดโนเสาร์ (`/dinosaurs/`)
 
@@ -161,6 +161,10 @@ Five modes. 🔭 คืนนี้: the real phase for any date — new/full mo
 ### นักบินอวกาศ (`/astronaut/`)
 
 Life on the ISS + rocket building. 🎈 ลอยตัว: fling objects in the cabin (they glide and bounce, light drag), tap the crew member to somersault, water floats as a wobbling ball. 🍽️ กินข้าว: drag food to the mouth — tortilla/pouch/water/fruit/liquid salt are fine, 🍞 bread sprays floating crumbs (why bread isn't flown). 😴 นอน: sleeping bag on the wall. 🏃 ออกกำลังกาย: hold to run on the treadmill (bungee straps). 🚽 ห้องน้ำ: air-suction toilet → water recovery (98 %, NASA 2023). 🌍 หน้าต่าง: cupola, real Earth texture scrolling, one orbit = 12 s with ~38 % in Earth's shadow, sunrise counter to 16. 🚀 ประกอบจรวด: pick stage 1 / stage 2 / payload (crew capsule → docks with ISS, satellite → unfolds panels, probe → heads to the Moon), optional side boosters; flight timeline in `flightTick` (stage 1 drops at 70 km, orbit 400 km, "real time ≈ 9 min").
+
+### ฟ้าฝน (`/weather/`)
+
+Wind, rain and storms, all drag/tap. 💨 ลม: sea vs land with a circulating stream of air dots — day = ลมทะเล (land heats faster), night = ลมบก; flag + sailboat follow the wind; Thai monsoon seasons per TMD. 🌧️ ฝน: water cycle — tap the sea for vapour, it feeds a cloud that grows and greys; it rains when full (sooner over the mountain), the river runs back to the sea, a rainbow follows; tap a full cloud to squeeze it. ⚡ ฟ้าแลบ ฟ้าร้อง: drag the cloud up into a cumulonimbus, tap for lightning, the game counts seconds to the thunder (3 s per km, distance chips 1/2/3 km) + safety card. 🌀 พายุไต้ฝุ่น: circle counter-clockwise around the storm over warm sea to strengthen it (TMD scale: ดีเปรสชัน < 63, โซนร้อน 63–117, ไต้ฝุ่น ≥ 118 km/h, eye appears), drag its eye onto land and it weakens.
 
 ### (Planned)
 
