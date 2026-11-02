@@ -309,6 +309,7 @@
         <button class="chip icon" data-speed="0.25" aria-label="ช้า">🐢</button>
         <button class="chip icon on" data-speed="1" aria-label="ปกติ">▶️</button>
         <button class="chip icon" data-speed="6" aria-label="เร็ว">🚀</button>
+        <button class="chip icon" id="trailReset" aria-label="ลบเส้นวงโคจร วาดใหม่">🧽</button>
       </div>
       <div class="vctrls" id="vctrls">
         <span class="vlab">🔝</span>
@@ -488,10 +489,23 @@ let tiltDeg = 0, TS = 1;
 // Zoom/pan: the SVG viewBox. 1000 = whole system.
 const vb = { x: 0, y: 0, w: 1000 };
 let follow = false;
+// Orbit lines are drawn by the planets themselves: each one traces the path it has
+// travelled since the page opened (or since 🧽), at its true speed — Mercury closes
+// its ring in ~5 s, Neptune would need ~55 min. angle[] only ever decreases.
+const trailFrom = {};
+function resetTrails() { for (const p of PLANETS) trailFrom[p.id] = angle[p.id]; }
+resetTrails();
+function trailPath(r, a0, a1) {
+  const ry = r * TS, pt = (a) => `${(500 + r * Math.cos(a)).toFixed(1)} ${(500 + r * Math.sin(a) * TS).toFixed(1)}`;
+  const sw = a0 - a1;
+  if (sw >= Math.PI * 2) return `M ${pt(0)} A ${r} ${ry.toFixed(1)} 0 1 0 ${pt(Math.PI)} A ${r} ${ry.toFixed(1)} 0 1 0 ${pt(0)} Z`;
+  if (sw < 0.002) return '';
+  return `M ${pt(a0)} A ${r} ${ry.toFixed(1)} 0 ${sw > Math.PI ? 1 : 0} 0 ${pt(a1)}`;
+}
 
 function buildOrbit() {
   let s = '';
-  for (const p of PLANETS) s += `<ellipse class="orb" cx="500" cy="500" rx="${ORBIT_R[p.id]}" ry="${ORBIT_R[p.id]}" fill="none" stroke="rgba(170,185,255,0.28)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+  for (const p of PLANETS) s += `<path class="orb" id="orb-${p.id}" d="" fill="none" stroke="rgba(170,185,255,0.42)" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
   // asteroid belt between Mars and Jupiter
   let belt = '';
   let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
@@ -513,7 +527,6 @@ function buildOrbit() {
 }
 function setTilt(deg) {
   tiltDeg = deg; TS = Math.cos(deg * Math.PI / 180);
-  for (const el of orbitSvg.querySelectorAll('.orb')) el.setAttribute('ry', (+el.getAttribute('rx') * TS).toFixed(1));
   placeOrbit();
 }
 function placeOrbit() {
@@ -531,6 +544,7 @@ function placeOrbit() {
     // behind the Sun only when on the far side AND the view is tilted enough to overlap
     const behind = tiltDeg > 5 && Math.sin(a) < 0;
     (behind ? backG : frontG).appendChild(g);
+    document.getElementById('orb-' + p.id).setAttribute('d', trailPath(r, trailFrom[p.id], a));
   }
   const mg = document.getElementById('moonG');
   mg.setAttribute('transform', `translate(${(24 * Math.cos(moonAngle)).toFixed(1)} ${(24 * Math.sin(moonAngle) * TS).toFixed(1)})`);
@@ -1411,9 +1425,13 @@ function setMode(m) {
   else { renderInfo(selected); markStrip(selected); }
 }
 for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
-for (const b of document.querySelectorAll('#ctrls .chip')) b.addEventListener('click', () => {
+for (const b of document.querySelectorAll('#ctrls .chip[data-speed]')) b.addEventListener('click', () => {
   speed = +b.dataset.speed; buzz(8);
-  for (const o of document.querySelectorAll('#ctrls .chip')) o.classList.toggle('on', o === b);
+  for (const o of document.querySelectorAll('#ctrls .chip[data-speed]')) o.classList.toggle('on', o === b);
+});
+document.getElementById('trailReset').addEventListener('click', () => {
+  ensureAudio(); buzz(8); blip(660); setTimeout(() => blip(880), 90);
+  resetTrails(); placeOrbit();
 });
 
 // ============================================================================
