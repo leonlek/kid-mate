@@ -182,6 +182,10 @@ Tap-to-fill 7 animals (cat, dog, Asian elephant, fish, butterfly, sparrow, torto
 
 A living 26 °C community tank (saved in localStorage `aquarium`). Species with true behaviour in `SP`/`swim()`: betta (max ONE male — adding a second is refused with the reason; gulps air at the surface and builds a bubble nest; sleeps on its leaf at night; chases a guppy's tail now and then, with a warning to keep them apart), neon tetras school and fade at night, guppies with fan tails, corydoras sift the sand with barbels and dart up for air, bristlenose pleco suckers onto the glass and eats the algae, cherry shrimp. Tools: floating flakes / sinking pellets (overfeeding → food rots → poop + cloudy water, with a spoken warning), 🧽 wipe algae (grows while the light is on), 🧪 siphon the gravel, 🪣 25 % water change, 💡 day/night. Fish drawn at `FS` = 1.7× so they read on phones.
 
+### ฟาร์มน้อย (`/farm/`)
+
+Farm overview → tap an animal for a close-up with 3 jobs. True details: Holstein cow (polled, 4-teat udder, ear tag) with her calf beside her (cows give milk after calving), chews cud; hen lays at most 1 egg per day ("🌅 เช้าแล้ว" resets it) and the rooster (big comb, green sickle tail) crows but never lays; pig has a 2-nostril snout disc and cloven hooves, rolls in mud to cool (pigs barely sweat), shower washes it off; sheep are sheared by dragging the clippers (fleece falls in clumps, sheep looks thin; "1 year later" regrows); goat climbs the rock, beard + backward horns; goats and sheep have horizontal slit pupils (`eyeSlit`); white Pekin duck dabbles bottom-up, and bread is refused (bad for ducks).
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

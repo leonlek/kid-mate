@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🐄 ฟาร์มน้อย — คิดส์เล่น</title>
+<meta name="description" content="ฟาร์มน้อย ให้อาหารวัว รีดนม เก็บไข่ไก่ หมูกลิ้งโคลน ตัดขนแกะ แพะปีนหิน เป็ดมุดน้ำ สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ฟาร์มน้อย">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: none; }
+  .acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .act {
+    min-height: 80px; border-radius: 22px; border: 3px solid var(--card-border); background: #fff; cursor: pointer;
+    font-family: 'Mitr', sans-serif; font-size: 17px; font-weight: 600; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px;
+  }
+  .act b { font-size: 32px; line-height: 1; }
+  .act.on { background: var(--gold); border-color: #e0b400; }
+  .act:active { transform: scale(.95); }
+  .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .fact::before { content: '💡 '; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🐄 ฟาร์มน้อย</h1></header>
+  <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="ฟาร์ม"></svg></div>
+  <div class="acts" id="acts"></div>
+  <div class="fact" id="fact"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene');
+const K = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const k3 = 'stroke="#2d3436" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const P = (d, f, x = '') => `<path d="${d}" fill="${f}" ${K} ${x}/>`;
+const E = (cx, cy, rx, ry, f, x = '') => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}" ${K} ${x}/>`;
+const C = (cx, cy, r, f, x = '') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}" ${K} ${x}/>`;
+const lerp = (a, b, u) => a + (b - a) * u, clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+function svgPt(ev) { const p = scene.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(scene.getScreenCTM().inverse()); }
+const blinkAt = (t, o = 0) => ((t + o) % 4.1) < 0.13;
+// round pupil (cow, pig, duck, hen) vs horizontal slit (goat, sheep — true for both)
+function eyeR(x, y, r, t) { return blinkAt(t) ? `<path d="M${x - r},${y} q${r},${r * 0.6} ${2 * r},0" fill="none" ${k3}/>` : `<circle cx="${x}" cy="${y}" r="${r}" fill="#2d3436"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.35}" r="${r * 0.35}" fill="#fff"/>`; }
+function eyeSlit(x, y, r, t) { return blinkAt(t, 1) ? `<path d="M${x - r},${y} q${r},${r * 0.6} ${2 * r},0" fill="none" ${k3}/>` : `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 0.8}" fill="#e6c25a" ${k3}/><rect x="${x - r * 0.75}" y="${y - r * 0.18}" width="${r * 1.5}" height="${r * 0.36}" rx="${r * 0.18}" fill="#2d3436"/>`; }
+
+// ============================================================================
+// ANIMALS — draw(s) at close-up scale; s = per-animal state.
+// ============================================================================
+const A = {
+  cow: { th: 'วัว', sound: 'มอ', voice: 'วัวร้อง มอ',
+    fact: 'วัวนมพันธุ์ขาวดำ ให้นมหลังจากออกลูก ลูกวัวได้ดื่มนมแม่ด้วย วัวกลืนหญ้าแล้วสำรอกขึ้นมาเคี้ยวใหม่ เรียกว่าเคี้ยวเอื้อง',
+    acts: [['grass', '🌾', 'ให้หญ้า'], ['milk', '🥛', 'รีดนม'], ['brush', '🪮', 'แปรงขน']] },
+  hen: { th: 'ไก่', sound: 'กุ๊ก กุ๊ก', voice: 'กุ๊ก กุ๊ก กุ๊ก',
+    fact: 'แม่ไก่ไข่ได้วันละไม่เกิน 1 ฟอง ไก่ตัวผู้ไม่ไข่ แต่มีหงอนใหญ่ หางยาวโค้ง และขันตอนเช้า',
+    acts: [['corn', '🌽', 'โปรยข้าวโพด'], ['egg', '🥚', 'เก็บไข่'], ['dawn', '🌅', 'เช้าแล้ว']] },
+  pig: { th: 'หมู', sound: 'อู๊ด อู๊ด', voice: 'อู๊ด อู๊ด',
+    fact: 'หมูเหงื่อออกน้อยมาก จึงกลิ้งโคลนเพื่อคลายร้อน และกันแดดเผา หมูจมูกไวมาก ใช้จมูกดุนดินหาอาหาร',
+    acts: [['veg', '🥬', 'ให้ผัก'], ['mud', '🟫', 'เล่นโคลน'], ['shower', '🚿', 'อาบน้ำ']] },
+  sheep: { th: 'แกะ', sound: 'แบ๊ะ', voice: 'แกะร้อง แบ๊ะ',
+    fact: 'ขนแกะยาวขึ้นเรื่อยๆ ต้องตัดปีละครั้ง ไม่เจ็บเหมือนตัดผม เอาไปทำไหมพรมและเสื้อกันหนาว แกะมีม่านตาเป็นขีดแนวนอน',
+    acts: [['shear', '✂️', 'ตัดขน'], ['grass', '🌾', 'ให้หญ้า'], ['regrow', '⏩', 'ผ่านไป 1 ปี']] },
+  goat: { th: 'แพะ', sound: 'แบะ แบะ', voice: 'แพะร้อง แบะ แบะ',
+    fact: 'แพะปีนเก่งมาก ชอบกินใบไม้และยอดไม้ แพะไม่ได้กินกระป๋องอย่างในการ์ตูน แค่ชอบแทะสำรวจของ ม่านตาแพะเป็นขีดแนวนอน ช่วยมองได้กว้าง',
+    acts: [['leaves', '🌿', 'ให้ใบไม้'], ['climb', '🪨', 'ปีนหิน'], ['pet', '🤚', 'ลูบหัว']] },
+  duck: { th: 'เป็ด', sound: 'ก๊าบ ก๊าบ', voice: 'ก๊าบ ก๊าบ',
+    fact: 'เป็ดมีพังผืดระหว่างนิ้ว ช่วยพายน้ำ ขนมีน้ำมันกันน้ำ เป็ดมุดหัวลงน้ำ ก้นชี้ฟ้า เพื่อหากินใต้น้ำ ขนมปังไม่ดีต่อเป็ด ควรให้ผักหรืออาหารเป็ด',
+    acts: [['peas', '🫛', 'ให้ผักกับถั่ว'], ['bread', '🍞', 'ขนมปัง'], ['dive', '💦', 'มุดน้ำ']] },
+};
+const ORDER = ['cow', 'hen', 'pig', 'sheep', 'goat', 'duck'];
+const HOME = { cow: [210, 420, 0.42], hen: [470, 520, 0.36], pig: [700, 520, 0.38], sheep: [850, 400, 0.36], goat: [600, 330, 0.34], duck: [120, 560, 0.32] };
+
+// shared state per animal
+const S = { t: 0, chew: 0, eat: 0, milk: 0, milking: 0, brush: 0, eggs: [], laid: 0, crow: 0, corn: [], peck: 0, mud: 0, wash: 0, roll: 0,
+  wool: 1, shear: [], climb: 0, pet: 0, dive: 0, bread: 0, peas: 0 };
+
+function drawCow(s, far) {
+  const t = s.t, jaw = s.chew > 0 ? Math.sin(t * 6) * 5 : 0, tail = Math.sin(t * 1.3) * 10, head = s.eat > 0 ? 70 : 0;
+  let g = `<path d="M250,300 Q220,360 228,${430 + tail}" fill="none" stroke="#2d3436" stroke-width="7"/><path d="M220,${425 + tail} l8,26 l8,-26 Z" fill="#2d3436"/>`;
+  for (const [x, far2] of [[300, 1], [560, 1], [330, 0], [590, 0]]) g += P(`M${x - 17},420 L${x + 17},420 L${x + 14},560 L${x - 14},560 Z`, far2 ? '#e6e6e6' : '#fff') + `<path d="M${x - 15},552 h30 l0,10 h-30 Z M${x},552 v10" fill="#3d3d3d" stroke="#2d3436" stroke-width="2"/>`;
+  g += P('M250,330 C250,280 330,262 430,264 C540,266 640,270 650,330 C660,410 610,440 450,442 C320,444 250,420 250,330 Z', '#fafafa');
+  g += `<clipPath id="cowB"><path d="M250,330 C250,280 330,262 430,264 C540,266 640,270 650,330 C660,410 610,440 450,442 C320,444 250,420 250,330 Z"/></clipPath><g clip-path="url(#cowB)"><path d="M300,260 C340,300 330,360 290,380 C260,350 260,300 300,260 Z M420,262 C460,300 520,300 540,262 Z M470,360 C520,330 600,350 600,420 C560,450 480,440 470,360 Z" fill="#2d3436"/></g>`;
+  // udder with 4 teats (pink), visible under the belly
+  const sq = s.milking > 0 ? Math.sin(t * 14) * 4 : 0;
+  g += P('M400,430 C400,470 470,474 476,436 Z', '#f6b7c3') + [408, 426, 450, 466].map((x, i) => P(`M${x - 5},458 L${x + 5},458 L${x + 3},${474 + (i % 2 ? sq : -sq)} L${x - 3},${474 + (i % 2 ? sq : -sq)} Z`, '#f29fb0')).join('');
+  // head (lowers to graze)
+  let h = P('M620,300 C620,260 660,246 690,256 C720,266 728,300 722,340 C716,380 690,394 670,390 C640,380 622,340 620,300 Z', '#fafafa');
+  h += `<path d="M640,262 C660,290 690,286 704,262 Z" fill="#2d3436"/>`;
+  h += P('M622,286 L590,272 L610,300 Z', '#fafafa') + P('M716,280 L746,266 L730,298 Z', '#fafafa') + `<rect x="590" y="280" width="12" height="10" rx="2" fill="#ffd93d" stroke="#2d3436" stroke-width="2"/>`;
+  h += eyeR(650, 304, 6, t) + eyeR(700, 304, 6, t);
+  h += `<g transform="translate(${jaw} 0)">${P('M640,350 C640,330 712,330 712,352 C712,384 640,384 640,350 Z', '#f6b7c3')}<ellipse cx="660" cy="354" rx="5" ry="7" fill="#c97b84"/><ellipse cx="692" cy="354" rx="5" ry="7" fill="#c97b84"/></g>`;
+  if (s.eat > 0) h += `<g transform="translate(676 384)">${[-14, -6, 2, 10, 18].map((x, i) => `<path d="M${x},0 l${(i - 2) * 4},${-16 - (i % 2) * 6}" stroke="#7cb342" stroke-width="5" stroke-linecap="round"/>`).join('')}</g>`;
+  g += `<g transform="rotate(${head * 0.4} 630 300) translate(0 ${head})">${h}</g>`;
+  if (s.brush > 0) g += `<g transform="translate(${450 + Math.sin(t * 8) * 70} 320) rotate(-20)"><rect x="-40" y="-14" width="80" height="22" rx="8" fill="#8d5a2b" ${k3}/><path d="M-36,8 v14 M-24,8 v14 M-12,8 v14 M0,8 v14 M12,8 v14 M24,8 v14 M36,8 v14" stroke="#c9a27a" stroke-width="4"/></g>`;
+  return g;
+}
+function drawCalf(t) {
+  return `<g transform="translate(-60 330) scale(.45)">${drawCow({ t: t + 1.7, chew: 0, eat: 0, milking: 0, brush: 0 }, true)}</g>`;
+}
+function drawHen(x, y, k, t, peck, flip = 1) {
+  const p = peck ? Math.max(0, Math.sin(t * 9)) * 40 : 0;
+  return `<g transform="translate(${x} ${y}) scale(${k * flip} ${k})">
+    <path d="M-6,0 L-10,40 M10,0 L14,40 M-10,40 l-14,6 M-10,40 l10,6 M14,40 l-12,6 M14,40 l14,6" stroke="#f0a030" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-80,-40 C-96,-80 -84,-110 -62,-116 L-50,-60 Z" fill="#7a3a14" ${K}/>
+    ${E(-10, -40, 80, 52, '#a0522d')}<path d="M-60,-46 q40,30 90,4" fill="none" stroke="#7a3a14" stroke-width="5"/>
+    <g transform="rotate(${p} 40 -60)">${C(56, -96, 30, '#a0522d')}<path d="M44,-124 q4,-14 10,-2 q6,-14 10,0 q6,-10 8,4" fill="#e74c3c" ${k3}/><path d="M82,-98 L104,-90 L82,-84 Z" fill="#f0a030" ${k3}/><path d="M78,-80 q6,14 -2,18 q-8,-4 -2,-18 Z" fill="#e74c3c" ${k3}/>${eyeR(66, -102, 4.5, t)}</g></g>`;
+}
+function drawRooster(x, y, k, t, crow) {
+  const c = crow > 0 ? -25 : 0;
+  return `<g transform="translate(${x} ${y}) scale(${k} ${k})">
+    <path d="M-8,0 L-12,48 M12,0 L16,48 M-12,48 l-16,6 M16,48 l16,6" stroke="#f0a030" stroke-width="8" stroke-linecap="round"/>
+    <path d="M-70,-50 C-130,-150 -40,-180 -30,-120 C-60,-150 -90,-120 -70,-50 Z" fill="#1b4d3e" ${K}/><path d="M-70,-40 C-150,-110 -110,-160 -60,-120" fill="none" stroke="#2e7d5b" stroke-width="12" stroke-linecap="round"/>
+    ${E(-10, -46, 82, 56, '#d35400')}<path d="M-50,-60 q40,34 90,6" fill="none" stroke="#8e3a00" stroke-width="6"/><path d="M-30,-20 q30,16 70,0" fill="none" stroke="#1b4d3e" stroke-width="10"/>
+    <g transform="rotate(${c} 40 -70)">${C(56, -110, 32, '#e67e22')}<path d="M34,-140 q4,-26 14,-6 q6,-26 14,-4 q8,-24 14,0 q8,-18 10,6" fill="#e74c3c" ${k3}/>
+      ${crow > 0 ? '<path d="M84,-114 L110,-122 L86,-108 Z M84,-104 L108,-96 L86,-100 Z" fill="#f0a030" stroke="#2d3436" stroke-width="3"/>' : '<path d="M84,-112 L108,-104 L84,-98 Z" fill="#f0a030" stroke="#2d3436" stroke-width="3"/>'}
+      <path d="M78,-92 q10,24 -4,28 q-12,-8 -4,-28 Z" fill="#e74c3c" ${k3}/>${eyeR(68, -116, 5, t)}</g></g>`;
+}
+function drawPig(s) {
+  const t = s.t, mud = s.mud, roll = s.roll > 0 ? Math.sin(clamp(s.roll / 2.4) * Math.PI) : 0, nose = s.eat > 0 ? Math.sin(t * 10) * 4 : 0;
+  const skin = mudMix('#f7b7c4', '#7b5a3a', mud);
+  let g = `<g transform="rotate(${roll * 160} 470 470) translate(0 ${roll * -40})">`;
+  g += `<path d="M300,360 q-30,-10 -26,-34 q4,-20 22,-10 q14,10 -2,22" fill="none" stroke="#2d3436" stroke-width="9" stroke-linecap="round"/><path d="M300,360 q-30,-10 -26,-34 q4,-20 22,-10 q14,10 -2,22" fill="none" stroke="${skin}" stroke-width="5" stroke-linecap="round"/>`;
+  for (const [x, f] of [[350, 1], [560, 1], [380, 0], [590, 0]]) g += P(`M${x - 18},440 L${x + 18},440 L${x + 15},520 L${x - 15},520 Z`, f ? mudMix('#e8a4b2', '#6b4a2a', mud) : skin) + `<path d="M${x - 15},510 h30 v12 h-30 Z M${x},510 v12" fill="#8a6a5a" stroke="#2d3436" stroke-width="2"/>`;
+  g += E(470, 400, 190, 92, skin);
+  g += `<g transform="translate(${nose} 0)">${P('M610,330 C640,300 700,316 712,360 C722,400 690,440 640,436 C610,432 592,400 600,360 Z', skin)}
+    ${P('M620,320 L612,280 L648,312 Z', skin)}${P('M672,326 L700,290 L700,336 Z', skin)}${eyeR(640, 360, 5, t)}${eyeR(680, 360, 5, t)}
+    ${E(706, 396, 26, 22, mudMix('#f29fb0', '#6b4a2a', mud))}<ellipse cx="698" cy="396" rx="4" ry="7" fill="#8a4a5a"/><ellipse cx="714" cy="396" rx="4" ry="7" fill="#8a4a5a"/>
+    <path d="M660,420 q14,8 28,0" fill="none" ${k3}/></g>`;
+  if (mud > 0.05) g += [[400, 380], [500, 430], [560, 360], [430, 450]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="${30 * mud + 6}" ry="${16 * mud + 4}" fill="#5d3f22" opacity="${(mud * 0.7).toFixed(2)}"/>`).join('');
+  g += `</g>`;
+  return g;
+}
+function mudMix(a, b, u) {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)), A1 = p(a), B1 = p(b);
+  return '#' + A1.map((v, i) => Math.round(v + (B1[i] - v) * clamp(u)).toString(16).padStart(2, '0')).join('');
+}
+function drawSheep(s) {
+  const t = s.t, w = s.wool, jaw = s.eat > 0 ? Math.sin(t * 6) * 4 : 0;
+  let g = '';
+  for (const [x, f] of [[360, 1], [560, 1], [390, 0], [590, 0]]) g += P(`M${x - 12},420 L${x + 12},420 L${x + 10},540 L${x - 10},540 Z`, f ? '#e8e0d4' : '#f4ede2') + `<rect x="${x - 11}" y="530" width="22" height="12" rx="3" fill="#3d3d3d"/>`;
+  // shorn body underneath, fleece on top (fades/clumps as it is shorn)
+  g += E(475, 372, 150 + 20 * w, 70 + 26 * w, '#f3e3d8');
+  if (w > 0.02) {
+    let fleece = '';
+    for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, rx = 150 + 24 * w, ry = 74 + 30 * w; const x = 475 + Math.cos(a) * rx * 0.86, y = 372 + Math.sin(a) * ry * 0.86; if (!s.shear.some((p) => Math.hypot(p[0] - x, p[1] - y) < 60)) fleece += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(34 * w + 4).toFixed(0)}" fill="#fffaf0" ${k3}/>`; }
+    for (let i = 0; i < 14; i++) { const x = 380 + (i % 5) * 46, y = 330 + Math.floor(i / 5) * 40; if (!s.shear.some((p) => Math.hypot(p[0] - x, p[1] - y) < 60)) fleece += `<circle cx="${x}" cy="${y}" r="${(32 * w + 4).toFixed(0)}" fill="#fffaf0"/>`; }
+    g += `<g opacity="${clamp(w * 1.4).toFixed(2)}">${fleece}</g>`;
+  }
+  let h = P('M620,320 C620,286 660,272 688,284 C712,296 716,330 704,362 C694,388 664,394 646,384 C624,370 620,346 620,320 Z', '#f4ede2');
+  h += P('M626,312 L590,300 L612,328 Z', '#f4ede2') + P('M700,300 L736,290 L716,322 Z', '#f4ede2');
+  if (w > 0.2) h += `<circle cx="660" cy="284" r="${18 * w + 6}" fill="#fffaf0" ${k3}/>`;
+  h += eyeSlit(650, 324, 7, t) + eyeSlit(692, 324, 7, t) + `<g transform="translate(0 ${jaw})"><path d="M662,370 l8,6 l8,-6 M670,376 v6" fill="none" ${k3}/></g>`;
+  g += h;
+  return g;
+}
+function drawGoat(s, x0 = 0, y0 = 0) {
+  const t = s.t, jaw = s.eat > 0 ? Math.sin(t * 6) * 4 : 0, nod = s.pet > 0 ? Math.sin(t * 8) * 6 : 0;
+  let g = `<g transform="translate(${x0} ${y0})">`;
+  g += `<path d="M330,330 l-26,-28" stroke="#2d3436" stroke-width="12" stroke-linecap="round"/><path d="M330,330 l-26,-28" stroke="#fffaf0" stroke-width="6" stroke-linecap="round"/>`;
+  for (const [x, f] of [[350, 1], [520, 1], [378, 0], [548, 0]]) g += P(`M${x - 11},420 L${x + 11},420 L${x + 9},530 L${x - 9},530 Z`, f ? '#e6ddd0' : '#f6efe4') + `<path d="M${x - 9},522 h18 v10 h-18 Z M${x},522 v10" fill="#3d3d3d" stroke="#2d3436" stroke-width="2"/>`;
+  g += P('M320,360 C320,310 380,300 450,302 C530,304 580,310 584,360 C588,410 560,430 450,432 C360,434 320,410 320,360 Z', '#f6efe4');
+  g += `<path d="M380,310 Q450,300 540,312" fill="none" stroke="#c9b79a" stroke-width="10" opacity=".6"/>`;
+  let h = `<path d="M600,262 C580,220 600,190 630,200" fill="none" stroke="#8a7a6a" stroke-width="12" stroke-linecap="round"/><path d="M630,258 C620,214 644,190 668,204" fill="none" stroke="#a89a84" stroke-width="12" stroke-linecap="round"/>`;
+  h += P('M590,280 C588,246 620,232 648,240 C676,248 690,280 686,320 C682,356 662,376 640,376 C612,374 592,330 590,280 Z', '#f6efe4');
+  h += P('M594,276 L554,262 L578,296 Z', '#f6efe4') + P('M680,262 L716,252 L694,286 Z', '#f6efe4');
+  h += eyeSlit(622, 290, 7, t) + eyeSlit(662, 290, 7, t);
+  h += `<g transform="translate(0 ${jaw})"><path d="M630,350 l8,6 l8,-6" fill="none" ${k3}/>${P('M628,370 C630,400 640,416 646,420 C652,412 656,396 652,370 Z', '#e6ddd0')}</g>`;
+  g += `<g transform="rotate(${nod} 630 300)">${h}</g>`;
+  if (s.pet > 0) g += `<text x="700" y="230" font-size="46">❤️</text>`;
+  return g + `</g>`;
+}
+function drawDuck(s, x, y, k, dive) {
+  const t = s.t, d = dive > 0 ? Math.sin(clamp(dive / 2.6) * Math.PI) : 0, paddle = Math.sin(t * 6) * 10;
+  let g = `<g transform="translate(${x} ${y}) rotate(${d * -80}) scale(${k})">`;
+  if (d > 0.3) g += `<path d="M-16,30 l${paddle},26 l-12,6 l24,0 Z M16,30 l${-paddle},26 l12,6 l-24,0 Z" fill="#f08a2a" stroke="#c96a12" stroke-width="3"/>`;
+  g += P('M-90,-10 C-100,-40 -70,-60 -30,-58 C20,-56 70,-50 80,-10 C84,24 40,40 -10,40 C-60,40 -86,24 -90,-10 Z', '#fafafa');
+  g += P('M-90,-20 L-118,-44 L-100,-6 Z', '#fafafa') + `<path d="M-40,-30 q40,30 90,6" fill="none" stroke="#d8d8d8" stroke-width="6"/>`;
+  g += `<path d="M50,-40 C56,-70 60,-90 54,-110" fill="none" stroke="#2d3436" stroke-width="38" stroke-linecap="round"/><path d="M50,-40 C56,-70 60,-90 54,-110" fill="none" stroke="#fafafa" stroke-width="30" stroke-linecap="round"/>`;
+  g += C(60, -122, 34, '#fafafa') + P('M86,-126 Q122,-130 126,-114 Q122,-100 86,-104 Z', '#f5a623') + `<path d="M92,-115 L122,-114" stroke="#c97a12" stroke-width="2"/>` + eyeR(68, -132, 5, t);
+  if (s.bread > 0) g += `<text x="0" y="-180" font-size="60" text-anchor="middle">🙅</text>`;
+  return g + `</g>`;
+}
+
+// ============================================================================
+// SCENES
+// ============================================================================
+let cur = null;           // null = farm overview
+function farmBack(t) {
+  return `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#e2f6ff"/></linearGradient></defs>
+    <rect width="1000" height="640" fill="url(#sky)"/><circle cx="900" cy="80" r="44" fill="#ffd93d"/>
+    <path d="M0,300 Q200,260 420,290 Q700,250 1000,290 L1000,640 L0,640 Z" fill="#9bd96a"/><path d="M0,360 Q300,330 600,360 Q800,380 1000,350 L1000,640 L0,640 Z" fill="#7ed957"/>
+    <g transform="translate(380 140)"><path d="M0,140 L0,40 L90,-20 L180,40 L180,140 Z" fill="#c0392b" ${K}/><path d="M-12,44 L90,-30 L192,44" fill="none" stroke="#fff" stroke-width="10"/><rect x="60" y="70" width="60" height="70" fill="#8e2a1e" ${k3}/><path d="M60,70 L120,140 M120,70 L60,140" stroke="#fff" stroke-width="5"/></g>
+    ${[...Array(12)].map((_, i) => `<rect x="${i * 86}" y="250" width="12" height="70" fill="#d9b48a" stroke="#8d5a2b" stroke-width="3"/>`).join('')}<path d="M0,268 H1000 M0,298 H1000" stroke="#d9b48a" stroke-width="8"/>
+    <ellipse cx="120" cy="575" rx="150" ry="52" fill="#3a9ad9" stroke="#2d6fa3" stroke-width="6"/>
+    <ellipse cx="720" cy="575" rx="110" ry="30" fill="#7b5a3a"/>
+    <g transform="translate(600 360)"><path d="M-70,30 L-40,-30 L20,-40 L70,30 Z" fill="#9aa0a8" ${K}/></g>`;
+}
+function renderOverview() {
+  const t = S.t;
+  let s = farmBack(t);
+  s += `<g data-a="cow">${`<g transform="translate(${HOME.cow[0] - 200} ${HOME.cow[1] - 220}) scale(${HOME.cow[2]})">${drawCow(S)}</g>`}</g>`;
+  s += `<g data-a="goat"><g transform="translate(${HOME.goat[0] - 210} ${HOME.goat[1] - 140}) scale(${HOME.goat[2]})">${drawGoat(S)}</g></g>`;
+  s += `<g data-a="sheep"><g transform="translate(${HOME.sheep[0] - 170} ${HOME.sheep[1] - 140}) scale(${HOME.sheep[2]})">${drawSheep(S)}</g></g>`;
+  s += `<g data-a="pig"><g transform="translate(${HOME.pig[0] - 180} ${HOME.pig[1] - 170}) scale(${HOME.pig[2]})">${drawPig(S)}</g></g>`;
+  s += `<g data-a="hen">${drawHen(HOME.hen[0], HOME.hen[1], HOME.hen[2], t, Math.sin(t * 0.7) > 0.4)}${drawRooster(HOME.hen[0] - 80, HOME.hen[1] - 10, 0.36, t, 0)}</g>`;
+  s += `<g data-a="duck">${drawDuck(S, HOME.duck[0], HOME.duck[1] + Math.sin(t * 1.2) * 3, HOME.duck[2], 0)}</g>`;
+  s += `<text x="500" y="44" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#e54b82" stroke="#fff" stroke-width="6" paint-order="stroke">👆 แตะสัตว์ที่อยากดูแล</text>`;
+  return s;
+}
+function renderClose() {
+  const t = S.t;
+  let s = `<rect width="1000" height="640" fill="#bfe6ff"/><path d="M0,${cur === 'duck' ? 360 : 470} L1000,${cur === 'duck' ? 360 : 470} L1000,640 L0,640 Z" fill="#8bc34a"/>`;
+  s += `<g data-back="1" style="cursor:pointer"><rect x="16" y="16" width="150" height="58" rx="29" fill="#fff" ${k3}/><text x="91" y="54" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="700" fill="#2d3436">⬅ ฟาร์ม</text></g>`;
+  if (cur === 'cow') {
+    s += drawCalf(t) + drawCow(S);
+    // bucket under the udder fills while milking
+    s += `<g transform="translate(440 520)"><path d="M-46,-50 L46,-50 L36,40 L-36,40 Z" fill="#cfd8dc" ${K}/><rect x="-44" y="${-48 + 86 * (1 - S.milk)}" width="88" height="${86 * S.milk}" fill="#fffef6"/><path d="M-46,-50 Q0,-90 46,-50" fill="none" stroke="#8a9aa6" stroke-width="4"/></g>`;
+    if (S.milking > 0) s += [0, 1, 2].map((i) => { const u = ((t * 4 + i / 3) % 1); return `<circle cx="${438 + Math.sin(i) * 6}" cy="${478 + u * 30}" r="4" fill="#fff"/>`; }).join('');
+    s += `<text x="440" y="610" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="700" fill="#2d3436">🥛 ${Math.round(S.milk * 100)}%</text>`;
+  } else if (cur === 'hen') {
+    s += `<rect x="640" y="250" width="320" height="140" fill="#c49a6c" ${K}/>${[0, 1, 2].map((i) => `<rect x="${660 + i * 100}" y="280" width="80" height="90" rx="10" fill="#8d5a2b" ${k3}/><path d="M${664 + i * 100},340 q36,-14 72,0" stroke="#e8c86a" stroke-width="12" fill="none"/>`).join('')}`;
+    s += S.eggs.map((e, i) => `<g data-egg="${i}" style="cursor:pointer"><ellipse cx="${700 + e * 100}" cy="336" rx="16" ry="21" fill="#d9a066" ${k3}/></g>`).join('');
+    s += S.corn.map((c) => `<ellipse cx="${c.x}" cy="${c.y}" rx="6" ry="4.5" fill="#f5c518" stroke="#c99a00" stroke-width="1.5"/>`).join('');
+    const hx = S.corn.length ? lerp(400, S.corn[0].x - 80, 0.9) : 400;
+    s += drawRooster(200, 470, 1, t, S.crow) + drawHen(hx, 500, 0.9, t, S.corn.length > 0 || Math.sin(t * 0.7) > 0.5);
+    s += `<rect x="640" y="430" width="140" height="70" rx="12" fill="#c9a27a" ${K}/><text x="710" y="476" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="700" fill="#fff">🧺 ${S.basket || 0}</text>`;
+  } else if (cur === 'pig') {
+    s += `<ellipse cx="340" cy="560" rx="260" ry="54" fill="#7b5a3a"/><rect x="700" y="500" width="240" height="60" rx="14" fill="#9aa0a8" ${K}/>`;
+    if (S.eat > 0) s += `<text x="820" y="540" text-anchor="middle" font-size="44">🥬🥕🌽</text>`;
+    s += drawPig(S);
+    if (S.wash > 0) s += [...Array(24)].map((_, i) => `<path d="M${380 + (i * 37) % 260},${200 + ((t * 300 + i * 40) % 260)} l-3,14" stroke="#5bc0eb" stroke-width="4"/>`).join('') + `<text x="500" y="190" font-size="70" text-anchor="middle">🚿</text>`;
+  } else if (cur === 'sheep') {
+    s += drawSheep(S);
+    s += S.clumps.map((c) => `<circle cx="${c.x}" cy="${c.y}" r="20" fill="#fffaf0" ${k3}/>`).join('');
+    if (S.eat > 0) s += `<g transform="translate(680 420)">${[-14, -6, 2, 10, 18].map((x, i) => `<path d="M${x},0 l${(i - 2) * 4},${-16 - (i % 2) * 6}" stroke="#7cb342" stroke-width="5" stroke-linecap="round"/>`).join('')}</g>`;
+    if (S.tool === 'shear' && S.ptr) s += `<g transform="translate(${S.ptr.x} ${S.ptr.y}) rotate(-30)"><rect x="-30" y="-12" width="60" height="24" rx="8" fill="#e74c3c" ${k3}/><path d="M30,-8 h24 M30,0 h24 M30,8 h24" stroke="#9aa0a8" stroke-width="5"/></g>`;
+  } else if (cur === 'goat') {
+    const up = clamp(S.climb), gx = lerp(0, 160, up), gy = lerp(0, -150, up) - Math.sin(up * Math.PI) * 60;
+    s += `<path d="M560,560 L620,420 L700,380 L800,400 L880,560 Z" fill="#9aa0a8" ${K}/><path d="M640,440 l40,-20 M720,400 l40,10" stroke="#7d838b" stroke-width="5"/>`;
+    s += drawGoat(S, gx, gy);
+    if (S.eat > 0) s += `<g transform="translate(${720 + gx} ${300 + gy}) rotate(-30)"><path d="M-40,20 L40,-20" stroke="#6d4c41" stroke-width="6"/>${[-20, 0, 20].map((x) => `<ellipse cx="${x}" cy="${-x / 2 - 8}" rx="14" ry="8" fill="#7cb342" ${k3}/>`).join('')}</g>`;
+  } else if (cur === 'duck') {
+    s += `<rect x="0" y="380" width="1000" height="260" fill="#3a9ad9"/><path d="M0,380 q40,-10 80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0 t80,0" fill="none" stroke="#9fd3ff" stroke-width="5"/>`;
+    s += drawDuck(S, 480, 380, 1.4, S.dive);
+    if (S.peas > 0) s += `<text x="680" y="400" font-size="40">🥬</text>`;
+    s += `<rect x="0" y="392" width="1000" height="248" fill="#3a9ad9" opacity=".55"/>`;
+  }
+  return s;
+}
+
+// ============================================================================
+// ACTIONS
+// ============================================================================
+S.clumps = []; S.basket = 0;
+function enter(id) {
+  cur = id; S.tool = null; buildActs();
+  $('fact').textContent = A[id].fact;
+  speak(A[id].voice);
+}
+function buildActs() {
+  if (!cur) { $('acts').innerHTML = ORDER.map((id) => `<button class="act" data-go="${id}"><b>${{ cow: '🐄', hen: '🐔', pig: '🐖', sheep: '🐑', goat: '🐐', duck: '🦆' }[id]}</b>${A[id].th}</button>`).join(''); for (const b of $('acts').children) b.addEventListener('click', () => { ensureAudio(); buzz(8); enter(b.dataset.go); }); return; }
+  $('acts').innerHTML = A[cur].acts.map(([id, e, th]) => `<button class="act ${S.tool === id ? 'on' : ''}" data-a="${id}"><b>${e}</b>${th}</button>`).join('');
+  for (const b of $('acts').children) b.addEventListener('click', () => { ensureAudio(); buzz(10); act(b.dataset.a); });
+}
+const SAY = {
+  grass: 'วัวกินหญ้า แล้วเคี้ยวเอื้องไปเรื่อยๆ', milk: 'แตะเต้านมค้างไว้ รีดนมใส่ถัง ลูกวัวก็ได้ดื่มนมแม่ด้วยนะ', brush: 'วัวชอบให้แปรงขน สบายตัว',
+  corn: 'แตะพื้นเพื่อโปรยข้าวโพด แม่ไก่จิกกิน', egg: 'แตะไข่ในรัง เก็บใส่ตะกร้า', dawn: 'เช้าแล้ว ไก่ตัวผู้ขัน เอ้ก อี เอ้ก เอ้ก',
+  veg: 'หมูกินผัก ใช้จมูกดุนหาอาหาร', mud: 'หมูกลิ้งโคลน คลายร้อน', shower: 'อาบน้ำให้หมูสะอาด',
+  shear: 'ลากกรรไกรไปบนตัวแกะ ตัดขนออก ไม่เจ็บนะ', grass2: 'แกะเล็มหญ้า', regrow: 'ผ่านไป 1 ปี ขนแกะยาวฟูเหมือนเดิมแล้ว',
+  leaves: 'แพะชอบกินใบไม้และยอดไม้', climb: 'แพะกระโดดปีนขึ้นหินได้เก่งมาก', pet: 'แพะชอบให้ลูบหัว',
+  peas: 'เป็ดกินผักและถั่ว อาหารแบบนี้ดีต่อเป็ด', bread: 'ขนมปังไม่ดีต่อเป็ด ทำให้ป่วยได้ ให้ผักหรืออาหารเป็ดดีกว่า', dive: 'เป็ดมุดหัวลงน้ำ ก้นชี้ฟ้า หากินใต้น้ำ',
+};
+function act(a) {
+  if (cur === 'cow') { if (a === 'grass') { S.eat = 4; S.chew = 9; } if (a === 'brush') S.brush = 3; if (a === 'milk') S.tool = 'milk'; speak(SAY[a]); }
+  if (cur === 'hen') { if (a === 'corn') S.tool = 'corn'; if (a === 'egg') { if (!S.eggs.length && S.laid >= 1) { speak('วันนี้แม่ไก่ไข่ไปแล้ว 1 ฟอง พรุ่งนี้ค่อยมาดูใหม่นะ'); buildActs(); return; } if (!S.eggs.length) { S.eggs.push(1); S.laid = 1; tone(700, 0.15, 'sine', 0.08); speak('แม่ไก่ไข่แล้ว 1 ฟอง แตะไข่เก็บใส่ตะกร้า'); } else speak(SAY.egg); } if (a === 'dawn') { S.crow = 2.4; S.laid = 0; crowSound(); speak(SAY.dawn); } }
+  if (cur === 'pig') { if (a === 'veg') { S.eat = 4; } if (a === 'mud') { S.roll = 2.4; setTimeout(() => { S.mud = 1; }, 900); } if (a === 'shower') { S.wash = 3; } speak(SAY[a]); oink(); }
+  if (cur === 'sheep') { if (a === 'shear') S.tool = 'shear'; if (a === 'grass') { S.eat = 4; speak(SAY.grass2); buildActs(); return; } if (a === 'regrow') { S.wool = 1; S.shear = []; S.clumps = []; } speak(SAY[a]); }
+  if (cur === 'goat') { if (a === 'leaves') S.eat = 4; if (a === 'climb') { S.climbT = S.climb > 0.5 ? -1 : 1; } if (a === 'pet') S.pet = 2; speak(SAY[a]); }
+  if (cur === 'duck') { if (a === 'peas') S.peas = 3; if (a === 'bread') { S.bread = 2.5; boop(); } if (a === 'dive') S.dive = 2.6; speak(SAY[a]); if (a !== 'bread') quack(); }
+  buildActs();
+}
+scene.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  const q = svgPt(ev), tg = ev.target.closest('[data-a],[data-back],[data-egg]');
+  if (!cur) { if (tg && tg.dataset.a) { buzz(10); enter(tg.dataset.a); } return; }
+  if (tg && tg.dataset.back) { buzz(8); cur = null; buildActs(); $('fact').textContent = INTRO; speak('กลับไปที่ฟาร์ม'); return; }
+  if (cur === 'hen' && tg && tg.dataset.egg !== undefined) { S.eggs.splice(+tg.dataset.egg, 1); S.basket = (S.basket || 0) + 1; cheer(); buzz(15); speak('เก็บไข่ได้ ' + S.basket + ' ฟอง'); return; }
+  if (cur === 'cow' && S.tool === 'milk' && q.x > 380 && q.x < 500 && q.y > 410 && q.y < 500) { S.milking = 1; S.holding = true; try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
+  if (cur === 'hen' && S.tool === 'corn' && q.y > 470) { for (let i = 0; i < 8; i++) S.corn.push({ x: q.x + (Math.random() - 0.5) * 60, y: 520 + Math.random() * 60 }); tone(900, 0.05, 'sine', 0.05); return; }
+  if (cur === 'sheep' && S.tool === 'shear') { S.ptr = q; S.holding = true; try { scene.setPointerCapture(ev.pointerId); } catch (_) {} shearAt(q); return; }
+  // otherwise a tap on the animal = its sound
+  const v = A[cur]; speak(v.voice); if (cur === 'pig') oink(); if (cur === 'duck') quack(); buzz(8);
+});
+scene.addEventListener('pointermove', (ev) => { if (!S.holding) return; const q = svgPt(ev); if (cur === 'sheep') { S.ptr = q; shearAt(q); } });
+const endPtr = () => { S.holding = false; S.milking = 0; };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+function shearAt(q) {
+  if (S.wool <= 0.02) return;
+  if (Math.hypot(q.x - 475, q.y - 372) > 220) return;
+  if (!S.shear.some((p) => Math.hypot(p[0] - q.x, p[1] - q.y) < 30)) {
+    S.shear.push([q.x, q.y]);
+    S.clumps.push({ x: q.x, y: q.y, vy: 0 });
+    tone(1200 + Math.random() * 300, 0.03, 'square', 0.03);
+    if (S.shear.length > 24) { S.wool = 0; speak('ตัดขนเสร็จแล้ว แกะตัวผอมลงเยอะเลย ขนพวกนี้เอาไปทำไหมพรมได้'); cheer(); }
+  }
+}
+function crowSound() { if (!AC) return; [0, 200, 420, 700].forEach((d, i) => setTimeout(() => tone([520, 700, 640, 880][i], 0.18, 'sawtooth', 0.05), d)); }
+function oink() { [0, 180].forEach((d) => setTimeout(() => tone(180, 0.12, 'sawtooth', 0.05), d)); }
+function quack() { [0, 220].forEach((d) => setTimeout(() => tone(420, 0.1, 'square', 0.05), d)); }
+
+const INTRO = 'ฟาร์มน้อยมีวัว ไก่ หมู แกะ แพะ และเป็ด แตะสัตว์ที่อยากดูแลได้เลย';
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden) {
+    S.t += dt;
+    for (const k of ['eat', 'chew', 'brush', 'crow', 'roll', 'wash', 'pet', 'dive', 'bread', 'peas']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
+    if (S.wash > 0) S.mud = Math.max(0, S.mud - dt * 0.5);
+    if (S.milking > 0 && cur === 'cow') { S.milk = Math.min(1, S.milk + dt * 0.12); if (Math.random() < dt * 8) tone(1600, 0.02, 'sine', 0.03); if (S.milk >= 1 && !S.milkSaid) { S.milkSaid = 1; speak('ได้นมเต็มถังแล้ว'); cheer(); } }
+    if (S.climbT) { S.climb = clamp(S.climb + S.climbT * dt * 1.2); if (S.climb <= 0 || S.climb >= 1) S.climbT = 0; }
+    if (cur === 'hen' && S.corn.length && Math.random() < dt * 2.5) S.corn.shift();
+    for (const c of S.clumps) { c.vy += 400 * dt; c.y = Math.min(540, c.y + c.vy * dt); }
+    scene.innerHTML = cur ? renderClose() : renderOverview();
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+$('fact').textContent = INTRO;
+$('fact').addEventListener('click', () => { ensureAudio(); speak($('fact').textContent); });
+buildActs();
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = [INTRO, 'กลับไปที่ฟาร์ม', 'วันนี้แม่ไก่ไข่ไปแล้ว 1 ฟอง พรุ่งนี้ค่อยมาดูใหม่นะ', 'แม่ไก่ไข่แล้ว 1 ฟอง แตะไข่เก็บใส่ตะกร้า', 'ได้นมเต็มถังแล้ว',
+    'ตัดขนเสร็จแล้ว แกะตัวผอมลงเยอะเลย ขนพวกนี้เอาไปทำไหมพรมได้'];
+  for (let n = 1; n <= 30; n++) L.push('เก็บไข่ได้ ' + n + ' ฟอง');
+  for (const id of ORDER) L.push(A[id].voice, A[id].fact);
+  for (const k in SAY) L.push(SAY[k]);
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
