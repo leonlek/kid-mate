@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎂 ร้านขนมเพื่อนสัตว์ — คิดส์เล่น</title>
+<meta name="description" content="ร้านเค้กของเพื่อนสัตว์ ผสมแป้ง ตอกไข่ คนให้เข้ากัน อบให้ฟู รอให้เย็น แต่งหน้าเค้ก ใส่ผลไม้และเทียนให้ครบตามที่สั่ง สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ร้านขนมเพื่อนสัตว์">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(28px, 6vw, 48px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .steps { display: flex; gap: 6px; justify-content: center; margin: 6px 0 10px; flex-wrap: wrap; }
+  .steps span { width: 46px; height: 46px; border-radius: 50%; background: #fff; border: 3px solid var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 24px; opacity: .5; }
+  .steps span.on { opacity: 1; border-color: var(--brand); transform: scale(1.12); }
+  .steps span.done { opacity: 1; background: #e8f9e0; border-color: #7ed957; }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: none; }
+  .tray { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 12px; }
+  .it {
+    min-width: 84px; min-height: 84px; border-radius: 22px; border: 3px solid var(--card-border); background: #fff; cursor: pointer;
+    font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 8px;
+  }
+  .it b { font-size: 34px; line-height: 1.1; }
+  .it.used { opacity: .35; }
+  .it.on { background: var(--gold); border-color: #e0b400; }
+  .it:active { transform: scale(.94); }
+  .sw { width: 70px; height: 70px; border-radius: 50%; border: 5px solid #fff; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
+  .sw.on { border-color: var(--ink); transform: scale(1.12); }
+  .big {
+    font-family: 'Mitr', sans-serif; font-size: 24px; font-weight: 700;
+    min-height: 76px; width: 100%; margin-top: 12px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff;
+    box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .big:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🎂 ร้านขนมเพื่อนสัตว์</h1></header>
+  <div class="steps" id="steps"></div>
+  <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="ร้านขนม"></svg></div>
+  <div id="ctrls"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene'), ctrls = $('ctrls');
+const K = 'stroke="#2d3436" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const k3 = 'stroke="#2d3436" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const lerp = (a, b, u) => a + (b - a) * u, clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+function svgPt(ev) { const p = scene.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(scene.getScreenCTM().inverse()); }
+const NUM = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า'];
+
+// ============================================================================
+// CUSTOMERS + ORDERS — drawn as friendly characters behind the counter
+// ============================================================================
+const CUSTOMERS = {
+  bear: { th: 'หมี', fur: '#a0703c', draw: (c, t) => `${C(-62, -140, 26, c)}${C(62, -140, 26, c)}${C(-62, -140, 13, '#e0b48a')}${C(62, -140, 13, '#e0b48a')}${C(0, -90, 80, c)}${E(0, -66, 34, 26, '#e0b48a')}${E(0, -78, 12, 9, '#2d3436')}` },
+  rabbit: { th: 'กระต่าย', fur: '#f2f2f2', draw: (c, t) => `<g transform="rotate(${Math.sin(t * 2) * 5} -30 -150)">${E(-30, -200, 18, 62, c)}${E(-30, -196, 8, 46, '#ffc1d3')}</g><g transform="rotate(${-Math.sin(t * 2) * 5} 30 -150)">${E(30, -200, 18, 62, c)}${E(30, -196, 8, 46, '#ffc1d3')}</g>${C(0, -90, 78, c)}${E(0, -70, 10, 7, '#ff8fb1')}<path d="M0,-63 v10 M-14,-48 q14,10 28,0" fill="none" ${k3}/>` },
+  cat: { th: 'แมว', fur: '#f2a65a', draw: (c, t) => `<path d="M-70,-120 L-58,-190 L-20,-150 Z M70,-120 L58,-190 L20,-150 Z" fill="${c}" ${K}/>${C(0, -90, 80, c)}<path d="M-12,-74 L12,-74 L0,-62 Z" fill="#ff8fb1" ${k3}/><path d="M-30,-66 L-80,-74 M-30,-60 L-80,-56 M30,-66 L80,-74 M30,-60 L80,-56" stroke="#2d3436" stroke-width="2.5"/>` },
+  elephant: { th: 'ช้าง', fur: '#9aa0a8', draw: (c, t) => `${E(-82, -98, 44, 56, c)}${E(82, -98, 44, 56, c)}${C(0, -100, 78, c)}<path d="M0,-80 C0,-30 ${10 + Math.sin(t * 2) * 10},-10 ${20 + Math.sin(t * 2) * 12},0" fill="none" stroke="#2d3436" stroke-width="34" stroke-linecap="round"/><path d="M0,-80 C0,-30 ${10 + Math.sin(t * 2) * 10},-10 ${20 + Math.sin(t * 2) * 12},0" fill="none" stroke="${c}" stroke-width="26" stroke-linecap="round"/>` },
+  monkey: { th: 'ลิง', fur: '#a47148', draw: (c, t) => `${C(-80, -96, 22, '#f4a6a0')}${C(80, -96, 22, '#f4a6a0')}${C(0, -100, 78, c)}<path d="M-46,-96 C-46,-140 46,-140 46,-96 C46,-50 20,-36 0,-36 C-20,-36 -46,-50 -46,-96 Z" fill="#f4a6a0" ${k3}/><circle cx="-6" cy="-70" r="3" fill="#2d3436"/><circle cx="6" cy="-70" r="3" fill="#2d3436"/>` },
+  penguin: { th: 'เพนกวิน', fur: '#2d3436', draw: (c, t) => `${C(0, -96, 80, c)}<path d="M-50,-90 C-50,-140 50,-140 50,-90 C50,-40 20,-26 0,-26 C-20,-26 -50,-40 -50,-90 Z" fill="#fafafa"/><path d="M-12,-74 L0,-56 L12,-74 Z" fill="#f5a623" ${k3}/>` },
+};
+const C = (cx, cy, r, f) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}" ${K}/>`;
+const E = (cx, cy, rx, ry, f) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}" ${K}/>`;
+function customer(id, t, mood) {
+  const c = CUSTOMERS[id], eyes = mood === 'happy' ? `<path d="M-40,-104 q12,-14 24,0 M16,-104 q12,-14 24,0" fill="none" stroke="#2d3436" stroke-width="5" stroke-linecap="round"/>` : `<circle cx="-28" cy="-104" r="8" fill="#2d3436"/><circle cx="28" cy="-104" r="8" fill="#2d3436"/><circle cx="-25" cy="-107" r="3" fill="#fff"/><circle cx="31" cy="-107" r="3" fill="#fff"/>`;
+  const mouth = mood === 'happy' ? `<path d="M-20,-46 q20,22 40,0 Z" fill="#c0392b" ${k3}/>` : mood === 'think' ? `<path d="M-12,-44 h24" ${k3}/>` : '';
+  return `<g transform="translate(0 ${Math.sin(t * 2) * 3})"><path d="M-90,60 C-90,-10 90,-10 90,60 Z" fill="${c.fur}" ${K}/>${c.draw(c.fur, t)}${eyes}${id === 'penguin' || id === 'elephant' ? '' : mouth}<circle cx="-50" cy="-74" r="10" fill="#ff8fb1" opacity=".5"/><circle cx="50" cy="-74" r="10" fill="#ff8fb1" opacity=".5"/></g>`;
+}
+const TOPPINGS = {
+  strawberry: { th: 'สตรอว์เบอร์รี', draw: () => `<path d="M0,14 C-14,4 -14,-10 0,-10 C14,-10 14,4 0,14 Z" fill="#e53935" ${k3}/><path d="M-8,-10 l4,-6 l4,4 l4,-4 l4,6" fill="#43a047" ${k3}/>${[[-4, -2], [4, -2], [0, 5]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="#ffd93d"/>`).join('')}` },
+  blueberry: { th: 'บลูเบอร์รี', draw: () => `<circle r="9" fill="#3f51b5" ${k3}/><path d="M-3,-6 l3,3 l3,-3" fill="none" stroke="#1a237e" stroke-width="2"/>` },
+  cherry: { th: 'เชอร์รี', draw: () => `<path d="M0,-6 Q6,-24 16,-28" fill="none" stroke="#2e7d32" stroke-width="3"/><circle cy="2" r="10" fill="#c62828" ${k3}/><circle cx="-3" cy="-2" r="3" fill="#fff" opacity=".6"/>` },
+  choc: { th: 'ช็อกโกแลต', draw: () => `<path d="M-9,8 Q0,-14 9,8 Z" fill="#5d3a1a" ${k3}/>` },
+};
+const FROST = [['#ffffff', 'ครีมสีขาว'], ['#ffb3c7', 'ครีมสีชมพู'], ['#fff1a8', 'ครีมสีเหลือง'], ['#b9e6ff', 'ครีมสีฟ้า'], ['#7b4a2a', 'ครีมช็อกโกแลต'], ['#c9f2b0', 'ครีมสีเขียว']];
+let order = null, served = 0;
+function newOrder() {
+  const ids = Object.keys(CUSTOMERS), tops = Object.keys(TOPPINGS);
+  const who = ids[(served + Math.floor(Math.random() * 3)) % ids.length];
+  const max = served < 2 ? 3 : 5;
+  order = { who, frost: FROST[Math.floor(Math.random() * FROST.length)][0], top: tops[Math.floor(Math.random() * tops.length)], n: 1 + Math.floor(Math.random() * max), candles: 1 + Math.floor(Math.random() * max) };
+}
+const frostName = (c) => FROST.find((f) => f[0] === c)[1];
+// spoken in short recorded pieces chained together (a full sentence per combination would be thousands of clips)
+const orderParts = (o) => [CUSTOMERS[o.who].th + 'อยากได้เค้ก', frostName(o.frost), 'มี' + TOPPINGS[o.top].th + ' ' + NUM[o.n] + ' ลูก', 'และเทียน ' + NUM[o.candles] + ' เล่ม'];
+
+// ============================================================================
+// KITCHEN STATE
+// ============================================================================
+const STEPS = [['order', '📝'], ['mix', '🥣'], ['stir', '🥄'], ['bake', '🔥'], ['cool', '❄️'], ['frost', '🍦'], ['decor', '🍓'], ['serve', '🎁']];
+const ING = [['flour', '🌾', 'แป้ง'], ['egg', '🥚', 'ไข่'], ['milk', '🥛', 'นม'], ['sugar', '🍬', 'น้ำตาล'], ['butter', '🧈', 'เนย']];
+let step = 'order', T = 0, k = {};
+function resetCake() { k = { added: [], shells: 0, stir: 0, lastA: null, bake: 0, baking: false, out: false, heat: 0, frost: null, cover: [], tops: [], candles: [], lit: false, melt: 0, mood: '' }; }
+function setStep(s) {
+  step = s;
+  $('steps').innerHTML = STEPS.map(([id, e]) => `<span class="${id === s ? 'on' : STEPS.findIndex((x) => x[0] === id) < STEPS.findIndex((x) => x[0] === s) ? 'done' : ''}">${e}</span>`).join('');
+  renderCtrls();
+  const L = { mix: 'ใส่ของลงในชาม แป้ง ไข่ นม น้ำตาล และเนย', stir: 'ลากนิ้ววนในชาม คนให้เข้ากัน', bake: 'เทแป้งลงพิมพ์ แล้วใส่เตาอบ', cool: 'เค้กยังร้อนอยู่ ต้องรอให้เย็นก่อน ไม่งั้นครีมจะละลาย', frost: 'เลือกสีครีม แล้วลากนิ้วปาดครีมบนเค้ก', decor: 'แตะบนเค้ก ใส่ผลไม้และเทียนให้ครบตามที่สั่ง' };
+  if (L[s]) speak(L[s]);
+}
+
+// ============================================================================
+// CONTROLS
+// ============================================================================
+let frostSel = FROST[0][0], decorSel = 'top';
+function renderCtrls() {
+  if (step === 'order') { ctrls.innerHTML = `<button class="big" id="go">👩‍🍳 เริ่มทำเค้ก</button>`; $('go').addEventListener('click', () => { ensureAudio(); buzz(10); resetCake(); setStep('mix'); }); return; }
+  if (step === 'mix') {
+    ctrls.innerHTML = `<div class="tray">${ING.map(([id, e, th]) => `<button class="it ${k.added.includes(id) ? 'used' : ''}" data-i="${id}"><b>${e}</b>${th}</button>`).join('')}</div>`;
+    for (const b of ctrls.querySelectorAll('[data-i]')) b.addEventListener('click', () => { ensureAudio(); addIng(b.dataset.i); });
+    return;
+  }
+  if (step === 'stir') { ctrls.innerHTML = `<div class="tray"><button class="it" disabled><b>🥄</b>ลากวนในชาม</button></div>`; return; }
+  if (step === 'bake') {
+    ctrls.innerHTML = k.out ? `<button class="big" id="next">✅ ออกจากเตาแล้ว</button>` : k.bake >= 1 ? `<button class="big" id="take">🧤 ใส่ถุงมือ หยิบเค้กออก</button>` : `<button class="big" id="bakeBtn" ${k.baking ? 'disabled' : ''}>${k.baking ? '⏳ กำลังอบ…' : '🔥 ใส่เตาอบ'}</button>`;
+    const b = $('bakeBtn'); if (b) b.addEventListener('click', () => { ensureAudio(); buzz(10); k.baking = true; renderCtrls(); speak('อบเค้ก ดูสิ เค้กค่อยๆ ฟูขึ้น'); });
+    const tk = $('take'); if (tk) tk.addEventListener('click', () => { ensureAudio(); buzz(10); k.out = true; k.heat = 1; speak('ใส่ถุงมือกันร้อนก่อนหยิบ เตาร้อนมาก'); setTimeout(() => setStep('cool'), 1400); renderCtrls(); });
+    return;
+  }
+  if (step === 'cool') { ctrls.innerHTML = `<button class="big" id="early">🍦 แต่งหน้าเลย!</button>`; $('early').addEventListener('click', () => { ensureAudio(); if (k.heat > 0.15) { k.melt = 1; boop(); buzz([30, 40, 30]); speak('โอ๊ะ เค้กยังร้อน ครีมละลายไหลเยิ้ม รอให้เค้กเย็นก่อนนะ'); } else setStep('frost'); }); return; }
+  if (step === 'frost') {
+    ctrls.innerHTML = `<div class="tray">${FROST.map(([c, n]) => `<button class="sw ${c === frostSel ? 'on' : ''}" data-c="${c}" style="background:${c}" aria-label="${n}"></button>`).join('')}</div>` + (coverage() > 0.8 ? `<button class="big" id="next">✅ ปาดครีมเสร็จแล้ว</button>` : '');
+    for (const b of ctrls.querySelectorAll('[data-c]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); frostSel = b.dataset.c; if (k.frost && k.frost !== frostSel) k.cover = []; k.frost = frostSel; renderCtrls(); speak(frostName(frostSel)); });
+    const n = $('next'); if (n) n.addEventListener('click', () => { ensureAudio(); buzz(10); setStep('decor'); });
+    return;
+  }
+  if (step === 'decor') {
+    ctrls.innerHTML = `<div class="tray"><button class="it ${decorSel === 'top' ? 'on' : ''}" data-d="top"><b>${{ strawberry: '🍓', blueberry: '🫐', cherry: '🍒', choc: '🍫' }[order.top]}</b>${TOPPINGS[order.top].th} ${k.tops.length}</button><button class="it ${decorSel === 'candle' ? 'on' : ''}" data-d="candle"><b>🕯️</b>เทียน ${k.candles.length}</button><button class="it" data-d="undo"><b>↩️</b>เอาออก</button></div><button class="big" id="serve">🎁 ยกไปเสิร์ฟ</button>`;
+    for (const b of ctrls.querySelectorAll('[data-d]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); if (b.dataset.d === 'undo') { (decorSel === 'top' ? k.tops : k.candles).pop(); renderCtrls(); return; } decorSel = b.dataset.d; renderCtrls(); });
+    $('serve').addEventListener('click', () => { ensureAudio(); serve(); });
+    return;
+  }
+  if (step === 'serve') { ctrls.innerHTML = `<button class="big" id="nextC">🛎️ ลูกค้าคนต่อไป</button>`; $('nextC').addEventListener('click', () => { ensureAudio(); buzz(8); newOrder(); resetCake(); setStep('order'); speakSeq(orderParts(order)); }); return; }
+  ctrls.innerHTML = '';
+}
+function addIng(id) {
+  if (k.added.includes(id)) return;
+  k.added.push(id); buzz(10);
+  if (id === 'egg') { k.shells++; tone(900, 0.06, 'square', 0.05); setTimeout(() => tone(500, 0.08, 'sine', 0.06), 120); speak('ตอกไข่ใส่ชาม เปลือกไข่ทิ้งลงถังขยะนะ'); }
+  else { tone(300, 0.12, 'triangle', 0.08); speak({ flour: 'ใส่แป้ง', milk: 'เทนม', sugar: 'ใส่น้ำตาล', butter: 'ใส่เนยที่ละลายแล้ว' }[id]); }
+  renderCtrls();
+  if (k.added.length === ING.length) setTimeout(() => setStep('stir'), 1200);
+}
+const haveLine = (n, unit) => n > 5 ? 'ตอนนี้มีเยอะเกินไปแล้ว' : 'ตอนนี้มี ' + NUM[n] + ' ' + unit;
+function coverage() { return Math.min(1, k.cover.length / 22); }
+function serve() {
+  const okN = k.tops.length === order.n, okC = k.candles.length === order.candles, okF = k.frost === order.frost;
+  if (okN && okC && okF) {
+    k.mood = 'happy'; k.lit = true; served++; setStep('serve');
+    cheer(); celebrate(90); buzz([30, 20, 40]);
+    speak('สุขสันต์วันเกิด ' + CUSTOMERS[order.who].th + 'ชอบมากเลย ขอบคุณนะ');
+    return;
+  }
+  k.mood = 'think'; boop(); buzz(25);
+  if (!okF) speak('อยากได้' + frostName(order.frost) + 'จ้า');
+  else if (!okN) speakSeq(['อยากได้' + TOPPINGS[order.top].th + ' ' + NUM[order.n] + ' ลูก', haveLine(k.tops.length, 'ลูก')]);
+  else speakSeq(['อยากได้เทียน ' + NUM[order.candles] + ' เล่ม', haveLine(k.candles.length, 'เล่ม')]);
+  setTimeout(() => { k.mood = ''; }, 2500);
+}
+
+// ============================================================================
+// SCENE
+// ============================================================================
+function kitchen() {
+  return `<rect width="1000" height="640" fill="#fff3e6"/>${[...Array(10)].map((_, i) => `<rect x="${i * 100}" y="0" width="50" height="420" fill="#ffe6ee"/>`).join('')}
+    <rect x="0" y="420" width="1000" height="220" fill="#c98b4f"/><rect x="0" y="420" width="1000" height="22" fill="#e0a86a"/>`;
+}
+function bowl(stir, t) {
+  const smooth = clamp(stir), lumps = 1 - smooth;
+  let batter = `<ellipse cx="500" cy="372" rx="168" ry="34" fill="${k.added.length ? mixColor() : '#f6f6f6'}"/>`;
+  if (k.added.length) for (let i = 0; i < 9 * lumps; i++) batter += `<circle cx="${400 + (i * 47) % 200}" cy="${362 + (i * 13) % 20}" r="7" fill="#fff" opacity=".7"/>`;
+  if (k.added.includes('egg') && smooth < 0.3) batter += `<ellipse cx="540" cy="370" rx="22" ry="12" fill="#ffd54f"/>`;
+  return `<path d="M310,372 Q320,520 500,524 Q680,520 690,372 Z" fill="#9ad0ec" ${K}/><ellipse cx="500" cy="372" rx="190" ry="40" fill="#cdeaf7" ${K}/>${batter}
+    ${step === 'stir' ? `<g transform="rotate(${(t * 220 * (k.stirring ? 1 : 0)) % 360} 500 372)"><path d="M500,372 L620,250" stroke="#8d5a2b" stroke-width="12" stroke-linecap="round"/><ellipse cx="560" cy="330" rx="26" ry="10" fill="#c49a6c" transform="rotate(-45 560 330)" ${k3}/></g>` : ''}`;
+}
+function mixColor() {
+  const s = clamp(k.stir), base = k.added.includes('butter') || k.added.includes('egg') ? '#f6deA0' : '#f7f1e3';
+  return s > 0.5 ? '#f3d58f' : base;
+}
+function cake(rise, brown, melt) {
+  // side view of a round cake in a tin / on a plate; rises 0→1, browns 0→1
+  const h = 40 + 70 * rise, top = 430 - h, crust = mixC('#f6deA0', '#c98a3a', brown);
+  let s = `<path d="M330,430 L670,430 L670,${top + 14} Q500,${top - 20 * rise} 330,${top + 14} Z" fill="${mixC('#f8e6b0', '#f0d08a', brown)}" ${K}/>`;
+  s += `<path d="M330,${top + 14} Q500,${top - 20 * rise} 670,${top + 14}" fill="none" stroke="${crust}" stroke-width="14"/>`;
+  return s;
+}
+function mixC(a, b, u) {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)), A1 = p(a), B1 = p(b);
+  return '#' + A1.map((v, i) => Math.round(v + (B1[i] - v) * clamp(u)).toString(16).padStart(2, '0')).join('');
+}
+function render(now) {
+  let s = kitchen();
+  const sideCust = step !== 'order' && step !== 'serve';
+  // customer + order bubble
+  if (!sideCust) {
+    s += `<g transform="translate(260 400)">${customer(order.who, T, k.mood || '')}</g>`;
+    s += `<rect x="0" y="400" width="1000" height="240" fill="#e0a86a"/><rect x="0" y="400" width="1000" height="20" fill="#f2c28b"/>`;
+    s += orderBubble(560, 60, 1);
+  } else s += `<g transform="translate(905 330) scale(.45)">${customer(order.who, T, k.mood || '')}</g>` + orderBubble(770, 20, 0.5);
+  if (step === 'mix' || step === 'stir') {
+    s += bowl(k.stir, T);
+    if (k.shells) s += `<g transform="translate(150 470)"><rect x="-40" y="-60" width="80" height="80" rx="8" fill="#7f8c9d" ${K}/><path d="M-20,-50 q10,-14 20,0 M4,-46 q10,-14 20,0" fill="#fffef6" stroke="#d9c9a0" stroke-width="3"/><text x="0" y="50" text-anchor="middle" font-family="Mitr" font-size="18" fill="#fff">ถังขยะ</text></g>`;
+    if (step === 'stir') s += `<rect x="350" y="560" width="300" height="20" rx="10" fill="#fff"/><rect x="350" y="560" width="${300 * clamp(k.stir)}" height="20" rx="10" fill="#7ed957"/>`;
+  }
+  if (step === 'bake') {
+    s += `<rect x="250" y="80" width="500" height="380" rx="24" fill="#5b6475" ${K}/><rect x="290" y="150" width="420" height="270" rx="16" fill="${k.baking && !k.out ? '#ffb347' : '#2d3436'}" opacity="${k.baking && !k.out ? 0.85 : 1}" ${k3}/>`;
+    s += [0, 1, 2, 3].map((i) => `<circle cx="${320 + i * 50}" cy="114" r="14" fill="#cfd8dc" ${k3}/>`).join('') + `<rect x="560" y="100" width="150" height="30" rx="8" fill="#1b5e20"/><text x="635" y="122" text-anchor="middle" font-family="Mitr" font-size="20" fill="#7ed957">180°C · ${Math.round(k.bake * 30)} นาที</text>`;
+    if (!k.out) s += `<g transform="translate(0 -40)">${cake(k.bake, k.bake)}</g><rect x="320" y="388" width="360" height="12" fill="#9aa0a8"/>`;
+    else s += `<g transform="translate(0 120)">${cake(1, 1)}</g><text x="760" y="520" font-size="70">🧤</text>`;
+    if (k.bake >= 1 && !k.out) s += `<text x="500" y="70" text-anchor="middle" font-family="Mitr" font-size="34" font-weight="700" fill="#e54b82">🔔 ติ๊ง! เค้กสุกแล้ว</text>`;
+  }
+  if (step === 'cool' || step === 'frost' || step === 'decor' || step === 'serve') {
+    const cy = step === 'serve' ? 130 : 30;
+    s += `<g transform="translate(0 ${cy})">`;
+    s += `<ellipse cx="500" cy="440" rx="220" ry="34" fill="#fafafa" ${K}/>` + cake(1, 1);
+    // frosting coverage strips
+    if (k.frost) s += `<clipPath id="ck"><path d="M326,326 Q500,288 674,326 L674,350 L326,350 Z M326,320 L674,320 L674,434 L326,434 Z"/></clipPath><g clip-path="url(#ck)">${k.cover.map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="42" fill="${k.frost}"/>`).join('')}</g>`;
+    if (k.melt > 0) s += `<path d="M330,330 Q500,300 670,330 L680,${440 + 40 * k.melt} Q500,${470 + 30 * k.melt} 320,${440 + 40 * k.melt} Z" fill="${k.frost || '#fff'}" opacity=".85"/>`;
+    s += k.tops.map(([x, y]) => `<g transform="translate(${x} ${y}) scale(1.5)">${TOPPINGS[order.top].draw()}</g>`).join('');
+    s += k.candles.map(([x, y], i) => `<g transform="translate(${x} ${y})"><rect x="-6" y="-56" width="12" height="56" rx="3" fill="${['#ff6b9d', '#5bc0eb', '#7ed957', '#ffd93d', '#b06ad9'][i % 5]}" ${k3}/><path d="M-6,-46 l12,8 M-6,-30 l12,8" stroke="#fff" stroke-width="3"/>${k.lit ? `<path d="M0,-80 C10,-68 6,-58 0,-58 C-6,-58 -10,-68 0,-80 Z" fill="#ffb300"><animate attributeName="opacity" values="1;.7;1" dur=".3s" repeatCount="indefinite"/></path>` : ''}</g>`).join('');
+    if (step === 'cool' && k.heat > 0.05) s += [0, 1, 2, 3].map((i) => `<path d="M${400 + i * 60},${300 - ((T * 40 + i * 30) % 80)} q12,-14 0,-28 q-12,-14 0,-28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="${(k.heat * 0.9).toFixed(2)}"/>`).join('');
+    s += `</g>`;
+    if (step === 'cool') s += `<g transform="translate(820 360)"><rect x="-16" y="-120" width="32" height="150" rx="16" fill="#fff" ${K}/><rect x="-8" y="${-110 + 130 * (1 - k.heat)}" width="16" height="${130 * k.heat}" rx="8" fill="${mixC('#5bc0eb', '#e53935', k.heat)}"/><text x="0" y="62" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="700" fill="#2d3436">${k.heat > 0.15 ? '🔥 ร้อน' : '❄️ เย็นแล้ว'}</text></g>`;
+  }
+  if (step === 'cool' && k.heat <= 0.15 && !k.coolSaid) { k.coolSaid = 1; speak('เค้กเย็นแล้ว แต่งหน้าได้เลย'); }
+  scene.innerHTML = s;
+}
+function orderBubble(x, y, sc) {
+  const o = order;
+  let s = `<g transform="translate(${x} ${y}) scale(${sc})"><rect x="0" y="0" width="400" height="300" rx="34" fill="#fff" ${K}/><path d="M30,290 L10,340 L80,296" fill="#fff" ${K}/><rect x="10" y="280" width="80" height="20" fill="#fff"/>`;
+  s += `<g transform="translate(200 210) scale(.42) translate(-500 -400)">${`<ellipse cx="500" cy="440" rx="220" ry="34" fill="#fafafa" ${K}/>` + cake(1, 1)}<path d="M330,320 Q500,282 670,320 L670,350 Q500,330 330,350 Z" fill="${o.frost}" ${K}/>`;
+  for (let i = 0; i < o.n; i++) s += `<g transform="translate(${500 + (i - (o.n - 1) / 2) * 60} 312) scale(2.2)">${TOPPINGS[o.top].draw()}</g>`;
+  for (let i = 0; i < o.candles; i++) s += `<g transform="translate(${500 + (i - (o.candles - 1) / 2) * 50} 290)"><rect x="-8" y="-70" width="16" height="70" rx="4" fill="#ff6b9d" ${k3}/><path d="M0,-100 C12,-86 8,-74 0,-74 C-8,-74 -12,-86 0,-100 Z" fill="#ffb300"/></g>`;
+  s += `</g><text x="40" y="290" font-family="Itim" font-size="36" fill="#e54b82">${o.n}</text><text x="350" y="290" font-family="Itim" font-size="36" fill="#e54b82">🕯️${o.candles}</text></g>`;
+  return s;
+}
+
+// ---- input ----
+scene.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  const q = svgPt(ev);
+  if (step === 'order') { speakSeq(orderParts(order)); return; }
+  if (step === 'stir' && Math.hypot((q.x - 500) / 190, (q.y - 372) / 60) < 1.6) { k.stirring = true; k.lastA = Math.atan2(q.y - 372, q.x - 500); try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
+  if (step === 'frost' && inCake(q)) { k.frost = k.frost || frostSel; k.frosting = true; addCover(q); try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
+  if (step === 'decor' && inCake(q)) {
+    const y = clamp(q.y, 300, 360);
+    if (decorSel === 'top') { k.tops.push([q.x, y + 10]); tone(600 + k.tops.length * 80, 0.1, 'sine', 0.08); speak(NUM[Math.min(5, k.tops.length)] || String(k.tops.length)); }
+    else { k.candles.push([q.x, y]); tone(500 + k.candles.length * 80, 0.1, 'triangle', 0.08); speak(NUM[Math.min(5, k.candles.length)] || String(k.candles.length)); }
+    buzz(8); renderCtrls();
+  }
+});
+scene.addEventListener('pointermove', (ev) => {
+  const q = svgPt(ev);
+  if (k.stirring) {
+    const a = Math.atan2(q.y - 372, q.x - 500); let d = a - k.lastA; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; k.lastA = a;
+    k.stir = Math.min(1, k.stir + Math.abs(d) / (Math.PI * 2 * 4));          // ~4 turns to a smooth batter
+    if (Math.random() < 0.2) tone(220 + Math.random() * 40, 0.04, 'triangle', 0.03);
+    if (k.stir >= 1 && step === 'stir') { k.stirring = false; cheer(); speak('แป้งเนียนเข้ากันดีแล้ว'); setTimeout(() => setStep('bake'), 1000); }
+  }
+  if (k.frosting) addCover(q);
+});
+const endPtr = () => { k.stirring = false; if (k.frosting) { k.frosting = false; renderCtrls(); } };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+function inCake(q) { return q.x > 320 && q.x < 680 && q.y > 280 && q.y < 470; }
+function addCover(q) {
+  if (!k.cover.some((p) => Math.hypot(p[0] - q.x, p[1] - q.y) < 30)) { k.cover.push([q.x, q.y]); if (Math.random() < 0.4) tone(700 + Math.random() * 200, 0.03, 'sine', 0.03); if (coverage() > 0.8 && !k.frostSaid) { k.frostSaid = 1; renderCtrls(); speak('ปาดครีมทั่วแล้ว'); } }
+}
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
+  if (!document.hidden) {
+    if (step === 'bake' && k.baking && k.bake < 1) { k.bake = Math.min(1, k.bake + dt / 7); if (k.bake >= 1) { tone(1320, 0.3, 'sine', 0.12); speak('ติ๊ง เค้กสุกแล้ว เสียบไม้ดู ถ้าไม่มีแป้งติดออกมา แปลว่าสุก'); renderCtrls(); } }
+    if (step === 'cool') { k.heat = Math.max(0, k.heat - dt / 9); if (k.melt > 0) k.melt = Math.max(0, k.melt - dt * 0.3); }
+    render(now);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+const boop = () => tone(220, 0.22, 'triangle', 0.12);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+let seqTok = 0;
+async function speakSeq(parts) {
+  const my = ++seqTok;
+  for (const p of parts) {
+    if (my !== seqTok) return;
+    const ok = await new Promise((res) => {
+      if (!window.VoiceClips) { deviceSpeak(p); setTimeout(() => res(true), 400 + p.length * 110); return; }
+      ensureAudio();
+      let fell = false;
+      VoiceClips.say(p, AC, (t) => { fell = true; deviceSpeak(t); setTimeout(() => res(true), 400 + t.length * 110); }).then((r) => { if (!fell) res(r); });
+    });
+    if (!ok || my !== seqTok) return;
+  }
+}
+function speak(text) {
+  seqTok++;
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+newOrder(); resetCake(); setStep('order');
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['ใส่ของลงในชาม แป้ง ไข่ นม น้ำตาล และเนย', 'ลากนิ้ววนในชาม คนให้เข้ากัน', 'เทแป้งลงพิมพ์ แล้วใส่เตาอบ', 'เค้กยังร้อนอยู่ ต้องรอให้เย็นก่อน ไม่งั้นครีมจะละลาย',
+    'เลือกสีครีม แล้วลากนิ้วปาดครีมบนเค้ก', 'แตะบนเค้ก ใส่ผลไม้และเทียนให้ครบตามที่สั่ง', 'อบเค้ก ดูสิ เค้กค่อยๆ ฟูขึ้น', 'ใส่ถุงมือกันร้อนก่อนหยิบ เตาร้อนมาก',
+    'โอ๊ะ เค้กยังร้อน ครีมละลายไหลเยิ้ม รอให้เค้กเย็นก่อนนะ', 'ตอกไข่ใส่ชาม เปลือกไข่ทิ้งลงถังขยะนะ', 'ใส่แป้ง', 'เทนม', 'ใส่น้ำตาล', 'ใส่เนยที่ละลายแล้ว',
+    'แป้งเนียนเข้ากันดีแล้ว', 'ปาดครีมทั่วแล้ว', 'เค้กเย็นแล้ว แต่งหน้าได้เลย', 'ติ๊ง เค้กสุกแล้ว เสียบไม้ดู ถ้าไม่มีแป้งติดออกมา แปลว่าสุก'];
+  for (const n of NUM.slice(1)) L.push(n);
+  for (let n = 6; n <= 12; n++) L.push(String(n));
+  for (const [, n] of FROST) L.push(n);
+  for (const who in CUSTOMERS) L.push('สุขสันต์วันเกิด ' + CUSTOMERS[who].th + 'ชอบมากเลย ขอบคุณนะ', CUSTOMERS[who].th + 'อยากได้เค้ก');
+  for (const [c] of FROST) L.push('อยากได้' + frostName(c) + 'จ้า');
+  for (const top in TOPPINGS) for (let n = 1; n <= 5; n++) L.push('มี' + TOPPINGS[top].th + ' ' + NUM[n] + ' ลูก', 'อยากได้' + TOPPINGS[top].th + ' ' + NUM[n] + ' ลูก');
+  for (let n = 1; n <= 5; n++) L.push('และเทียน ' + NUM[n] + ' เล่ม', 'อยากได้เทียน ' + NUM[n] + ' เล่ม');
+  for (let n = 0; n <= 6; n++) L.push(haveLine(n, 'ลูก'), haveLine(n, 'เล่ม'));
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

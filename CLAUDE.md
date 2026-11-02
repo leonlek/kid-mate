@@ -186,6 +186,10 @@ A living 26 °C community tank (saved in localStorage `aquarium`). Species with 
 
 Farm overview → tap an animal for a close-up with 3 jobs. True details: Holstein cow (polled, 4-teat udder, ear tag) with her calf beside her (cows give milk after calving), chews cud; hen lays at most 1 egg per day ("🌅 เช้าแล้ว" resets it) and the rooster (big comb, green sickle tail) crows but never lays; pig has a 2-nostril snout disc and cloven hooves, rolls in mud to cool (pigs barely sweat), shower washes it off; sheep are sheared by dragging the clippers (fleece falls in clumps, sheep looks thin; "1 year later" regrows); goat climbs the rock, beard + backward horns; goats and sheep have horizontal slit pupils (`eyeSlit`); white Pekin duck dabbles bottom-up, and bread is refused (bad for ducks).
 
+### ร้านขนมเพื่อนสัตว์ (`/bakery/`)
+
+An animal customer orders by picture (cream colour, N toppings, M candles — counting 1–5). Real baking order: add flour/egg (shell goes in the bin)/milk/sugar/melted butter → stir ~4 circles until smooth → bake at 180 °C (cake rises and browns, "ding" + toothpick tip) → take out with oven mitts → COOL (thermometer + steam; frosting a hot cake makes the cream melt and slide — the classic mistake) → spread cream by dragging (coverage) → tap toppings/candles → serve; a wrong count gets a gentle "I wanted 3, there are 2". Order speech is chained from short clips (`speakSeq(orderParts(o))`) — never voice a full sentence per combination.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.
