@@ -178,6 +178,10 @@ Tap-to-fill 7 animals (cat, dog, Asian elephant, fish, butterfly, sparrow, torto
 
 6 eggs with real incubation days and true relative egg sizes on the pick screen (16 px/cm): chicken 21 d/5.7 cm, duck 28/6.5, sea turtle ~55/4.2 (round, leathery, warmed by the sun in sand), Siamese crocodile ~80/7.5 (mound nest, babies chirp, mother carries them to water in her mouth), ostrich 42/15, emperor penguin ~65/12 (egg on dad's feet in a blizzard). 14 taps hatch any species (the day counter maps them to real days). 🔦 candling shows yolk → veins/heart → embryo filling the egg. Hatching follows pip → "zip" crack → cap off → wet chick that dries fluffy; reptiles slit the shell. After: chicks peck scattered feed, the duckling imprints and follows your finger (swims in the pond), turtle hatchlings crawl to the moonlit sea, ostrich chick sprints, penguin dad feeds the chick bill-to-bill. Album in localStorage `hatchAlbum`.
 
+### ตู้ปลาของหนู (`/aquarium/`)
+
+A living 26 °C community tank (saved in localStorage `aquarium`). Species with true behaviour in `SP`/`swim()`: betta (max ONE male — adding a second is refused with the reason; gulps air at the surface and builds a bubble nest; sleeps on its leaf at night; chases a guppy's tail now and then, with a warning to keep them apart), neon tetras school and fade at night, guppies with fan tails, corydoras sift the sand with barbels and dart up for air, bristlenose pleco suckers onto the glass and eats the algae, cherry shrimp. Tools: floating flakes / sinking pellets (overfeeding → food rots → poop + cloudy water, with a spoken warning), 🧽 wipe algae (grows while the light is on), 🧪 siphon the gravel, 🪣 25 % water change, 💡 day/night. Fish drawn at `FS` = 1.7× so they read on phones.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

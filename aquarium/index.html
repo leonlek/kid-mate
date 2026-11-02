@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🐠 ตู้ปลาของหนู — คิดส์เล่น</title>
+<meta name="description" content="เลี้ยงปลาในตู้ ปลากัด ปลานีออน ปลาหางนกยูง ปลาคอรี่ ปลาซักเกอร์ กุ้งแคระ ให้อาหาร เช็ดตะไคร่ ดูดขี้ปลา เปลี่ยนน้ำ ปิดไฟให้ปลานอน">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ตู้ปลาของหนู">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .view { position: relative; background: #2d3436; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view svg { display: block; width: 100%; height: auto; touch-action: none; }
+  .tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .tool {
+    min-height: 76px; border-radius: 22px; border: 3px solid var(--card-border); background: #fff; cursor: pointer;
+    font-family: 'Mitr', sans-serif; font-size: 17px; font-weight: 600; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px;
+  }
+  .tool b { font-size: 30px; line-height: 1; }
+  .tool.on { background: var(--gold); border-color: #e0b400; }
+  .tool:active { transform: scale(.95); }
+  .shop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .shop button {
+    min-height: 96px; border-radius: 22px; border: 3px solid #bfe6ff; background: #eaf7ff; cursor: pointer;
+    font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px;
+  }
+  .shop svg { width: 90px; height: 54px; }
+  .shop button:active { transform: scale(.95); }
+  .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .fact::before { content: '💡 '; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🐠 ตู้ปลาของหนู</h1></header>
+  <div class="view"><svg id="scene" viewBox="0 0 1000 640" aria-label="ตู้ปลา"></svg></div>
+  <div class="tools" id="tools"></div>
+  <div class="shop hidden" id="shop"></div>
+  <div class="fact" id="fact"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const scene = $('scene');
+const k3 = 'stroke="#2d3436" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"';
+const lerp = (a, b, u) => a + (b - a) * u, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function svgPt(ev) { const p = scene.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(scene.getScreenCTM().inverse()); }
+
+// tank interior (water) box
+const W = { x0: 40, x1: 960, top: 92, bot: 548 };
+const SAND = 520;
+const FS = 1.7;                                   // fish drawn bigger than life so small screens show them
+
+// ============================================================================
+// FISH — side view facing right, centred at 0,0, length ≈ L. Tail beat via `b`.
+// Species and behaviours chosen to be true for a community tank (26 °C):
+// betta (one male only; gulps air at the surface; bubble nest; sleeps on a leaf),
+// neon tetra (schools; colours fade at night), guppy (males with fan tails),
+// corydoras (bottom, barbels sift sand, darts up for air), bristlenose pleco
+// (sucker mouth on glass/wood, eats algae), cherry shrimp (grazes on plants).
+// ============================================================================
+const SP = {
+  betta: { th: 'ปลากัด', L: 70, zone: [0.05, 0.75], speed: 40, max: 1,
+    fact: 'ปลากัดเป็นสัตว์น้ำประจำชาติไทย หายใจจากอากาศที่ผิวน้ำได้ด้วยอวัยวะพิเศษ ตัวผู้ก่อหวอดเป็นฟองที่ผิวน้ำ ต้องเลี้ยงตัวผู้ตัวเดียว ไม่งั้นจะกัดกัน' },
+  neon: { th: 'ปลานีออน', L: 34, zone: [0.2, 0.7], speed: 80, max: 10, school: true,
+    fact: 'ปลานีออนชอบอยู่เป็นฝูง แถบสีฟ้าเรืองแสงช่วยให้เพื่อนในฝูงเห็นกัน ตอนกลางคืนสีจะจางลง' },
+  guppy: { th: 'ปลาหางนกยูง', L: 40, zone: [0.08, 0.6], speed: 70, max: 5,
+    fact: 'ปลาหางนกยูงตัวผู้หางสีสวยเหมือนพัด ตัวเมียตัวใหญ่กว่าแต่สีเรียบ ออกลูกเป็นตัว ไม่ได้วางไข่' },
+  cory: { th: 'ปลาคอรี่', L: 44, zone: [0.88, 0.97], speed: 45, max: 6, bottom: true,
+    fact: 'ปลาคอรี่ชอบอยู่เป็นกลุ่มที่พื้นตู้ ใช้หนวดคุ้ยหาอาหารในทราย บางครั้งพุ่งขึ้นไปฮุบอากาศที่ผิวน้ำแล้วรีบกลับลงมา' },
+  pleco: { th: 'ปลาซักเกอร์', L: 64, zone: [0.6, 0.95], speed: 25, max: 2, sucker: true,
+    fact: 'ปลาซักเกอร์ใช้ปากเหมือนจานดูดเกาะกระจกและขอนไม้ แล้วขูดกินตะไคร่ ชอบออกมาตอนกลางคืน' },
+  shrimp: { th: 'กุ้งแคระ', L: 22, zone: [0.5, 0.95], speed: 20, max: 8, shrimp: true,
+    fact: 'กุ้งแคระตัวเล็กนิดเดียว ใช้ขาหน้าเล็กๆ เก็บเศษอาหารและตะไคร่บนต้นไม้น้ำ ลอกคราบเมื่อโตขึ้น' },
+};
+const SHOP = ['betta', 'neon', 'guppy', 'cory', 'pleco', 'shrimp'];
+const GUPPY_TAILS = ['#ff7a45', '#3a7bd5', '#ff4fa0', '#ffd93d'];
+function fishArt(f, b, night, eating) {
+  const mouth = eating ? `<ellipse cx="${f.L * 0.5}" cy="0" rx="3" ry="3.5" fill="#2d3436"/>` : '';
+  if (f.sp === 'betta') {
+    const w = Math.sin(b) * 8, col = f.col || '#d62839';
+    return `<path d="M-14,-6 C-40,${-34 + w} -86,${-22 + w} -92,${6 + w} C-84,${30 + w} -44,${40 + w} -14,8 Z" fill="${col}" opacity=".9" ${k3}/>
+      <path d="M-4,-12 C4,-40 -40,-46 -50,${-30 + w * 0.5} C-34,-22 -20,-16 -4,-12 Z" fill="${col}" opacity=".85" ${k3}/>
+      <path d="M0,10 C-6,40 -40,${50 + w * 0.6} -58,${38 + w} C-40,26 -20,18 0,10 Z" fill="${col}" opacity=".85" ${k3}/>
+      <path d="M-20,0 C-16,-16 18,-18 34,-4 C38,0 38,4 34,6 C16,18 -14,16 -20,0 Z" fill="${col}" ${k3}/>
+      <path d="M6,8 C8,22 0,34 -6,38" fill="none" stroke="${col}" stroke-width="4"/>
+      <circle cx="24" cy="-4" r="3.5" fill="#fff"/><circle cx="25" cy="-4" r="2" fill="#2d3436"/><path d="M34,-1 l3,-2" ${k3}/>`;
+  }
+  if (f.sp === 'neon') {
+    const fade = night ? 0.35 : 1;
+    return `<path d="M-14,0 L-24,-8 L-21,0 L-24,8 Z" fill="#cfd8dc" opacity=".6"/>
+      <path d="M-15,0 C-10,-9 10,-10 17,-2 C19,0 19,2 17,3 C10,9 -10,9 -15,0 Z" fill="#c9d3da" ${k3}/>
+      <path d="M-12,2 C-6,7 4,7 8,4 L8,1 L-12,1 Z" fill="#e53935" opacity="${fade}"/>
+      <path d="M-12,-1 L14,-2" stroke="#29b6f6" stroke-width="3.2" opacity="${fade}"/>
+      <circle cx="12" cy="-2" r="2.3" fill="#2d3436"/>`;
+  }
+  if (f.sp === 'guppy') {
+    const w = Math.sin(b) * 5, tc = f.col || GUPPY_TAILS[0];
+    return `<path d="M-10,0 C-22,${-14 + w} -40,${-20 + w} -46,${-4 + w} C-48,${8 + w} -36,${22 + w} -10,2 Z" fill="${tc}" ${k3}/>
+      ${[[-30, -6], [-36, 4], [-26, 8]].map(([x, y]) => `<circle cx="${x}" cy="${y + w}" r="2.2" fill="#2d3436" opacity=".5"/>`).join('')}
+      <path d="M-4,-6 C0,-14 -12,-14 -16,-8 Z" fill="${tc}" opacity=".8"/>
+      <path d="M-12,0 C-8,-8 10,-9 18,-2 C20,0 20,2 18,3 C10,9 -8,8 -12,0 Z" fill="#aab4a0" ${k3}/>
+      <circle cx="13" cy="-2" r="2.4" fill="#2d3436"/>`;
+  }
+  if (f.sp === 'cory') {
+    return `<path d="M-18,0 L-30,-10 L-28,0 L-30,10 Z" fill="#c9b79a" ${k3}/>
+      <path d="M-20,2 C-18,-12 10,-16 22,-4 C26,2 24,8 18,10 C4,14 -16,12 -20,2 Z" fill="#c9b79a" ${k3}/>
+      <path d="M-2,-12 L4,-26 L10,-11 Z" fill="#c9b79a" ${k3}/>${[[-10, -2], [-2, 4], [6, -4], [-14, 6], [8, 4]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="#5d4a3a"/>`).join('')}
+      <circle cx="14" cy="-4" r="3.4" fill="#fff"/><circle cx="15" cy="-4" r="2" fill="#2d3436"/>
+      <path d="M22,6 l8,5 M21,8 l6,8" stroke="#8a7a6a" stroke-width="1.6"/>`;
+  }
+  if (f.sp === 'pleco') {
+    return `<path d="M-28,0 L-40,-10 L-38,10 Z" fill="#4e4236" ${k3}/>
+      <path d="M-30,2 C-30,-10 0,-16 26,-8 C34,-4 36,6 30,10 C10,14 -26,14 -30,2 Z" fill="#5a4c3e" ${k3}/>
+      <path d="M-10,-12 C-4,-26 14,-26 18,-12 Z" fill="#5a4c3e" ${k3}/>${[[-18, -2], [-6, 4], [4, -4], [14, 2], [-12, 8]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#d9c9a0"/>`).join('')}
+      <ellipse cx="32" cy="6" rx="5" ry="7" fill="#7a6a58" ${k3}/><path d="M28,-6 l6,-6 M32,-4 l6,-4 M24,-8 l2,-8" stroke="#3d342a" stroke-width="2"/>
+      <circle cx="20" cy="-6" r="2.4" fill="#d9c9a0"/>`;
+  }
+  // cherry shrimp
+  const leg = Math.sin(b * 2) * 2;
+  return `<path d="M-12,0 C-12,-8 8,-10 14,-2 C14,4 8,8 -2,8 C-8,8 -12,6 -12,0 Z" fill="#e53935" ${k3}/>
+    <path d="M-12,2 L-20,-2 L-18,6 Z" fill="#e53935" ${k3}/><path d="M14,-4 q10,-8 18,-4 M14,-2 q10,-2 16,4" fill="none" stroke="#c62828" stroke-width="1.5"/>
+    ${[-6, -1, 4, 9].map((x) => `<path d="M${x},7 l${leg},5" stroke="#c62828" stroke-width="1.5"/>`).join('')}<circle cx="10" cy="-3" r="1.6" fill="#2d3436"/>`;
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+let fish = [], food = [], poop = [], algae = [], bubbles = [], nest = [], tool = 'feed', night = false;
+let cloudy = 0, waterLvl = 1, changing = 0, T = 0, msg = '', msgUntil = 0, drag = null;
+function addFish(sp, quiet) {
+  const S = SP[sp], have = fish.filter((f) => f.sp === sp).length;
+  if (have >= S.max) {
+    if (!quiet) { speak(sp === 'betta' ? 'ปลากัดตัวผู้ต้องเลี้ยงตัวเดียว ถ้ามีสองตัวจะกัดกัน' : 'ตู้นี้มี' + S.th + 'พอแล้ว ปลาเยอะเกินน้ำจะเสียเร็ว'); flash(sp === 'betta' ? '⚠️ ปลากัดตัวผู้ ต้องอยู่ตัวเดียว' : '⚠️ พอแล้ว ตู้จะแน่นเกินไป'); }
+    return;
+  }
+  if (fish.length >= 24) { if (!quiet) { speak('ปลาเยอะเกินไปแล้ว ตู้จะแน่น'); flash('⚠️ ตู้แน่นแล้ว'); } return; }
+  const f = { sp, L: S.L, x: 200 + Math.random() * 600, y: lerp(W.top, SAND, lerp(S.zone[0], S.zone[1], Math.random())), vx: 0, vy: 0, dir: Math.random() < 0.5 ? 1 : -1, b: Math.random() * 6, tx: 0, ty: 0, t: 0, eat: 0, mode: '' };
+  if (sp === 'guppy') f.col = GUPPY_TAILS[have % GUPPY_TAILS.length];
+  if (sp === 'betta') f.col = '#d62839';
+  if (sp === 'pleco') { f.mode = 'glass'; f.x = W.x1 - 30; f.y = 360; }
+  newTarget(f);
+  fish.push(f);
+  if (!quiet) { speak('ปล่อย' + S.th + 'ลงตู้'); $('fact').textContent = S.fact; bubbleBurst(f.x, W.top + 10); if (sp === 'guppy' && fish.some((o) => o.sp === 'betta') || sp === 'betta' && fish.some((o) => o.sp === 'guppy')) setTimeout(() => speak('ระวังนะ ปลากัดอาจไล่กัดหางสวยๆ ของปลาหางนกยูง'), 2600); }
+  save();
+}
+function newTarget(f) {
+  const S = SP[f.sp];
+  f.tx = clamp(f.x + (Math.random() - 0.5) * 500, W.x0 + 40, W.x1 - 40);
+  f.ty = lerp(W.top, SAND, lerp(S.zone[0], S.zone[1], Math.random()));
+  f.t = 2 + Math.random() * 4;
+}
+function flash(t) { msg = t; msgUntil = performance.now() + 3000; }
+function bubbleBurst(x, y) { for (let i = 0; i < 8; i++) bubbles.push({ x: x + (Math.random() - 0.5) * 30, y: y + Math.random() * 30, r: 3 + Math.random() * 4, v: 60 + Math.random() * 40 }); }
+function save() { try { localStorage.setItem('aquarium', JSON.stringify({ fish: fish.map((f) => f.sp), algae: algae.length, cloudy })); } catch (e) {} }
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('aquarium') || 'null');
+    if (d && d.fish && d.fish.length) { for (const s of d.fish) if (SP[s]) addFish(s, true); cloudy = d.cloudy || 0; for (let i = 0; i < (d.algae || 0); i++) growAlgae(); return; }
+  } catch (e) {}
+  for (const s of ['neon', 'neon', 'neon', 'neon', 'neon', 'neon', 'cory', 'cory', 'cory', 'guppy', 'guppy', 'pleco', 'shrimp', 'shrimp', 'shrimp']) addFish(s, true);
+}
+function growAlgae() { if (algae.length < 40) algae.push({ x: W.x0 + 20 + Math.random() * (W.x1 - W.x0 - 40), y: W.top + 30 + Math.random() * (SAND - W.top - 60), r: 22 + Math.random() * 30 }); }
+
+// ============================================================================
+// SIM
+// ============================================================================
+function step(dt, now) {
+  T += dt;
+  // algae slowly grows on the glass with the light on (real: days — here minutes)
+  if (!night && Math.random() < dt / 9) growAlgae();
+  // leftover food on the sand rots → poop/debris + cloudy water
+  const surf = W.top + (1 - waterLvl) * (SAND - W.top) + 6;
+  for (const p of food) {
+    if (!p.sink) {                                                  // flakes float a while, then sink
+      p.floatT = (p.floatT || 0) + dt; p.y = surf + Math.sin(T * 2 + p.x) * 1.5; p.x += Math.sin(T + p.x) * 0.2;
+      if (p.floatT > 5) p.sink = true;
+    } else if (p.y < SAND - 4) p.y += 24 * dt;
+    else { p.y = SAND - 4; p.rot = (p.rot || 0) + dt; if (p.rot > 14) { p.dead = true; poop.push({ x: p.x, y: SAND - 2 }); cloudy = Math.min(1, cloudy + 0.06); } }
+  }
+  food = food.filter((p) => !p.dead);
+  for (const f of fish) swim(f, dt, now);
+  // bubbles from the air stone, and the betta's nest
+  if (Math.random() < dt * 12) bubbles.push({ x: 140 + (Math.random() - 0.5) * 10, y: SAND - 10, r: 2 + Math.random() * 4, v: 90 + Math.random() * 60 });
+  for (const b of bubbles) { b.y -= b.v * dt; b.x += Math.sin(b.y / 20) * 0.4; if (b.y < W.top + (1 - waterLvl) * (SAND - W.top)) b.dead = true; }
+  bubbles = bubbles.filter((b) => !b.dead);
+  if (changing) {
+    changing += dt;
+    if (changing < 3) waterLvl = 1 - 0.3 * Math.min(1, changing / 2);
+    else if (changing < 6) { waterLvl = 0.7 + 0.3 * Math.min(1, (changing - 3) / 2.5); cloudy = Math.max(0, cloudy - dt * 0.15); }
+    else { changing = 0; waterLvl = 1; speak('เปลี่ยนน้ำเสร็จแล้ว น้ำใหม่ต้องพักไว้ให้คลอรีนระเหยก่อนเติม'); save(); }
+  }
+}
+function swim(f, dt, now) {
+  const S = SP[f.sp], waterTop = W.top + (1 - waterLvl) * (SAND - W.top) + 16;
+  f.b += dt * (8 + Math.hypot(f.vx, f.vy) / 10);
+  f.eat = Math.max(0, f.eat - dt);
+  f.t -= dt;
+  let tx = f.tx, ty = f.ty, sp = S.speed * (night ? 0.3 : 1);
+  // sleeping at night: betta rests on a leaf, neons hang low and pale
+  if (night && f.sp === 'betta') { tx = 760; ty = 330; sp = 20; }
+  // the betta gulps air at the surface now and then and adds bubbles to its nest
+  if (f.sp === 'betta' && !night) { if (f.mode !== 'air' && Math.random() < dt / 9) f.mode = 'air'; if (f.mode === 'air') { tx = f.x; ty = waterTop; if (f.y < waterTop + 6) { f.mode = ''; tone(900, 0.04, 'sine', 0.04); if (nest.length < 30) for (let i = 0; i < 3; i++) nest.push({ x: 620 + Math.random() * 120, r: 5 + Math.random() * 5 }); newTarget(f); } } }
+  if (f.sp === 'cory' && !night) { if (f.mode !== 'air' && Math.random() < dt / 30) f.mode = 'air'; if (f.mode === 'air') { tx = f.x; ty = waterTop; sp = 160; if (f.y < waterTop + 6) { f.mode = ''; newTarget(f); } } }
+  if (f.sp === 'pleco') {                                           // suckers on the glass, grazing algae
+    if (f.mode === 'glass') {
+      const a = algae[0]; tx = a ? a.x : f.x; ty = a ? a.y : f.y; sp = 22;
+      if (a && Math.hypot(a.x - f.x, a.y - f.y) < 20) { a.r -= dt * 6; if (a.r < 10) algae.shift(); }
+      if (Math.random() < dt / 40) f.mode = 'wood';
+    } else { tx = 520; ty = SAND - 30; if (Math.random() < dt / 25) f.mode = 'glass'; }
+  }
+  // food nearby wins over wandering
+  let best = null, bd = 1e9;
+  for (const p of food) {
+    if (S.bottom && p.y < SAND - 40) continue;
+    if (!S.bottom && !S.shrimp && p.y > SAND - 30 && f.sp !== 'betta') continue;
+    const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < bd && d < 420) { bd = d; best = p; }
+  }
+  if (best && !night) { tx = best.x - (best.x > f.x ? f.L * 0.45 * FS : -f.L * 0.45 * FS); ty = best.y; sp = S.speed * 2.2; if (bd < f.L * 0.6 * FS) { best.dead = true; f.eat = 0.4; if (Math.random() < 0.15) poop.push({ x: f.x, y: SAND - 2, delay: 3 }); tone(1100 + Math.random() * 300, 0.03, 'sine', 0.04); } }
+  // schooling neons stay together
+  if (S.school && !best) { const mates = fish.filter((o) => o.sp === f.sp); const cx = mates.reduce((a, o) => a + o.x, 0) / mates.length, cy = mates.reduce((a, o) => a + o.y, 0) / mates.length; const lead = mates[0]; if (f !== lead) { tx = lerp(lead.x, cx, 0.4) + (mates.indexOf(f) % 3 - 1) * 26; ty = lerp(lead.y, cy, 0.4) + (Math.floor(mates.indexOf(f) / 3) - 1) * 16; sp *= 1.2; } }
+  // betta sometimes chases a guppy's tail (true — keep them apart)
+  if (f.sp === 'betta' && !night && !best) { const g = fish.find((o) => o.sp === 'guppy'); if (g && Math.sin(T * 0.4) > 0.92) { tx = g.x; ty = g.y; sp = 70; } }
+  if (f.t <= 0 || Math.hypot(tx - f.x, ty - f.y) < 10 && !best) newTarget(f);
+  const dx = tx - f.x, dy = ty - f.y, d = Math.hypot(dx, dy) || 1;
+  const want = d < 6 ? 0 : sp;
+  f.vx = lerp(f.vx, dx / d * want, Math.min(1, dt * 2)); f.vy = lerp(f.vy, dy / d * want, Math.min(1, dt * 2));
+  f.x = clamp(f.x + f.vx * dt, W.x0 + 20, W.x1 - 20); f.y = clamp(f.y + f.vy * dt, waterTop, SAND - (S.bottom || S.shrimp ? 8 : 20));
+  if (Math.abs(f.vx) > 4 && f.mode !== 'glass') f.dir = f.vx > 0 ? 1 : -1;
+}
+
+// ============================================================================
+// RENDER
+// ============================================================================
+let staticBack = '';
+function buildStatic() {
+  let gravel = '';
+  for (let i = 0; i < 220; i++) { const x = W.x0 + (i * 53) % (W.x1 - W.x0), y = SAND + 4 + (i * 29) % 40; gravel += `<ellipse cx="${x}" cy="${y}" rx="${5 + i % 4}" ry="${3 + i % 3}" fill="${['#c9b79a', '#a89a84', '#e0d2b8', '#8f8172', '#d9c3a0'][i % 5]}"/>`; }
+  staticBack = `<rect x="0" y="0" width="1000" height="640" fill="#3a3f4a"/>
+    <rect x="${W.x0}" y="${W.top - 30}" width="${W.x1 - W.x0}" height="${SAND - W.top + 90}" fill="#1f6e8c"/>
+    <path d="M${W.x0},${SAND} Q300,${SAND - 18} 500,${SAND - 6} Q760,${SAND + 8} ${W.x1},${SAND - 14} L${W.x1},${SAND + 60} L${W.x0},${SAND + 60} Z" fill="#cdbb98"/>${gravel}
+    <path d="M430,${SAND + 4} C440,${SAND - 50} 520,${SAND - 70} 620,${SAND - 40} C640,${SAND - 34} 650,${SAND - 10} 640,${SAND + 4} Z" fill="#6d4c3d" stroke="#3d2a1e" stroke-width="4"/><path d="M470,${SAND - 20} q40,-24 90,-20 M560,${SAND - 48} l30,-50" stroke="#3d2a1e" stroke-width="5" fill="none"/>
+    <rect x="128" y="${SAND - 14}" width="24" height="14" rx="5" fill="#7a8a99" stroke="#2d3436" stroke-width="3"/><path d="M140,${SAND - 14} L140,${W.top - 20}" stroke="#9ad0ec" stroke-width="5" opacity=".6"/>
+    <rect x="900" y="${W.top + 20}" width="22" height="200" rx="10" fill="#cfd8dc" opacity=".8" stroke="#2d3436" stroke-width="3"/><rect x="905" y="${W.top + 150}" width="12" height="60" rx="5" fill="#ff7043"/>
+    <text x="911" y="${W.top + 250}" text-anchor="middle" font-family="Mitr" font-size="18" font-weight="700" fill="#fff">26°C</text>`;
+}
+function plants(t) {
+  let s = '';
+  const sway = (i) => Math.sin(t * 0.8 + i) * 6;
+  // vallisneria ribbons (back left) and amazon swords (right)
+  for (let i = 0; i < 9; i++) { const x = 60 + i * 14, h = 260 + (i % 3) * 60; s += `<path d="M${x},${SAND} Q${x + sway(i) * 2},${SAND - h / 2} ${x + sway(i) * 4 + (i % 2 ? 14 : -10)},${SAND - h}" fill="none" stroke="${i % 2 ? '#4caf50' : '#66bb6a'}" stroke-width="9" stroke-linecap="round"/>`; }
+  for (let i = 0; i < 7; i++) { const a = -70 + i * 22 + sway(i) * 0.6, L = 150 + (i % 3) * 30; const rad = a * Math.PI / 180; const bx = 780, by = SAND; const tx = bx + Math.sin(rad) * L, ty = by - Math.cos(rad) * L; s += `<path d="M${bx},${by} Q${(bx + tx) / 2 - 20},${(by + ty) / 2} ${tx.toFixed(0)},${ty.toFixed(0)} Q${(bx + tx) / 2 + 20},${(by + ty) / 2} ${bx},${by} Z" fill="${i % 2 ? '#43a047' : '#2e7d32'}" stroke="#1b5e20" stroke-width="2"/>`; }
+  s += `<ellipse cx="760" cy="330" rx="50" ry="12" fill="#43a047" transform="rotate(-20 760 330)" stroke="#1b5e20" stroke-width="2"/>`;   // the betta's favourite resting leaf
+  return s;
+}
+function render(now) {
+  const waterTop = W.top + (1 - waterLvl) * (SAND - W.top);
+  let s = staticBack;
+  s += `<rect x="${W.x0}" y="${W.top - 30}" width="${W.x1 - W.x0}" height="${waterTop - W.top + 30}" fill="#9fb6c4"/>`;   // air above the water
+  s += plants(T);
+  // food
+  s += food.map((p) => p.sink ? `<circle cx="${p.x.toFixed(0)}" cy="${p.y.toFixed(0)}" r="4.5" fill="#8d5a2b" stroke="#5d3a1a" stroke-width="1.5"/>` : `<rect x="${(p.x - 4).toFixed(0)}" y="${(p.y - 2).toFixed(0)}" width="8" height="4" rx="1" fill="${p.c}" transform="rotate(${(p.x * 7) % 90} ${p.x.toFixed(0)} ${p.y.toFixed(0)})"/>`).join('');
+  s += poop.map((p) => `<path d="M${p.x - 6},${p.y} q6,-6 12,0" fill="none" stroke="#5d4a2a" stroke-width="3" stroke-linecap="round"/>`).join('');
+  // fish (bottom dwellers first)
+  for (const f of fish.slice().sort((a, b) => (SP[a.sp].bottom ? 0 : 1) - (SP[b.sp].bottom ? 0 : 1))) {
+    const tilt = clamp(Math.atan2(f.vy, Math.abs(f.vx) + 1) * 30, -25, 25);
+    const sx = f.mode === 'glass' ? 1 : f.dir;
+    let rot = f.mode === 'glass' ? -90 : tilt * f.dir;
+    if (night && f.sp === 'betta') rot = 0;
+    s += `<g transform="translate(${f.x.toFixed(1)} ${f.y.toFixed(1)}) rotate(${rot.toFixed(1)}) scale(${sx * FS} ${FS})" data-f="${fish.indexOf(f)}">${fishArt(f, f.b, night, f.eat > 0)}<circle r="${Math.max(26, f.L * 0.6)}" fill="transparent"/></g>`;
+  }
+  // bubbles, nest, surface
+  s += bubbles.map((b) => `<circle cx="${b.x.toFixed(0)}" cy="${b.y.toFixed(0)}" r="${b.r.toFixed(1)}" fill="none" stroke="#e6f7ff" stroke-width="1.6" opacity=".8"/>`).join('');
+  s += nest.map((n) => `<circle cx="${n.x.toFixed(0)}" cy="${(waterTop + 2).toFixed(0)}" r="${n.r.toFixed(1)}" fill="#fff" opacity=".55" stroke="#e0f4ff" stroke-width="1"/>`).join('');
+  s += `<path d="M${W.x0},${waterTop} ${[...Array(24)].map((_, i) => `L${W.x0 + (i + 1) * (W.x1 - W.x0) / 24},${(waterTop + Math.sin(T * 2 + i) * 2).toFixed(1)}`).join(' ')}" fill="none" stroke="#d6f1ff" stroke-width="3" opacity=".8"/>`;
+  // algae film on the glass + cloudiness
+  s += algae.map((a) => `<circle cx="${a.x.toFixed(0)}" cy="${a.y.toFixed(0)}" r="${Math.max(0, a.r).toFixed(0)}" fill="#7cb342" opacity=".28"/>`).join('');
+  if (cloudy > 0.02) s += `<rect x="${W.x0}" y="${waterTop}" width="${W.x1 - W.x0}" height="${SAND - waterTop + 60}" fill="#c9b98a" opacity="${(cloudy * 0.55).toFixed(2)}"/>`;
+  if (night) s += `<rect x="0" y="0" width="1000" height="640" fill="#0b1240" opacity=".62"/>`;
+  // lid light + frame
+  s += `<rect x="20" y="20" width="960" height="44" rx="10" fill="${night ? '#3a3f4a' : '#555b66'}" stroke="#2d3436" stroke-width="4"/><rect x="60" y="56" width="880" height="10" rx="5" fill="${night ? '#5b6aa8' : '#fff8d6'}"/>`;
+  s += `<rect x="${W.x0 - 10}" y="60" width="${W.x1 - W.x0 + 20}" height="${SAND - 60 + 72}" fill="none" stroke="#2d3436" stroke-width="12" rx="6"/>`;
+  // tool cursor ghost
+  if (drag && tool === 'wipe') s += `<g transform="translate(${drag.x} ${drag.y})"><rect x="-34" y="-22" width="68" height="44" rx="12" fill="#ffd93d" stroke="#2d3436" stroke-width="4"/><rect x="-34" y="10" width="68" height="12" rx="4" fill="#4caf50"/></g>`;
+  if (drag && tool === 'siphon') s += `<g transform="translate(${drag.x} ${drag.y})"><path d="M0,0 L0,-200 Q0,-240 40,-240 L120,-240" fill="none" stroke="#9ad0ec" stroke-width="12" opacity=".8"/><rect x="-16" y="-60" width="32" height="70" rx="6" fill="#bfe6ff" stroke="#2d3436" stroke-width="3" opacity=".9"/></g>`;
+  if (now < msgUntil) s += `<text x="500" y="120" text-anchor="middle" font-family="Mitr" font-size="30" font-weight="700" fill="#fff" stroke="#2d3436" stroke-width="7" paint-order="stroke">${msg}</text>`;
+  s += `<g font-family="Mitr" font-weight="700"><rect x="54" y="78" width="200" height="40" rx="14" fill="rgba(255,255,255,.85)"/><text x="66" y="106" font-size="20" fill="${cloudy > 0.4 ? '#c0392b' : '#2d3436'}">💧 น้ำ${cloudy > 0.4 ? 'ขุ่นมาก' : cloudy > 0.15 ? 'เริ่มขุ่น' : 'ใส'}</text></g>`;
+  scene.innerHTML = s;
+}
+
+// ============================================================================
+// INPUT + TOOLS
+// ============================================================================
+const TOOLS = [
+  ['feed', '🍤', 'อาหารลอย'], ['pellet', '🟤', 'อาหารจม'], ['wipe', '🧽', 'เช็ดกระจก'],
+  ['siphon', '🧪', 'ดูดเศษ'], ['change', '🪣', 'เปลี่ยนน้ำ'], ['light', '💡', 'เปิด/ปิดไฟ'],
+];
+function buildTools() {
+  $('tools').innerHTML = TOOLS.map(([id, e, th]) => `<button class="tool ${id === tool ? 'on' : ''}" data-t="${id}"><b>${id === 'light' ? (night ? '🌙' : '💡') : e}</b>${th}</button>`).join('') + `<button class="tool" data-t="shop" style="grid-column: span 3"><b>🐟</b>เพิ่มปลา</button>`;
+  for (const b of $('tools').children) b.addEventListener('click', () => { ensureAudio(); buzz(8); useTool(b.dataset.t); });
+}
+function useTool(t) {
+  if (t === 'shop') { $('shop').classList.toggle('hidden'); return; }
+  if (t === 'light') { night = !night; speak(night ? 'ปิดไฟแล้ว ปลาพักผ่อน ปลากัดนอนบนใบไม้ ปลานีออนสีจางลง' : 'เปิดไฟแล้ว อรุณสวัสดิ์ปลาน้อย'); buildTools(); return; }
+  if (t === 'change') { if (!changing) { changing = 0.001; speak('เปลี่ยนน้ำทีละน้อย ประมาณหนึ่งในสี่ของตู้ ทุกสัปดาห์'); } return; }
+  tool = t; buildTools();
+  speak(t === 'feed' ? 'แตะที่ผิวน้ำ เพื่อโรยอาหาร ให้นิดเดียวพอ' : t === 'pellet' ? 'อาหารเม็ดจมสำหรับปลาที่อยู่พื้นตู้ แตะที่น้ำเลย' : t === 'wipe' ? 'ลากถูกระจก เช็ดตะไคร่สีเขียวออก' : 'ลากไปตามพื้นทราย ดูดเศษอาหารและขี้ปลาออก');
+}
+function buildShop() {
+  $('shop').innerHTML = SHOP.map((sp) => { const f = { sp, L: SP[sp].L, col: sp === 'guppy' ? GUPPY_TAILS[0] : null }; const k = 40 / SP[sp].L; return `<button data-sp="${sp}"><svg viewBox="-50 -30 100 60"><g transform="scale(${(k * 1.2).toFixed(2)})">${fishArt(f, 0, false, false)}</g></svg>${SP[sp].th}</button>`; }).join('');
+  for (const b of $('shop').children) b.addEventListener('click', () => { ensureAudio(); buzz(10); addFish(b.dataset.sp); });
+}
+let feedCount = 0, feedReset = 0;
+scene.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  const q = svgPt(ev), fe = ev.target.closest('[data-f]');
+  if (fe && (tool === 'feed' || tool === 'pellet') && !changing) { const f = fish[+fe.dataset.f]; if (f) { speak(SP[f.sp].th); $('fact').textContent = SP[f.sp].fact; buzz(8); return; } }
+  if (tool === 'feed' || tool === 'pellet') {
+    if (night) { speak('ปิดไฟอยู่ ปลากำลังพัก ให้อาหารตอนกลางวันนะ'); return; }
+    const sink = tool === 'pellet', n = sink ? 3 : 6;
+    for (let i = 0; i < n; i++) food.push({ x: clamp(q.x + (Math.random() - 0.5) * 50, W.x0 + 10, W.x1 - 10), y: W.top + 4 + Math.random() * 6, sink, c: ['#e57373', '#ffb74d', '#81c784', '#fff176'][i % 4] });
+    tone(1400, 0.05, 'sine', 0.05); buzz(6);
+    feedCount++; clearTimeout(feedReset); feedReset = setTimeout(() => { feedCount = 0; }, 8000);
+    if (feedCount === 5) { speak('พอแล้ว ให้อาหารเยอะเกิน อาหารที่เหลือจะเน่า ทำให้น้ำขุ่น'); flash('⚠️ ให้อาหารพอดีนะ'); }
+    return;
+  }
+  drag = { x: q.x, y: q.y };
+  try { scene.setPointerCapture(ev.pointerId); } catch (_) {}
+  scrub(q);
+});
+scene.addEventListener('pointermove', (ev) => { if (!drag) return; const q = svgPt(ev); drag = { x: q.x, y: q.y }; scrub(q); });
+const endPtr = () => { if (drag) save(); drag = null; };
+scene.addEventListener('pointerup', endPtr); scene.addEventListener('pointercancel', endPtr);
+function scrub(q) {
+  if (tool === 'wipe') {
+    const before = algae.length;
+    for (const a of algae) if (Math.hypot(a.x - q.x, a.y - q.y) < a.r + 30) a.r -= 8;
+    algae = algae.filter((a) => a.r > 6);
+    if (algae.length < before) { tone(700 + Math.random() * 200, 0.04, 'triangle', 0.04); if (!algae.length) speak('กระจกใสแล้ว'); }
+  } else if (tool === 'siphon') {
+    const before = poop.length + food.length;
+    poop = poop.filter((p) => Math.hypot(p.x - q.x, p.y - q.y) > 40);
+    food = food.filter((p) => !(p.y > SAND - 20 && Math.hypot(p.x - q.x, p.y - q.y) < 40));
+    if (poop.length + food.length < before) { tone(300, 0.06, 'sine', 0.05); cloudy = Math.max(0, cloudy - 0.02); if (!poop.length) speak('พื้นตู้สะอาดแล้ว'); }
+  }
+}
+$('fact').addEventListener('click', () => { ensureAudio(); speak($('fact').textContent); });
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!document.hidden) { step(dt, now); render(now); }
+  requestAnimationFrame(tick);
+}
+
+// ============================================================================
+// SOUND + SPEECH
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return; }
+  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+const INTRO = 'ตู้ปลาอุ่น 26 องศา เหมาะกับปลาเขตร้อน แตะผิวน้ำเพื่อให้อาหาร หรือแตะที่ปลาเพื่อรู้จักชื่อ';
+buildStatic(); load(); buildTools(); buildShop();
+$('fact').textContent = INTRO;
+setInterval(save, 15000);
+requestAnimationFrame(tick);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = [INTRO, 'ปลากัดตัวผู้ต้องเลี้ยงตัวเดียว ถ้ามีสองตัวจะกัดกัน', 'ปลาเยอะเกินไปแล้ว ตู้จะแน่น', 'ระวังนะ ปลากัดอาจไล่กัดหางสวยๆ ของปลาหางนกยูง',
+    'เปลี่ยนน้ำเสร็จแล้ว น้ำใหม่ต้องพักไว้ให้คลอรีนระเหยก่อนเติม', 'ปิดไฟแล้ว ปลาพักผ่อน ปลากัดนอนบนใบไม้ ปลานีออนสีจางลง', 'เปิดไฟแล้ว อรุณสวัสดิ์ปลาน้อย',
+    'เปลี่ยนน้ำทีละน้อย ประมาณหนึ่งในสี่ของตู้ ทุกสัปดาห์', 'แตะที่ผิวน้ำ เพื่อโรยอาหาร ให้นิดเดียวพอ', 'อาหารเม็ดจมสำหรับปลาที่อยู่พื้นตู้ แตะที่น้ำเลย',
+    'ลากถูกระจก เช็ดตะไคร่สีเขียวออก', 'ลากไปตามพื้นทราย ดูดเศษอาหารและขี้ปลาออก', 'ปิดไฟอยู่ ปลากำลังพัก ให้อาหารตอนกลางวันนะ',
+    'พอแล้ว ให้อาหารเยอะเกิน อาหารที่เหลือจะเน่า ทำให้น้ำขุ่น', 'กระจกใสแล้ว', 'พื้นตู้สะอาดแล้ว'];
+  for (const sp of SHOP) { const S = SP[sp]; L.push(S.th, S.fact, 'ปล่อย' + S.th + 'ลงตู้', 'ตู้นี้มี' + S.th + 'พอแล้ว ปลาเยอะเกินน้ำจะเสียเร็ว'); }
+  return L;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
