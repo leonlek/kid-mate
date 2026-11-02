@@ -180,6 +180,15 @@
     box-shadow: 0 4px 0 rgba(0,0,0,0.15);
   }
   .say:active { transform: translateY(2px); }
+  .say.on { background: var(--gold); border-color: #e0b400; }
+  .sayrow { display: flex; justify-content: flex-end; }
+  .sayrow .say { width: auto; padding: 0 18px; border-radius: 999px; font-family: inherit; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .sayable { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s; }
+  .sayable:active { transform: scale(0.97); }
+  .fact.sayable { position: relative; padding-right: 26px; }
+  .fact.sayable::after { content: '🔈'; position: absolute; top: 6px; right: 6px; font-size: 13px; opacity: .55; }
+  .know li.sayable::after { content: ' 🔈'; font-size: 13px; opacity: .55; }
+  .reading { outline: 4px solid var(--gold); outline-offset: 2px; border-radius: 16px; background-color: #fff3b0 !important; }
   .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0 8px; }
   .fact { background: #f6f7ff; border-radius: 16px; padding: 8px 10px; }
   .fact .k { font-size: 13px; color: #6b7280; }
@@ -984,6 +993,7 @@ function renderOverview() {
       <li>ดวงอาทิตย์หนักกว่าทุกอย่างในระบบสุริยะรวมกัน (มีมวลราว 99.8% ของทั้งหมด)</li>
     </ul>
     <div class="src">ข้อมูล: NASA</div>`;
+  sayKit();
 }
 function renderInfo(id) {
   if (!id) { renderOverview(); return; }
@@ -993,20 +1003,44 @@ function renderInfo(id) {
   panel.innerHTML = `
     <div class="p-head">
       <svg viewBox="-60 -60 120 120">${art(id, 0, 0, id === 'saturn' ? 24 : 44)}</svg>
-      <div><div class="p-name">${b.th}</div><div class="p-sub">${b.en} · ${b.order ? 'ดวงที่ ' + b.order + ' จากดวงอาทิตย์ · ' : ''}${b.kind}</div></div>
-      <button class="say" id="sayBtn" aria-label="ฟัง">🔊</button>
+      <div data-say="${b.say}"><div class="p-name">${b.th}</div><div class="p-sub">${b.en} · ${b.order ? 'ดวงที่ ' + b.order + ' จากดวงอาทิตย์ · ' : ''}${b.kind}</div></div>
+      <button class="say" aria-label="ฟังทั้งการ์ด">🔊</button>
     </div>
     <div class="facts">
-      <div class="fact"><div class="k">📏 เส้นผ่านศูนย์กลาง</div><div class="v">${b.d.toLocaleString('th-TH')} กม.<br><small>${rel}</small></div></div>
-      <div class="fact"><div class="k">📍 ระยะทาง</div><div class="v">${b.order ? 'ห่างดวงอาทิตย์ ' : ''}${b.distTxt}</div></div>
-      <div class="fact"><div class="k">📅 1 ปี (รอบดวงอาทิตย์)</div><div class="v">${b.yearTxt}</div></div>
-      <div class="fact"><div class="k">🔄 1 วัน (หมุนรอบตัวเอง)</div><div class="v">${b.dayTxt}</div></div>
-      <div class="fact"><div class="k">🌙 ดวงจันทร์</div><div class="v">${b.moonTxt}</div></div>
-      <div class="fact"><div class="k">🌡️ อุณหภูมิ</div><div class="v">${b.tempTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'd', rel)}"><div class="k">📏 เส้นผ่านศูนย์กลาง</div><div class="v">${b.d.toLocaleString('th-TH')} กม.<br><small>${rel}</small></div></div>
+      <div class="fact" data-say="${factSay(b, 'dist')}"><div class="k">📍 ระยะทาง</div><div class="v">${b.order ? 'ห่างดวงอาทิตย์ ' : ''}${b.distTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'year')}"><div class="k">📅 1 ปี (รอบดวงอาทิตย์)</div><div class="v">${b.yearTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'day')}"><div class="k">🔄 1 วัน (หมุนรอบตัวเอง)</div><div class="v">${b.dayTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'moon')}"><div class="k">🌙 ดวงจันทร์</div><div class="v">${b.moonTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'temp')}"><div class="k">🌡️ อุณหภูมิ</div><div class="v">${b.tempTxt}</div></div>
     </div>
     <ul class="know">${b.know.map(k => `<li>${k}</li>`).join('')}</ul>
     <div class="src">ข้อมูล: NASA Planetary Fact Sheet · จำนวนดวงจันทร์ของดาวยักษ์ยังค้นพบเพิ่มเรื่อยๆ</div>`;
-  document.getElementById('sayBtn').addEventListener('click', () => { ensureAudio(); speak(b.say + ' ' + b.know[0]); });
+  sayKit();
+}
+// Spoken versions of the fact boxes: the card shows short labels + values, speech
+// needs a whole sentence. Boxes showing "—" stay silent.
+const FACT_SAY = {
+  sun:     { dist: 'ดวงอาทิตย์อยู่ตรงกลางของระบบสุริยะ', day: 'ดวงอาทิตย์หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลาประมาณ 25 วัน วัดที่เส้นศูนย์สูตร', temp: 'ผิวของดวงอาทิตย์ร้อนประมาณ 5,500 องศาเซลเซียส' },
+  mercury: { day: 'หนึ่งวันบนดาวพุธ นับจากเช้าถึงเช้า ยาวถึง 176 วันของโลก' },
+  venus:   { day: 'ดาวศุกร์หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 243 วันของโลก และหมุนกลับทางกับโลก' },
+  earth:   { d: 'โลกกว้าง 12,756 กิโลเมตร', year: 'โลกวิ่งรอบดวงอาทิตย์ครบหนึ่งรอบ ใช้เวลา 365 วันกับอีกหนึ่งในสี่วัน', temp: 'อุณหภูมิเฉลี่ยของโลกประมาณ 15 องศาเซลเซียส' },
+  mars:    { moon: 'ดาวอังคารมีดวงจันทร์ 2 ดวง ชื่อโฟบอสกับดีมอส' },
+  jupiter: { day: 'ดาวพฤหัสบดีหมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 9 ชั่วโมง 56 นาที วันสั้นที่สุดในระบบสุริยะ' },
+  saturn:  { moon: 'ดาวเสาร์มีดวงจันทร์มากกว่า 270 ดวง มากที่สุดในระบบสุริยะ' },
+  moon:    { dist: 'ดวงจันทร์อยู่ห่างโลก 384,400 กิโลเมตร', year: 'ดวงจันทร์โคจรรอบโลกครบหนึ่งรอบ ใช้เวลา 27.3 วัน', day: 'ดวงจันทร์หันด้านเดียวเข้าหาโลกเสมอ' },
+};
+function factSay(b, key, rel) {
+  const fix = (FACT_SAY[b.id] || {})[key];
+  if (fix) return fix;
+  const T = b.th, v = { dist: b.distTxt, year: b.yearTxt, day: b.dayTxt, moon: b.moonTxt, temp: b.tempTxt }[key];
+  if (v === '—') return '';
+  if (key === 'd') return sayable(T + 'กว้าง ' + b.d.toLocaleString('en-US') + ' กม. ' + rel);
+  if (key === 'dist') return sayable(T + 'อยู่ห่างดวงอาทิตย์ ' + v);
+  if (key === 'year') return sayable(T + 'วิ่งรอบดวงอาทิตย์ครบหนึ่งรอบ ใช้เวลา ' + v);
+  if (key === 'day') return sayable(T + 'หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา ' + v);
+  if (key === 'moon') return v === 'ไม่มี' ? T + 'ไม่มีดวงจันทร์' : sayable(T + 'มีดวงจันทร์ ' + v);
+  return sayable('อุณหภูมิบน' + T + ' ' + v);
 }
 function markStrip(id) { for (const el of strip.children) el.classList.toggle('sel', el.dataset.id === id); }
 
@@ -1155,7 +1189,7 @@ function renderJumpPanel() {
   const hot = dest === 'sun';
   panel.innerHTML = `
     <div class="p-head"><svg viewBox="-60 -60 120 120">${art(dest, 0, 0, dest === 'saturn' ? 24 : 44)}</svg>
-      <div><div class="p-name">${b.th}</div><div class="p-sub">แรงโน้มถ่วง ${g === 1 ? 'เท่าโลก' : g + ' เท่าของโลก'}</div></div></div>
+      <div data-say="${dest === 'earth' ? 'บนโลก แรงโน้มถ่วงเท่ากับที่เรายืนอยู่ทุกวัน' : b.th + ' มีแรงโน้มถ่วง ' + g + ' เท่าของโลก'}"><div class="p-name">${b.th}</div><div class="p-sub">แรงโน้มถ่วง ${g === 1 ? 'เท่าโลก' : g + ' เท่าของโลก'}</div></div></div>
     <div style="margin-top:10px;font-weight:600">หนูหนักเท่าไหร่บนโลก?</div>
     <div class="pick">${KGS.map(k => `<button class="chip ${k === kg ? 'on' : ''}" data-kg="${k}">🧒 ${k} กก.</button>`).join('')}</div>
     <div class="res">${hot ? `ดวงอาทิตย์ร้อนจัดและไม่มีพื้นให้ยืน แต่ถ้ายืนได้ ตาชั่งจะชี้ <b>${w} กก.</b> หนักกว่าบนโลก 28 เท่า!`
@@ -1164,6 +1198,7 @@ function renderJumpPanel() {
     <div class="src">แรงโน้มถ่วงจาก NASA Planetary Fact Sheet · ความสูงคำนวณจากเด็กที่กระโดดบนโลกได้ ${EARTH_JUMP_CM} ซม.</div>`;
   for (const c of panel.querySelectorAll('[data-kg]')) c.addEventListener('click', () => { kg = +c.dataset.kg; buzz(8); renderJumpPanel(); sayWeight(); });
   const jb = document.getElementById('jumpBtn'); if (jb) jb.addEventListener('click', () => { ensureAudio(); doJump(); });
+  sayKit();
 }
 const KGS = [15, 20, 25, 30], AGES = [3, 4, 5, 6, 7, 8, 9, 10];
 function weightLine(id, k) {
@@ -1228,6 +1263,7 @@ function renderAgePanel() {
   for (const c of panel.querySelectorAll('[data-age]')) c.addEventListener('click', () => {
     myAge = +c.dataset.age; buzz(8); ensureAudio(); renderAgePanel(); renderAges(); sayAge('mercury');
   });
+  sayKit();
 }
 
 // ============================================================================
@@ -1325,12 +1361,13 @@ function phasePath(e, R) {
 }
 function renderMoonPanel(sayIt) {
   const e = shownE(), pi = phaseInfo(e), ec = eclipse();
-  let ph = document.getElementById('phaseSvg');
+  let ph = document.getElementById('phaseSvg'), fresh = false;
   if (!ph) {
+    fresh = true;
     panel.innerHTML = `
       <div style="text-align:center;font-weight:600">ภาพที่หนูเห็นจากเมืองไทย</div>
       <svg class="phase" id="phaseSvg" viewBox="-100 -100 200 200"></svg>
-      <div class="q-text" id="phName"></div><div class="q-hint" id="phDesc"></div>
+      <div class="q-text" id="phName"></div><div class="q-hint" id="phDesc" data-sayme></div>
       <div class="levels"><button class="chip icon" id="mPrev" aria-label="เดือนก่อน">◀</button><button class="chip" id="mLab" style="pointer-events:none"></button><button class="chip icon" id="mNext" aria-label="เดือนถัดไป">▶</button></div>
       <div class="q-hint">ลองเปลี่ยนเดือน แล้วลากไปคืนเพ็ญ หาเดือนที่เกิดจันทรุปราคา!</div>
       <button class="big-btn" id="moonPlay">▶️ ให้ดวงจันทร์โคจรเอง</button>
@@ -1362,6 +1399,7 @@ function renderMoonPanel(sayIt) {
     : (Math.abs(e - Math.PI) < 1e-6 ? `คืนเพ็ญนี้ดวงจันทร์${betaDeg(e) > 0 ? 'ลอยเหนือ' : 'ลอดใต้'}เงาโลก จึงไม่เกิดจันทรุปราคา` : pi.thai);
   document.getElementById('phName').textContent = name;
   document.getElementById('phDesc').textContent = desc;
+  if (fresh) sayKit();
   if (sayIt) speak(name.replace(/[🔴🌗]/g, ''));
 }
 function moonFromEvent(ev) {
@@ -1505,6 +1543,7 @@ function renderTripPanel(arrived) {
   const id = tripDest;
   if (id === 'earth') {
     panel.innerHTML = `<div class="q-text">🌍 เราอยู่บนโลก</div><div class="q-hint" style="text-align:center">เลือกดาวปลายทางจากแถบด้านล่าง</div>`;
+    sayKit();
     return;
   }
   const t = TRIPS[id];
@@ -1519,6 +1558,7 @@ function renderTripPanel(arrived) {
     <button class="big-btn" id="launchBtn" ${tripFlying ? 'disabled' : ''}>${arrived ? '🔁 ไปอีกครั้ง' : '🚀 ปล่อยจรวด!'}</button>
     <div class="src">เวลาจริงนับจากวันปล่อยยานถึงวันไปถึง (NASA / ESA) · ยานบินโค้งตามวงโคจร ไม่ได้บินเป็นเส้นตรง · มีแค่ดวงจันทร์ที่คนเคยไปถึง ดาวอื่นส่งยานหุ่นยนต์ไป</div>`;
   document.getElementById('launchBtn').addEventListener('click', () => { ensureAudio(); launch(); });
+  sayKit();
 }
 function tripTo(id) {
   tripRun++; tripFlying = false; tripDest = id;
@@ -1692,6 +1732,7 @@ function renderSkyPanel() {
   for (const b of panel.querySelectorAll('[data-sky]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); skyPick(SKY.find(o => o.id === b.dataset.sky)); });
   const again = document.getElementById('skyAgain'); if (again) again.addEventListener('click', () => { ensureAudio(); skyPick(sky); });
   renderSkyProgress();
+  sayKit();
 }
 
 // ============================================================================
@@ -1825,6 +1866,7 @@ function renderDayPanel() {
       <li>โลกหมุนจากทิศตะวันตกไปตะวันออก เราเลยเห็นดวงอาทิตย์ขึ้นทางทิศตะวันออก</li>
     </ul>
     <div class="src">เวลาขึ้น-ตกแสดงแบบประมาณ (6 โมงเช้า / 6 โมงเย็น) ของจริงเลื่อนไปมาเล็กน้อยตามฤดู</div>`;
+  sayKit();
 }
 function setDayHour(h, sayIt) {
   dayHour = ((Math.round(h) % 24) + 24) % 24;
@@ -1954,6 +1996,7 @@ function renderSeasonPanel() {
       <li>แกนโลกชี้ไปทางดาวเหนือ ⭐ ตลอดทั้งปี</li>
     </ul>
     <div class="src">ฤดูของไทยตามกรมอุตุนิยมวิทยา · ความยาวกลางวันและมุมดวงอาทิตย์คำนวณสำหรับกรุงเทพฯ กลางเดือน</div>`;
+  sayKit();
 }
 function buildMonths() {
   const box = document.getElementById('months');
@@ -2001,19 +2044,101 @@ function pickVoice() {
 }
 if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
 // Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
-function speak(text) {
+function speak(text) { stopReading(); sayNow(text); }
+// Resolves when the line has finished (or was cut off) — lets 🔊 read a card line by line.
+function sayNow(text) {
   try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
-  if (!window.VoiceClips) { deviceSpeak(text); return; }
-  ensureAudio(); VoiceClips.say(text, AC, deviceSpeak);
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
 }
-function deviceSpeak(text) {
-  if (!('speechSynthesis' in window)) return;
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
   try {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
     const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
     speechSynthesis.speak(u);
-  } catch (e) {}
+  } catch (e) { end(); }
+  setTimeout(end, 1500 + text.length * 140);          // Safari sometimes never fires onend
+}
+
+// ---- 🔊 tap-to-hear on every info card ----
+// sayKit() marks the readable parts of the panel (headings, fact boxes, 💡 lines,
+// results): tapping one reads just that part; the 🔊 button reads them all in order,
+// lighting up each part as it goes. The same text feeds VoiceClips.lines below.
+function sayable(t) {                    // card text → speech: no emoji/English, symbols as words
+  return String(t)
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D]/gu, '')
+    .replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').replace(/[A-Za-z][A-Za-z’' ]*[A-Za-z]/g, '')
+    .replace(/กม\.\/ชม\./g, 'กิโลเมตรต่อชั่วโมง').replace(/กม\./g, 'กิโลเมตร').replace(/ชม\./g, 'ชั่วโมง')
+    .replace(/กก\./g, 'กิโลกรัม').replace(/ซม\./g, 'เซนติเมตร').replace(/พ\.ศ\./g, 'พุทธศักราช')
+    .replace(/°C/g, ' องศาเซลเซียส').replace(/°/g, ' องศา').replace(/%/g, ' เปอร์เซ็นต์')
+    .replace(/(^|[\s~(])-(?=\d)/g, '$1ลบ ').replace(/~/g, 'ประมาณ ').replace(/¼/g, 'หนึ่งในสี่')
+    .replace(/–/g, ' ถึง ').replace(/[—·:→()]/g, ' ').replace(/ฯ/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function plainText(el) {
+  const c = el.cloneNode(true);
+  for (const x of c.querySelectorAll('br')) x.replaceWith(' ');
+  for (const x of c.querySelectorAll('div')) x.append(' ');
+  return c.textContent;
+}
+const sayOf = (el) => el.dataset.say !== undefined ? el.dataset.say : sayable(plainText(el));
+let readTok = 0, readBtn = null;
+function clearReading() { for (const e of document.querySelectorAll('.reading')) e.classList.remove('reading'); }
+function stopReading() {
+  if (readBtn) { readBtn.classList.remove('on'); readBtn = null; }
+  clearReading();
+  return ++readTok;
+}
+function hear(el) {
+  const my = stopReading();
+  el.classList.add('reading');
+  sayNow(sayOf(el)).then(() => { if (my === readTok) clearReading(); });
+}
+async function readAll(btn) {
+  if (readBtn === btn) {                 // tap again = stop
+    stopReading(); if (window.VoiceClips) VoiceClips.stop();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    return;
+  }
+  const my = stopReading(); readBtn = btn; btn.classList.add('on');
+  for (const el of panel.querySelectorAll('.sayable')) {
+    if (my !== readTok || !el.isConnected) return;
+    clearReading(); el.classList.add('reading');
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    await sayNow(sayOf(el));
+    if (my !== readTok) return;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  if (my === readTok) stopReading();
+}
+const SAY_SEL = '.p-head > div, .q-text, .clockbig, .badge, .res, .fact, .know li, [data-sayme]';
+function sayKit() {
+  stopReading();
+  const items = [...panel.querySelectorAll(SAY_SEL)].filter((el) => sayOf(el));
+  for (const el of items) {
+    el.classList.add('sayable');
+    el.addEventListener('click', () => { ensureAudio(); buzz(8); hear(el); });
+  }
+  if (items.length < 2) return;
+  let btn = panel.querySelector('.p-head .say');
+  if (!btn) {
+    const head = panel.querySelector('.p-head');
+    if (head) head.insertAdjacentHTML('beforeend', '<button class="say">🔊</button>');
+    else panel.insertAdjacentHTML('afterbegin', '<div class="sayrow"><button class="say">🔊 ฟังทั้งการ์ด</button></div>');
+    btn = panel.querySelector('.p-head .say, .sayrow .say');
+  }
+  btn.setAttribute('aria-label', 'ฟังทั้งการ์ด');
+  btn.addEventListener('click', () => { ensureAudio(); buzz(8); readAll(btn); });
 }
 function celebrate(n) {
   const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
@@ -2072,6 +2197,17 @@ VoiceClips.lines(() => {
   L.push(dayIntro, seasonIntro);
   for (let h = 0; h < 24; h++) L.push(dayLine(h));
   for (let m = 0; m < 12; m++) L.push(seasonLine(m));
+  // every readable part of every card (tap-to-hear + 🔊), rendered state by state
+  const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
+  for (const id of [null, ...STRIP_IDS]) { renderInfo(id); grab(); }
+  for (const id of STRIP_IDS) for (const k of KGS) { dest = id; kg = k; renderJumpPanel(); grab(); }
+  for (const a of AGES) { myAge = a; renderAgePanel(); grab(); }
+  for (const id of ['earth', ...Object.keys(TRIPS)]) for (const ar of [false, true]) { tripDest = id; renderTripPanel(ar); grab(); }
+  for (const c of SKY) for (const d of [false, true]) { sky = c; skyDoneFlag = d; renderSkyPanel(); grab(); }
+  for (let h = 0; h < 24; h++) { dayHour = h; renderDayPanel(); grab(); }
+  for (let m = 0; m < 12; m++) { seasonMonth = m; renderSeasonPanel(); grab(); }
+  panel.innerHTML = '';
+  for (let mm = 1; mm <= 12; mm++) for (let d = 0; d < 360; d++) { moonMonth = mm; elong = d * Math.PI / 180; renderMoonPanel(false); grab(); }
   return L;
 });
 </script>
