@@ -5,7 +5,11 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v128';
+const CACHE = 'kid-games-v129';
+// Voice clips (<game>/voice/<hash>.mp3) are named by content hash, so they never go
+// stale: they live in their own cache that a CACHE bump does NOT wipe. Otherwise every
+// deploy deletes them and an offline session falls back to the robotic device voice.
+const VOICE = 'kid-voice-v1';
 const SHELL = [
   './',
   './index.html',
@@ -189,7 +193,7 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== CACHE && k !== VOICE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -247,7 +251,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else (fonts, icons, manifest, clips) stays cache-first for speed.
+  if (/\/voice\/[0-9a-f]{10}\.mp3$/.test(new URL(req.url).pathname)) {
+    event.respondWith(
+      caches.open(VOICE).then((vc) => vc.match(req).then((hit) => hit || caches.match(req).then((old) => {
+        if (old) { vc.put(req, old.clone()).catch(() => {}); return old; }   // move a clip left in the old CACHE
+        return fetch(req).then((res) => {
+          if (res.ok) vc.put(req, res.clone()).catch(() => {});
+          return res;
+        });
+      })))
+    );
+    return;
+  }
+
+  // Everything else (fonts, icons, manifest) stays cache-first for speed.
   // Only good responses are kept — a 404 mid-deploy must not be pinned forever.
   event.respondWith(
     caches.match(req).then((cached) => {

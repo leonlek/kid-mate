@@ -352,7 +352,7 @@ scene.addEventListener('pointerdown', (ev) => {
   const q = svgPt(ev), tg = ev.target.closest('[data-a],[data-back],[data-egg]');
   if (!cur) { if (tg && tg.dataset.a) { buzz(10); enter(tg.dataset.a); } return; }
   if (tg && tg.dataset.back) { buzz(8); cur = null; buildActs(); $('fact').textContent = INTRO; speak('กลับไปที่ฟาร์ม'); return; }
-  if (cur === 'hen' && tg && tg.dataset.egg !== undefined) { S.eggs.splice(+tg.dataset.egg, 1); S.basket = (S.basket || 0) + 1; cheer(); buzz(15); speak('เก็บไข่ได้ ' + S.basket + ' ฟอง'); return; }
+  if (cur === 'hen' && tg && tg.dataset.egg !== undefined) { S.eggs.splice(+tg.dataset.egg, 1); S.basket = (S.basket || 0) + 1; cheer(); buzz(15); if (S.basket <= 50) speak('เก็บไข่ได้ ' + S.basket + ' ฟอง'); return; }
   if (cur === 'cow' && S.tool === 'milk' && q.x > 380 && q.x < 500 && q.y > 410 && q.y < 500) { S.milking = 1; S.holding = true; try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
   if (cur === 'hen' && S.tool === 'corn' && q.y > 470) { for (let i = 0; i < 8; i++) S.corn.push({ x: q.x + (Math.random() - 0.5) * 60, y: 520 + Math.random() * 60 }); tone(900, 0.05, 'sine', 0.05); return; }
   if (cur === 'sheep' && S.tool === 'shear') { S.ptr = q; S.holding = true; try { scene.setPointerCapture(ev.pointerId); } catch (_) {} shearAt(q); return; }
@@ -444,7 +444,7 @@ requestAnimationFrame(tick);
 VoiceClips.lines(() => {
   const L = [INTRO, 'กลับไปที่ฟาร์ม', 'วันนี้แม่ไก่ไข่ไปแล้ว 1 ฟอง พรุ่งนี้ค่อยมาดูใหม่นะ', 'แม่ไก่ไข่แล้ว 1 ฟอง แตะไข่เก็บใส่ตะกร้า', 'ได้นมเต็มถังแล้ว',
     'ตัดขนเสร็จแล้ว แกะตัวผอมลงเยอะเลย ขนพวกนี้เอาไปทำไหมพรมได้'];
-  for (let n = 1; n <= 30; n++) L.push('เก็บไข่ได้ ' + n + ' ฟอง');
+  for (let n = 1; n <= 50; n++) L.push('เก็บไข่ได้ ' + n + ' ฟอง');
   for (const id of ORDER) L.push(A[id].voice, A[id].fact);
   for (const k in SAY) L.push(SAY[k]);
   return L;

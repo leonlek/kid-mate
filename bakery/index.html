@@ -211,6 +211,7 @@ function addIng(id) {
   renderCtrls();
   if (k.added.length === ING.length) setTimeout(() => setStep('stir'), 1200);
 }
+const countWord = (n) => n <= 5 ? NUM[n] : n <= 12 ? String(n) : 'ตอนนี้มีเยอะเกินไปแล้ว';
 const haveLine = (n, unit) => n > 5 ? 'ตอนนี้มีเยอะเกินไปแล้ว' : 'ตอนนี้มี ' + NUM[n] + ' ' + unit;
 function coverage() { return Math.min(1, k.cover.length / 22); }
 function serve() {
@@ -314,8 +315,8 @@ scene.addEventListener('pointerdown', (ev) => {
   if (step === 'frost' && inCake(q)) { k.frost = k.frost || frostSel; k.frosting = true; addCover(q); try { scene.setPointerCapture(ev.pointerId); } catch (_) {} return; }
   if (step === 'decor' && inCake(q)) {
     const y = clamp(q.y, 300, 360);
-    if (decorSel === 'top') { k.tops.push([q.x, y + 10]); tone(600 + k.tops.length * 80, 0.1, 'sine', 0.08); speak(NUM[Math.min(5, k.tops.length)] || String(k.tops.length)); }
-    else { k.candles.push([q.x, y]); tone(500 + k.candles.length * 80, 0.1, 'triangle', 0.08); speak(NUM[Math.min(5, k.candles.length)] || String(k.candles.length)); }
+    if (decorSel === 'top') { k.tops.push([q.x, y + 10]); tone(600 + k.tops.length * 80, 0.1, 'sine', 0.08); speak(countWord(k.tops.length)); }
+    else { k.candles.push([q.x, y]); tone(500 + k.candles.length * 80, 0.1, 'triangle', 0.08); speak(countWord(k.candles.length)); }
     buzz(8); renderCtrls();
   }
 });

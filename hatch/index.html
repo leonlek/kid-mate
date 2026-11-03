@@ -239,8 +239,7 @@ const WARM_SAY = {
 function warm() {
   if (phase !== 'warm') return;
   const S = SPECIES[sp];
-  day = Math.min(S.days, day + S.days / TAPS);
-  if (day > S.days - 0.01) day = S.days;                 // float sums must not leave it at 79.999
+  day = S.days * Math.min(TAPS, Math.round(day / S.days * TAPS) + 1) / TAPS;   // whole taps — float sums gave 79.999 / 27.4999
   wob = 1; buzz(10); tone(420 + day / S.days * 300, 0.1, 'sine', 0.08);
   if (day >= S.days) { phase = 'pip'; crack = 0; speak(S.hard ? 'ได้ยินเสียงไหม ลูกเริ่มเจาะเปลือกแล้ว แตะช่วยดู' : sp === 'croc' ? 'ได้ยินเสียงร้องจากในไข่ ลูกจระเข้เรียกแม่แล้ว' : 'ไข่เริ่มขยับ ลูกเต่ากำลังใช้ปุ่มที่ปลายปากกรีดเปลือก'); chirp(); }
   else if (Math.round(day) % 7 === 0 || day / S.days > 0.85) speak('วันที่ ' + Math.round(day));

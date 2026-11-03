@@ -477,7 +477,7 @@ function drawGym(now) {
 function gymTick(dt, now) {
   if (running) {
     runT += dt;
-    if (now - lastStep > 330) { lastStep = now; steps++; tone(200 + (steps % 2) * 40, 0.05, 'square', 0.04); if (steps % 50 === 0) { cheer(); speak('วิ่งได้ ' + steps + ' ก้าวแล้ว เก่งมาก'); } }
+    if (now - lastStep > 330) { lastStep = now; steps++; tone(200 + (steps % 2) * 40, 0.05, 'square', 0.04); if (steps % 50 === 0) { cheer(); if (steps <= 1000) speak('วิ่งได้ ' + steps + ' ก้าวแล้ว เก่งมาก'); } }
   }
   drawGym(now);
 }
@@ -611,7 +611,7 @@ function placeWindow() {
   if (isDay && !wasDay) {
     sunrises++; tone(660, 0.15, 'sine', 0.08); tone(880, 0.2, 'sine', 0.06);
     if (sunrises === 16) { cheer(); celebrate(80); speak('ครบ 16 ครั้งแล้ว นี่คือ 1 วันบนโลก นักบินอวกาศเห็นพระอาทิตย์ขึ้นวันละ 16 ครั้ง'); renderWindow(); }
-    else speak('พระอาทิตย์ขึ้นครั้งที่ ' + sunrises);
+    else if (sunrises <= 40) speak('พระอาทิตย์ขึ้นครั้งที่ ' + sunrises);
   }
   wasDay = isDay;
   $('srN').textContent = sunrises + ' ครั้ง';

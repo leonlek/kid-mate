@@ -1874,7 +1874,7 @@ function drawDayStrip() {
     + `<rect x="497" y="0" width="6" height="230" fill="#fff"/>`;
 }
 function renderDayPanel() {
-  const h = dayHour, clocks = '🕛🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚';
+  const h = wrap24(Math.floor(dayHour)), clocks ='🕛🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚';
   const day = isDayAt(h), edge = h === 6 || h === 18;
   panel.innerHTML = `<div class="clockbig">${[...clocks][h % 12]} ${timeTH(h)}</div>
     <span class="badge" style="background:${edge ? '#ffe0c2' : day ? '#fff3b0' : '#dfe3ff'}">${h === 6 ? '🌅 ดวงอาทิตย์ขึ้น' : h === 18 ? '🌇 ดวงอาทิตย์ตก' : day ? '☀️ กลางวัน' : '🌙 กลางคืน'}</span>
