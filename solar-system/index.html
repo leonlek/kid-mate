@@ -296,7 +296,7 @@
       <div class="view hidden" id="dayView">
         <svg id="daySvg" viewBox="0 0 1000 620" aria-label="โลกหมุนรอบตัวเอง"></svg>
         <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 6px">มองโลกจากด้านบนขั้วโลกเหนือ · ลากโลกให้หมุน</div>
-        <svg id="dayStrip" viewBox="0 0 1000 230" aria-label="ท้องฟ้าที่ประเทศไทย"></svg>
+        <svg id="dayStrip" viewBox="0 0 1000 230" aria-label="ท้องฟ้าที่ไทยและอเมริกา"></svg>
       </div>
       <div class="view hidden" id="seasonView">
         <svg id="seasonSvg" viewBox="0 0 1000 640" aria-label="โลกโคจรรอบดวงอาทิตย์"></svg>
@@ -1757,10 +1757,24 @@ function timeTH(h) {
   return (h - 18) + ' ทุ่ม';
 }
 const isDayAt = (h) => h > 6 && h < 18;
+// New York's clock is behind Thailand by the REAL offset today: 12 h, or 11 h while
+// the US is on daylight-saving time (Mar–Nov). Its sun, though, follows its longitude:
+// ~174° west of Bangkok ≈ 12 h of sun time, so New York's sky is always Thailand's sky
+// 12 hours earlier, whatever its clock says.
+function nyOffset(date = new Date()) {
+  try {
+    const at = (tz) => { const p = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric' }).formatToParts(date); const g = (k) => +p.find((x) => x.type === k).value; return Date.UTC(g('year'), g('month') - 1, g('day'), g('hour')); };
+    return Math.round((at('Asia/Bangkok') - at('America/New_York')) / 36e5);
+  } catch (e) { return 12; }
+}
+let NY_OFF = nyOffset();
+const wrap24 = (h) => ((h % 24) + 24) % 24;
+const nyClock = (h) => wrap24(Math.round(h) - NY_OFF), nySky = (h) => wrap24(h - 12);
 function dayLine(h) {
-  if (h === 6) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังขึ้น';
-  if (h === 18) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังตก';
-  return timeTH(h) + ' ที่ประเทศไทยเป็น' + (isDayAt(h) ? 'กลางวัน' : 'กลางคืน');
+  const ny = nySky(h), there = ' ส่วนที่อเมริกา ' + timeTH(nyClock(h)) + (ny === 6 ? ' ดวงอาทิตย์กำลังขึ้น' : ny === 18 ? ' ดวงอาทิตย์กำลังตก' : ' เป็น' + (isDayAt(ny) ? 'กลางวัน' : 'กลางคืน'));
+  if (h === 6) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังขึ้น' + there;
+  if (h === 18) return timeTH(h) + ' ที่ประเทศไทย ดวงอาทิตย์กำลังตก' + there;
+  return timeTH(h) + ' ที่ประเทศไทยเป็น' + (isDayAt(h) ? 'กลางวัน' : 'กลางคืน') + there;
 }
 const DOING = [[0, '😴 นอนหลับ'], [6, '🌅 ตื่นนอน'], [7, '🎒 ไปโรงเรียน'], [9, '📚 เรียนหนังสือ'], [12, '🍚 กินข้าวเที่ยง'],
   [13, '🎨 เรียนและเล่น'], [16, '⚽ เล่นกับเพื่อน'], [18, '🌇 ดูพระอาทิตย์ตก'], [19, '🍲 กินข้าวเย็น'], [20, '🪥 อาบน้ำ แปรงฟัน'], [21, '😴 นอนหลับ']];
@@ -1838,20 +1852,26 @@ function placeDay() {
     <text x="${nx}" y="${ny - 14}" text-anchor="middle" font-size="17" fill="#fff" font-family="Mitr" font-weight="600">${NY.name} ${nx < DCX - 2 ? '☀️' : '🌙'}</text>`;
   drawDayStrip();
 }
-function drawDayStrip() {
-  const h = dayHour, alt = Math.sin((h - 6) / 12 * Math.PI);          // > 0 between 6 and 18
+function skyHalf(x0, h, title, clock, seed) {     // one half (500 wide) of the strip: sky at sun-hour h
+  const alt = Math.sin((h - 6) / 12 * Math.PI);                 // > 0 between 6 and 18
   const sky = alt > 0.25 ? ['#6ec6ff', '#c8ecff'] : alt > -0.05 ? ['#5a6fb8', '#ffa96b'] : ['#0b1033', '#1b2160'];
-  const sx = 80 + (h - 6) / 12 * 840, sy = 190 - 160 * alt;
-  let stars = '';
-  if (alt < 0) for (let i = 0; i < 26; i++) stars += `<circle cx="${(i * 389) % 1000}" cy="${15 + (i * 151) % 140}" r="${1.5 + (i % 3)}" fill="#fff" opacity=".8"/>`;
-  dayStrip.innerHTML = `<defs><linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
-    <rect width="1000" height="230" fill="url(#dsky)"/>${stars}
-    ${alt > -0.1 ? `<circle cx="${sx}" cy="${sy}" r="34" fill="url(#g-sun)"/>` : ''}
-    <rect y="180" width="1000" height="50" fill="${alt > 0 ? '#7ed957' : '#2d5a2a'}"/>
-    <text x="500" y="168" text-anchor="middle" font-size="58">🏠</text><text x="575" y="172" text-anchor="middle" font-size="40">${alt > 0 ? '🧒' : '😴'}</text>
-    <text x="20" y="214" font-size="18" fill="#fff" font-family="Mitr" font-weight="600">⬅ ตะวันออก</text>
-    <text x="980" y="214" text-anchor="end" font-size="18" fill="#fff" font-family="Mitr" font-weight="600">ตะวันตก ➡</text>
-    <text x="500" y="30" text-anchor="middle" font-size="20" fill="#fff" font-family="Mitr" font-weight="600">ท้องฟ้าที่ประเทศไทย</text>`;
+  const id = 'dsky' + seed, sx = x0 + 40 + (h - 6) / 12 * 420, sy = 190 - 150 * alt;
+  let s = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient><clipPath id="c${id}"><rect x="${x0}" y="0" width="500" height="230"/></clipPath></defs>
+    <g clip-path="url(#c${id})"><rect x="${x0}" width="500" height="230" fill="url(#${id})"/>`;
+  if (alt < 0) for (let i = 0; i < 14; i++) s += `<circle cx="${x0 + (i * 389 + seed * 97) % 500}" cy="${40 + (i * 151) % 120}" r="${1.5 + (i % 3)}" fill="#fff" opacity=".8"/>`;
+  if (alt > -0.1) s += `<circle cx="${sx.toFixed(0)}" cy="${sy.toFixed(0)}" r="30" fill="url(#g-sun)"/>`;
+  else { const mx = x0 + 40 + (wrap24(h + 12) - 6) / 12 * 420; s += `<circle cx="${mx.toFixed(0)}" cy="${(190 - 150 * Math.sin((wrap24(h + 12) - 6) / 12 * Math.PI)).toFixed(0)}" r="22" fill="#fdf6d8" opacity=".9"/>`; }
+  s += `<rect x="${x0}" y="180" width="500" height="50" fill="${alt > 0 ? '#7ed957' : '#2d5a2a'}"/>
+    <text x="${x0 + 250}" y="168" text-anchor="middle" font-size="54">🏠</text><text x="${x0 + 318}" y="172" text-anchor="middle" font-size="38">${alt > 0 ? '🧒' : '😴'}</text>
+    <text x="${x0 + 14}" y="216" font-size="16" fill="#fff" font-family="Mitr" font-weight="600">⬅ ตะวันออก</text><text x="${x0 + 486}" y="216" text-anchor="end" font-size="16" fill="#fff" font-family="Mitr" font-weight="600">ตะวันตก ➡</text>
+    <text x="${x0 + 250}" y="30" text-anchor="middle" font-size="21" fill="#fff" font-family="Mitr" font-weight="700" stroke="#1b2160" stroke-width="4" paint-order="stroke">${title}</text>
+    <text x="${x0 + 250}" y="60" text-anchor="middle" font-size="24" fill="#ffd93d" font-family="Mitr" font-weight="700" stroke="#1b2160" stroke-width="5" paint-order="stroke">🕘 ${clock}</text></g>`;
+  return s;
+}
+function drawDayStrip() {
+  const h = dayHour;
+  dayStrip.innerHTML = skyHalf(0, h, '🇹🇭 ประเทศไทย', timeTH(wrap24(Math.round(h))), 1) + skyHalf(500, nySky(h), '🇺🇸 อเมริกา (นิวยอร์ก)', timeTH(nyClock(h)), 2)
+    + `<rect x="497" y="0" width="6" height="230" fill="#fff"/>`;
 }
 function renderDayPanel() {
   const h = dayHour, clocks = '🕛🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚';
@@ -1859,13 +1879,14 @@ function renderDayPanel() {
   panel.innerHTML = `<div class="clockbig">${[...clocks][h % 12]} ${timeTH(h)}</div>
     <span class="badge" style="background:${edge ? '#ffe0c2' : day ? '#fff3b0' : '#dfe3ff'}">${h === 6 ? '🌅 ดวงอาทิตย์ขึ้น' : h === 18 ? '🌇 ดวงอาทิตย์ตก' : day ? '☀️ กลางวัน' : '🌙 กลางคืน'}</span>
     <div class="res" style="text-align:center">ตอนนี้หนูกำลัง ${doing(h)}</div>
+    <div class="res" style="text-align:center">🇺🇸 ที่อเมริกา (นิวยอร์ก) ${timeTH(nyClock(h))} เด็กๆ กำลัง ${doing(nyClock(h))}</div>
     <ul class="know">
       <li>โลกหมุนรอบตัวเองครบ 1 รอบใน 24 ชั่วโมง เราเลยมีกลางวันและกลางคืน</li>
       <li>ฝั่งที่หันหาดวงอาทิตย์เป็นกลางวัน อีกฝั่งเป็นกลางคืน</li>
       <li>ตอนประเทศไทยเป็นกลางวัน อเมริกาอยู่อีกฝั่งของโลก กำลังเป็นกลางคืน</li>
       <li>โลกหมุนจากทิศตะวันตกไปตะวันออก เราเลยเห็นดวงอาทิตย์ขึ้นทางทิศตะวันออก</li>
     </ul>
-    <div class="src">เวลาขึ้น-ตกแสดงแบบประมาณ (6 โมงเช้า / 6 โมงเย็น) ของจริงเลื่อนไปมาเล็กน้อยตามฤดู</div>`;
+    <div class="src">เวลาขึ้น-ตกแสดงแบบประมาณ (6 โมงเช้า / 6 โมงเย็น) ของจริงเลื่อนไปมาเล็กน้อยตามฤดู · ตอนนี้นาฬิกานิวยอร์กช้ากว่าไทย ${NY_OFF} ชั่วโมง (ช่วงอเมริกาเลื่อนเวลาหน้าร้อน มี.ค.–พ.ย. ห่าง 11 ชั่วโมง นอกนั้น 12)</div>`;
   sayKit();
 }
 function setDayHour(h, sayIt) {
@@ -2076,7 +2097,7 @@ function deviceSpeak(text, done) {
 // lighting up each part as it goes. The same text feeds VoiceClips.lines below.
 function sayable(t) {                    // card text → speech: no emoji/English, symbols as words
   return String(t)
-    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D]/gu, '')
+    .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D]/gu, '')
     .replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').replace(/[A-Za-z][A-Za-z’' ]*[A-Za-z]/g, '')
     .replace(/กม\.\/ชม\./g, 'กิโลเมตรต่อชั่วโมง').replace(/กม\./g, 'กิโลเมตร').replace(/ชม\./g, 'ชั่วโมง')
     .replace(/กก\./g, 'กิโลกรัม').replace(/ซม\./g, 'เซนติเมตร').replace(/พ\.ศ\./g, 'พุทธศักราช')
@@ -2195,7 +2216,7 @@ VoiceClips.lines(() => {
   for (const id in TRIPS) L.push(tripChooseLine(id), tripArriveLine(id));
   for (const c of SKY) L.push(skyIntro(c), skyDone(c));
   L.push(dayIntro, seasonIntro);
-  for (let h = 0; h < 24; h++) L.push(dayLine(h));
+
   for (let m = 0; m < 12; m++) L.push(seasonLine(m));
   // every readable part of every card (tap-to-hear + 🔊), rendered state by state
   const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
@@ -2204,7 +2225,8 @@ VoiceClips.lines(() => {
   for (const a of AGES) { myAge = a; renderAgePanel(); grab(); }
   for (const id of ['earth', ...Object.keys(TRIPS)]) for (const ar of [false, true]) { tripDest = id; renderTripPanel(ar); grab(); }
   for (const c of SKY) for (const d of [false, true]) { sky = c; skyDoneFlag = d; renderSkyPanel(); grab(); }
-  for (let h = 0; h < 24; h++) { dayHour = h; renderDayPanel(); grab(); }
+  for (const off of [11, 12]) { NY_OFF = off; for (let h = 0; h < 24; h++) { L.push(dayLine(h)); dayHour = h; renderDayPanel(); grab(); } }
+  NY_OFF = nyOffset();
   for (let m = 0; m < 12; m++) { seasonMonth = m; renderSeasonPanel(); grab(); }
   panel.innerHTML = '';
   for (let mm = 1; mm <= 12; mm++) for (let d = 0; d < 360; d++) { moonMonth = mm; elong = d * Math.PI / 180; renderMoonPanel(false); grab(); }
