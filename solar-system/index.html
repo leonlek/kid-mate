@@ -133,7 +133,7 @@
     font-size: 12px; color: #aab3e6; text-align: right; line-height: 1.3;
   }
   #sizeWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  #sizeSvg { min-width: 760px; }
+  #sizeSvg { min-width: 1000px; }
 
   .vctrls { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
   .vlab { font-size: 28px; }
@@ -253,6 +253,11 @@
     <radialGradient id="g-neptune" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#6d9dff"/><stop offset="1" stop-color="#1d3aa6"/></radialGradient>
  <linearGradient id="g-shade" x1="0" y1="0" x2="1" y2="0"><stop offset=".46" stop-color="#000" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity=".62"/><stop offset="1" stop-color="#000" stop-opacity=".72"/></linearGradient>
     <radialGradient id="g-moon" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#f0f0f0"/><stop offset="1" stop-color="#9a9a9a"/></radialGradient>
+    <radialGradient id="g-ceres" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#c4bdb2"/><stop offset="1" stop-color="#6a635a"/></radialGradient>
+    <radialGradient id="g-pluto" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#f3dfc4"/><stop offset="1" stop-color="#a97858"/></radialGradient>
+    <radialGradient id="g-eris" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c3c8d2"/></radialGradient>
+    <radialGradient id="g-haumea" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d0d8"/></radialGradient>
+    <radialGradient id="g-makemake" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#ecb894"/><stop offset="1" stop-color="#9c5638"/></radialGradient>
   </defs>
 </svg>
 
@@ -272,6 +277,9 @@
     <button class="chip" data-mode="sky">✨ กลุ่มดาวไทย</button>
     <button class="chip" data-mode="day">🌗 กลางวันกลางคืน</button>
     <button class="chip" data-mode="season">🍂 ฤดูกาล</button>
+    <button class="chip" data-mode="comet">☄️ ดาวหาง</button>
+    <button class="chip" data-mode="far">🧊 ไกลออกไป</button>
+    <button class="chip" data-mode="meteor">🌠 ดาวตก</button>
     <button class="chip" id="panelBtn">🗂️ ซ่อนการ์ด</button>
   </div>
 
@@ -287,8 +295,8 @@
         <div class="note">ขนาดดาวและระยะทางย่อให้ดูง่าย<br>ของจริงอยู่ห่างกันมากกว่านี้มาก</div>
       </div>
       <div class="view hidden" id="sizeView">
-        <div id="sizeWrap"><svg id="sizeSvg" viewBox="0 0 1900 600" aria-label="เทียบขนาดดาว"></svg></div>
-        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 12px 10px">ขนาดในหน้านี้เทียบกันตามจริง · ดวงอาทิตย์ใหญ่จนล้นจอ!</div>
+        <div id="sizeWrap"><svg id="sizeSvg" viewBox="0 0 1900 1100" aria-label="เทียบขนาดดาว"></svg></div>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 12px 10px">ขนาดในหน้านี้เทียบกันตามจริง · ดวงอาทิตย์ใหญ่จนล้นจอ! · เลื่อนไปทางขวาดูต่อ</div>
       </div>
       <div class="view hidden" id="jumpView"><svg id="jumpSvg" viewBox="0 0 1000 700" aria-label="ไปเยือนดาว"></svg></div>
       <div class="view hidden" id="tripView"><svg id="tripSvg" viewBox="0 0 1000 700" aria-label="นั่งจรวดไปดาว"></svg></div>
@@ -303,6 +311,24 @@
         <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 4px">ขนาดและระยะย่อให้ดูง่าย · แกนโลกเอียงจริง 23.4°</div>
         <div class="months" id="months"></div>
       </div>
+      <div class="view hidden" id="cometView">
+        <svg id="cometSvg" viewBox="0 0 1000 640" aria-label="ดาวหางแฮลลีย์โคจรรอบดวงอาทิตย์"></svg>
+      </div>
+      <div class="ctrls hidden" id="cometCtrls">
+        <button class="chip icon" id="cPlay" aria-label="เล่น">▶️</button>
+        <button class="chip" id="cNow">📅 วันนี้</button>
+        <button class="chip" id="cGo">⏩ ไปปี 2061</button>
+      </div>
+      <div class="view hidden" id="farView">
+        <svg id="farSvg" viewBox="0 0 1000 510" aria-label="วัตถุที่อยู่ไกลออกไปในระบบสุริยะ"></svg>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 8px">ระยะทางแบบย่อพิเศษ · ขยับไปทางขวา 1 ช่อง = ไกลขึ้น 10 เท่า</div>
+      </div>
+      <div class="strip hidden" id="farStrip"></div>
+      <div class="view hidden" id="meteorView">
+        <svg id="meteorSvg" viewBox="0 0 1000 600" aria-label="ท้องฟ้ากลางคืนมีดาวตก"></svg>
+        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 10px 8px">แตะดาวตกให้ทัน! · ดาวตกพุ่งออกมาจากวงสีเหลือง</div>
+      </div>
+      <div class="pick hidden" id="showerChips"></div>
       <div class="ctrls hidden" id="dayCtrls">
         <button class="chip icon" id="dayPlay" aria-label="หมุนเอง">▶️</button>
       </div>
@@ -417,9 +443,45 @@ const BODIES = [
     know: ['เราเห็นดวงจันทร์ด้านเดียวตลอด เพราะมันหมุนรอบตัวเองพอดีกับการโคจรรอบโลก',
            'มนุษย์เดินบนดวงจันทร์ครั้งแรกในปี 1969 กับยานอะพอลโล 11'],
     say: 'ดวงจันทร์ เป็นบริวารของโลก' },
+  // Dwarf planets — the 5 recognised by the IAU. Sizes/orbits per NASA / Wikipedia.
+  { id: 'ceres', th: 'ซีรีส', en: 'Ceres', dwarf: true, kind: 'ดาวเคราะห์แคระ · ในแถบดาวเคราะห์น้อย',
+    d: 940, distTxt: '414 ล้าน กม.', yearTxt: '4.6 ปี', dayTxt: '9 ชม. 4 นาที',
+    moonTxt: 'ไม่มี', tempTxt: 'เฉลี่ย ~-100 °C', sizeTxt: '',
+    know: ['ซีรีสเป็นก้อนที่ใหญ่ที่สุดในแถบดาวเคราะห์น้อย และเป็นดาวเคราะห์แคระดวงเดียวที่อยู่ใกล้กว่าดาวเนปจูน',
+           'ค้นพบในปี 1801 ตอนแรกคนคิดว่าเป็นดาวเคราะห์ดวงใหม่',
+           'ยานดอว์นของ NASA ไปโคจรรอบซีรีส เห็นจุดสว่างในหลุมอุกกาบาต ซึ่งเป็นเกลือที่ซึมขึ้นมาจากข้างใต้'],
+    say: 'ซีรีส ดาวเคราะห์แคระในแถบดาวเคราะห์น้อย' },
+  { id: 'pluto', th: 'ดาวพลูโต', en: 'Pluto', dwarf: true, kind: 'ดาวเคราะห์แคระ · ในแถบไคเปอร์',
+    d: 2377, distTxt: '5,906 ล้าน กม. (เฉลี่ย)', yearTxt: '248 ปี', dayTxt: '6.4 วันของโลก (หมุนกลับทาง)',
+    moonTxt: '5 ดวง (ใหญ่สุดชื่อแครอน)', tempTxt: '~-230 °C', sizeTxt: '',
+    know: ['ดาวพลูโตเล็กกว่าดวงจันทร์ของเราเสียอีก',
+           'ค้นพบในปี 1930 เคยนับเป็นดาวเคราะห์ดวงที่ 9 จนปี 2006 นักดาราศาสตร์จัดให้เป็นดาวเคราะห์แคระ เพราะในทางโคจรของมันยังมีก้อนน้ำแข็งอื่นอยู่เต็มไปหมด',
+           'ปี 2015 ยานนิวฮอไรซันส์บินผ่าน เห็นที่ราบน้ำแข็งรูปหัวใจขนาดใหญ่'],
+    say: 'ดาวพลูโต ดาวเคราะห์แคระ มีหัวใจน้ำแข็ง' },
+  { id: 'haumea', th: 'เฮาเมอา', en: 'Haumea', dwarf: true, kind: 'ดาวเคราะห์แคระ · ในแถบไคเปอร์',
+    d: 2322, dTxt: 'ยาวราว 2,300 กม.<br><small>ด้านสั้นราว 1,100 กม. รีเหมือนไข่</small>',
+    distTxt: '6,450 ล้าน กม. (เฉลี่ย)', yearTxt: 'ราว 284 ปี', dayTxt: '3.9 ชั่วโมง (เร็วมาก)',
+    moonTxt: '2 ดวง', tempTxt: '~-230 °C', sizeTxt: '',
+    know: ['เฮาเมอาหมุนรอบตัวเองเร็วมาก ครบรอบในไม่ถึง 4 ชั่วโมง ตัวเลยยืดเป็นรูปรีเหมือนไข่',
+           'เฮาเมอามีวงแหวนบางๆ ด้วย ค้นพบในปี 2017'],
+    say: 'เฮาเมอา ดาวเคราะห์แคระรูปไข่ ที่หมุนเร็วมาก' },
+  { id: 'makemake', th: 'มาคีมาคี', en: 'Makemake', dwarf: true, kind: 'ดาวเคราะห์แคระ · ในแถบไคเปอร์',
+    d: 1430, distTxt: '6,800 ล้าน กม. (เฉลี่ย)', yearTxt: 'ราว 306 ปี', dayTxt: 'ราว 22.8 ชั่วโมง',
+    moonTxt: '1 ดวง', tempTxt: '~-240 °C', sizeTxt: '',
+    know: ['มาคีมาคีค้นพบหลังวันอีสเตอร์ปี 2005 ชื่อมาจากเทพเจ้าของชาวเกาะอีสเตอร์',
+           'ผิวสีน้ำตาลแดง ปกคลุมด้วยน้ำแข็งมีเทน'],
+    say: 'มาคีมาคี ดาวเคราะห์แคระสีน้ำตาลแดง' },
+  { id: 'eris', th: 'อีริส', en: 'Eris', dwarf: true, kind: 'ดาวเคราะห์แคระ · ไกลเลยแถบไคเปอร์',
+    d: 2326, distTxt: '10,150 ล้าน กม. (เฉลี่ย)', yearTxt: '559 ปี', dayTxt: '15.8 วันของโลก',
+    moonTxt: '1 ดวง (ดิสโนเมีย)', tempTxt: '-243 ถึง -217 °C', sizeTxt: '',
+    know: ['อีริสตัวเล็กกว่าดาวพลูโตนิดเดียว แต่หนักกว่า',
+           'การค้นพบอีริสในปี 2005 ทำให้นักดาราศาสตร์ต้องตกลงกันใหม่ว่าดาวเคราะห์คืออะไร ดาวพลูโตเลยกลายเป็นดาวเคราะห์แคระ',
+           'อีริสขาวสว่างมาก เพราะผิวเป็นน้ำแข็งที่สะท้อนแสง'],
+    say: 'อีริส ดาวเคราะห์แคระที่อยู่ไกลมาก' },
 ];
 const BY = Object.fromEntries(BODIES.map(b => [b.id, b]));
 const PLANETS = BODIES.filter(b => b.order);
+const DWARFS = BODIES.filter(b => b.dwarf).map(b => b.id);
 const EARTH_D = 12756;
 
 // ============================================================================
@@ -460,6 +522,19 @@ function cartoonArt(id, cx, cy, r, opt = {}) {
         `<ellipse cx="${cx}" cy="${cy}" rx="${0.32 * r}" ry="${1.55 * r}" fill="none" stroke="#bff3f3" stroke-width="${Math.max(1, 0.06 * r)}" opacity=".7" transform="rotate(8 ${cx} ${cy})"/>`;
     case 'neptune':
       return clip + base('neptune') + `<g clip-path="url(#c${u})">` + band(-0.35, 0.12, '#4a74e0', 0.55) + band(0.3, 0.1, '#2a4bbf', 0.6) + E(-0.25, -0.05, 0.3, 0.05, '#e8f0ff', 0.75, -6) + '</g>';
+    case 'ceres':
+      return clip + base('ceres') + `<g clip-path="url(#c${u})">` + C(-0.35, -0.25, 0.2, '#5a544c', 0.45) + C(0.35, 0.35, 0.15, '#5a544c', 0.4) + C(0.05, -0.05, 0.16, '#5a544c', 0.35) + C(0.08, -0.06, 0.05, '#ffffff', 0.95) + '</g>';
+    case 'pluto':
+      return clip + base('pluto') + `<g clip-path="url(#c${u})">` + E(-0.6, 0.35, 0.55, 0.28, '#6b3a24', 0.7, -10) +
+        C(0.22, 0.02, 0.2, '#fbf1e2') + C(0.52, 0.0, 0.2, '#fbf1e2') + `<path d="M${cx + 0.04 * r},${cy + 0.1 * r} L${cx + 0.7 * r},${cy + 0.08 * r} L${cx + 0.4 * r},${cy + 0.58 * r} Z" fill="#fbf1e2"/>` + '</g>';
+    case 'eris':
+      return clip + base('eris') + `<g clip-path="url(#c${u})">` + E(-0.2, 0.3, 0.4, 0.2, '#b8bdc8', 0.4) + E(0.35, -0.3, 0.25, 0.15, '#b8bdc8', 0.35) + '</g>';
+    case 'makemake':
+      return clip + base('makemake') + `<g clip-path="url(#c${u})">` + E(-0.25, -0.2, 0.4, 0.22, '#7e3f27', 0.4, 15) + E(0.3, 0.4, 0.3, 0.15, '#f3d2b8', 0.45) + '</g>';
+    case 'haumea': {                    // spins in 3.9 h → stretched egg shape (≈2,322 × 1,138 km side view) + thin ring
+      const ry = 0.49 * r, ring = (front) => `<path d="M ${cx - 1.97 * r} ${cy} A ${1.97 * r} ${0.3 * r} 0 0 ${front ? 0 : 1} ${cx + 1.97 * r} ${cy}" fill="none" stroke="#c9d6e6" stroke-width="${Math.max(0.6, 0.05 * r)}" opacity="${front ? 0.9 : 0.55}"/>`;
+      return ring(false) + `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${ry}" fill="url(#g-haumea)"/>` + E(0.3, 0.05, 0.16, 0.12, '#b5524a', 0.75) + ring(true);
+    }
     case 'moon':
       return clip + base('moon') + `<g clip-path="url(#c${u})">` + C(-0.3, -0.25, 0.22, '#8a8a8a', 0.5) + C(0.3, 0.2, 0.18, '#8a8a8a', 0.45) + C(-0.1, 0.45, 0.1, '#8a8a8a', 0.45) + '</g>';
   }
@@ -470,7 +545,7 @@ function cartoonArt(id, cx, cy, r, opt = {}) {
 // made from the same NASA-based surface maps the zoom-in globe uses.
 // Saturn's sprite is wider because of its rings (planet radius = sprite half-width / 2.3).
 function art(id, cx, cy, r, opt = {}) {
-  if (opt.cartoon) return cartoonArt(id, cx, cy, r, opt);
+  if (opt.cartoon || BY[id].dwarf) return cartoonArt(id, cx, cy, r, opt);    // dwarf planets have no photo sprite
   const half = id === 'saturn' ? r * 2.3 : r * 1.008;
   const glow = id === 'sun' && opt.glow ? `<circle cx="${cx}" cy="${cy}" r="${r * 1.45}" fill="url(#g-sunglow)"/>` : '';
   const src = 'img/' + id + '.webp';
@@ -559,7 +634,7 @@ function placeOrbit() {
   mg.setAttribute('transform', `translate(${(24 * Math.cos(moonAngle)).toFixed(1)} ${(24 * Math.sin(moonAngle) * TS).toFixed(1)})`);
   document.getElementById('belt').setAttribute('transform', `translate(500 500) scale(1 ${TS.toFixed(3)}) rotate(${(beltAngle * 180 / Math.PI).toFixed(2)})`);
   const lab = document.getElementById('selLabel');
-  if (!selected) { lab.textContent = ''; return; }
+  if (!selected || BY[selected].dwarf) { lab.textContent = ''; return; }   // dwarf planets aren't in the orbit view
   const sb = BY[selected];
   let lx, ly;
   if (selected === 'sun') { lx = 500; ly = 500 + 48 + 34; }
@@ -636,6 +711,8 @@ function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   moonTick(dt);
   dayTick(dt);
+  cometTick(dt);
+  meteorTick(dt);
   if ((mode === 'explore' || mode === 'mission') && (follow || flight) && speed === 0) placeOrbit();
   if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
@@ -935,25 +1012,43 @@ function renderGlobe(dt) {
 // ============================================================================
 // SIZE VIEW — all diameters to the same true scale (Earth radius = 16 units)
 // ============================================================================
+// Row 1: everything in distance order at ONE true scale (the Moon and the dwarf planets
+// are specks — that is the point). Row 2: Earth, the Moon and the dwarf planets ×10.
+const SIZE_ROW = ['mercury', 'venus', 'earth', 'moon', 'mars', 'ceres', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'haumea', 'makemake', 'eris'];
+const ZOOM_ROW = ['earth', 'moon', 'pluto', 'eris', 'haumea', 'makemake', 'ceres'];
 function buildSize() {
   const sv = document.getElementById('sizeSvg');
   const K = 16 / (EARTH_D / 2);                 // units per km of radius
   const cy = 300;
   const sunR = BY.sun.d / 2 * K;                // ≈ 1747 — far bigger than the screen
+  const label = (x, y, t, fs = 22) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Mitr" font-size="${fs}" font-weight="600" fill="#fff">${t}</text>`;
   let s = `<g data-id="sun">${art('sun', 210 - sunR, cy, sunR, { cartoon: true })}</g>`;
   s += `<text x="40" y="${cy}" font-family="Mitr" font-size="30" font-weight="600" fill="#5a2a00">ดวงอาทิตย์</text>`;
-  let x = 250;
-  for (const p of PLANETS) {
-    const r = p.d / 2 * K;
-    const half = p.id === 'saturn' ? r * 2.27 : Math.max(r, 6);   // Saturn's main rings reach ~2.27× its radius
+  let x = 250, small = 0;
+  for (const id of SIZE_ROW) {
+    const p = BY[id], r = p.d / 2 * K;
+    const half = id === 'saturn' ? r * 2.27 : Math.max(r, 7);   // Saturn's main rings reach ~2.27× its radius
     x += half;
-    s += `<g data-id="${p.id}">${art(p.id, x, cy, r)}</g>`;
-    const big = r > 40;
-    s += big
-      ? `<text x="${x}" y="${cy + r + 44}" text-anchor="middle" font-family="Mitr" font-size="24" font-weight="600" fill="#fff">${p.th}</text>`
-      : `<line x1="${x}" y1="${cy + r + 6}" x2="${x}" y2="${cy + (p.order % 2 ? 130 : 200)}" stroke="#aab3e6" stroke-width="2"/><text x="${x}" y="${cy + (p.order % 2 ? 160 : 230)}" text-anchor="middle" font-family="Mitr" font-size="22" font-weight="600" fill="#fff">${p.th}</text>`;
-    x += half + 34;
+    s += `<g data-id="${id}"><circle cx="${x}" cy="${cy}" r="${Math.max(half, 22)}" fill="transparent"/>${art(id, x, cy, r)}</g>`;
+    if (r > 40) s += label(x, cy + r + 44, p.th, 24);
+    else { const y = [140, 205, 270][small++ % 3]; s += `<line x1="${x}" y1="${cy + r + 6}" x2="${x}" y2="${cy + y - 26}" stroke="#aab3e6" stroke-width="2"/>` + label(x, cy + y, p.th); }
+    x += half + (r > 40 ? 34 : 46);
   }
+  // row 2 — magnified ×10, still to scale with each other
+  const K2 = K * 10, cy2 = 860;
+  s += `<line x1="30" y1="640" x2="${x}" y2="640" stroke="rgba(255,255,255,0.18)" stroke-width="3" stroke-dasharray="10 10"/>`;
+  s += `<text x="40" y="690" font-family="Mitr" font-size="28" font-weight="600" fill="#ffd93d">🔍 ขยาย 10 เท่า · โลก ดวงจันทร์ และดาวเคราะห์แคระ (ยังเทียบกันตามจริง)</text>`;
+  let x2 = 40;
+  for (const id of ZOOM_ROW) {
+    const r = BY[id].d / 2 * K2;
+    x2 += r;
+    s += `<g data-id="${id}"><circle cx="${x2}" cy="${cy2}" r="${Math.max(r, 40)}" fill="transparent"/>${art(id, x2, cy2, r)}</g>`;
+    s += label(x2, id === 'earth' ? cy2 + r + 34 : cy2 + 200, BY[id].th);
+    if (id !== 'earth') s += `<line x1="${x2}" y1="${cy2 + r * (id === 'haumea' ? 0.49 : 1) + 6}" x2="${x2}" y2="${cy2 + 172}" stroke="#aab3e6" stroke-width="2"/>`;
+    x2 += r + (id === 'earth' ? 70 : id === 'haumea' ? 60 : 90);
+  }
+  s += `<text x="${x2 + 10}" y="${cy2 - 10}" font-family="Mitr" font-size="20" fill="#cfd6ff">☄️ แกนดาวหางแฮลลีย์ยาวแค่ราว 15 กม.</text><text x="${x2 + 10}" y="${cy2 + 20}" font-family="Mitr" font-size="20" fill="#cfd6ff">ขยายแล้วก็ยังเล็กกว่าจุดนี้ →  ·</text>`;
+  sv.setAttribute('viewBox', `0 0 ${Math.max(x, x2 + 420) + 40} 1100`);
   sv.innerHTML = s;
   sv.addEventListener('pointerdown', (e) => {
     const g = e.target.closest('[data-id]'); ensureAudio();
@@ -986,7 +1081,7 @@ function renderOverview() {
       <div class="fact"><div class="k">☀️ ดาวฤกษ์</div><div class="v">ดวงอาทิตย์ 1 ดวง</div></div>
       <div class="fact"><div class="k">🪐 ดาวเคราะห์</div><div class="v">8 ดวง</div></div>
       <div class="fact"><div class="k">⏳ อายุ</div><div class="v">ประมาณ 4,600 ล้านปี</div></div>
-      <div class="fact"><div class="k">🌑 ดาวเคราะห์แคระ</div><div class="v">เช่น ดาวพลูโต</div></div>
+      <div class="fact"><div class="k">🌑 ดาวเคราะห์แคระ</div><div class="v">5 ดวง เช่น ดาวพลูโต</div></div>
     </div>
     <ul class="know">
       <li>เรียงจากใกล้ดวงอาทิตย์: พุธ ศุกร์ โลก อังคาร พฤหัสบดี เสาร์ ยูเรนัส เนปจูน</li>
@@ -1007,15 +1102,15 @@ function renderInfo(id) {
       <button class="say" aria-label="ฟังทั้งการ์ด">🔊</button>
     </div>
     <div class="facts">
-      <div class="fact" data-say="${factSay(b, 'd', rel)}"><div class="k">📏 เส้นผ่านศูนย์กลาง</div><div class="v">${b.d.toLocaleString('th-TH')} กม.<br><small>${rel}</small></div></div>
-      <div class="fact" data-say="${factSay(b, 'dist')}"><div class="k">📍 ระยะทาง</div><div class="v">${b.order ? 'ห่างดวงอาทิตย์ ' : ''}${b.distTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'd', rel)}"><div class="k">📏 เส้นผ่านศูนย์กลาง</div><div class="v">${b.dTxt || b.d.toLocaleString('th-TH') + ' กม.<br><small>' + rel + '</small>'}</div></div>
+      <div class="fact" data-say="${factSay(b, 'dist')}"><div class="k">📍 ระยะทาง</div><div class="v">${b.order || b.dwarf ? 'ห่างดวงอาทิตย์ ' : ''}${b.distTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'year')}"><div class="k">📅 1 ปี (รอบดวงอาทิตย์)</div><div class="v">${b.yearTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'day')}"><div class="k">🔄 1 วัน (หมุนรอบตัวเอง)</div><div class="v">${b.dayTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'moon')}"><div class="k">🌙 ดวงจันทร์</div><div class="v">${b.moonTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'temp')}"><div class="k">🌡️ อุณหภูมิ</div><div class="v">${b.tempTxt}</div></div>
     </div>
     <ul class="know">${b.know.map(k => `<li>${k}</li>`).join('')}</ul>
-    <div class="src">ข้อมูล: NASA Planetary Fact Sheet · จำนวนดวงจันทร์ของดาวยักษ์ยังค้นพบเพิ่มเรื่อยๆ</div>`;
+    <div class="src">${b.dwarf ? 'ข้อมูล: NASA · ดาวเคราะห์แคระอยู่ไกลมาก ตัวเลขบางอย่างยังเป็นค่าประมาณ' : 'ข้อมูล: NASA Planetary Fact Sheet · จำนวนดวงจันทร์ของดาวยักษ์ยังค้นพบเพิ่มเรื่อยๆ'}</div>`;
   sayKit();
 }
 // Spoken versions of the fact boxes: the card shows short labels + values, speech
@@ -1028,6 +1123,8 @@ const FACT_SAY = {
   mars:    { moon: 'ดาวอังคารมีดวงจันทร์ 2 ดวง ชื่อโฟบอสกับดีมอส' },
   jupiter: { day: 'ดาวพฤหัสบดีหมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 9 ชั่วโมง 56 นาที วันสั้นที่สุดในระบบสุริยะ' },
   saturn:  { moon: 'ดาวเสาร์มีดวงจันทร์มากกว่า 270 ดวง มากที่สุดในระบบสุริยะ' },
+  haumea:  { d: 'เฮาเมอารูปร่างรีเหมือนไข่ ด้านยาวราว 2,300 กิโลเมตร ด้านสั้นราว 1,100 กิโลเมตร' },
+  pluto:   { day: 'ดาวพลูโตหมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 6.4 วันของโลก และหมุนกลับทาง' },
   moon:    { dist: 'ดวงจันทร์อยู่ห่างโลก 384,400 กิโลเมตร', year: 'ดวงจันทร์โคจรรอบโลกครบหนึ่งรอบ ใช้เวลา 27.3 วัน', day: 'ดวงจันทร์หันด้านเดียวเข้าหาโลกเสมอ' },
 };
 function factSay(b, key, rel) {
@@ -1443,14 +1540,17 @@ document.getElementById('panelBtn').addEventListener('click', () => {
 });
 function setMode(m) {
   mode = m;
+  if (selected && BY[selected].dwarf && m !== 'size') { selected = null; follow = false; document.getElementById('zFollow').classList.remove('on'); }
   applyPanel();
   for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.classList.toggle('on', b.dataset.mode === m);
-  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', tripView: m === 'trip', skyView: m === 'sky', ageView: m === 'age', moonView: m === 'moon', dayView: m === 'day', seasonView: m === 'season', dayCtrls: m === 'day' };
+  const show = { orbitView: m === 'explore' || m === 'mission', sizeView: m === 'size', jumpView: m === 'jump', tripView: m === 'trip', skyView: m === 'sky', ageView: m === 'age', moonView: m === 'moon', dayView: m === 'day', seasonView: m === 'season', dayCtrls: m === 'day',
+    cometView: m === 'comet', cometCtrls: m === 'comet', farView: m === 'far', farStrip: m === 'far', meteorView: m === 'meteor', showerChips: m === 'meteor' };
   tripRun++; tripFlying = false;
   for (const k in show) document.getElementById(k).classList.toggle('hidden', !show[k]);
   document.getElementById('ctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
   document.getElementById('vctrls').classList.toggle('hidden', !(m === 'explore' || m === 'mission'));
-  strip.classList.toggle('hidden', m === 'age' || m === 'moon' || m === 'sky' || m === 'day' || m === 'season');
+  strip.classList.toggle('hidden', m === 'age' || m === 'moon' || m === 'sky' || m === 'day' || m === 'season' || m === 'comet' || m === 'far' || m === 'meteor');
+  if (m !== 'comet') { cPlay = false; markCometPlay(); }
   seasonAnim++; seasonTheta = null;
   if (m === 'mission') { target = null; newQuestion(); }
   else if (m === 'jump') { visit(dest); }
@@ -1460,6 +1560,9 @@ function setMode(m) {
   else if (m === 'season') { buildSeason(); buildMonths(); renderSeasonPanel(); speak(seasonIntro); }
   else if (m === 'age') { renderAges(); renderAgePanel(); speak('หนูอายุกี่ขวบ แตะตัวเลขเลย'); }
   else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
+  else if (m === 'comet') { cLastR = null; cState = ''; buildComet(); renderCometPanel(); speak(cometIntro); }
+  else if (m === 'far') { buildFar(); buildFarStrip(); renderFarCard(farSel); speak(farIntro); }
+  else if (m === 'meteor') { mets = []; buildMeteorChips(); buildMeteor(); speak(meteorIntro); }
   else { renderInfo(selected); markStrip(selected); }
 }
 for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
@@ -2042,6 +2145,397 @@ function goMonth(m) {
 const seasonIntro = 'แตะเดือน ดูโลกเดินทางรอบดวงอาทิตย์';
 
 // ============================================================================
+// ☄️ COMET — Halley's comet on its real orbit, drawn at the same true scale as the
+// planets' orbits (a = 17.83 AU, e = 0.967 → 0.59 AU from the Sun at perihelion,
+// 35 AU at aphelion). Position from Kepler's equation; perihelia 9 Feb 1986 and
+// 28 Jul 2061 (NASA/JPL). Playback slows near the Sun so the tail can be watched.
+// ============================================================================
+const HAL = { a: 17.83, e: 0.967, T0: 1986.11, T1: 2061.57 };
+HAL.P = HAL.T1 - HAL.T0; HAL.b = HAL.a * Math.sqrt(1 - HAL.e * HAL.e);
+const CS = 25, CSX = 104, CSY = 300;                  // px per AU · the Sun (perihelion lies left of it)
+const cometSvg = document.getElementById('cometSvg');
+function yearNow() { const d = new Date(), y0 = new Date(d.getFullYear(), 0, 1); return d.getFullYear() + (d - y0) / (365.25 * 864e5); }
+let cYear = yearNow(), cPlay = false, cState = '', cLastR = null;
+function halley(y) {
+  const f = ((y - HAL.T0) / HAL.P) % 1, M = 2 * Math.PI * (f < 0 ? f + 1 : f);
+  let E = Math.PI;
+  for (let i = 0; i < 40; i++) E -= (E - HAL.e * Math.sin(E) - M) / (1 - HAL.e * Math.cos(E));
+  const x = HAL.a * (Math.cos(E) - HAL.e), z = HAL.b * Math.sin(E);
+  return { X: CSX - x * CS, Y: CSY - z * CS, r: HAL.a * (1 - HAL.e * Math.cos(E)) };
+}
+const activity = (r) => Math.pow(Math.max(0, Math.min(1, (4 - r) / 3.4)), 1.5);   // ice starts to boil off within ~4 AU
+const COMET_SAY = {
+  far: 'ดาวหางอยู่ไกลดวงอาทิตย์ หนาวมาก เป็นแค่ก้อนน้ำแข็งมืดๆ ยังไม่มีหาง',
+  in: 'ดาวหางเข้าใกล้ดวงอาทิตย์ น้ำแข็งเริ่มระเหย เกิดหางแล้ว',
+  peri: 'ใกล้ดวงอาทิตย์ที่สุด หางยาวที่สุด และหางชี้ออกจากดวงอาทิตย์เสมอ',
+  out: 'ดาวหางวิ่งออกห่างดวงอาทิตย์ หางค่อยๆ สั้นลง',
+};
+const COMET_NOW = { far: '❄️ อยู่ไกล ยังไม่มีหาง', in: '🔥 เข้าใกล้ เริ่มมีหาง', peri: '☀️ ใกล้ดวงอาทิตย์ที่สุด', out: '💨 วิ่งออกไป หางสั้นลง' };
+const cometIntro = 'ดาวหางแฮลลีย์ กดเล่น ดูดาวหางวิ่งรอบดวงอาทิตย์';
+function cometIcon() {
+  return `<path d="M-6,-6 L-52,-40 L-40,-50 Z" fill="#9fd3ff" opacity=".8"/><path d="M-6,-4 Q-30,-6 -54,-26 L-44,-44 Q-26,-22 -4,-10 Z" fill="#ffe7a3" opacity=".75"/>
+    <circle cx="0" cy="0" r="16" fill="#eaf6ff" opacity=".55"/><ellipse cx="0" cy="0" rx="7" ry="5" fill="#4a4440"/>`;
+}
+function buildComet() {
+  let s = `<defs><radialGradient id="g-coma"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".5" stop-color="#cfefff" stop-opacity=".5"/><stop offset="1" stop-color="#cfefff" stop-opacity="0"/></radialGradient>
+    <clipPath id="czClip"><rect x="610" y="436" width="376" height="190" rx="20"/></clipPath></defs>`;
+  for (const [id, au] of [['earth', 1], ['mars', 1.524], ['jupiter', 5.203], ['saturn', 9.537], ['uranus', 19.19], ['neptune', 30.07]]) {
+    const R = au * CS, a = id === 'earth' || id === 'mars' ? 1.2 : -0.36;
+    s += `<circle cx="${CSX}" cy="${CSY}" r="${R}" fill="none" stroke="rgba(170,185,255,0.35)" stroke-width="2"/>`;
+    if (id !== 'mars') s += `<text x="${CSX + R * Math.cos(a)}" y="${CSY + R * Math.sin(a) + (id === 'earth' ? 18 : -6)}" text-anchor="middle" font-family="Mitr" font-size="${id === 'earth' ? 15 : 18}" fill="#aab3e6">${BY[id].th}</text>`;
+  }
+  s += `<ellipse cx="${CSX + HAL.a * HAL.e * CS}" cy="${CSY}" rx="${HAL.a * CS}" ry="${HAL.b * CS}" fill="none" stroke="#9fd3ff" stroke-width="2.5" stroke-dasharray="8 7" opacity=".7"/>`;
+  s += `<circle cx="${CSX}" cy="${CSY}" r="22" fill="url(#g-sunglow)"/><circle cx="${CSX}" cy="${CSY}" r="9" fill="url(#g-sun)"/>`;
+  s += `<g id="cTail"></g><circle id="cHead" r="5" fill="#fff"/>`;
+  s += `<text id="cYearT" x="20" y="44" font-family="Itim" font-size="34" fill="#ffd93d"></text>`;
+  s += `<text id="cDistT" x="20" y="76" font-family="Mitr" font-size="18" fill="#cfd6ff"></text>`;
+  s += `<rect x="610" y="436" width="376" height="190" rx="20" fill="rgba(0,0,0,0.45)" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+    <g clip-path="url(#czClip)"><g id="cZoom"></g></g>
+    <text x="626" y="462" font-family="Mitr" font-size="17" fill="#fff">🔭 ภาพขยายดาวหาง</text>`;
+  cometSvg.innerHTML = s;
+  placeComet();
+}
+function placeComet() {
+  const p = halley(cYear), A = activity(p.r), q = halley(cYear + 0.002);
+  let ax = p.X - CSX, ay = p.Y - CSY; const al = Math.hypot(ax, ay) || 1; ax /= al; ay /= al;        // away from the Sun
+  let vx = q.X - p.X, vy = q.Y - p.Y; const vl = Math.hypot(vx, vy) || 1; vx /= vl; vy /= vl;
+  const L = 4 + 70 * A;
+  document.getElementById('cHead').setAttribute('cx', p.X.toFixed(1)); document.getElementById('cHead').setAttribute('cy', p.Y.toFixed(1));
+  document.getElementById('cTail').innerHTML = A > 0.01 ? `<path d="M${p.X},${p.Y} L${(p.X + ax * L).toFixed(1)},${(p.Y + ay * L).toFixed(1)}" stroke="#cfefff" stroke-width="3" stroke-linecap="round" opacity=".85"/>` : '';
+  const y = Math.floor(cYear);
+  document.getElementById('cYearT').textContent = `ปี ค.ศ. ${y} · พ.ศ. ${y + 543}`;
+  document.getElementById('cDistT').textContent = `ห่างดวงอาทิตย์ราว ${Math.round(p.r * 149.6).toLocaleString('th-TH')} ล้าน กม.`;
+  // close-up: nucleus + coma + straight blue gas tail (straight away from the Sun) + curved dusty tail
+  const nx = 800, ny = 540, Li = 18 + 190 * A, Ld = 12 + 140 * A;
+  const dx = ax - vx * 0.45, dy = ay - vy * 0.45, dl = Math.hypot(dx, dy) || 1;
+  let z = '';
+  if (A > 0.01) {
+    const px = -ay, py = ax, w = 4 + 10 * A;
+    z += `<path d="M${nx + px * w},${ny + py * w} L${nx + ax * Li},${ny + ay * Li} L${nx - px * w},${ny - py * w} Z" fill="#7cc4ff" opacity="${(0.35 + 0.5 * A).toFixed(2)}"/>`;
+    z += `<path d="M${nx + px * w * 1.4},${ny + py * w * 1.4} Q${nx + ax * Ld * 0.6 + px * 8},${ny + ay * Ld * 0.6 + py * 8} ${nx + dx / dl * Ld + px * 22 * A},${ny + dy / dl * Ld + py * 22 * A} L${nx + dx / dl * Ld - px * 22 * A},${ny + dy / dl * Ld - py * 22 * A} Q${nx + ax * Ld * 0.6 - px * 8},${ny + ay * Ld * 0.6 - py * 8} ${nx - px * w},${ny - py * w} Z" fill="#ffe08a" opacity="${(0.3 + 0.45 * A).toFixed(2)}"/>`;
+    z += `<circle cx="${nx}" cy="${ny}" r="${(8 + 26 * A).toFixed(1)}" fill="url(#g-coma)"/>`;
+  }
+  z += `<ellipse cx="${nx}" cy="${ny}" rx="8" ry="5.5" fill="#4a4440" transform="rotate(-20 ${nx} ${ny})"/>`;
+  z += `<text x="${(nx - ax * 70).toFixed(0)}" y="${(ny - ay * 70 + 8).toFixed(0)}" text-anchor="middle" font-size="24">☀️</text>`;
+  document.getElementById('cZoom').innerHTML = z;
+  // spoken state changes
+  const st = p.r < 0.8 ? 'peri' : A < 0.02 ? 'far' : (cLastR !== null && p.r > cLastR ? 'out' : 'in');
+  cLastR = p.r;
+  if (st !== cState) {
+    const first = !cState; cState = st;
+    if (mode === 'comet') { renderCometPanel(); if (!first && cPlay) speak(COMET_SAY[st]); }
+  }
+}
+function renderCometPanel() {
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${cometIcon()}</svg>
+      <div data-say="ดาวหางแฮลลีย์ ดาวหางที่ดังที่สุด กลับมาให้เห็นทุกราว 76 ปี"><div class="p-name">ดาวหางแฮลลีย์</div><div class="p-sub">Halley's Comet · ดาวหาง</div></div></div>
+    <div class="facts">
+      <div class="fact" data-say="แกนกลางของดาวหางแฮลลีย์ยาวราว 15 กิโลเมตร"><div class="k">📏 แกนกลาง</div><div class="v">ยาวราว 15 กม.</div></div>
+      <div class="fact" data-say="ดาวหางแฮลลีย์วนกลับมาใกล้ดวงอาทิตย์ทุกราว 76 ปี"><div class="k">🔁 วนกลับมา</div><div class="v">ทุกราว 76 ปี</div></div>
+      <div class="fact" data-say="มาครั้งล่าสุดปี 1986 หรือ พ.ศ. 2529"><div class="k">🔙 มาครั้งล่าสุด</div><div class="v">ปี 1986<br><small>(พ.ศ. 2529)</small></div></div>
+      <div class="fact" data-say="ครั้งหน้าจะมาใกล้ดวงอาทิตย์ที่สุด วันที่ 28 กรกฎาคม 2061 หรือ พ.ศ. 2604"><div class="k">⏭️ ครั้งหน้า</div><div class="v">28 ก.ค. 2061<br><small>(พ.ศ. 2604)</small></div></div>
+    </div>
+    <div class="res" data-say="${COMET_SAY[cState || 'far']}">📍 ในภาพตอนนี้: <b>${COMET_NOW[cState || 'far']}</b></div>
+    <ul class="know">
+      <li>ดาวหางคือก้อนน้ำแข็งปนฝุ่นและหิน เหมือนก้อนหิมะสกปรก</li>
+      <li>เมื่อเข้าใกล้ดวงอาทิตย์ น้ำแข็งระเหยเป็นไอ เกิดหัวฟุ้งๆ และหางยาวหลายล้านกิโลเมตร</li>
+      <li>หางชี้ออกจากดวงอาทิตย์เสมอ เพราะแสงและลมจากดวงอาทิตย์ดันออกไป ไม่ได้ลากตามหลัง</li>
+      <li>มีหาง 2 แบบ หางแก๊สสีฟ้าเป็นเส้นตรง กับหางฝุ่นสีเหลืองโค้งๆ</li>
+      <li>ฝุ่นที่ดาวหางแฮลลีย์ทิ้งไว้ กลายเป็นฝนดาวตกทุกปี ในเดือนพฤษภาคมและตุลาคม</li>
+      <li>ปี 1986 ยานจอตโตของยุโรปบินเข้าไปใกล้ ถ่ายรูปแกนดาวหางได้ เป็นก้อนสีมืดรูปร่างเหมือนเมล็ดถั่ว</li>
+    </ul>
+    <div class="src">ข้อมูล: NASA / JPL · ระยะทางในภาพเทียบกันตามจริง · ใกล้ดวงอาทิตย์ภาพจะเล่นช้าลงให้ดูหางทัน</div>`;
+  sayKit();
+}
+function cometTick(dt) {
+  if (mode !== 'comet' || !cPlay || document.hidden) return;
+  const r = halley(cYear).r;
+  cYear += dt * 2.2 * Math.max(0.02, Math.min(1, Math.pow(r / 8, 1.5)));   // years per second, much slower near the Sun
+  placeComet();
+}
+function markCometPlay() { const b = document.getElementById('cPlay'); b.textContent = cPlay ? '⏸' : '▶️'; b.classList.toggle('on', cPlay); }
+document.getElementById('cPlay').addEventListener('click', () => { ensureAudio(); buzz(8); cPlay = !cPlay; markCometPlay(); });
+document.getElementById('cNow').addEventListener('click', () => { ensureAudio(); buzz(8); cYear = yearNow(); cLastR = null; cPlay = false; markCometPlay(); placeComet(); speak(COMET_SAY[cState]); });
+document.getElementById('cGo').addEventListener('click', () => { ensureAudio(); buzz(8); cYear = 2059; cLastR = null; cPlay = true; markCometPlay(); placeComet(); });
+
+// ============================================================================
+// 🧊 FARTHER OUT — asteroid belt, dwarf planets, Kuiper belt, Voyager 1, Oort cloud.
+// Distances on a log scale (each step = 10× farther) — said on screen.
+// Voyager 1: 1 light-day (25.9 billion km) from Earth on 18 Nov 2026 (NASA), ~17 km/s.
+// ============================================================================
+const farSvg = document.getElementById('farSvg'), farStrip = document.getElementById('farStrip');
+const FAR_X = (au) => 60 + 150 * Math.log10(au / 0.3);
+const VOY = { km0: 25.902e9, t0: 2026 + 321.43 / 365.25, kmPerYear: 0.5365e9, lightDay: 2026 + 321.43 / 365.25 };
+const voyKm = () => VOY.km0 + VOY.kmPerYear * (yearNow() - VOY.t0);
+const LIGHT_KM_H = 1.0792528e9;
+const voyMillion = (km) => (Math.round(km / 1e9) * 1000).toLocaleString('en-US');      // nearest 1,000 million km
+const FAR_ITEMS = ['belt', 'ceres', 'kuiper', 'pluto', 'haumea', 'makemake', 'eris', 'voyager', 'oort', 'moons'];
+const FAR_POS = { belt: [FAR_X(2.7), 330], ceres: [FAR_X(2.77), 150], kuiper: [FAR_X(40), 330], pluto: [FAR_X(39.5), 110], haumea: [FAR_X(43.1), 400],
+  makemake: [FAR_X(45.4), 40], eris: [FAR_X(67.9), 180], voyager: [FAR_X(173), 260], oort: [FAR_X(14000), 260] };
+const FAR = {
+  belt: { icon: '🪨', th: 'แถบดาวเคราะห์น้อย', sub: 'ระหว่างดาวอังคารกับดาวพฤหัสบดี', say: 'แถบดาวเคราะห์น้อย มีก้อนหินนับล้านก้อน วิ่งรอบดวงอาทิตย์',
+    facts: [['📍 ระยะ', 'ห่างดวงอาทิตย์ราว 330–500 ล้าน กม.', 'แถบดาวเคราะห์น้อยอยู่ห่างดวงอาทิตย์ราว 330 ถึง 500 ล้านกิโลเมตร'],
+      ['🪨 จำนวน', 'ก้อนใหญ่กว่า 1 กม. มีมากกว่า 1 ล้านก้อน', 'ก้อนที่ใหญ่กว่า 1 กิโลเมตร มีมากกว่า 1 ล้านก้อน'],
+      ['👑 ก้อนใหญ่สุด', 'ซีรีส กว้างราว 940 กม.', 'ก้อนที่ใหญ่ที่สุดคือซีรีส กว้างราว 940 กิโลเมตร'],
+      ['⚖️ รวมกันหนัก', 'น้อยกว่าดวงจันทร์ของเรามาก (ราว 3%)', 'ทุกก้อนรวมกัน ยังหนักไม่ถึงดวงจันทร์ของเรา แค่ราว 3 เปอร์เซ็นต์']],
+    know: ['ในหนัง ดาวเคราะห์น้อยอยู่เบียดกันแน่น แต่ของจริงอยู่ห่างกันมาก ยานอวกาศบินผ่านไปได้สบายๆ',
+      'ดาวเคราะห์น้อยคือเศษหินที่เหลือจากตอนเกิดดาวเคราะห์ เมื่อราว 4,600 ล้านปีก่อน',
+      'ยานดอว์นของ NASA เคยไปโคจรรอบเวสตาและซีรีส สองก้อนใหญ่ในแถบนี้'], src: 'ข้อมูล: NASA' },
+  kuiper: { icon: '🧊', th: 'แถบไคเปอร์', sub: 'ไกลเลยดาวเนปจูนออกไป', say: 'แถบไคเปอร์ แถบก้อนน้ำแข็ง ที่อยู่ไกลเลยดาวเนปจูนออกไป',
+    facts: [['📍 ระยะ', 'ไกลกว่าโลกถึงดวงอาทิตย์ 30–50 เท่า', 'แถบไคเปอร์อยู่ไกลกว่าระยะจากโลกถึงดวงอาทิตย์ 30 ถึง 50 เท่า'],
+      ['🧊 ทำจาก', 'ก้อนน้ำแข็งนับไม่ถ้วน', 'แถบไคเปอร์มีก้อนน้ำแข็งนับไม่ถ้วน'],
+      ['⭐ สมาชิกดัง', 'ดาวพลูโต เฮาเมอา มาคีมาคี', 'ดาวเคราะห์แคระที่อยู่ในแถบนี้ คือดาวพลูโต เฮาเมอา และมาคีมาคี'],
+      ['🌡️ อุณหภูมิ', 'ราว -230 °C', 'แถบไคเปอร์หนาวมาก ราวลบ 230 องศาเซลเซียส']],
+    know: ['แถบไคเปอร์กว้างกว่าแถบดาวเคราะห์น้อยมาก แต่เป็นน้ำแข็งเกือบทั้งหมด',
+      'ปี 2019 ยานนิวฮอไรซันส์บินผ่านอาร์โรคอท ก้อนน้ำแข็งรูปร่างเหมือนตุ๊กตาหิมะ',
+      'ดาวหางหลายดวงที่วนกลับมาบ่อยๆ มาจากแถบนี้'], src: 'ข้อมูล: NASA' },
+  oort: { icon: '☁️', th: 'เมฆออร์ต', sub: 'ขอบนอกสุดของระบบสุริยะ', say: 'เมฆออร์ต ก้อนน้ำแข็งจำนวนมหาศาล ห่อรอบระบบสุริยะอยู่ไกลมาก',
+    facts: [['📍 ระยะ', 'ไกลกว่าโลกถึงดวงอาทิตย์ราว 2,000–100,000 เท่า', 'เมฆออร์ตอยู่ไกลกว่าระยะจากโลกถึงดวงอาทิตย์ ราว 2,000 ถึง 100,000 เท่า'],
+      ['🧊 ทำจาก', 'ก้อนน้ำแข็งนับพันล้านก้อน', 'เมฆออร์ตมีก้อนน้ำแข็งนับพันล้านก้อน'],
+      ['👀 เคยเห็นไหม', 'ยังไม่มีใครเห็นตรงๆ รู้จากดาวหางที่มาจากที่นั่น', 'ยังไม่มีใครเห็นเมฆออร์ตตรงๆ นักดาราศาสตร์รู้จากดาวหางที่มาจากที่นั่น'],
+      ['🛰️ วอยเอเจอร์ 1', 'อีกราว 300 ปีจึงจะถึงขอบด้านใน', 'วอยเอเจอร์ 1 ต้องเดินทางอีกราว 300 ปี จึงจะถึงขอบด้านในของเมฆออร์ต']],
+    know: ['เมฆออร์ตห่อรอบระบบสุริยะเป็นทรงกลม เหมือนฟองสบู่หนาๆ', 'ดาวหางที่ใช้เวลาวนรอบดวงอาทิตย์นานเป็นพันๆ ปี มาจากเมฆออร์ต'],
+    src: 'ข้อมูล: NASA · ระยะของเมฆออร์ตยังเป็นค่าประมาณ' },
+  moons: { icon: '🌙', th: 'ดวงจันทร์ของดาวดวงอื่น', sub: 'ไม่ใช่แค่โลกที่มีดวงจันทร์', say: 'ดาวเคราะห์หลายดวงมีดวงจันทร์ บางดวงมีเป็นร้อยดวง',
+    facts: [['⚫ ดาวพุธ ดาวศุกร์', 'ไม่มี', 'ดาวพุธและดาวศุกร์ไม่มีดวงจันทร์'], ['🌍 โลก', '1 ดวง', 'โลกมีดวงจันทร์ 1 ดวง'],
+      ['🔴 ดาวอังคาร', '2 ดวง', 'ดาวอังคารมีดวงจันทร์ 2 ดวง'], ['🟠 ดาวพฤหัสบดี', 'มากกว่า 90 ดวง', 'ดาวพฤหัสบดีมีดวงจันทร์มากกว่า 90 ดวง'],
+      ['🪐 ดาวเสาร์', 'มากกว่า 270 ดวง', 'ดาวเสาร์มีดวงจันทร์มากกว่า 270 ดวง มากที่สุด'], ['🔵 ดาวยูเรนัส', 'มากกว่า 25 ดวง', 'ดาวยูเรนัสมีดวงจันทร์มากกว่า 25 ดวง'],
+      ['🔷 ดาวเนปจูน', '16 ดวง', 'ดาวเนปจูนมีดวงจันทร์ 16 ดวง'], ['💗 ดาวพลูโต', '5 ดวง', 'ดาวพลูโตมีดวงจันทร์ 5 ดวง']],
+    know: ['แกนีมีดของดาวพฤหัสบดี เป็นดวงจันทร์ที่ใหญ่ที่สุด ใหญ่กว่าดาวพุธเสียอีก',
+      'ยูโรปาของดาวพฤหัสบดี มีมหาสมุทรซ่อนอยู่ใต้น้ำแข็ง',
+      'ไททันของดาวเสาร์มีอากาศหนา และมีทะเลสาบที่ไม่ใช่น้ำ แต่เป็นมีเทนเหลว'],
+    src: 'ข้อมูล: NASA · ดาวยักษ์ยังค้นพบดวงจันทร์เล็กๆ เพิ่มเรื่อยๆ', link: ['../moon/#moons', '🌙 ไปดูดวงจันทร์ดาวอื่น'] },
+};
+function voyagerCard() {
+  const km = voyKm(), h = Math.round(km / LIGHT_KM_H), before = (VOY.fake || yearNow()) < VOY.lightDay;   // VOY.fake: lines() renders both versions
+  return { icon: '🛰️', th: 'วอยเอเจอร์ 1', sub: 'Voyager 1 · ยานที่อยู่ไกลจากโลกที่สุด', say: 'วอยเอเจอร์ 1 ยานอวกาศที่อยู่ไกลจากโลกที่สุด',
+    facts: [['🚀 ออกเดินทาง', '5 ก.ย. 1977 (พ.ศ. 2520)', 'วอยเอเจอร์ 1 ออกเดินทางจากโลก วันที่ 5 กันยายน 1977'],
+      ['📍 ตอนนี้ไกลจากโลก', `ราว ${(Math.round(km / 1e8) * 100).toLocaleString('th-TH')} ล้าน กม.`, `ตอนนี้วอยเอเจอร์ 1 อยู่ไกลจากโลกราว ${voyMillion(km)} ล้านกิโลเมตร`],
+      ['📡 สัญญาณวิทยุไปถึง', `ใช้เวลาราว ${h} ชั่วโมง`, `สัญญาณวิทยุเดินทางเร็วเท่าแสง ยังต้องใช้เวลาราว ${h} ชั่วโมง กว่าจะถึงยาน`],
+      ['💨 ความเร็ว', 'ราว 61,000 กม./ชม.', 'วอยเอเจอร์ 1 วิ่งเร็วราว 61,000 กิโลเมตรต่อชั่วโมง']],
+    know: [before ? 'วันที่ 18 พฤศจิกายน 2026 (พ.ศ. 2569) วอยเอเจอร์ 1 จะไกลจากโลกครบ 1 วันแสง สัญญาณจากโลกต้องเดินทาง 24 ชั่วโมงเต็มกว่าจะถึง'
+      : 'เมื่อวันที่ 18 พฤศจิกายน 2026 (พ.ศ. 2569) วอยเอเจอร์ 1 ไกลจากโลกครบ 1 วันแสง เป็นสิ่งแรกที่มนุษย์ส่งไปได้ไกลขนาดนี้',
+      'ผ่านดาวพฤหัสบดีปี 1979 และดาวเสาร์ปี 1980 แล้วพุ่งออกไปเรื่อยๆ ไม่กลับมาอีก',
+      'ปี 2012 ออกพ้นเขตลมสุริยะ เป็นยานลำแรกที่เข้าสู่อวกาศระหว่างดวงดาว',
+      'บนยานมีแผ่นเสียงทองคำ บันทึกคำทักทาย 55 ภาษา ดนตรี และเสียงต่างๆ บนโลก เผื่อมีใครมาเจอ',
+      'ปี 1990 ยานหันกล้องกลับมาถ่ายรูปโลก เห็นเป็นจุดสีฟ้าจางๆ เล็กนิดเดียว'],
+    src: 'ข้อมูล: NASA/JPL · ระยะทางคำนวณจากวันนี้ (ค่าประมาณ)' };
+}
+const farIntro = 'ไกลออกไปจากดาวเนปจูน ยังมีอะไรอีกเยอะ แตะดูเลย';
+let farSel = null;
+function voyIcon(x, y, k = 1) {
+  return `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-30,0 H30 M0,0 V28" stroke="#cfd6ff" stroke-width="3"/><path d="M-14,-4 A16,16 0 0 1 14,-4 Z" fill="#f0f0f0" stroke="#aab3e6" stroke-width="2"/><rect x="-6" y="-4" width="12" height="12" fill="#c9a94a"/><circle cx="0" cy="34" r="4" fill="#ffd93d"/></g>`;
+}
+function farIcon(id, x, y, r) {
+  if (BY[id]) return art(id, x, y, r);
+  if (id === 'voyager') return voyIcon(x, y, r / 30);
+  return `<text x="${x}" y="${y + r * 0.35}" text-anchor="middle" font-size="${r * 1.1}">${FAR[id].icon}</text>`;
+}
+function buildFar() {
+  let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const ty = 470, lab = (x, y, t, fs = 17, c = '#fff', anchor = 'middle') => `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="Mitr" font-size="${fs}" font-weight="600" fill="${c}" stroke="#0b1033" stroke-width="5" paint-order="stroke">${t}</text>`;
+  let s = `<line x1="40" y1="${ty}" x2="985" y2="${ty}" stroke="#aab3e6" stroke-width="2"/>`;
+  [1, 10, 100, 1000, 10000, 100000].forEach((au) => { const x = FAR_X(au); s += `<line x1="${x}" y1="${ty - 8}" x2="${x}" y2="${ty + 8}" stroke="#aab3e6" stroke-width="2"/>` + lab(x, ty + 28, '×' + au.toLocaleString('en-US'), 14, '#aab3e6'); });
+  s += `<circle cx="22" cy="260" r="40" fill="url(#g-sunglow)"/><circle cx="22" cy="260" r="20" fill="url(#g-sun)"/>`;
+  // Oort cloud — a faint shell of icy dots
+  let oort = ''; for (let i = 0; i < 260; i++) { const x = FAR_X(2000) + rnd() * (FAR_X(100000) - FAR_X(2000)), y = 30 + rnd() * 400; oort += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1 + rnd() * 1.6).toFixed(1)}" fill="#cfe8ff" opacity="${(0.15 + rnd() * 0.4).toFixed(2)}"/>`; }
+  s += `<g data-far="oort"><rect x="${FAR_X(2000)}" y="20" width="${FAR_X(100000) - FAR_X(2000)}" height="420" rx="40" fill="rgba(160,200,255,0.05)"/>${oort}</g>` + lab(FAR_POS.oort[0], 60, '☁️ เมฆออร์ต', 20);
+  // heliopause (edge of the solar wind) ~121 AU, crossed by Voyager 1 in 2012
+  s += `<path d="M${FAR_X(121)},40 Q${FAR_X(121) + 16},240 ${FAR_X(121)},440" fill="none" stroke="#ffb3c7" stroke-width="2" stroke-dasharray="6 6" opacity=".7"/>` + lab(FAR_X(121) - 4, 455, 'ขอบลมสุริยะ', 13, '#ffb3c7');
+  s += `<line x1="40" y1="260" x2="${FAR_POS.voyager[0]}" y2="260" stroke="#ffd93d" stroke-width="2" stroke-dasharray="3 9" opacity=".6"/>`;
+  // asteroid belt + Kuiper belt bands
+  let belt = ''; for (let i = 0; i < 70; i++) belt += `<circle cx="${(FAR_X(2.2) + rnd() * (FAR_X(3.3) - FAR_X(2.2))).toFixed(0)}" cy="${(210 + rnd() * 100).toFixed(0)}" r="${(1.2 + rnd() * 2).toFixed(1)}" fill="#b5ab9b"/>`;
+  s += `<g data-far="belt"><rect x="${FAR_X(2.2) - 10}" y="200" width="${FAR_X(3.3) - FAR_X(2.2) + 20}" height="120" fill="transparent"/>${belt}</g>` + lab(FAR_POS.belt[0], 346, 'แถบดาว', 15) + lab(FAR_POS.belt[0], 364, 'เคราะห์น้อย', 15);
+  let kb = ''; for (let i = 0; i < 110; i++) kb += `<circle cx="${(FAR_X(30) + rnd() * (FAR_X(50) - FAR_X(30))).toFixed(0)}" cy="${(205 + rnd() * 110).toFixed(0)}" r="${(1.2 + rnd() * 2).toFixed(1)}" fill="#a9d8ff" opacity=".85"/>`;
+  s += `<g data-far="kuiper"><rect x="${FAR_X(30) - 6}" y="200" width="${FAR_X(50) - FAR_X(30) + 12}" height="120" fill="transparent"/>${kb}</g>` + lab(FAR_POS.kuiper[0], 346, 'แถบไคเปอร์', 15);
+  // planets (not tappable here) — dots in order
+  for (const p of PLANETS) s += `<circle cx="${FAR_X(p.au)}" cy="260" r="${Math.max(3, SHOW_R[p.id] * 0.5)}" fill="url(#g-${p.id})"/>`;
+  s += lab(FAR_X(1), 236, 'โลก', 14) + lab(FAR_X(5.2), 236, 'พฤหัส', 14) + lab(FAR_X(30.07) - 8, 236, 'เนปจูน', 14);
+  // dwarf planets + Voyager, with leader lines to their true distance on the axis
+  for (const id of ['ceres', 'pluto', 'haumea', 'makemake', 'eris']) {
+    const [x, y] = FAR_POS[id], ax = id === 'ceres' ? FAR_X(2.77) : FAR_X({ pluto: 39.5, haumea: 43.1, makemake: 45.4, eris: 67.9 }[id]);
+    s += `<line x1="${ax}" y1="260" x2="${x}" y2="${y}" stroke="#ffffff" stroke-width="1.5" opacity=".45"/>`;
+    s += `<g data-far="${id}"><circle cx="${x}" cy="${y}" r="34" fill="transparent"/>${art(id, x, y, 14)}</g>` + lab(x + 22, y + 6, BY[id].th, 16, '#fff', 'start');
+  }
+  s += `<g data-far="voyager"><circle cx="${FAR_POS.voyager[0]}" cy="262" r="38" fill="transparent"/>${voyIcon(FAR_POS.voyager[0], 252, 0.9)}</g>` + lab(FAR_POS.voyager[0], 310, 'วอยเอเจอร์ 1', 16, '#ffd93d');
+  s += `<circle id="farRing" r="30" fill="none" stroke="#ffd93d" stroke-width="4" stroke-dasharray="6 6" opacity="0"/>`;
+  farSvg.innerHTML = s;
+  markFar();
+}
+function buildFarStrip() {
+  farStrip.innerHTML = '';
+  for (const id of FAR_ITEMS) {
+    const b = document.createElement('button');
+    b.className = 'pbtn'; b.dataset.id = id;
+    b.innerHTML = `<svg viewBox="-60 -60 120 120">${id === 'voyager' ? voyIcon(0, -8, 1.5) : farIcon(id, 0, 0, id === 'haumea' ? 40 : 44)}</svg><span>${BY[id] ? BY[id].th : FAR[id] ? FAR[id].th : 'วอยเอเจอร์ 1'}</span>`;
+    b.addEventListener('click', () => { ensureAudio(); farPick(id); });
+    farStrip.appendChild(b);
+  }
+}
+function markFar() {
+  for (const el of farStrip.children) el.classList.toggle('sel', el.dataset.id === farSel);
+  const ring = document.getElementById('farRing'); if (!ring) return;
+  const p = FAR_POS[farSel];
+  ring.setAttribute('opacity', p ? 1 : 0);
+  if (p) { ring.setAttribute('cx', p[0]); ring.setAttribute('cy', farSel === 'voyager' ? 262 : p[1]); ring.setAttribute('r', farSel === 'belt' || farSel === 'kuiper' ? 64 : farSel === 'oort' ? 0 : 30); }
+}
+function renderFarCard(id) {
+  if (!id) { renderFarOverview(); return; }
+  if (BY[id]) { renderInfo(id); return; }
+  const c = id === 'voyager' ? voyagerCard() : FAR[id];
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${id === 'voyager' ? voyIcon(0, -8, 1.5) : farIcon(id, 0, 0, 44)}</svg>
+      <div data-say="${c.say}"><div class="p-name">${c.th}</div><div class="p-sub">${c.sub}</div></div></div>
+    <div class="facts">${c.facts.map(([k, v, sy]) => `<div class="fact" data-say="${sy}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
+    <ul class="know">${c.know.map((k) => `<li>${k}</li>`).join('')}</ul>
+    ${c.link ? `<a class="big-btn" href="${c.link[0]}" style="display:block;text-align:center;line-height:66px;text-decoration:none">${c.link[1]}</a>` : ''}
+    <div class="src">${c.src}</div>`;
+  sayKit();
+}
+function renderFarOverview() {
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120">${art('pluto', 0, 0, 44)}</svg>
+      <div data-say="${farIntro}"><div class="p-name">ไกลออกไป</div><div class="p-sub">ระบบสุริยะไม่ได้มีแค่ดาวเคราะห์</div></div></div>
+    <div class="q-hint" style="margin:10px 0 4px">👆 แตะสิ่งต่างๆ ในภาพ หรือปุ่มข้างล่าง</div>
+    <ul class="know">
+      <li>ภาพนี้ย่อระยะทางแบบพิเศษ ขยับไปทางขวาหนึ่งช่อง ไกลขึ้น 10 เท่า</li>
+      <li>ดาวเคราะห์แคระมี 5 ดวง คือ ซีรีส ดาวพลูโต เฮาเมอา มาคีมาคี และอีริส</li>
+      <li>ยิ่งไกลดวงอาทิตย์ ยิ่งมืดและหนาว ของที่อยู่ไกลๆ จึงเป็นน้ำแข็งเกือบทั้งหมด</li>
+    </ul>
+    <div class="src">ข้อมูล: NASA · ดาวเคราะห์แคระวางตามระยะเฉลี่ย</div>`;
+  sayKit();
+}
+function farPick(id) {
+  if (farSel === id) { farSel = null; markFar(); renderFarCard(null); blip(420); buzz(8); return; }
+  farSel = id; markFar(); renderFarCard(id);
+  blip(520 + FAR_ITEMS.indexOf(id) * 40); buzz(10);
+  speak(BY[id] ? BY[id].say : id === 'voyager' ? voyagerCard().say : FAR[id].say);
+}
+farSvg.addEventListener('pointerdown', (e) => {
+  ensureAudio();
+  const g = e.target.closest('[data-far]');
+  if (g) farPick(g.dataset.far); else if (farSel) farPick(farSel);
+});
+
+// ============================================================================
+// 🌠 METEORS — tap the shooting stars. Showers: peak nights (IMO calendar, the
+// same dates every year), radiant constellation, parent comet/asteroid, best rate
+// (ZHR: per hour under a perfectly dark sky).
+// ============================================================================
+const SHOWERS = [
+  { id: 'qua', th: 'ควอดรันทิดส์', m: 0, d: 3, rad: 'กลุ่มดาวคนเลี้ยงสัตว์', par: 'ดาวเคราะห์น้อย 2003 EH1', parSay: 'ดาวเคราะห์น้อยดวงหนึ่ง', zhr: 110, rx: 260, ry: 120 },
+  { id: 'lyr', th: 'ไลริดส์', m: 3, d: 22, rad: 'กลุ่มดาวพิณ', par: 'ดาวหางแทตเชอร์', parSay: 'ดาวหางแทตเชอร์', zhr: 18, rx: 700, ry: 110 },
+  { id: 'eta', th: 'อีตาอควอริดส์', m: 4, d: 5, rad: 'กลุ่มดาวคนแบกหม้อน้ำ', par: 'ดาวหางแฮลลีย์', parSay: 'ดาวหางแฮลลีย์', zhr: 50, rx: 820, ry: 380 },
+  { id: 'per', th: 'เพอร์เซอิดส์', m: 7, d: 12, rad: 'กลุ่มดาวเพอร์ซิอุส', par: 'ดาวหางสวิฟต์–ทัตเทิล', parSay: 'ดาวหางสวิฟต์ ทัตเทิล', zhr: 100, rx: 220, ry: 160 },
+  { id: 'ori', th: 'โอไรโอนิดส์', m: 9, d: 21, rad: 'กลุ่มดาวนายพราน (ดาวเต่า)', par: 'ดาวหางแฮลลีย์', parSay: 'ดาวหางแฮลลีย์', zhr: 20, rx: 600, ry: 210 },
+  { id: 'leo', th: 'ลีโอนิดส์', m: 10, d: 17, rad: 'กลุ่มดาวสิงโต', par: 'ดาวหางเทมเพล–ทัตเทิล', parSay: 'ดาวหางเทมเพล ทัตเทิล', zhr: 15, rx: 760, ry: 170,
+    extra: 'บางปีลีโอนิดส์กลายเป็นพายุดาวตก เห็นได้หลายพันดวงต่อชั่วโมง อย่างในปี 1966' },
+  { id: 'gem', th: 'เจมินิดส์', m: 11, d: 13, rad: 'กลุ่มดาวคนคู่', par: 'ดาวเคราะห์น้อยเฟทอน', parSay: 'ดาวเคราะห์น้อยเฟทอน', zhr: 150, rx: 470, ry: 120,
+    extra: 'เจมินิดส์แปลกกว่าฝนดาวตกอื่น เพราะเกิดจากฝุ่นของดาวเคราะห์น้อย ไม่ใช่ดาวหาง' },
+];
+const meteorIntro = 'แตะดาวตกให้ทัน แล้วนับดูว่าจับได้กี่ดวง';
+const METEOR_KNOW = ['ดาวตกไม่ใช่ดาวจริงๆ แต่เป็นเม็ดฝุ่นหรือหินเล็กๆ ส่วนใหญ่ขนาดแค่เม็ดทราย ที่ตกเข้ามาในอากาศของโลก',
+  'มันวิ่งเร็วมาก เสียดสีกับอากาศจนร้อนจัดและลุกเป็นแสง สูงจากพื้นราว 100 กิโลเมตร สูงกว่าเครื่องบินมาก',
+  'ฝนดาวตกเกิดเมื่อโลกวิ่งผ่านทางฝุ่นที่ดาวหางทิ้งไว้ จึงเกิดช่วงเดิมทุกปี',
+  'ถ้ามีชิ้นไหนเหลือรอดตกถึงพื้น เรียกว่า อุกกาบาต',
+  'ดูให้ดี ไปที่มืดๆ ไกลไฟเมือง นอนมองฟ้ากว้างๆ และรอให้ตาชินกับความมืดราว 20 นาที'];
+const meteorSvg = document.getElementById('meteorSvg');
+let shower = null, mets = [], metCaught = 0, metNextAt = 0, metT = 0;
+function showerSay(sh) { return `ฝนดาวตก${sh.th} เห็นมากที่สุดคืนวันที่ ${sh.d} ถึง ${sh.d + 1} ${MONTHS[sh.m]} ของทุกปี`; }
+const catchLine = (n) => `เก่งมาก จับดาวตกได้ ${n} ดวงแล้ว`;
+function daysUntil(sh) {
+  const now = new Date(), t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let t = new Date(now.getFullYear(), sh.m, sh.d);
+  if (t < t0 - 864e5) t = new Date(now.getFullYear() + 1, sh.m, sh.d);      // the peak night itself (and the morning after) still count
+  return Math.max(0, Math.round((t - t0) / 864e5));
+}
+const nextShower = () => SHOWERS.reduce((a, b) => (daysUntil(b) < daysUntil(a) ? b : a));
+function buildMeteorChips() {
+  const box = document.getElementById('showerChips'), nx = nextShower();
+  box.innerHTML = SHOWERS.map((sh) => `<button class="chip${sh === shower ? ' on' : ''}" data-sh="${sh.id}">${sh === nx ? '⭐ ' : ''}${sh.th}</button>`).join('');
+  for (const b of box.children) b.addEventListener('click', () => { ensureAudio(); buzz(8); pickShower(SHOWERS.find((s) => s.id === b.dataset.sh), true); });
+}
+function buildMeteor() {
+  let seed = 5; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  let st = ''; for (let i = 0; i < 140; i++) st += `<circle cx="${(rnd() * 1000).toFixed(0)}" cy="${(rnd() * 500).toFixed(0)}" r="${(0.6 + rnd() * 1.6).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`;
+  meteorSvg.innerHTML = `<defs><linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050822"/><stop offset=".75" stop-color="#16205a"/><stop offset="1" stop-color="#2b3a7a"/></linearGradient>
+      <linearGradient id="g-met" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs>
+    <rect width="1000" height="600" fill="url(#g-night)"/>${st}
+    <g id="radiant"></g><g id="metG"></g><g id="sparkG"></g>
+    <path d="M0,540 Q120,515 240,535 T480,528 T720,540 T1000,525 V600 H0 Z" fill="#0b1a10"/>
+    <path d="M760,540 V470 L800,440 L840,470 V540 Z" fill="#0b1a10"/><path d="M748,474 L800,428 L852,474" fill="none" stroke="#0b1a10" stroke-width="10" stroke-linejoin="round"/>
+    <rect x="788" y="492" width="22" height="22" fill="#ffd36b" opacity=".85"/>
+    <path d="M130,540 V470" stroke="#0b1a10" stroke-width="10"/><circle cx="130" cy="455" r="34" fill="#0b1a10"/><circle cx="110" cy="478" r="22" fill="#0b1a10"/><circle cx="152" cy="478" r="22" fill="#0b1a10"/>
+    <g fill="#0b1a10"><circle cx="420" cy="548" r="11"/><path d="M430,552 h64 v10 h-64 z"/><path d="M494,556 l28,-4 v6 z"/></g>
+    <text id="metCount" x="24" y="48" font-family="Itim" font-size="36" fill="#ffd93d">🌠 0</text>`;
+  pickShower(shower || nextShower(), false);
+}
+function pickShower(sh, sayIt) {
+  shower = sh; mets = [];
+  document.getElementById('radiant').innerHTML = `<circle cx="${sh.rx}" cy="${sh.ry}" r="26" fill="none" stroke="#ffd93d" stroke-width="2" stroke-dasharray="4 6" opacity=".7"/>
+    <text x="${sh.rx}" y="${sh.ry + 52}" text-anchor="middle" font-family="Mitr" font-size="17" fill="#ffd93d" opacity=".9">${sh.rad.replace(/ \(.*\)/, '')}</text>`;
+  for (const b of document.querySelectorAll('#showerChips .chip')) b.classList.toggle('on', b.dataset.sh === sh.id);
+  renderMeteorPanel();
+  if (sayIt) speak(showerSay(sh));
+}
+function renderMeteorPanel() {
+  const sh = shower, n = daysUntil(sh), next = sh === nextShower();
+  panel.innerHTML = `
+    <div class="p-head"><svg viewBox="-60 -60 120 120"><path d="M-40,40 L30,-30" stroke="url(#g-met)" stroke-width="6" stroke-linecap="round"/><circle cx="30" cy="-30" r="9" fill="#fff"/><circle cx="30" cy="-30" r="18" fill="#fff" opacity=".25"/></svg>
+      <div data-say="ฝนดาวตก${sh.th}"><div class="p-name">${sh.th}</div><div class="p-sub">ฝนดาวตก${next ? ' · ⭐ ครั้งต่อไป' : ''}</div></div></div>
+    <div class="facts">
+      <div class="fact" data-say="${showerSay(sh)}"><div class="k">📅 คืนที่เห็นมากที่สุด</div><div class="v">${sh.d}–${sh.d + 1} ${MSHORT[sh.m]}<br><small>ทุกปี</small></div></div>
+      <div class="fact" data-say=""><div class="k">⏳ จากวันนี้</div><div class="v">${n === 0 ? 'คืนนี้!' : 'อีก ' + n + ' วัน'}</div></div>
+      <div class="fact" data-say="ดาวตกจะพุ่งออกมาจากทาง${sh.rad.replace(/ \(.*\)/, '')}"><div class="k">🌌 พุ่งออกมาจากทาง</div><div class="v">${sh.rad}</div></div>
+      <div class="fact" data-say="เกิดจากฝุ่นที่${sh.parSay}ทิ้งไว้"><div class="k">☄️ เกิดจากฝุ่นของ</div><div class="v">${sh.par}</div></div>
+    </div>
+    <div class="res" data-say="ในที่มืดมากๆ อาจเห็นได้ถึงราว ${sh.zhr} ดวงต่อชั่วโมง ในเมืองจะเห็นน้อยกว่านี้มาก">🌠 มากที่สุดราว <b>${sh.zhr}</b> ดวงต่อชั่วโมง <small>(ในที่มืดมากๆ)</small></div>
+    <ul class="know">${(sh.extra ? [sh.extra, ...METEOR_KNOW] : METEOR_KNOW).map((k) => `<li>${k}</li>`).join('')}</ul>
+    <div class="src">ข้อมูล: International Meteor Organization / NASA · วันที่อาจเลื่อน 1 วันในบางปี</div>`;
+  sayKit();
+}
+function spawnMeteor() {
+  const sh = shower, a = Math.random() * Math.PI * 2, off = 30 + Math.random() * 120;
+  const x = sh.rx + Math.cos(a) * off, y = sh.ry + Math.sin(a) * off * 0.8;
+  const dir = a + (Math.random() - 0.5) * 0.25, v = 650 + Math.random() * 500;
+  mets.push({ x, y, vx: Math.cos(dir) * v, vy: Math.sin(dir) * v, t: 0, life: 0.55 + Math.random() * 0.45, len: 90 + Math.random() * 80 });
+}
+function meteorTick(dt) {
+  if (mode !== 'meteor' || document.hidden) return;
+  metT += dt;
+  if (metT >= metNextAt) { spawnMeteor(); metNextAt = metT + (0.5 + Math.random()) * 70 / (40 + shower.zhr); }
+  let s = '';
+  mets = mets.filter((m) => (m.t += dt) < m.life);
+  for (const m of mets) {
+    m.x += m.vx * dt; m.y += m.vy * dt;
+    const k = m.len / Math.hypot(m.vx, m.vy), f = Math.sin(Math.PI * m.t / m.life);
+    s += `<line x1="${(m.x - m.vx * k).toFixed(1)}" y1="${(m.y - m.vy * k).toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="${(0.25 + 0.75 * f).toFixed(2)}"/><circle cx="${m.x.toFixed(1)}" cy="${m.y.toFixed(1)}" r="3.5" fill="#fff8d6" opacity="${f.toFixed(2)}"/>`;
+  }
+  document.getElementById('metG').innerHTML = s;
+}
+meteorSvg.addEventListener('pointerdown', (e) => {
+  ensureAudio();
+  const pt = meteorSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const q = pt.matrixTransform(meteorSvg.getScreenCTM().inverse());
+  let best = null, bd = 80;                             // generous: a 3-year-old's finger + a fast streak
+  for (const m of mets) {
+    const k = m.len / Math.hypot(m.vx, m.vy), x0 = m.x - m.vx * k, y0 = m.y - m.vy * k;
+    const u = Math.max(0, Math.min(1, ((q.x - x0) * (m.x - x0) + (q.y - y0) * (m.y - y0)) / ((m.x - x0) ** 2 + (m.y - y0) ** 2)));
+    const d = Math.hypot(q.x - (x0 + (m.x - x0) * u), q.y - (y0 + (m.y - y0) * u));
+    if (d < bd) { bd = d; best = m; }
+  }
+  if (!best) { tone(300, 0.08, 'sine', 0.05); return; }
+  mets.splice(mets.indexOf(best), 1); metCaught++;
+  document.getElementById('metCount').textContent = '🌠 ' + metCaught;
+  const sp = document.getElementById('sparkG'), cx = best.x.toFixed(0), cy = best.y.toFixed(0);
+  sp.insertAdjacentHTML('beforeend', `<g><circle cx="${cx}" cy="${cy}" r="10" fill="#ffd93d"><animate attributeName="r" from="6" to="46" dur="0.5s" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur="0.5s" fill="freeze"/></circle><text x="${cx}" y="${cy}" text-anchor="middle" font-size="30">✨</text></g>`);
+  const g = sp.lastChild; setTimeout(() => g.remove(), 600);
+  tone(1046 + (metCaught % 5) * 120, 0.15, 'sine', 0.1); buzz(12);
+  if (metCaught % 10 === 0) { cheer(); celebrate(30); if (metCaught <= 100) speak(catchLine(metCaught)); }
+});
+
+// ============================================================================
 // SOUND + SPEECH + FX
 // ============================================================================
 let AC = null;
@@ -2215,12 +2709,28 @@ VoiceClips.lines(() => {
   L.push('สาม', 'สอง', 'หนึ่ง', 'ปล่อยจรวด!', tripChooseLine('earth'));
   for (const id in TRIPS) L.push(tripChooseLine(id), tripArriveLine(id));
   for (const c of SKY) L.push(skyIntro(c), skyDone(c));
-  L.push(dayIntro, seasonIntro);
+  L.push(dayIntro, seasonIntro, cometIntro, farIntro, meteorIntro, ...Object.values(COMET_SAY));
+  for (const id of DWARFS) L.push(BY[id].say);
+  for (const id in FAR) L.push(FAR[id].say);
+  L.push(voyagerCard().say);
+  for (const sh of SHOWERS) L.push(showerSay(sh));
+  for (let n = 10; n <= 100; n += 10) L.push(catchLine(n));
 
   for (let m = 0; m < 12; m++) L.push(seasonLine(m));
   // every readable part of every card (tap-to-hear + 🔊), rendered state by state
   const grab = () => L.push(...[...panel.querySelectorAll('.sayable')].map(sayOf));
-  for (const id of [null, ...STRIP_IDS]) { renderInfo(id); grab(); }
+  for (const id of [null, ...STRIP_IDS, ...DWARFS]) { renderInfo(id); grab(); }
+  for (const st in COMET_SAY) { cState = st; renderCometPanel(); grab(); }
+  cState = '';
+  renderFarOverview(); grab();
+  for (const id in FAR) { renderFarCard(id); grab(); }
+  // Voyager's distance grows every day: record every value it can show for years to come
+  for (let b = 20; b <= 40; b++) L.push(`ตอนนี้วอยเอเจอร์ 1 อยู่ไกลจากโลกราว ${(b * 1000).toLocaleString('en-US')} ล้านกิโลเมตร`);
+  for (let h = 18; h <= 40; h++) L.push(`สัญญาณวิทยุเดินทางเร็วเท่าแสง ยังต้องใช้เวลาราว ${h} ชั่วโมง กว่าจะถึงยาน`);
+  for (const t of [VOY.lightDay - 0.1, VOY.lightDay + 0.1]) { VOY.fake = t; renderFarCard('voyager'); grab(); }
+  delete VOY.fake;
+  for (const sh of SHOWERS) { shower = sh; renderMeteorPanel(); grab(); }
+  shower = null;
   for (const id of STRIP_IDS) for (const k of KGS) { dest = id; kg = k; renderJumpPanel(); grab(); }
   for (const a of AGES) { myAge = a; renderAgePanel(); grab(); }
   for (const id of ['earth', ...Object.keys(TRIPS)]) for (const ar of [false, true]) { tripDest = id; renderTripPanel(ar); grab(); }
