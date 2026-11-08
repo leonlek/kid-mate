@@ -345,6 +345,7 @@
         <button class="chip icon on" data-speed="1" aria-label="ปกติ">▶️</button>
         <button class="chip icon" data-speed="6" aria-label="เร็ว">🚀</button>
         <button class="chip icon" id="trailReset" aria-label="ลบเส้นวงโคจร วาดใหม่">🧽</button>
+        <button class="chip" id="nowBtn" aria-label="กลับไปตำแหน่งจริงตอนนี้">📍 ตอนนี้</button>
       </div>
       <div class="vctrls" id="vctrls">
         <span class="vlab">🔝</span>
@@ -372,7 +373,7 @@
 // ============================================================================
 const BODIES = [
   { id: 'sun', th: 'ดวงอาทิตย์', en: 'Sun', kind: 'ดาวฤกษ์ (ดวงดาวที่มีแสงในตัวเอง)',
-    d: 1392700, distTxt: 'ศูนย์กลางของระบบสุริยะ', yearTxt: '—', dayTxt: 'ประมาณ 25 วัน (ที่เส้นศูนย์สูตร)',
+    d: 1392700, distTxt: 'ศูนย์กลางของระบบสุริยะ', yearTxt: 'รอบใจกลางกาแล็กซี ราว 230 ล้านปี', dayTxt: 'ประมาณ 25 วัน (ที่เส้นศูนย์สูตร)',
     moonTxt: '—', tempTxt: 'ผิว ~5,500 °C',
     sizeTxt: 'ใหญ่กว่าโลก 109 เท่า',
     know: ['ดวงอาทิตย์เป็นดาวฤกษ์ ไม่ใช่ดาวเคราะห์ ให้แสงและความอบอุ่นกับโลก',
@@ -482,6 +483,51 @@ const BODIES = [
 const BY = Object.fromEntries(BODIES.map(b => [b.id, b]));
 const PLANETS = BODIES.filter(b => b.order);
 const DWARFS = BODIES.filter(b => b.dwarf).map(b => b.id);
+
+// ---- how fast: [spin at the equator, orbit] in km/h ----
+// NASA Planetary Fact Sheet (equatorial rotation velocity; mean orbital velocity km/s × 3600).
+// Sun: around the centre of the Milky Way (NASA ~720,000 km/h, one lap ≈ 230 million years).
+// Moon: around Earth. Dwarf planets: circumference ÷ rotation period, orbit speed from their orbits.
+const SPEED = {
+  sun: [7189, 720000], mercury: [10.83, 170500], venus: [6.52, 126100], earth: [1674, 107200], mars: [868, 86700],
+  jupiter: [45583, 47000], saturn: [36840, 34800], uranus: [14794, 24500], neptune: [9719, 19600], moon: [16.7, 3680],
+  ceres: [330, 64400], pluto: [47, 16800], haumea: [1600, 16300], makemake: [200, 15900], eris: [19, 12300],
+};
+const kmh = (v) => (v < 100 ? Math.round(v) : v < 10000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100).toLocaleString('en-US');
+function speedCompare(v) {
+  if (v < 8) return 'ช้าพอๆ กับคนวิ่งเหยาะๆ';
+  if (v < 25) return 'พอๆ กับปั่นจักรยาน';
+  if (v < 80) return 'พอๆ กับรถวิ่งในเมือง';
+  return `เร็วกว่ารถยนต์บนทางด่วน (100 กม./ชม.) ราว ${Math.round(v / 100).toLocaleString('en-US')} เท่า`;
+}
+
+// ---- where everything really is right now ----
+// Planets: JPL "Approximate Positions of the Planets" Keplerian elements (J2000, per
+// century) → heliocentric ecliptic longitude, good to about a degree.
+// Moon: the main terms of Meeus ch. 47 (~0.3°) → longitude, Sun–Moon elongation and
+// the argument of latitude F (how far above/below Earth's orbit plane it is).
+const ELEM = {   // L0, L/century, ϖ0, ϖ/century, e
+  mercury: [252.25032, 149472.67411, 77.45780, 0.16048, 0.20563593], venus: [181.97910, 58517.81539, 131.60247, 0.00268, 0.00677672],
+  earth: [100.46457, 35999.37245, 102.93768, 0.32327, 0.01671123], mars: [-4.55343, 19140.30268, -23.94363, 0.44441, 0.09339410],
+  jupiter: [34.39644, 3034.74613, 14.72848, 0.21253, 0.04838624], saturn: [49.95424, 1222.49362, 92.59888, -0.41897, 0.05386179],
+  uranus: [313.23810, 428.48203, 170.95428, 0.40805, 0.04725744], neptune: [-55.12003, 218.45945, 44.96476, -0.32241, 0.00859048],
+};
+const D2R = Math.PI / 180, wrap360 = (a) => ((a % 360) + 360) % 360;
+const jdNow = () => Date.now() / 864e5 + 2440587.5;
+function helioLon(id, jd) {
+  const T = (jd - 2451545) / 36525, [L0, L1, w0, w1, e] = ELEM[id];
+  const w = w0 + w1 * T, M = (L0 + L1 * T - w) * D2R;
+  const nu = M + (2 * e - e ** 3 / 4) * Math.sin(M) + 1.25 * e * e * Math.sin(2 * M) + 13 / 12 * e ** 3 * Math.sin(3 * M);
+  return wrap360(nu / D2R + w);
+}
+function moonNow(jd) {
+  const d = jd - 2451545, g = (357.529 + 0.98560028 * d) * D2R;
+  const sun = 280.459 + 0.98564736 * d + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g);
+  const Mm = (134.963 + 13.064993 * d) * D2R, D = (297.850 + 12.190749 * d) * D2R, F = (93.272 + 13.229350 * d) * D2R;
+  const lon = 218.316 + 13.176396 * d + 6.289 * Math.sin(Mm) + 1.274 * Math.sin(2 * D - Mm) + 0.658 * Math.sin(2 * D)
+    + 0.214 * Math.sin(2 * Mm) - 0.186 * Math.sin(g) - 0.114 * Math.sin(2 * F);
+  return { lon: wrap360(lon), elong: wrap360(lon - sun), F: wrap360(F / D2R) };
+}
 const EARTH_D = 12756;
 
 // ============================================================================
@@ -562,8 +608,14 @@ const ORBIT_R = { mercury: 95, venus: 138, earth: 182, mars: 226, jupiter: 318, 
 // display radius ~ sqrt(diameter): keeps the true size ORDER, but small planets stay visible
 const SHOW_R = Object.fromEntries(PLANETS.map(p => [p.id, Math.round(4.2 + 2.25 * Math.sqrt(p.d / 1000))]));
 const angle = {};
-PLANETS.forEach((p, i) => { angle[p.id] = (i * 2.399) % (Math.PI * 2); });   // spread out at start
 let moonAngle = 0, beltAngle = 0;
+// Start where everything really is today (angles run counter-clockwise, seen from above the north pole)
+function placeNow() {
+  const jd = jdNow();
+  for (const p of PLANETS) angle[p.id] = -helioLon(p.id, jd) * D2R;
+  moonAngle = -moonNow(jd).lon * D2R;
+}
+placeNow();
 let days = 0, speed = 1, selected = 'earth', mode = 'explore';
 const DAYS_PER_SEC = 365.25 / 20;   // at ▶ speed one Earth year takes 20 seconds
 
@@ -703,8 +755,10 @@ function toContent(e) {
   return pt.matrixTransform(orbitSvg.getScreenCTM().inverse());
 }
 function fmtDays(d) {
+  const t = new Date(Date.now() + d * 864e5), date = `${t.getDate()} ${MSHORT[t.getMonth()]} ${t.getFullYear() + 543}`;
+  if (d < 1) return '📍 ตำแหน่งจริงวันนี้ · ' + date;
   const y = Math.floor(d / 365.25), rest = Math.floor(d - y * 365.25);
-  return '⏱ ผ่านไป ' + (y ? y + ' ปี ' : '') + rest + ' วัน (เวลาบนโลก)';
+  return '📅 ' + date + ' · ผ่านไป ' + (y ? y + ' ปี ' : '') + rest + ' วัน';
 }
 let last = performance.now();
 function tick(now) {
@@ -1104,10 +1158,12 @@ function renderInfo(id) {
     <div class="facts">
       <div class="fact" data-say="${factSay(b, 'd', rel)}"><div class="k">📏 เส้นผ่านศูนย์กลาง</div><div class="v">${b.dTxt || b.d.toLocaleString('th-TH') + ' กม.<br><small>' + rel + '</small>'}</div></div>
       <div class="fact" data-say="${factSay(b, 'dist')}"><div class="k">📍 ระยะทาง</div><div class="v">${b.order || b.dwarf ? 'ห่างดวงอาทิตย์ ' : ''}${b.distTxt}</div></div>
-      <div class="fact" data-say="${factSay(b, 'year')}"><div class="k">📅 1 ปี (รอบดวงอาทิตย์)</div><div class="v">${b.yearTxt}</div></div>
+      <div class="fact" data-say="${factSay(b, 'year')}"><div class="k">${id === 'sun' ? '📅 1 รอบกาแล็กซี' : id === 'moon' ? '📅 1 รอบโลก' : '📅 1 ปี (รอบดวงอาทิตย์)'}</div><div class="v">${b.yearTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'day')}"><div class="k">🔄 1 วัน (หมุนรอบตัวเอง)</div><div class="v">${b.dayTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'moon')}"><div class="k">🌙 ดวงจันทร์</div><div class="v">${b.moonTxt}</div></div>
       <div class="fact" data-say="${factSay(b, 'temp')}"><div class="k">🌡️ อุณหภูมิ</div><div class="v">${b.tempTxt}</div></div>
+      <div class="fact" data-say="${speedSay(b, 0)}"><div class="k">🌀 ความเร็วหมุนรอบตัวเอง</div><div class="v">${kmh(SPEED[id][0])} กม./ชม.<br><small>${speedCompare(SPEED[id][0])}</small></div></div>
+      <div class="fact" data-say="${speedSay(b, 1)}"><div class="k">${id === 'sun' ? '🌌 วิ่งรอบใจกลางกาแล็กซี' : id === 'moon' ? '🌍 วิ่งรอบโลก' : '☀️ ความเร็ววิ่งรอบดวงอาทิตย์'}</div><div class="v">${kmh(SPEED[id][1])} กม./ชม.<br><small>${speedCompare(SPEED[id][1])}</small></div></div>
     </div>
     <ul class="know">${b.know.map(k => `<li>${k}</li>`).join('')}</ul>
     <div class="src">${b.dwarf ? 'ข้อมูล: NASA · ดาวเคราะห์แคระอยู่ไกลมาก ตัวเลขบางอย่างยังเป็นค่าประมาณ' : 'ข้อมูล: NASA Planetary Fact Sheet · จำนวนดวงจันทร์ของดาวยักษ์ยังค้นพบเพิ่มเรื่อยๆ'}</div>`;
@@ -1116,7 +1172,7 @@ function renderInfo(id) {
 // Spoken versions of the fact boxes: the card shows short labels + values, speech
 // needs a whole sentence. Boxes showing "—" stay silent.
 const FACT_SAY = {
-  sun:     { dist: 'ดวงอาทิตย์อยู่ตรงกลางของระบบสุริยะ', day: 'ดวงอาทิตย์หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลาประมาณ 25 วัน วัดที่เส้นศูนย์สูตร', temp: 'ผิวของดวงอาทิตย์ร้อนประมาณ 5,500 องศาเซลเซียส' },
+  sun:     { year: 'ดวงอาทิตย์วิ่งรอบใจกลางกาแล็กซีครบหนึ่งรอบ ใช้เวลาราว 230 ล้านปี', dist: 'ดวงอาทิตย์อยู่ตรงกลางของระบบสุริยะ', day: 'ดวงอาทิตย์หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลาประมาณ 25 วัน วัดที่เส้นศูนย์สูตร', temp: 'ผิวของดวงอาทิตย์ร้อนประมาณ 5,500 องศาเซลเซียส' },
   mercury: { day: 'หนึ่งวันบนดาวพุธ นับจากเช้าถึงเช้า ยาวถึง 176 วันของโลก' },
   venus:   { day: 'ดาวศุกร์หมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 243 วันของโลก และหมุนกลับทางกับโลก' },
   earth:   { d: 'โลกกว้าง 12,756 กิโลเมตร', year: 'โลกวิ่งรอบดวงอาทิตย์ครบหนึ่งรอบ ใช้เวลา 365 วันกับอีกหนึ่งในสี่วัน', temp: 'อุณหภูมิเฉลี่ยของโลกประมาณ 15 องศาเซลเซียส' },
@@ -1127,6 +1183,15 @@ const FACT_SAY = {
   pluto:   { day: 'ดาวพลูโตหมุนรอบตัวเองครบหนึ่งรอบ ใช้เวลา 6.4 วันของโลก และหมุนกลับทาง' },
   moon:    { dist: 'ดวงจันทร์อยู่ห่างโลก 384,400 กิโลเมตร', year: 'ดวงจันทร์โคจรรอบโลกครบหนึ่งรอบ ใช้เวลา 27.3 วัน', day: 'ดวงจันทร์หันด้านเดียวเข้าหาโลกเสมอ' },
 };
+function speedSay(b, k) {
+  const v = SPEED[b.id][k], T = b.th, n = kmh(v) + ' กิโลเมตรต่อชั่วโมง ' + speedCompare(v).replace(' (100 กม./ชม.)', '');
+  if (k === 0) return b.id === 'earth'
+    ? 'โลกหมุนรอบตัวเอง ที่เส้นศูนย์สูตรเร็วราว ' + n + ' แต่เราไม่รู้สึก เพราะทุกอย่างรอบตัวหมุนไปพร้อมกับเรา'
+    : T + 'หมุนรอบตัวเอง ที่เส้นศูนย์สูตรเร็วราว ' + n;
+  if (b.id === 'sun') return 'ดวงอาทิตย์พาทั้งระบบสุริยะวิ่งรอบใจกลางกาแล็กซีทางช้างเผือก เร็วราว ' + n + ' ครบหนึ่งรอบใช้เวลาราว 230 ล้านปี';
+  if (b.id === 'moon') return 'ดวงจันทร์วิ่งรอบโลก เร็วราว ' + n;
+  return T + 'วิ่งรอบดวงอาทิตย์ เร็วราว ' + n;
+}
 function factSay(b, key, rel) {
   const fix = (FACT_SAY[b.id] || {})[key];
   if (fix) return fix;
@@ -1375,7 +1440,13 @@ const EX = 560, EY = 350, MR = 230;
 // orbits cross (the "nodes") sits ~30.6° further round relative to the Sun, so a
 // full Moon only meets Earth's shadow in about two months of the year.
 const nodeAt = (m) => ((m - 1) * 30.6 - 2.5) * Math.PI / 180;
-const betaDeg = (e) => 5.14 * Math.sin(e - nodeAt(moonMonth));       // Moon height above/below Earth's orbit plane
+let nodeReal = null;                // set by 📍 ตอนนี้: the real node for this month (cleared by ◀ ▶)
+const betaDeg = (e) => 5.14 * Math.sin(e - (nodeReal !== null ? nodeReal : nodeAt(moonMonth)));   // Moon height above/below Earth's orbit plane
+function moonToNow() {
+  const m = moonNow(jdNow());
+  elong = m.elong * D2R; nodeReal = elong - m.F * D2R;     // real latitude: β = 5.14° · sin F
+  moonMonth = new Date().getMonth() + 1;
+}
 function shownE() {                                                     // snap to exact full / new near them, small fingers
   const d = Math.abs(((elong - Math.PI) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
   return d < 6 * Math.PI / 180 ? Math.PI : elong;
@@ -1467,6 +1538,7 @@ function renderMoonPanel(sayIt) {
       <div class="q-text" id="phName"></div><div class="q-hint" id="phDesc" data-sayme></div>
       <div class="levels"><button class="chip icon" id="mPrev" aria-label="เดือนก่อน">◀</button><button class="chip" id="mLab" style="pointer-events:none"></button><button class="chip icon" id="mNext" aria-label="เดือนถัดไป">▶</button></div>
       <div class="q-hint">ลองเปลี่ยนเดือน แล้วลากไปคืนเพ็ญ หาเดือนที่เกิดจันทรุปราคา!</div>
+      <button class="big-btn" id="moonNow">📍 ตอนนี้ ดวงจันทร์อยู่ตรงไหน</button>
       <button class="big-btn" id="moonPlay">▶️ ให้ดวงจันทร์โคจรเอง</button>
       <ul class="know">
         <li>ดวงจันทร์โดนแสงอาทิตย์<b>ครึ่งดวงเสมอ</b> ข้างขึ้นข้างแรมเกิดจากเรามองเห็นด้านสว่างนั้นจากมุมที่ต่างกัน</li>
@@ -1478,12 +1550,17 @@ function renderMoonPanel(sayIt) {
       moonAuto = !moonAuto; buzz(8);
       document.getElementById('moonPlay').textContent = moonAuto ? '⏸ หยุด' : '▶️ ให้ดวงจันทร์โคจรเอง';
     });
-    const step = (d) => { moonMonth = (moonMonth + d + 11) % 12 + 1; buzz(8); placeMoon(); renderMoonPanel(false); };
+    document.getElementById('moonNow').addEventListener('click', () => {
+      ensureAudio(); buzz(8); moonAuto = false;
+      document.getElementById('moonPlay').textContent = '▶️ ให้ดวงจันทร์โคจรเอง';
+      moonToNow(); placeMoon(); renderMoonPanel(true);
+    });
+    const step = (d) => { moonMonth = (moonMonth + d + 11) % 12 + 1; nodeReal = null; buzz(8); placeMoon(); renderMoonPanel(false); };
     document.getElementById('mPrev').addEventListener('click', () => step(-1));
     document.getElementById('mNext').addEventListener('click', () => step(1));
     ph = document.getElementById('phaseSvg');
   }
-  document.getElementById('mLab').textContent = 'เดือนที่ ' + moonMonth;
+  document.getElementById('mLab').textContent = nodeReal !== null ? '📍 เดือนนี้' : 'เดือนที่ ' + moonMonth;
   let body = `<circle cx="0" cy="0" r="80" fill="#3a3f5c"/>${phasePath(e, 80)}`;
   if (ec) {
     // Earth's shadow disc on the Moon (umbra ≈ 2.65 × Moon's size), offset by how far the Moon misses the centre
@@ -1559,7 +1636,7 @@ function setMode(m) {
   else if (m === 'day') { makePolar(); buildDay(); lastDayHour = -1; setDayHour(dayHour); speak(dayIntro); }
   else if (m === 'season') { buildSeason(); buildMonths(); renderSeasonPanel(); speak(seasonIntro); }
   else if (m === 'age') { renderAges(); renderAgePanel(); speak('หนูอายุกี่ขวบ แตะตัวเลขเลย'); }
-  else if (m === 'moon') { moonAuto = false; buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
+  else if (m === 'moon') { moonAuto = false; moonToNow(); buildMoon(); panel.innerHTML = ''; renderMoonPanel(true); }
   else if (m === 'comet') { cLastR = null; cState = ''; buildComet(); renderCometPanel(); speak(cometIntro); }
   else if (m === 'far') { buildFar(); buildFarStrip(); renderFarCard(farSel); speak(farIntro); }
   else if (m === 'meteor') { mets = []; buildMeteorChips(); buildMeteor(); speak(meteorIntro); }
@@ -1569,6 +1646,11 @@ for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.addEvent
 for (const b of document.querySelectorAll('#ctrls .chip[data-speed]')) b.addEventListener('click', () => {
   speed = +b.dataset.speed; buzz(8);
   for (const o of document.querySelectorAll('#ctrls .chip[data-speed]')) o.classList.toggle('on', o === b);
+});
+document.getElementById('nowBtn').addEventListener('click', () => {
+  ensureAudio(); buzz(8); blip(880);
+  placeNow(); days = 0; resetTrails(); placeOrbit();
+  document.getElementById('clock').textContent = fmtDays(0);
 });
 document.getElementById('trailReset').addEventListener('click', () => {
   ensureAudio(); buzz(8); blip(660); setTimeout(() => blip(880), 90);
@@ -2739,6 +2821,7 @@ VoiceClips.lines(() => {
   NY_OFF = nyOffset();
   for (let m = 0; m < 12; m++) { seasonMonth = m; renderSeasonPanel(); grab(); }
   panel.innerHTML = '';
+  nodeReal = null;
   for (let mm = 1; mm <= 12; mm++) for (let d = 0; d < 360; d++) { moonMonth = mm; elong = d * Math.PI / 180; renderMoonPanel(false); grab(); }
   return L;
 });
