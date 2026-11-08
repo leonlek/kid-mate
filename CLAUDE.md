@@ -193,6 +193,10 @@ Farm overview → tap an animal for a close-up with 3 jobs. True details: Holste
 
 An animal customer orders by picture (cream colour, N toppings, M candles — counting 1–5). Real baking order: add flour/egg (shell goes in the bin)/milk/sugar/melted butter → stir ~4 circles until smooth → bake at 180 °C (cake rises and browns, "ding" + toothpick tip) → take out with oven mitts → COOL (thermometer + steam; frosting a hot cake makes the cream melt and slide — the classic mistake) → spread cream by dragging (coverage) → tap toppings/candles → serve; a wrong count gets a gentle "I wanted 3, there are 2". Order speech is chained from short clips (`speakSeq(orderParts(o))`) — never voice a full sentence per combination.
 
+### ป๊อปอิท (`/pop-it/`)
+
+A pop-it fidget board. Each 🎲 board is a random silhouette from `SHAPES` (animals + heart/star/flower/cloud/apple/house — no cartoon characters, owner's request) built as a union of primitives; bubbles sit on a hex grid, kept only where the whole bubble fits (`layout()`, 13–20 bubbles, big for small fingers), rainbow rows like the real toy. A pressed bubble STAYS down (real toy behaviour); 🔄 flips the board — it turns over, the silhouette is mirrored and every bubble's state inverts (all-down → all-up). Voice is ENGLISH (owner's request): each pop says the running count ("one"…"sixty") or, with 🎨, the bubble's colour; a new board says the shape's name. Pop sound = filtered noise click + a falling sine thump.
+
 ### (Planned)
 
 None yet. Open ideas — add cards to the hub's "เร็วๆ นี้" slot when designs are ready.

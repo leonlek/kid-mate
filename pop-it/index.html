@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🫧 ป๊อปอิท — คิดส์เล่น</title>
+<meta name="description" content="ป๊อปอิท กดปุ่มยุบ ป๊อป! นับเลขและเรียกชื่อสีภาษาอังกฤษ กดครบแล้วพลิกแผ่น ปุ่มเด้งกลับเหมือนของจริง สำหรับเด็กเล็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ป๊อปอิท">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 4px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .stage { perspective: 1400px; display: flex; justify-content: center; }
+  #board {
+    display: block; width: min(100%, calc(100vh - 250px), 640px); height: auto; aspect-ratio: 1;
+    touch-action: none; transform-style: preserve-3d;
+    filter: drop-shadow(0 8px 0 rgba(0,0,0,0.18));
+  }
+  #board.flip { animation: flip .7s ease-in-out; }
+  @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg) scale(.92); } 100% { transform: rotateY(0); } }
+  #board.done { animation: wiggle .5s ease-in-out 2; }
+  @keyframes wiggle { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+  .count { text-align: center; font-family: 'Itim', cursive; font-size: 34px; color: var(--brand-dark); text-shadow: 2px 2px 0 #fff; min-height: 42px; }
+  .ctrls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+  .btn {
+    font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 700;
+    min-height: 64px; min-width: 64px; padding: 0 20px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18); transition: transform .1s;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .btn.on { background: var(--gold); border-color: #e0b400; }
+  .btn.flipme { background: var(--brand); border-color: var(--brand-dark); color: #fff; animation: pulse 0.9s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🫧 ป๊อปอิท</h1></header>
+  <div class="count" id="count"></div>
+  <div class="stage"><svg id="board" viewBox="0 0 1000 1000" aria-label="แผ่นป๊อปอิท"></svg></div>
+  <div class="ctrls">
+    <button class="btn" id="flipBtn" aria-label="พลิกแผ่น">🔄 พลิก</button>
+    <button class="btn" id="newBtn" aria-label="แผ่นใหม่">🎲 แผ่นใหม่</button>
+    <button class="btn on" id="sayNum" aria-label="นับเลข">🔢 1 2 3</button>
+    <button class="btn" id="sayCol" aria-label="บอกสี">🎨 สี</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const board = $('board');
+
+// ============================================================================
+// SHAPES — silhouettes in a 1000×1000 box, each a union of simple primitives:
+// ['c', cx, cy, r] · ['e', cx, cy, rx, ry, deg] · ['p', svgPath] · ['r', x, y, w, h, radius]
+// ============================================================================
+function starPath(cx, cy, R, r) {
+  let d = '';
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, k = i % 2 ? r : R;
+    d += (i ? 'L' : 'M') + (cx + k * Math.cos(a)).toFixed(0) + ',' + (cy + k * Math.sin(a)).toFixed(0);
+  }
+  return d + 'Z';
+}
+const SHAPES = [
+  { id: 'heart', en: 'Heart', parts: [['p', 'M500,890 C130,630 50,390 190,240 C310,115 455,160 500,285 C545,160 690,115 810,240 C950,390 870,630 500,890 Z']] },
+  { id: 'star', en: 'Star', parts: [['p', starPath(500, 530, 470, 235)]] },
+  { id: 'cat', en: 'Cat', parts: [['c', 500, 570, 340], ['p', 'M190,470 L215,105 L450,290 Z'], ['p', 'M810,470 L785,105 L550,290 Z']] },
+  { id: 'bunny', en: 'Bunny', parts: [['c', 500, 650, 290], ['e', 385, 300, 95, 240, -8], ['e', 615, 300, 95, 240, 8]] },
+  { id: 'bear', en: 'Bear', parts: [['c', 500, 570, 330], ['c', 225, 285, 125], ['c', 775, 285, 125]] },
+  { id: 'dog', en: 'Dog', parts: [['c', 500, 520, 300], ['e', 215, 520, 115, 235, 14], ['e', 785, 520, 115, 235, -14], ['e', 500, 760, 200, 150, 0]] },
+  { id: 'fish', en: 'Fish', parts: [['e', 430, 500, 340, 245, 0], ['p', 'M700,500 L940,290 L940,710 Z']] },
+  { id: 'butterfly', en: 'Butterfly', parts: [['e', 290, 330, 225, 205, -20], ['e', 710, 330, 225, 205, 20], ['e', 320, 710, 180, 165, 15], ['e', 680, 710, 180, 165, -15], ['e', 500, 520, 60, 340, 0]] },
+  { id: 'turtle', en: 'Turtle', parts: [['e', 500, 560, 300, 320, 0], ['c', 500, 165, 100], ['c', 225, 330, 90], ['c', 775, 330, 90], ['c', 235, 800, 90], ['c', 765, 800, 90]] },
+  { id: 'owl', en: 'Owl', parts: [['e', 500, 570, 330, 390, 0], ['p', 'M185,330 L225,95 L400,230 Z'], ['p', 'M815,330 L775,95 L600,230 Z']] },
+  { id: 'elephant', en: 'Elephant', parts: [['c', 500, 430, 245], ['e', 215, 440, 195, 245, 0], ['e', 785, 440, 195, 245, 0], ['p', 'M430,600 L570,600 L570,880 Q500,960 430,880 Z']] },
+  { id: 'flower', en: 'Flower', parts: [['c', 500, 500, 210], ...[0, 1, 2, 3, 4, 5].map((i) => ['c', 500 + 265 * Math.cos(i * Math.PI / 3 - Math.PI / 2), 500 + 265 * Math.sin(i * Math.PI / 3 - Math.PI / 2), 175])] },
+  { id: 'cloud', en: 'Cloud', parts: [['c', 300, 580, 200], ['c', 520, 440, 250], ['c', 740, 580, 190], ['r', 160, 560, 700, 220, 110]] },
+  { id: 'apple', en: 'Apple', parts: [['c', 370, 580, 280], ['c', 630, 580, 280], ['e', 500, 720, 300, 200, 0], ['e', 620, 195, 125, 60, -30], ['r', 480, 160, 40, 170, 18]] },
+  { id: 'house', en: 'House', parts: [['r', 210, 470, 580, 440, 30], ['p', 'M120,500 L500,120 L880,500 Z']] },
+];
+// Rainbow rows like a real pop-it, read out in English
+const COLORS = [
+  { en: 'red', c: '#ff5a5a', d: '#d63b3b' }, { en: 'orange', c: '#ff9f40', d: '#d97b1c' }, { en: 'yellow', c: '#ffd93d', d: '#d9b316' },
+  { en: 'green', c: '#5fd35f', d: '#3aa93a' }, { en: 'blue', c: '#4aa8ff', d: '#2683d9' }, { en: 'purple', c: '#a274ff', d: '#7c4fd9' },
+  { en: 'pink', c: '#ff7fc8', d: '#e0559f' },
+];
+
+// ============================================================================
+// BOARD — bubbles on a hex grid, kept only where the whole bubble fits the shape
+// ============================================================================
+const tctx = document.createElement('canvas').getContext('2d');
+function partPath(p) {
+  const P = new Path2D();
+  if (p[0] === 'c') P.arc(p[1], p[2], p[3], 0, Math.PI * 2);
+  else if (p[0] === 'e') P.ellipse(p[1], p[2], p[3], p[4], p[5] * Math.PI / 180, 0, Math.PI * 2);
+  else if (p[0] === 'p') P.addPath(new Path2D(p[1]));
+  else if (P.roundRect) P.roundRect(p[1], p[2], p[3], p[4], p[5]); else P.rect(p[1], p[2], p[3], p[4]);
+  return P;
+}
+function partSvg(p, attrs) {
+  if (p[0] === 'c') return `<circle cx="${p[1]}" cy="${p[2]}" r="${p[3]}" ${attrs}/>`;
+  if (p[0] === 'e') return `<ellipse cx="${p[1]}" cy="${p[2]}" rx="${p[3]}" ry="${p[4]}" transform="rotate(${p[5]} ${p[1]} ${p[2]})" ${attrs}/>`;
+  if (p[0] === 'p') return `<path d="${p[1]}" ${attrs}/>`;
+  return `<rect x="${p[1]}" y="${p[2]}" width="${p[3]}" height="${p[4]}" rx="${p[5]}" ${attrs}/>`;
+}
+function layout(shape) {
+  const paths = shape.parts.map(partPath);
+  const inside = (x, y) => paths.some((P) => tctx.isPointInPath(P, x, y));
+  const fits = (x, y, r) => inside(x, y) && [0, 1, 2, 3, 4, 5, 6, 7].every((i) => inside(x + r * Math.cos(i * Math.PI / 4), y + r * Math.sin(i * Math.PI / 4)));
+  let best = null;
+  for (let d = 196; d >= 128; d -= 4) {               // biggest bubbles that still give a satisfying board (≥ 18)
+    for (const ox of [0, d / 4, d / 2]) for (const oy of [0, d * 0.43]) {
+      const out = [], rowH = d * 0.866, r = d * 0.44;
+      for (let row = 0, y = 40 + oy; y < 980; row++, y += rowH)
+        for (let x = 40 + ox + (row % 2 ? d / 2 : 0); x < 980; x += d) if (fits(x, y, r * 1.12)) out.push({ x, y, r });
+      if (!best || out.length > best.length) best = out;
+    }
+    if (best.length >= 18) break;
+  }
+  return best.slice(0, 60);
+}
+let shape = null, bubbles = [], flipped = false, sayMode = 'num', lastShape = '';
+function newBoard(sayIt) {
+  let s; do { s = SHAPES[Math.floor(Math.random() * SHAPES.length)]; } while (s.id === lastShape);
+  shape = s; lastShape = s.id; flipped = false;
+  const L = layout(s);
+  // rows of the same height share a colour band → real "rainbow rows"
+  const rows = [...new Set(L.map((b) => Math.round(b.y)))].sort((a, b) => a - b);
+  bubbles = L.map((b) => ({ ...b, col: Math.min(COLORS.length - 1, Math.floor(rows.indexOf(Math.round(b.y)) * COLORS.length / rows.length)), down: false }));
+  draw();
+  if (sayIt) speak(s.en, 'en');
+}
+function draw() {
+  const s = shape;
+  const rows = [...new Set(bubbles.map((b) => Math.round(b.y)))].sort((a, b) => a - b);
+  // colour bands under the bubbles (clipped to the silhouette)
+  let bands = '';
+  rows.forEach((ry, i) => {
+    const col = COLORS[Math.min(COLORS.length - 1, Math.floor(i * COLORS.length / rows.length))];
+    const top = i === 0 ? 0 : (rows[i - 1] + ry) / 2, bot = i === rows.length - 1 ? 1000 : (ry + rows[i + 1]) / 2;
+    bands += `<rect x="0" y="${top}" width="1000" height="${bot - top + 1}" fill="${col.c}"/>`;
+  });
+  const clip = s.parts.map((p) => partSvg(p, '')).join('');
+  let h = `<defs>
+    <clipPath id="shapeClip">${clip}</clipPath>
+    <radialGradient id="gUp" cx="38%" cy="34%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity=".12"/><stop offset=".8" stop-color="#000" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></radialGradient>
+    <radialGradient id="gDown" cx="62%" cy="66%" r="72%"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#000" stop-opacity=".05"/><stop offset=".85" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+  </defs>
+  <g id="flipG" transform="${flipped ? 'translate(1000 0) scale(-1 1)' : ''}">
+    ${s.parts.map((p) => partSvg(p, 'fill="#c9c9c9" stroke="#c9c9c9" stroke-width="44" stroke-linejoin="round"')).join('')}
+    ${s.parts.map((p) => partSvg(p, 'fill="#ffffff" stroke="#ffffff" stroke-width="32" stroke-linejoin="round"')).join('')}
+    <g clip-path="url(#shapeClip)">${bands}<rect width="1000" height="1000" fill="#000" opacity=".08"/></g>
+    <g id="bubG">`;
+  bubbles.forEach((b, i) => {
+    const col = COLORS[b.col];
+    h += `<g data-i="${i}" class="bub"><circle cx="${b.x}" cy="${b.y}" r="${b.r + 6}" fill="${col.d}" opacity=".55"/><circle cx="${b.x}" cy="${b.y}" r="${b.down ? b.r * 0.93 : b.r}" fill="${b.down ? col.d : col.c}"/><circle class="sh" cx="${b.x}" cy="${b.y}" r="${b.r}" fill="url(#${b.down ? 'gDown' : 'gUp'})"/></g>`;
+  });
+  h += `</g></g>`;
+  board.innerHTML = h;
+  updateCount();
+}
+function setBubble(i) {
+  const g = board.querySelector(`[data-i="${i}"]`), b = bubbles[i];
+  g.querySelector('.sh').setAttribute('fill', `url(#${b.down ? 'gDown' : 'gUp'})`);
+  const face = g.querySelectorAll('circle')[1];
+  face.setAttribute('r', b.down ? b.r * 0.93 : b.r); face.setAttribute('fill', b.down ? COLORS[b.col].d : COLORS[b.col].c);
+}
+const downCount = () => bubbles.filter((b) => b.down).length;
+function updateCount() {
+  const n = downCount(), all = n === bubbles.length;
+  $('count').textContent = n ? `🫧 ${n} / ${bubbles.length}` : '👆 กดให้ยุบทุกปุ่ม';
+  $('flipBtn').classList.toggle('flipme', all);
+}
+
+// ============================================================================
+// PRESS · FLIP
+// A pressed bubble stays down (like the real toy). Flipping the board turns it
+// over: every bubble that was down pops up on the new side and vice versa.
+// ============================================================================
+function bubbleAt(ev) {
+  const pt = board.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  let q = pt.matrixTransform(board.getScreenCTM().inverse());
+  if (flipped) q = { x: 1000 - q.x, y: q.y };
+  let best = -1, bd = 1e9;
+  bubbles.forEach((b, i) => { const d = Math.hypot(q.x - b.x, q.y - b.y); if (d < bd) { bd = d; best = i; } });
+  return best >= 0 && bd < bubbles[best].r * 1.25 ? best : -1;   // the whole cell is the target — small fingers
+}
+const held = new Set();
+board.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  const i = bubbleAt(ev);
+  if (i < 0) return;
+  ev.preventDefault();
+  if (held.has(ev.pointerId + ':' + i)) return;
+  held.add(ev.pointerId + ':' + i); setTimeout(() => held.delete(ev.pointerId + ':' + i), 300);
+  const b = bubbles[i];
+  if (b.down) { tone(140, 0.06, 'sine', 0.06); buzz(4); return; }       // already flat — only a dull tap
+  b.down = true; setBubble(i); pop(); buzz(15);
+  const n = downCount();
+  updateCount();
+  if (n === bubbles.length) {
+    speak('Great job! Flip it over!', 'en'); cheer(); celebrate(40);
+    board.classList.remove('done'); void board.getBBox(); board.classList.add('done');
+  } else speak(sayMode === 'num' ? numWord(n) : COLORS[b.col].en, 'en');
+});
+function flipBoard() {
+  ensureAudio(); buzz(12);
+  board.classList.remove('flip', 'done'); void board.getBBox(); board.classList.add('flip');
+  whoosh();
+  setTimeout(() => {                                   // half-way through the turn: show the other side
+    flipped = !flipped;
+    for (const b of bubbles) b.down = !b.down;
+    draw();
+    const ups = bubbles.filter((b) => !b.down).length;
+    for (let k = 0; k < Math.min(ups, 14); k++) setTimeout(() => pop(1.5 + Math.random() * 0.4, 0.5), k * 28);
+  }, 350);
+  setTimeout(() => board.classList.remove('flip'), 720);
+}
+$('flipBtn').addEventListener('click', flipBoard);
+$('newBtn').addEventListener('click', () => { ensureAudio(); buzz(10); newBoard(true); });
+function setSay(m) {
+  sayMode = m; $('sayNum').classList.toggle('on', m === 'num'); $('sayCol').classList.toggle('on', m === 'col');
+}
+$('sayNum').addEventListener('click', () => { ensureAudio(); buzz(8); setSay('num'); speak('one, two, three', 'en'); });
+$('sayCol').addEventListener('click', () => { ensureAudio(); buzz(8); setSay('col'); speak('colors', 'en'); });
+
+const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty'];
+function numWord(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : ''); }
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+let noiseBuf = null;
+// The silicone "pop": a short click of filtered noise + a quick downward thump
+function pop(k = 1, v = 1) {
+  if (!AC) return;
+  const t = AC.currentTime, j = 0.9 + Math.random() * 0.2;
+  if (!noiseBuf) { noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.05, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length); }
+  const n = AC.createBufferSource(), bp = AC.createBiquadFilter(), ng = AC.createGain();
+  n.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = 1400 * k * j; bp.Q.value = 1.2;
+  ng.gain.setValueAtTime(0.5 * v, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+  n.connect(bp).connect(ng).connect(AC.destination); n.start(t);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.frequency.setValueAtTime(420 * k * j, t); o.frequency.exponentialRampToValueAtTime(130 * k, t + 0.07);
+  g.gain.setValueAtTime(0.35 * v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t + 0.1);
+}
+function whoosh() {
+  if (!AC) return;
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(660, t + 0.35);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.08, t + 0.15); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t + 0.42);
+}
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice(lang) {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith(lang)) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text, lang = 'th') {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text, lang); return; }
+  ensureAudio(); VoiceClips.say(text, AC, (t) => deviceSpeak(t, lang), lang);
+}
+function deviceSpeak(text, lang) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === 'en' ? 'en-US' : 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(lang === 'en' ? 'en' : 'th'); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = COLORS.map((c) => c.c);
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// Block double-tap zoom on iOS
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+newBoard(false);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => [
+  ...Array.from({ length: 60 }, (_, i) => ['en', numWord(i + 1)]),
+  ...COLORS.map((c) => ['en', c.en]),
+  ...SHAPES.map((s) => ['en', s.en]),
+  ['en', 'Great job! Flip it over!'], ['en', 'one, two, three'], ['en', 'colors'],
+]);
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
