@@ -27,3 +27,4 @@ tools/.freesound_token
 .env
 tools/.tts-keys
 tools/_tts_compare/
+tools/_voice_check/

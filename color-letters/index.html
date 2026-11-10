@@ -435,9 +435,22 @@ const NUM_NAME = {
   '0':'ศูนย์','1':'หนึ่ง','2':'สอง','3':'สาม','4':'สี่',
   '5':'ห้า','6':'หก','7':'เจ็ด','8':'แปด','9':'เก้า',
 };
+// What the voice actually reads: the letter's spoken name (consonant + อ) and the key
+// word spelled the way it SOUNDS. TTS can't read a lone letter ("ก") or a Pali/Sanskrit
+// spelling (ฐาน, เณร, ฤๅษี, จุฬา) reliably — kids are learning these, so no guessing.
+const THAI_SAY = {
+  'ก':'กอ ไก่','ข':'ขอ ไข่','ฃ':'ขอ ขวด','ค':'คอ ควาย','ฅ':'คอ คน','ฆ':'คอ ระฆัง',
+  'ง':'งอ งู','จ':'จอ จาน','ฉ':'ฉอ ฉิ่ง','ช':'ชอ ช้าง','ซ':'ซอ โซ่','ฌ':'ชอ เชอ',
+  'ญ':'ยอ หญิง','ฎ':'ดอ ชะดา','ฏ':'ตอ ปะตัก','ฐ':'ถอ ถาน','ฑ':'ทอ มนโท','ฒ':'ทอ ผู้เท่า',
+  'ณ':'นอ เนน','ด':'ดอ เด็ก','ต':'ตอ เต่า','ถ':'ถอ ถุง','ท':'ทอ ทะหาน','ธ':'ทอ ทง',
+  'น':'นอ หนู','บ':'บอ ใบไม้','ป':'ปอ ปลา','ผ':'ผอ ผึ้ง','ฝ':'ฝอ ฝา','พ':'พอ พาน',
+  'ฟ':'ฟอ ฟัน','ภ':'พอ สำเพา','ม':'มอ ม้า','ย':'ยอ ยัก','ร':'รอ เรือ','ล':'ลอ ลิง',
+  'ว':'วอ แหวน','ศ':'สอ สาลา','ษ':'สอ รือสี','ส':'สอ เสือ','ห':'หอ หีบ','ฬ':'ลอ จุลา',
+  'อ':'ออ อ่าง','ฮ':'ฮอ นกฮูก',
+};
 function saySpec(ch) {
   if (NUM_NAME[ch]) return { text: NUM_NAME[ch], lang: 'th-TH' };
-  if (THAI_NAME[ch]) return { text: THAI_NAME[ch], lang: 'th-TH' };
+  if (THAI_SAY[ch]) return { text: THAI_SAY[ch], lang: 'th-TH' };
   return { text: ch, lang: 'en-US' };   // English letter
 }
 function pickVoice(lang) {

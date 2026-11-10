@@ -2782,7 +2782,7 @@ VoiceClips.lines(() => {
   const L = ['หนูอายุกี่ขวบ แตะตัวเลขเลย', 'จันทรุปราคาเต็มดวง', 'จันทรุปราคาบางส่วน', ...CLUES.map(c => c.q + ' คือดาวอะไร แตะเลย')];
   for (const id of STRIP_IDS) {
     const b = BY[id];
-    L.push(b.say, b.say + ' ' + b.know[0], 'หา' + b.th + ' แตะเลย', 'เก่งมาก นั่นคือ' + b.th, 'นี่คือ' + b.th + ' ลองใหม่นะ');
+    L.push(b.say, 'หา' + b.th + ' แตะเลย', 'เก่งมาก นั่นคือ' + b.th, 'นี่คือ' + b.th + ' ลองใหม่นะ');
     for (const k of KGS) L.push(weightLine(id, k));
     if (id !== 'sun') L.push(jumpLine(id));
   }
