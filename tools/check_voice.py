@@ -20,7 +20,8 @@ from tts_compare import load_keys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'tools', '_voice_check')
 LANG = {'th': 'th-TH', 'en': 'en-US', 'zh': 'zh-CN', 'ja': 'ja-JP'}
-THAI_DIGIT = dict(zip('0123456789', ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']))
+TAGGED = re.compile(r'^[a-z]{2,3}(-[a-z]{2})?\|')   # "en|A", "ko-kr|안녕하세요"; Thai keys carry no tag
+THAI_DIGIT =dict(zip('0123456789', ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']))
 
 
 def read_map(game):
@@ -54,7 +55,7 @@ def stt(keys, wav, lang):
                 return json.loads(r.read()).get('DisplayText', '')
         except urllib.error.HTTPError as e:
             if e.code == 401: _tok['t'] = None
-            elif e.code != 429: raise
+            elif e.code != 429: return f'!{e.code}'   # e.g. a language STT doesn't support
             time.sleep(5 * (i + 1))
         except (TimeoutError, OSError):
             time.sleep(5 * (i + 1))
@@ -109,13 +110,13 @@ def check(game, keys):
         key, cid = item
         if cid in cache:
             return key, cid, cache[cid]
-        lang, text = (key.split('|', 1) if re.match(r'^(en|zh|ja)\|', key) else ('th', key))
+        lang, text = (key.split('|', 1) if TAGGED.match(key) else ('th', key))
         mp3 = os.path.join(ROOT, game, 'voice', cid + '.mp3')
         with tempfile.TemporaryDirectory() as d:
             wav = os.path.join(d, 'a.wav')
             subprocess.run(['afconvert', '-f', 'WAVE', '-d', 'LEI16@16000', '-c', '1', mp3, wav], check=True, capture_output=True)
             pad(wav)
-            got = stt(keys, wav, LANG[lang])
+            got = stt(keys, wav, LANG.get(lang) or lang.split('-')[0] + '-' + lang.split('-')[1].upper())
         return key, cid, got
 
     with ThreadPoolExecutor(2) as ex:
@@ -124,7 +125,7 @@ def check(game, keys):
     for key, cid, got in res:
         if got != '?':
             cache[cid] = got
-        want = key.split('|', 1)[1] if re.match(r'^(en|zh|ja)\|', key) else key
+        want = key.split('|', 1)[1] if TAGGED.match(key) else key
         if got == '?':
             cache.pop(cid, None)        # failed after retries — try again next run
         rows.append({'text': key, 'heard': got, 'score': round(score(want, got), 2), 'clip': cid})

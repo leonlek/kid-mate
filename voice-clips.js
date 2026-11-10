@@ -10,8 +10,15 @@ window.VoiceClips = (function () {
   const bufs = {};
   let src = null, token = 0;
   const norm = (t) => String(t).replace(/\s+/g, ' ').trim();
+  // 'th' 'en' 'zh' 'ja' (and their default 'en-US'-style tags) keep the short key;
+  // any other tag stays whole ("en-gb|Hello", "ko-kr|안녕하세요") so accents don't collide.
+  const DEF = { 'th-th': 1, 'en-us': 1, 'zh-cn': 1, 'ja-jp': 1 };
+  const tag = (lang) => {
+    const l = (lang || 'th').toLowerCase();
+    return l.length === 2 || DEF[l] ? l.slice(0, 2) : l;
+  };
   const key = (t, lang) => {
-    const l = (lang || 'th').slice(0, 2).toLowerCase();
+    const l = tag(lang);
     return l === 'th' ? norm(t) : l + '|' + norm(t);
   };
   function stop() {
@@ -45,7 +52,7 @@ window.VoiceClips = (function () {
     const seen = new Set(), out = [];
     for (const l of fn()) {
       const [lang, t] = Array.isArray(l) ? l : ['th', l];
-      const k = key(t, lang), l2 = lang.slice(0, 2).toLowerCase();
+      const k = key(t, lang), l2 = tag(lang);
       if (!seen.has(k)) { seen.add(k); out.push(l2 === 'th' ? norm(t) : [l2, norm(t)]); }
     }
     const pre = document.createElement('pre'); pre.id = 'voice-lines';

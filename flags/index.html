@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<script src="art.js"></script>
+<script src="world.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🌏 ธงนานาชาติ — คิดส์เล่น</title>
+<meta name="description" content="ระบายสีธงชาติ 32 ประเทศให้เหมือนของจริง ฟังชื่อประเทศภาษาไทยและอังกฤษ และคำทักทายภาษาของประเทศนั้น ปักธงบนแผนที่โลก ทายธง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ธงนานาชาติ">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --paper: #fffef9; --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 820px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 6px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 48px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .hidden { display: none !important; }
+
+  .modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 10px; }
+  .mode {
+    font-family: 'Mitr', sans-serif; font-weight: 600; font-size: 15px; line-height: 1.15;
+    min-height: 72px; padding: 6px 4px; border-radius: 22px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.16); transition: transform .1s;
+  }
+  .mode b { display: block; font-size: 28px; line-height: 1.1; }
+  .mode.on { background: var(--gold); border-color: #e0b400; }
+  .mode:active, .btn:active, .chip:active, .fcard:active, .opt:active, .sw:active { transform: translateY(3px); }
+
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 4px 0 10px; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 17px; font-weight: 600;
+    min-height: 52px; min-width: 64px; padding: 0 16px; border-radius: 999px;
+    border: 3px solid var(--card-border); background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+  .fcard {
+    position: relative; background: var(--card); border: 3px solid var(--card-border); border-radius: 20px;
+    padding: 8px 6px 6px; cursor: pointer; font-family: 'Mitr', sans-serif; color: var(--ink);
+    box-shadow: 0 5px 0 rgba(0,0,0,0.14); min-height: 104px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 4px;
+  }
+  .fcard .fl { width: 100%; height: 62px; display: flex; align-items: center; justify-content: center; }
+  .fcard img { max-width: 92%; max-height: 62px; box-shadow: 0 0 0 1px rgba(0,0,0,0.25); }
+  .fcard img.np { box-shadow: none; filter: drop-shadow(0 0 1px rgba(0,0,0,.4)); }
+  .fcard span { font-size: 15px; font-weight: 600; line-height: 1.15; text-align: center; }
+  .fcard i { position: absolute; top: -8px; right: -6px; font-style: normal; font-size: 24px; }
+  .fcard .lv { position: absolute; top: -9px; left: -4px; font-size: 12px; background: #fff; border-radius: 999px; padding: 0 5px; border: 2px solid var(--card-border); }
+
+  /* paint */
+  .ptitle { text-align: center; font-family: 'Itim', cursive; font-size: clamp(26px, 6vw, 38px); color: var(--brand-dark); text-shadow: 2px 2px 0 #fff; margin: 0 56px; min-height: 40px; }
+  .stage { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; margin: 4px 0; }
+  #cv { display: block; touch-action: none; cursor: pointer; filter: drop-shadow(0 6px 0 rgba(0,0,0,0.15)); }
+  #cv.bump { animation: bump .35s ease; }
+  @keyframes bump { 50% { transform: scale(1.03); } }
+  .ref {
+    display: flex; align-items: center; gap: 8px; background: #fff; border: 3px solid var(--card-border); border-radius: 14px;
+    padding: 5px; box-shadow: 0 4px 0 rgba(0,0,0,0.15); z-index: 3; text-align: center; font-size: 13px; font-weight: 600;
+  }
+  .ref img { display: block; height: 52px; max-width: 110px; object-fit: contain; }
+  .ref.big img { height: 90px; max-width: 180px; }
+  .palette { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 6px; }
+  .sw {
+    width: 68px; height: 68px; border-radius: 50%; border: 4px solid #fff; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.18), 0 5px 0 rgba(0,0,0,0.18); transition: transform .12s;
+  }
+  .sw.on { transform: scale(1.18); box-shadow: 0 0 0 4px var(--ink), 0 5px 0 rgba(0,0,0,0.25); }
+  .sw.hint { animation: hint .5s ease 3; }
+  @keyframes hint { 50% { transform: scale(1.3) rotate(-8deg); } }
+  .ctrls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .btn {
+    font-family: 'Mitr', sans-serif; font-size: 19px; font-weight: 700;
+    min-height: 64px; min-width: 64px; padding: 0 20px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
+  }
+  .btn.go { background: var(--brand); border-color: var(--brand-dark); color: #fff; animation: pulse .9s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.06); } }
+  .info {
+    background: var(--paper); border: 3px solid var(--card-border); border-radius: 24px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.14); padding: 10px 14px; margin: 8px auto 0; max-width: 560px;
+  }
+  .info .ln { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-radius: 14px; cursor: pointer; min-height: 52px; }
+  .info .ln:active { background: #fff3c4; }
+  .info .ln.say { background: #fff3c4; }
+  .info .ln::after { content: '🔊'; margin-left: auto; font-size: 22px; }
+  .info .nm { font-size: 24px; font-weight: 700; }
+  .info .nm small, .info .hi small { font-weight: 500; font-size: 16px; color: #636e72; }
+  .info .hi { font-size: 26px; font-weight: 600; }
+  .info .ft { font-size: 17px; line-height: 1.4; }
+  .score { text-align: center; font-size: 22px; font-weight: 700; min-height: 30px; color: var(--brand-dark); }
+
+  /* map */
+  #mapSvg { display: block; width: 100%; height: auto; border-radius: 22px; border: 4px solid #fff; box-shadow: 0 6px 0 rgba(0,0,0,0.15); background: #8fd3f4; touch-action: manipulation; }
+  #mapSvg .pin { cursor: pointer; }
+  .count { text-align: center; font-family: 'Itim', cursive; font-size: 28px; color: var(--brand-dark); text-shadow: 2px 2px 0 #fff; }
+
+  /* quiz */
+  .q { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 12px; }
+  .q .txt { font-size: clamp(22px, 5.5vw, 32px); font-weight: 700; text-align: center; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 680px; margin: 0 auto; }
+  .opt {
+    background: #fff; border: 4px solid var(--card-border); border-radius: 22px; padding: 10px 8px; cursor: pointer; min-height: 100px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  .opt img { max-width: 100%; max-height: 120px; box-shadow: 0 0 0 1px rgba(0,0,0,0.25); }
+  .opt img.np { box-shadow: none; }
+  .opt.ok { border-color: #2ecc71; background: #eafff1; animation: bump .4s ease; }
+  .opt.no { opacity: .45; animation: shake .4s ease; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .stars { text-align: center; font-size: 26px; min-height: 36px; margin-top: 10px; }
+
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  @media (max-width: 420px) { .mode { font-size: 13px; } .mode b { font-size: 24px; } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🌏 ธงนานาชาติ</h1></header>
+  <nav class="modes" id="modes">
+    <button class="mode on" data-m="follow"><b>🎨</b>ระบายตามแบบ</button>
+    <button class="mode" data-m="free"><b>🖌️</b>ระบายเอง</button>
+    <button class="mode" data-m="map"><b>🌏</b>แผนที่โลก</button>
+    <button class="mode" data-m="quiz"><b>🎯</b>ทายธง</button>
+  </nav>
+
+  <section id="pick">
+    <div class="chips" id="lvChips"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="paint" class="hidden">
+    <div class="ptitle" id="ptitle"></div>
+    <div class="stage" id="stage">
+      <div class="ref" id="ref"><img id="refImg" alt="ธงจริง">👀 ธงจริง</div>
+      <canvas id="cv"></canvas>
+    </div>
+    <div class="score" id="score"></div>
+    <div class="palette" id="palette"></div>
+    <div class="info hidden" id="info"></div>
+    <div class="ctrls">
+      <button class="btn" id="backBtn">⬅️ เลือกธง</button>
+      <button class="btn" id="resetBtn">🔄 ระบายใหม่</button>
+      <button class="btn hidden" id="cmpBtn">🔍 เทียบธงจริง</button>
+      <button class="btn hidden" id="mapBtn">🌏 ดูบนแผนที่</button>
+      <button class="btn go hidden" id="nextBtn">➡️ ธงต่อไป</button>
+    </div>
+  </section>
+
+  <section id="map" class="hidden">
+    <div class="chips" id="zoomChips"></div>
+    <svg id="mapSvg" viewBox="0 0 720 284" aria-label="แผนที่โลก"></svg>
+    <div class="count" id="mapCount"></div>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="chips" id="qChips"></div>
+    <div class="q"><button class="btn" id="qSay" aria-label="ฟังอีกครั้ง">🔊</button><div class="txt" id="qTxt"></div></div>
+    <div class="opts" id="opts"></div>
+    <div class="stars" id="qStars"></div>
+    <div class="ctrls"><button class="btn go hidden" id="qNext">➡️ ข้อต่อไป</button></div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const ART = window.FLAG_ART || {};
+
+// ============================================================================
+// FLAGS — official geometry and colours. Simple flags are built here from their
+// legal construction sheets; the complex emblems (Angkor Wat, Sun of May, Brazil's
+// stars and lettering) and several layouts are taken from the Wikimedia Commons
+// SVGs (public domain). Each flag: viewBox `vb`, optional `defs`, colours `col`,
+// paintable regions `regs` = [colourKey, svg] drawn back→front (a later region hides
+// what's under it), and fixed `decor` drawn on top. Regions use fill="currentColor".
+// ============================================================================
+const R = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+const C = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
+function STAR(cx, cy, Rr, rot = 0, n = 5, k = 0.382) {
+  const p = [];
+  for (let i = 0; i < n * 2; i++) {
+    const a = (-90 + rot) * Math.PI / 180 + i * Math.PI / n, r = i % 2 ? Rr * k : Rr;
+    p.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
+  }
+  return `<polygon points="${p.join(' ')}"/>`;
+}
+const toward = (cx, cy, tx, ty) => Math.atan2(ty - cy, tx - cx) * 180 / Math.PI + 90;
+const STROKE = (d, w, extra = '') => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${w}" ${extra}/>`;
+
+// US: 13 stripes, union 7 stripes high × 0.76 H, 50 stars in 9 rows (Executive Order 10834)
+const US_H = 3900, US_S = 300, US_G = 0.063 * US_H, US_E = 0.054 * US_H, US_K = 0.0616 * US_H / 2;
+function usStars() {
+  let s = '';
+  for (let r = 0; r < 9; r++) {
+    const six = r % 2 === 0;
+    for (let k = 0; k < (six ? 6 : 5); k++) s += STAR(US_G * (six ? 2 * k + 1 : 2 * k + 2), US_E * (r + 1), US_K);
+  }
+  return s;
+}
+const usStripes = (odd) => { let s = ''; for (let i = odd ? 1 : 0; i < 13; i += 2) s += R(0, i * US_S, 7410, US_S); return s; };
+
+const GB_DEFS = '<clipPath id="gs"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="gt"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>';
+const NP_D = 'M -15,37.5735931288 h 60 L -15,0 v 80 h 60 L -15,20 z';
+const AU_DEFS = '<clipPath id="c1"><path d="M0,0H6V3H0z"/></clipPath><clipPath id="c2"><path d="M0,0V1.5H6V3H6zM6,0H3V3H0V3z"/></clipPath>' +
+  '<path id="Star7" d="M0,-360 69.421398,-144.155019 281.459334,-224.456329 155.988466,-35.603349 350.974048,80.107536 125.093037,99.758368 156.198146,324.348792 0,160 -156.198146,324.348792 -125.093037,99.758368 -350.974048,80.107536 -155.988466,-35.603349 -281.459334,-224.456329 -69.421398,-144.155019z"/>' +
+  '<path id="Star5" d="M0,-210 54.859957,-75.508253 199.721868,-64.893569 88.765275,28.841586 123.434903,169.893569 0,93.333333 -123.434903,169.893569 -88.765275,28.841586 -199.721868,-64.893569 -54.859957,-75.508253z"/>';
+const AU_UJ = (inner) => `<g transform="scale(840)">${inner}</g>`;
+const IN_CHAKRA = '<g fill="#07038D"><path fill-rule="evenodd" d="M-9.25,0a9.25,9.25 0 1,0 18.5,0a9.25,9.25 0 1,0 -18.5,0zM-8,0a8,8 0 1,0 16,0a8,8 0 1,0 -16,0z"/><circle r="1.6"/>' +
+  '<g id="d"><g id="c"><g id="b"><g id="a"><path d="m0-8 .3 4.81409L0-.80235-.3-3.18591z"/><circle transform="rotate(7.5)" r="0.35" cy="-8"/></g><use xlink:href="#a" transform="scale(-1)"/></g><use xlink:href="#b" transform="rotate(15)"/></g><use xlink:href="#c" transform="rotate(30)"/></g><use xlink:href="#d" transform="rotate(60)"/><use xlink:href="#d" transform="rotate(120)"/></g>';
+const KR_TRI = '<g fill="none" stroke="currentColor" stroke-width="4"><path transform="rotate(33.69006752598)" d="M-50-12v24m6 0v-24m6 0v24m76 0V1m0-2v-11m6 0v11m0 2v11m6 0V1m0-2v-11"/><path transform="rotate(-33.69006752598)" d="M-50-12v24m6 0V1m0-2v-11m6 0v24m76 0V1m0-2v-11m6 0v24m6 0V1m0-2v-11"/></g>';
+const PH_SUN = '<circle r="9"/><g id="c"><g id="b"><path id="a" d="m0 0-3.164-15.909.945-.946zl-1.169-17.831L0-19l1.169 1.169zl2.219-16.855.945.946z"/><use transform="scale(-1)" xlink:href="#a"/></g><use transform="rotate(90)" xlink:href="#b"/></g><use transform="rotate(45)" xlink:href="#c"/>';
+const PH_STARS = '<path id="s" d="m40.942 0-3.382 1.176L37.487 4.755l-2.163-2.853-3.427 1.037L33.942 0l-2.045-2.939 3.427 1.037 2.163-2.853L37.56-1.176z"/><use transform="rotate(120,-2.019,0)" xlink:href="#s"/><use transform="rotate(240,-2.019,0)" xlink:href="#s"/>';
+const NP_MOON = '<path d="M -11.9502769431,23.4834957055 A 12.8400974233,12.8400974233 0 0,0 11.9502769431,23.4834957055 A 11.9502769431 11.9502769431 0 0,1 -11.9502769431,23.4834957055"/><g transform="translate(0 29.045) scale(5.56106)"><circle r="1"/><g id="d"><g id="c"><path id="b" d="M 0.195090322016,-0.980785280403 L 0,-1.388784109750 L -0.195090322016,-0.980785280403" transform="rotate(11.25)"/><use xlink:href="#b" transform="rotate(22.5)"/><use xlink:href="#b" transform="rotate(45)"/></g><use xlink:href="#c" transform="rotate(67.5)"/></g><use xlink:href="#d" transform="scale(-1 1)"/></g>';
+const NP_SUN = '<g transform="matrix(8.1434 0 0 8.1434 0 58.787)"><circle r="1"/><g id="g"><g id="f"><path id="e" d="M 0.258819045103,0.965925826289 L 0,1.576749285537 L -0.258819045103,0.965925826289"/><use xlink:href="#e" transform="rotate(180)"/></g><use xlink:href="#f" transform="rotate(90)"/></g><use xlink:href="#g" transform="rotate(30)"/><use xlink:href="#g" transform="rotate(60)"/></g>';
+const CN_SMALL = [[100, 20], [120, 40], [120, 70], [100, 90]].map(([x, y]) => STAR(x, y, 10, toward(x, y, 50, 50))).join('');
+
+const FLAGS = [
+  // ---------- ⭐ stripes and a circle ----------
+  { id: 'th', lv: 1, th: 'ไทย', en: 'Thailand', hi: 'สวัสดี', hiTh: '', lang: 'th', hiL: 'ภาษาไทย', lat: 13.75, lon: 100.5,
+    fact: 'สีแดงคือชาติ สีขาวคือศาสนา สีน้ำเงินคือพระมหากษัตริย์ เรียกว่าธงไตรรงค์',
+    vb: '0 0 900 600', col: { r: '#A51931', w: '#F4F5F8', b: '#2D2A4A' },
+    regs: [['r', R(0, 0, 900, 100) + R(0, 500, 900, 100)], ['w', R(0, 100, 900, 100) + R(0, 400, 900, 100)], ['b', R(0, 200, 900, 200)]] },
+  { id: 'id', lv: 1, th: 'อินโดนีเซีย', en: 'Indonesia', hi: 'Halo', hiTh: 'ฮาโล', lang: 'id-ID', hiL: 'ภาษาอินโดนีเซีย', lat: -6.2, lon: 106.8,
+    fact: 'สีแดงอยู่บน สีขาวอยู่ล่าง ธงของโมนาโกก็ใช้สองสีนี้เหมือนกัน',
+    vb: '0 0 300 200', col: { r: '#FF0000', w: '#FFFFFF' }, regs: [['r', R(0, 0, 300, 100)], ['w', R(0, 100, 300, 100)]] },
+  { id: 'jp', lv: 1, th: 'ญี่ปุ่น', en: 'Japan', hi: 'こんにちは', hiTh: 'คนนิจิวะ', lang: 'ja', hiL: 'ภาษาญี่ปุ่น', lat: 35.7, lon: 139.7,
+    fact: 'วงกลมสีแดงคือดวงอาทิตย์ คนญี่ปุ่นเรียกธงนี้ว่า ฮิโนะมารุ',
+    vb: '0 0 300 200', col: { w: '#FFFFFF', r: '#BC002D' }, regs: [['w', R(0, 0, 300, 200)], ['r', C(150, 100, 60)]] },
+  { id: 'fr', lv: 1, th: 'ฝรั่งเศส', en: 'France', hi: 'Bonjour', hiTh: 'บงชูร์', lang: 'fr-FR', hiL: 'ภาษาฝรั่งเศส', lat: 48.86, lon: 2.35,
+    fact: 'สีน้ำเงิน ขาว แดง คนฝรั่งเศสเรียกธงนี้ว่า ธงสามสี',
+    vb: '0 0 300 200', col: { b: '#0055A4', w: '#FFFFFF', r: '#EF4135' }, regs: [['b', R(0, 0, 100, 200)], ['w', R(100, 0, 100, 200)], ['r', R(200, 0, 100, 200)]] },
+  { id: 'de', lv: 1, th: 'เยอรมนี', en: 'Germany', hi: 'Hallo', hiTh: 'ฮัลโล', lang: 'de-DE', hiL: 'ภาษาเยอรมัน', lat: 52.52, lon: 13.4,
+    fact: 'มีสามแถบ สีดำ สีแดง และสีทอง',
+    vb: '0 0 500 300', col: { k: '#000000', r: '#DD0000', y: '#FFCE00' }, regs: [['k', R(0, 0, 500, 100)], ['r', R(0, 100, 500, 100)], ['y', R(0, 200, 500, 100)]] },
+  { id: 'it', lv: 1, th: 'อิตาลี', en: 'Italy', hi: 'Ciao', hiTh: 'เชา', lang: 'it-IT', hiL: 'ภาษาอิตาลี', lat: 41.9, lon: 12.5,
+    fact: 'สีเขียว ขาว แดง เรียงเป็นแถบตั้งสามแถบ',
+    vb: '0 0 300 200', col: { g: '#009246', w: '#FFFFFF', r: '#CE2B37' }, regs: [['g', R(0, 0, 100, 200)], ['w', R(100, 0, 100, 200)], ['r', R(200, 0, 100, 200)]] },
+  { id: 'ua', lv: 1, th: 'ยูเครน', en: 'Ukraine', hi: 'Привіт', hiTh: 'ปรีวิต', lang: 'uk-UA', hiL: 'ภาษายูเครน', lat: 50.45, lon: 30.52,
+    fact: 'สีฟ้าคือท้องฟ้า สีเหลืองคือทุ่งข้าวสาลี',
+    vb: '0 0 300 200', col: { b: '#0057B7', y: '#FFD700' }, regs: [['b', R(0, 0, 300, 100)], ['y', R(0, 100, 300, 100)]] },
+  { id: 'ru', lv: 1, th: 'รัสเซีย', en: 'Russia', hi: 'Привет', hiTh: 'ปรีเวียต', lang: 'ru-RU', hiL: 'ภาษารัสเซีย', lat: 55.75, lon: 37.62,
+    fact: 'มีสามแถบนอน สีขาว สีน้ำเงิน และสีแดง',
+    vb: '0 0 300 200', col: { w: '#FFFFFF', b: '#0039A6', r: '#D52B1E' }, regs: [['w', R(0, 0, 300, 66.67)], ['b', R(0, 66.67, 300, 66.67)], ['r', R(0, 133.33, 300, 66.67)]] },
+  { id: 'nl', lv: 1, th: 'เนเธอร์แลนด์', en: 'Netherlands', hi: 'Hallo', hiTh: 'ฮาโล', lang: 'nl-NL', hiL: 'ภาษาดัตช์', lat: 52.37, lon: 4.9,
+    fact: 'ธงสีแดง ขาว น้ำเงิน แต่คนเนเธอร์แลนด์ชอบใส่ชุดสีส้ม ซึ่งเป็นสีของราชวงศ์',
+    vb: '0 0 300 200', col: { r: '#AE1C28', w: '#FFFFFF', b: '#21468B' }, regs: [['r', R(0, 0, 300, 66.67)], ['w', R(0, 66.67, 300, 66.67)], ['b', R(0, 133.33, 300, 66.67)]] },
+  { id: 'es', lv: 1, th: 'สเปน', en: 'Spain', hi: 'Hola', hiTh: 'โอลา', lang: 'es-ES', hiL: 'ภาษาสเปน', lat: 40.4, lon: -3.7,
+    fact: 'แถบสีเหลืองกว้างเป็นสองเท่าของแถบสีแดง ธงแบบเต็มจะมีตราแผ่นดินอยู่ด้วย',
+    vb: '0 0 300 200', col: { r: '#AA151B', y: '#F1BF00' }, regs: [['r', R(0, 0, 300, 50) + R(0, 150, 300, 50)], ['y', R(0, 50, 300, 100)]] },
+
+  // ---------- ⭐⭐ stars, crosses, a moon ----------
+  { id: 'la', lv: 2, th: 'ลาว', en: 'Laos', hi: 'ສະບາຍດີ', hiTh: 'สะบายดี', lang: 'lo-LA', hiL: 'ภาษาลาว', lat: 17.97, lon: 102.6,
+    fact: 'วงกลมสีขาว คือดวงจันทร์เต็มดวงเหนือแม่น้ำโขง',
+    vb: '0 0 300 200', col: { r: '#CE1126', b: '#002868', w: '#FFFFFF' }, regs: [['r', R(0, 0, 300, 50) + R(0, 150, 300, 50)], ['b', R(0, 50, 300, 100)], ['w', C(150, 100, 40)]] },
+  { id: 'mm', lv: 2, th: 'เมียนมา', en: 'Myanmar', hi: 'မင်္ဂလာပါ', hiTh: 'มิงกะลาบา', lang: 'my-MM', hiL: 'ภาษาพม่า', lat: 19.75, lon: 96.1,
+    fact: 'มีสามแถบ สีเหลือง เขียว แดง และดาวสีขาวดวงใหญ่ตรงกลาง',
+    vb: '0 0 300 200', col: { y: '#FECB00', g: '#34B233', r: '#EA2839', w: '#FFFFFF' },
+    regs: [['y', R(0, 0, 300, 66.67)], ['g', R(0, 66.67, 300, 66.67)], ['r', R(0, 133.33, 300, 66.67)], ['w', STAR(150, 107, 74)]] },
+  { id: 'vn', lv: 2, th: 'เวียดนาม', en: 'Vietnam', hi: 'Xin chào', hiTh: 'ซินจ่าว', lang: 'vi-VN', hiL: 'ภาษาเวียดนาม', lat: 21.03, lon: 105.85,
+    fact: 'ดาวสีเหลืองห้าแฉก บนพื้นสีแดง',
+    vb: '0 0 300 200', col: { r: '#DA251D', y: '#FFFF00' }, regs: [['r', R(0, 0, 300, 200)], ['y', STAR(150, 100, 60)]] },
+  { id: 'cn', lv: 2, th: 'จีน', en: 'China', hi: '你好', hiTh: 'หนีห่าว', lang: 'zh', hiL: 'ภาษาจีน', lat: 39.9, lon: 116.4,
+    fact: 'มีดาวสีเหลืองห้าดวง ดวงใหญ่หนึ่งดวง ดวงเล็กสี่ดวง',
+    vb: '0 0 300 200', col: { r: '#EE1C25', y: '#FFFF00' }, regs: [['r', R(0, 0, 300, 200)], ['y', STAR(50, 50, 30)], ['y', CN_SMALL]] },
+  { id: 'se', lv: 2, th: 'สวีเดน', en: 'Sweden', hi: 'Hej', hiTh: 'เฮ', lang: 'sv-SE', hiL: 'ภาษาสวีเดน', lat: 59.33, lon: 18.07,
+    fact: 'กากบาทสีเหลืองบนพื้นสีฟ้า อยู่ค่อนไปทางเสาธง',
+    vb: '0 0 320 200', col: { b: '#006AA7', y: '#FECC00' }, regs: [['b', R(0, 0, 320, 200)], ['y', R(100, 0, 40, 200) + R(0, 80, 320, 40)]] },
+  { id: 'fi', lv: 2, th: 'ฟินแลนด์', en: 'Finland', hi: 'Hei', hiTh: 'เฮ', lang: 'fi-FI', hiL: 'ภาษาฟินแลนด์', lat: 60.17, lon: 24.94,
+    fact: 'กากบาทสีน้ำเงินบนพื้นสีขาว คนฟินแลนด์บอกว่าเหมือนทะเลสาบกับหิมะ',
+    vb: '0 0 360 220', col: { w: '#FFFFFF', b: '#002F6C' }, regs: [['w', R(0, 0, 360, 220)], ['b', R(100, 0, 60, 220) + R(0, 80, 360, 60)]] },
+  { id: 'ch', lv: 2, th: 'สวิตเซอร์แลนด์', en: 'Switzerland', hi: 'Grüezi', hiTh: 'กรือเอ็ตซี', lang: 'de-CH', hiL: 'ภาษาเยอรมันแบบสวิส', lat: 46.95, lon: 7.45,
+    fact: 'ธงเป็นสี่เหลี่ยมจัตุรัส มีแค่สองประเทศในโลก คือสวิตเซอร์แลนด์ กับนครรัฐวาติกัน',
+    vb: '0 0 320 320', col: { r: '#DA291C', w: '#FFFFFF' }, regs: [['r', R(0, 0, 320, 320)], ['w', R(130, 60, 60, 200) + R(60, 130, 200, 60)]] },
+  { id: 'tr', lv: 2, th: 'ทูร์เคีย (ตุรกี)', say: 'ทูร์เคีย', en: 'Türkiye', hi: 'Merhaba', hiTh: 'แมร์ฮาบา', lang: 'tr-TR', hiL: 'ภาษาตุรกี', lat: 39.93, lon: 32.86,
+    fact: 'มีพระจันทร์เสี้ยวกับดาวสีขาว บนพื้นสีแดง',
+    vb: '0 -30000 90000 60000', col: { r: '#E30A17', w: '#FFFFFF' },
+    regs: [['r', '<path d="m0-30000h90000v60000H0z"/>'], ['w', '<path d="m41750 0 13568-4408-8386 11541V-7133l8386 11541zm925 8021a15000 15000 0 1 1 0-16042 12000 12000 0 1 0 0 16042z"/>']] },
+  { id: 'gr', lv: 2, th: 'กรีซ', en: 'Greece', hi: 'Γειά σου', hiTh: 'ยาซู', lang: 'el-GR', hiL: 'ภาษากรีก', lat: 37.98, lon: 23.73,
+    fact: 'มีแถบสีน้ำเงินสลับสีขาว เก้าแถบ และกากบาทสีขาวที่มุม',
+    vb: '0 0 270 180', col: { b: '#0D5EAF', w: '#FFFFFF' },
+    regs: [['b', [0, 40, 80, 120, 160].map((y) => R(0, y, 270, 20)).join('') + R(0, 0, 100, 100)],
+           ['w', R(100, 20, 170, 20) + R(100, 60, 170, 20) + R(0, 100, 270, 20) + R(0, 140, 270, 20) + R(40, 0, 20, 100) + R(0, 40, 100, 20)]] },
+  { id: 'in', lv: 2, th: 'อินเดีย', en: 'India', hi: 'नमस्ते', hiTh: 'นมัสเต', lang: 'hi-IN', hiL: 'ภาษาฮินดี', lat: 28.61, lon: 77.21,
+    fact: 'วงล้อสีน้ำเงินตรงกลาง มีซี่ล้อยี่สิบสี่ซี่',
+    vb: '-45 -30 90 60', col: { o: '#FF6820', w: '#FFFFFF', g: '#046A38' },
+    regs: [['o', R(-45, -30, 90, 20)], ['w', R(-45, -10, 90, 20)], ['g', R(-45, 10, 90, 20)]], decor: IN_CHAKRA },
+  { id: 'ar', lv: 2, th: 'อาร์เจนตินา', en: 'Argentina', hi: 'Hola', hiTh: 'โอลา', lang: 'es-AR', hiL: 'ภาษาสเปน', lat: -34.6, lon: -58.38,
+    fact: 'ดวงอาทิตย์ตรงกลาง เรียกว่า ดวงอาทิตย์แห่งเดือนพฤษภาคม',
+    vb: '0 0 800 500', col: { b: '#74ACDF', w: '#FFFFFF' }, regs: [['b', R(0, 0, 800, 166.67) + R(0, 333.33, 800, 166.67)], ['w', R(0, 166.67, 800, 166.66)]], decor: ART.arSun },
+
+  // ---------- ⭐⭐⭐ many parts ----------
+  { id: 'gb', lv: 3, th: 'สหราชอาณาจักร', en: 'United Kingdom', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-GB', hiL: 'ภาษาอังกฤษ', lat: 51.51, lon: -0.13,
+    fact: 'ธงนี้เรียกว่า ยูเนียนแจ็ก รวมกากบาทของอังกฤษ สกอตแลนด์ และไอร์แลนด์',
+    vb: '0 0 60 30', defs: GB_DEFS, col: { b: '#012169', w: '#FFFFFF', r: '#C8102E' },
+    regs: [['b', R(0, 0, 60, 30)], ['w', STROKE('M0,0 L60,30 M60,0 L0,30', 6, 'clip-path="url(#gs)"')],
+           ['r', STROKE('M0,0 L60,30 M60,0 L0,30', 4, 'clip-path="url(#gt)"')],
+           ['w', STROKE('M30,0 v30 M0,15 h60', 10)], ['r', STROKE('M30,0 v30 M0,15 h60', 6)]] },
+  { id: 'us', lv: 3, th: 'สหรัฐอเมริกา', en: 'United States', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en', hiL: 'ภาษาอังกฤษ', lat: 38.9, lon: -77.04,
+    fact: 'ดาวห้าสิบดวงคือห้าสิบรัฐ แถบสิบสามแถบคืออาณานิคมสิบสามแห่งแรก',
+    vb: '0 0 7410 3900', col: { r: '#B31942', w: '#FFFFFF', b: '#0A3161' },
+    regs: [['r', usStripes(false)], ['w', usStripes(true)], ['b', R(0, 0, 0.76 * US_H, 7 * US_S)], ['w', usStars()]] },
+  { id: 'kr', lv: 3, th: 'เกาหลีใต้', en: 'South Korea', hi: '안녕하세요', hiTh: 'อันนยองฮาเซโย', lang: 'ko-KR', hiL: 'ภาษาเกาหลี', lat: 37.57, lon: 126.98,
+    fact: 'วงกลมตรงกลางเรียกว่า แทกึก และมีขีดสีดำอยู่สี่มุม',
+    vb: '-72 -48 144 96', col: { w: '#FFFFFF', r: '#CD2E3A', b: '#0047A0', k: '#000000' },
+    regs: [['w', R(-72, -48, 144, 96)], ['k', KR_TRI],
+           ['r', '<g transform="rotate(33.69006752598)"><path d="M12 0a18 18 0 11-36 0 24 24 0 1148 0"/></g>'],
+           ['b', '<g transform="rotate(33.69006752598)"><path d="M-24 0a24 24 0 1048 0A12 12 0 100 0a12 12 0 11-24 0"/></g>']] },
+  { id: 'br', lv: 3, th: 'บราซิล', en: 'Brazil', hi: 'Olá', hiTh: 'โอลา', lang: 'pt-BR', hiL: 'ภาษาโปรตุเกส', lat: -15.79, lon: -47.88,
+    fact: 'มีดาวยี่สิบเจ็ดดวง และคำว่า ระเบียบและความก้าวหน้า',
+    vb: '-2100 -1470 4200 2940', defs: (ART.brDefs || '') + '<clipPath id="B"><circle r="735"/></clipPath>',
+    col: { g: '#009440', y: '#FFCB00', b: '#302681', w: '#FFFFFF' },
+    regs: [['g', R(-2100, -1470, 4200, 2940)], ['y', '<path d="M -1743,0 0,1113 1743,0 0,-1113 Z"/>'], ['b', C(0, 0, 735)],
+           ['w', '<path d="m-2205 1470a1785 1785 0 0 1 3570 0h-105a1680 1680 0 1 0-3360 0z" clip-path="url(#B)"/>'], ['w', ART.brStars || '']],
+    decor: ART.brText },
+  { id: 'ca', lv: 3, th: 'แคนาดา', en: 'Canada', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-CA', hiL: 'ภาษาอังกฤษ', lat: 45.42, lon: -75.7,
+    fact: 'ใบเมเปิลสีแดงตรงกลาง มีสิบเอ็ดแฉก',
+    vb: '0 0 9600 4800', col: { r: '#FF0000', w: '#FFFFFF' },
+    regs: [['r', '<path d="m0 0h2400l99 99h4602l99-99h2400v4800h-2400l-99-99h-4602l-99 99H0z"/>'], ['w', R(2400, 0, 4800, 4800)],
+           ['r', '<path d="M4890 4430l-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z"/>']] },
+  { id: 'my', lv: 3, th: 'มาเลเซีย', en: 'Malaysia', hi: 'Apa khabar', hiTh: 'อาปา คาบาร์', lang: 'ms-MY', hiL: 'ภาษามลายู', lat: 3.14, lon: 101.69,
+    fact: 'มีแถบสีแดงสลับสีขาว สิบสี่แถบ และดาวสิบสี่แฉก',
+    vb: '0 0 13440 6720', col: { w: '#FFFFFF', r: '#CC0000', b: '#000066', y: '#FFCC00' },
+    regs: [['w', R(0, 0, 13440, 6720)],
+           ['r', '<g transform="scale(480)" fill="none" stroke="currentColor"><path d="m0 .5h28m0 2H0m0 2h28m0 2H0"/><path d="m0 8.5h28m0 2H0m0 2h28"/></g>'],
+           ['b', R(0, 0, 6720, 4080)],
+           ['y', '<path d="m4200 720 107 732 414-613-222 706 639-373-506 540 738-59-690 267 690 267-738-59 506 540-639-373 222 706-414-613-107 732-107-732-414 613 222-706-639 373 506-540-738 59 690-267-690-267 738 59-506-540 639 373-222-706 414 613zm-600 30a1280 1280 0 1 0 0 2340 1440 1440 0 1 1 0-2340z"/>']] },
+  { id: 'ph', lv: 3, th: 'ฟิลิปปินส์', en: 'Philippines', hi: 'Kumusta', hiTh: 'กูมุสตา', lang: 'fil-PH', hiL: 'ภาษาฟิลิปีโน', lat: 14.6, lon: 120.98,
+    fact: 'ถ้ามีสงคราม ฟิลิปปินส์จะกลับธงให้สีแดงขึ้นข้างบน',
+    vb: '-28 -45 180 90', col: { b: '#0038A8', r: '#CE1126', w: '#FFFFFF', y: '#FCD116' },
+    regs: [['b', '<path d="m-28-45h180V0L0 44z"/>'], ['r', '<path d="m0 0h152v45H-28z"/>'], ['w', '<path d="m49.942 0L-28 45v-90z"/>'], ['y', PH_SUN], ['y', PH_STARS]] },
+  { id: 'np', lv: 3, th: 'เนปาล', en: 'Nepal', hi: 'नमस्ते', hiTh: 'นมัสเต', lang: 'ne-NP', hiL: 'ภาษาเนปาลี', lat: 27.7, lon: 85.32,
+    fact: 'เป็นธงชาติเดียวในโลก ที่ไม่ใช่รูปสี่เหลี่ยม',
+    vb: '-17.582 -4.664 71.571 87.246', col: { b: '#003893', r: '#DC143C', w: '#FFFFFF' },
+    regs: [['b', `<path d="${NP_D}" stroke="currentColor" stroke-width="5.165"/>`], ['r', `<path d="${NP_D}"/>`], ['w', NP_MOON], ['w', NP_SUN]] },
+  { id: 'kh', lv: 3, th: 'กัมพูชา', en: 'Cambodia', hi: 'សួស្តី', hiTh: 'ซัวสเดย', lang: 'km-KH', hiL: 'ภาษาเขมร', lat: 11.56, lon: 104.92,
+    fact: 'ตรงกลางเป็นรูปปราสาทนครวัด',
+    vb: '0 0 1000 640', col: { b: '#032EA1', r: '#E00025' }, regs: [['b', R(0, 0, 1000, 640)], ['r', R(0, 160, 1000, 320)]], decor: ART.khTemple },
+  { id: 'au', lv: 3, th: 'ออสเตรเลีย', en: 'Australia', hi: "G'day", hiTh: 'กูดเดย์', lang: 'en-AU', hiL: 'ภาษาอังกฤษ', lat: -35.28, lon: 149.13,
+    fact: 'มีดาวกางเขนใต้ ซึ่งมองเห็นบนท้องฟ้าซีกโลกใต้',
+    vb: '0 0 10080 5040', defs: AU_DEFS, col: { b: '#00008B', w: '#FFFFFF', r: '#FF0000' },
+    regs: [['b', R(0, 0, 10080, 5040)], ['w', AU_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.6, 'clip-path="url(#c1)"'))],
+           ['r', AU_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.4, 'clip-path="url(#c2)"'))], ['w', AU_UJ(STROKE('M3,0V3M0,1.5H6', 1))],
+           ['r', AU_UJ(STROKE('M3,0V3M0,1.5H6', 0.6))],
+           ['w', '<use xlink:href="#Star7" transform="translate(2520, 3780) scale(2.1)"/><use xlink:href="#Star7" x="7560" y="4200"/><use xlink:href="#Star7" x="6300" y="2205"/><use xlink:href="#Star7" x="7560" y="840"/><use xlink:href="#Star7" x="8680" y="1869"/><use xlink:href="#Star5" x="8064" y="2730"/>']] },
+  { id: 'za', lv: 3, th: 'แอฟริกาใต้', en: 'South Africa', hi: 'Sawubona', hiTh: 'ซาวูโบนา', lang: 'zu-ZA', hiL: 'ภาษาซูลู', lat: -25.75, lon: 28.19,
+    fact: 'มีหกสี แดง น้ำเงิน ขาว ดำ เหลือง และเขียว',
+    vb: '0 0 90 60', defs: '<clipPath id="t"><path d="m0 0 45 30L0 60z"/></clipPath><clipPath id="f"><path d="m0 0h90v60H0z"/></clipPath>',
+    col: { r: '#E03C31', b: '#001489', w: '#FFFFFF', k: '#000000', y: '#FFB81C', g: '#007749' },
+    regs: [['r', '<path d="m0 0h90v30H45z"/>'], ['b', '<path d="m0 60h90V30H45z"/>'],
+           ['w', '<g clip-path="url(#f)">' + STROKE('m90 30H45L0 0v60l45-30', 20) + '</g>'], ['k', '<path d="m0 0 45 30L0 60z"/>'],
+           ['y', '<g clip-path="url(#f)">' + STROKE('m0 0 45 30L0 60', 20, 'clip-path="url(#t)"') + '</g>'],
+           ['g', '<g clip-path="url(#f)">' + STROKE('m0 0 45 30h45M0 60l45-30', 12) + '</g>']] },
+];
+const BY = Object.fromEntries(FLAGS.map((f) => [f.id, f]));
+const sayName = (f) => f.say || f.th;
+const LINES = {
+  follow: 'เลือกธงที่อยากระบาย', free: 'เลือกธง แล้วระบายสีเองได้เลย', tip: 'แตะสี แล้วแตะที่ธง',
+  look: 'ดูธงตัวอย่างนะ', same: 'เหมือนธงจริงเลย เก่งมาก', near: 'เกือบแล้ว ลองดูธงจริงนะ',
+  right: 'ถูกต้อง เก่งมาก', notyet: 'ยังไม่ได้ระบายธงนี้ มาระบายกัน', map: 'ธงที่ระบายแล้ว จะมาปักบนแผนที่โลก',
+  quiz: 'ทายธงกัน', thisIs: 'นี่คือ',
+};
+VoiceClips.lines(() => {
+  const out = Object.values(LINES);
+  for (const f of FLAGS) out.push('ธงชาติ' + sayName(f), ['en', f.en], [f.lang, f.hi], f.fact, 'ธงไหนเป็นของประเทศ' + sayName(f));
+  return out;
+});
+
+// ============================================================================
+// SVG documents
+// ============================================================================
+const vbOf = (f) => f.vb.split(/\s+/).map(Number);
+function svgDoc(f, inner, w, h) {
+  const [, , vw, vh] = vbOf(f);
+  if (!w) { w = 300; h = Math.round(300 * vh / vw); }
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${f.vb}" width="${w}" height="${h}" preserveAspectRatio="none"><defs>${f.defs || ''}</defs>${inner}</svg>`;
+}
+const regionSvg = (f, i, color) => `<g color="${color}" fill="currentColor">${f.regs[i][1]}</g>`;
+function trueInner(f) {
+  return f.regs.map((r, i) => regionSvg(f, i, f.col[r[0]])).join('') + (f.decor || '');
+}
+const dataUrl = (svg) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+const trueUrlCache = {};
+const trueUrl = (f) => trueUrlCache[f.id] || (trueUrlCache[f.id] = dataUrl(svgDoc(f, trueInner(f))));
+function loadImg(src) {
+  return new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+}
+
+// ============================================================================
+// Sound
+// ============================================================================
+let AC = null;
+function ac() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') AC.resume().catch(() => {});
+  return AC;
+}
+function tone(f0, f1, dur, type = 'sine', vol = 0.18, delay = 0) {
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+const sfx = {
+  paint: () => { tone(420, 880, 0.16, 'sine', 0.2); },
+  wrong: () => { tone(220, 150, 0.22, 'triangle', 0.16); },
+  tap: () => { tone(700, 760, 0.06, 'sine', 0.1); },
+  win: () => { [523, 659, 784, 1047].forEach((n, i) => tone(n, n * 1.01, 0.3, 'triangle', 0.16, i * 0.12)); },
+};
+const vib = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+
+// ============================================================================
+// Voice — Azure clips; a line without a clip falls back to the device voice
+// ============================================================================
+const DEVICE_LANG = { th: 'th-TH', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN' };
+const deviceSpeak = (lang) => (t) => {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t); u.lang = DEVICE_LANG[lang] || lang; u.rate = 0.9;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+};
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+let chainId = 0;
+async function say(items, onStep) {
+  const my = ++chainId;
+  for (let i = 0; i < items.length; i++) {
+    if (my !== chainId) return;
+    const [text, lang = 'th'] = Array.isArray(items[i]) ? items[i] : [items[i]];
+    onStep && onStep(i);
+    const ok = await VoiceClips.say(text, ac(), deviceSpeak(lang), lang);
+    if (!ok || my !== chainId) { onStep && onStep(-1); return; }
+    await wait(220);
+  }
+  onStep && onStep(-1);
+}
+const flagLines = (f) => [['ธงชาติ' + sayName(f)], [f.en, 'en'], [f.hi, f.lang], [f.fact]];
+
+// ============================================================================
+// Progress
+// ============================================================================
+let done = [];
+try { done = JSON.parse(localStorage.getItem('flagsDone') || '[]').filter((id) => BY[id]); } catch (e) {}
+function markDone(id) {
+  if (!done.includes(id)) done.push(id);
+  try { localStorage.setItem('flagsDone', JSON.stringify(done)); } catch (e) {}
+}
+
+// ============================================================================
+// Screens
+// ============================================================================
+let mode = 'follow', level = 0;
+const LEVELS = [[0, '🌈 ทั้งหมด'], [1, '⭐'], [2, '⭐⭐'], [3, '⭐⭐⭐']];
+const pool = () => FLAGS.filter((f) => !level || f.lv === level);
+function show(id) {
+  for (const s of ['pick', 'paint', 'map', 'quiz']) $(s).classList.toggle('hidden', s !== id);
+  $('modes').classList.toggle('hidden', id === 'paint');
+  if (id !== 'paint') stopWave();
+  window.scrollTo(0, 0);
+}
+function setMode(m, quiet) {
+  mode = m;
+  document.querySelectorAll('.mode').forEach((b) => b.classList.toggle('on', b.dataset.m === m));
+  chainId++; VoiceClips.stop();
+  if (m === 'map') { show('map'); drawMap(); if (!quiet) say([LINES.map]); }
+  else if (m === 'quiz') { show('quiz'); renderChips($('qChips'), () => newQuestion()); newQuestion(); }
+  else { show('pick'); renderPick(); if (!quiet) say([m === 'free' ? LINES.free : LINES.follow]); }
+}
+document.querySelectorAll('.mode').forEach((b) => b.addEventListener('click', () => { ac(); sfx.tap(); setMode(b.dataset.m); }));
+
+function renderChips(box, onChange) {
+  box.innerHTML = '';
+  for (const [lv, label] of LEVELS) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (lv === level ? ' on' : ''); b.textContent = label;
+    b.addEventListener('click', () => { sfx.tap(); level = lv; renderChips(box, onChange); onChange(); });
+    box.appendChild(b);
+  }
+}
+function flagImg(f) {
+  const im = document.createElement('img');
+  im.src = trueUrl(f); im.alt = 'ธง' + f.th; if (f.id === 'np') im.className = 'np';
+  return im;
+}
+function renderPick() {
+  renderChips($('lvChips'), renderPick);
+  const g = $('grid'); g.innerHTML = '';
+  for (const f of pool()) {
+    const b = document.createElement('button'); b.className = 'fcard';
+    const box = document.createElement('div'); box.className = 'fl'; box.appendChild(flagImg(f));
+    b.appendChild(box);
+    const s = document.createElement('span'); s.textContent = f.th.replace(/ \(.*\)/, ''); b.appendChild(s);
+    const lv = document.createElement('b'); lv.className = 'lv'; lv.textContent = '⭐'.repeat(f.lv); b.appendChild(lv);
+    if (done.includes(f.id)) { const i = document.createElement('i'); i.textContent = '✅'; b.appendChild(i); }
+    b.addEventListener('click', () => { ac(); sfx.tap(); openFlag(f); });
+    g.appendChild(b);
+  }
+}
+
+// ============================================================================
+// Painting engine — every region is rasterised once into a label map; the canvas is
+// recomposed from it (unpainted hatch / chosen colour / outline), so a tap anywhere
+// finds its region instantly, and thin parts are forgiving (see pickRegion).
+// ============================================================================
+const cv = $('cv'), cx = cv.getContext('2d');
+let F = null, IW = 0, IH = 0, PAD = 0, lab = null, edge = null, img = null, decorCv = null, trueCv = null;
+let tgt = [], cur = [], sel = null, anim = null, flash = null, finished = false, wrongRun = 0, painting = 'follow';
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const HATCH = [[232, 235, 240], [214, 219, 226]], INK = [45, 52, 54];
+
+async function openFlag(f, from) {
+  painting = from || mode;
+  F = f; finished = false; anim = null; flash = null; wrongRun = 0;
+  show('paint');
+  $('ptitle').textContent = f.th;
+  $('info').classList.add('hidden'); $('info').innerHTML = '';
+  $('nextBtn').classList.add('hidden'); $('mapBtn').classList.add('hidden');
+  $('palette').classList.remove('hidden'); $('resetBtn').classList.remove('hidden');
+  $('cmpBtn').classList.toggle('hidden', painting !== 'free');
+  $('score').textContent = '';
+  $('refImg').src = trueUrl(f);
+  $('ref').classList.toggle('hidden', painting === 'free');
+  $('ref').classList.remove('big');
+
+  const [, , vw, vh] = vbOf(f);
+  const k = 760 / Math.max(vw, vh * 1.5);
+  IW = Math.round(vw * k); IH = Math.round(vh * k); PAD = Math.round(IH * 0.05);
+  cv.width = IW; cv.height = IH + 2 * PAD;
+  fitCanvas();
+
+  // label map
+  lab = new Int16Array(IW * IH).fill(-1);
+  const sc = document.createElement('canvas'); sc.width = IW; sc.height = IH;
+  const sx = sc.getContext('2d', { willReadFrequently: true });
+  try {
+    for (let i = 0; i < f.regs.length; i++) {
+      const im = await loadImg(dataUrl(svgDoc(f, regionSvg(f, i, '#000'), IW, IH)));
+      if (F !== f) return;
+      sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
+      const a = sx.getImageData(0, 0, IW, IH).data;
+      for (let p = 0, q = 3; p < lab.length; p++, q += 4) if (a[q] >= 128) lab[p] = i;
+    }
+  } catch (e) { console.warn(e); }
+  edge = new Uint8Array(IW * IH);
+  for (let y = 0; y < IH; y++) for (let x = 0; x < IW; x++) {
+    const p = y * IW + x, L = lab[p]; if (L < 0) continue;
+    if (x < 2 || y < 2 || x >= IW - 2 || y >= IH - 2) { edge[p] = 1; continue; }
+    if (lab[p + 1] !== L || lab[p - 1] !== L || lab[p + IW] !== L || lab[p - IW] !== L || lab[p + 2] !== L || lab[p + 2 * IW] !== L) edge[p] = 1;
+  }
+  decorCv = null;
+  if (f.decor) {
+    try {
+      const im = await loadImg(dataUrl(svgDoc(f, f.decor, IW, IH)));
+      decorCv = document.createElement('canvas'); decorCv.width = IW; decorCv.height = IH;
+      decorCv.getContext('2d').drawImage(im, 0, 0, IW, IH);
+    } catch (e) { console.warn(e); }
+  }
+  trueCv = document.createElement('canvas'); trueCv.width = IW; trueCv.height = IH;
+  try { trueCv.getContext('2d').drawImage(await loadImg(dataUrl(svgDoc(f, trueInner(f), IW, IH))), 0, 0, IW, IH); } catch (e) {}
+  if (F !== f) return;
+  img = cx.createImageData(IW, IH);
+  tgt = f.regs.map((r) => r[0]); cur = f.regs.map(() => null);
+  buildPalette();
+  compose();
+  say([LINES.tip]);
+}
+function fitCanvas() {
+  if (!IW) return;
+  const maxW = Math.min($('stage').clientWidth || window.innerWidth - 28, 720);
+  const maxH = Math.max(200, window.innerHeight * 0.46);
+  const s = Math.min(maxW / IW, maxH / (IH + 2 * PAD));
+  cv.style.width = Math.round(IW * s) + 'px'; cv.style.height = Math.round((IH + 2 * PAD) * s) + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+
+function buildPalette() {
+  const pal = $('palette'); pal.innerHTML = '';
+  const keys = Object.keys(F.col);
+  sel = keys[0];
+  for (const k of keys) {
+    const b = document.createElement('button');
+    b.className = 'sw' + (k === sel ? ' on' : ''); b.style.background = F.col[k]; b.dataset.k = k;
+    b.setAttribute('aria-label', 'สี');
+    b.addEventListener('click', () => {
+      ac(); sfx.tap(); vib(10); sel = k;
+      pal.querySelectorAll('.sw').forEach((s) => s.classList.toggle('on', s.dataset.k === k));
+    });
+    pal.appendChild(b);
+  }
+}
+
+function compose(now) {
+  const d = img.data, cols = cur.map((k) => (k ? rgb(F.col[k]) : null));
+  const fl = flash && now !== undefined && Math.floor((now - flash.t0) / 110) % 2 === 0 ? flash : null;
+  let ar2 = 0, ac0 = null, ac1 = null;
+  if (anim) { ar2 = anim.r * anim.r; ac0 = anim.from ? rgb(F.col[anim.from]) : null; ac1 = rgb(F.col[anim.to]); }
+  for (let y = 0, p = 0; y < IH; y++) {
+    for (let x = 0; x < IW; x++, p++) {
+      const q = p * 4, L = lab[p];
+      if (L < 0) { d[q + 3] = 0; continue; }
+      let c = cols[L];
+      if (anim && L === anim.k) { const dx = x - anim.x, dy = y - anim.y; c = dx * dx + dy * dy < ar2 ? ac1 : ac0; }
+      if (fl && L === fl.k) c = rgb(F.col[fl.key]);
+      if (!c) c = HATCH[(x + y) % 18 < 3 ? 1 : 0];
+      if (edge[p] && !finished) c = INK;
+      d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; d[q + 3] = 255;
+    }
+  }
+  cx.clearRect(0, 0, cv.width, cv.height);
+  cx.putImageData(img, 0, PAD);
+  if (decorCv) cx.drawImage(decorCv, 0, PAD);
+}
+
+let raf = 0;
+function loop(now) {
+  raf = 0;
+  if (anim) {
+    const t = Math.min(1, (now - anim.t0) / 380);
+    anim.r = anim.rMax * (1 - Math.pow(1 - t, 2));
+    if (t >= 1) { cur[anim.k] = anim.to; anim = null; afterPaint(); }
+  }
+  if (flash && now - flash.t0 > 660) flash = null;
+  compose(now);
+  if (anim || flash) raf = requestAnimationFrame(loop);
+}
+const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+
+function toFlag(e) {
+  const r = cv.getBoundingClientRect();
+  return [(e.clientX - r.left) * IW / r.width, (e.clientY - r.top) * (IH + 2 * PAD) / r.height - PAD, IW / r.width];
+}
+// The region under the finger — or, in 🎨 mode, the nearest unfinished region that
+// wants the chosen colour within ~a fingertip (thin stripes, stars, a crescent).
+function pickRegion(x, y, scale) {
+  x = Math.round(x); y = Math.round(y);
+  const at = x >= 0 && y >= 0 && x < IW && y < IH ? lab[y * IW + x] : -1;
+  if (painting !== 'follow') return at;
+  if (at >= 0 && tgt[at] === sel && cur[at] !== sel) return at;
+  const rad = Math.round(30 * scale);
+  let best = -1, bd = Infinity;
+  for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
+    const xx = x + dx, yy = y + dy, d2 = dx * dx + dy * dy;
+    if (d2 > rad * rad || d2 >= bd || xx < 0 || yy < 0 || xx >= IW || yy >= IH) continue;
+    const L = lab[yy * IW + xx];
+    if (L >= 0 && tgt[L] === sel && cur[L] !== sel) { best = L; bd = d2; }
+  }
+  return best >= 0 ? best : at;
+}
+cv.addEventListener('pointerdown', (e) => {
+  if (!F || !lab || finished || anim) return;
+  ac();
+  const [x, y, scale] = toFlag(e);
+  const L = pickRegion(x, y, scale);
+  if (L < 0) return;
+  if (cur[L] === sel) { cv.classList.remove('bump'); void cv.offsetWidth; cv.classList.add('bump'); return; }
+  if (painting === 'follow' && tgt[L] !== sel) {           // wrong colour: it doesn't stick
+    sfx.wrong(); vib(30); wrongRun++;
+    flash = { k: L, key: sel, t0: performance.now() }; kick();
+    const sw = $('palette').querySelector(`[data-k="${tgt[L]}"]`);
+    if (sw) { sw.classList.remove('hint'); void sw.offsetWidth; sw.classList.add('hint'); }
+    if (wrongRun === 2) say([LINES.look]);
+    return;
+  }
+  wrongRun = 0; sfx.paint(); vib(15);
+  let far = 0;
+  for (const [cx0, cy0] of [[0, 0], [IW, 0], [0, IH], [IW, IH]]) far = Math.max(far, Math.hypot(cx0 - x, cy0 - y));
+  anim = { k: L, x, y, r: 0, rMax: far, from: cur[L], to: sel, t0: performance.now() };
+  kick();
+});
+
+function afterPaint() {
+  if (cur.some((c) => !c)) return;
+  if (painting === 'follow') { if (cur.every((c, i) => c === tgt[i])) win(); }
+  else $('cmpBtn').classList.add('go');
+}
+$('cmpBtn').addEventListener('click', () => {
+  ac(); sfx.tap();
+  $('ref').classList.remove('hidden'); $('ref').classList.add('big');
+  const ok = cur.filter((c, i) => c === tgt[i]).length;
+  if (ok === cur.length) { win(); return; }
+  $('score').textContent = `ตรงกับธงจริง ${ok} จาก ${cur.length} ส่วน`;
+  say([cur.some((c) => !c) ? LINES.look : LINES.near]);
+});
+$('resetBtn').addEventListener('click', () => {
+  if (!F) return; ac(); sfx.tap();
+  openFlag(F, painting);
+});
+$('backBtn').addEventListener('click', () => { ac(); sfx.tap(); setMode(painting === 'free' ? 'free' : 'follow', true); });
+
+// ---- finished: the real flag waves, name + greeting + fact ----
+let waveRaf = 0;
+function stopWave() { if (waveRaf) cancelAnimationFrame(waveRaf); waveRaf = 0; }
+function wave(now) {
+  const t = now / 1000, amp = PAD * 0.85, step = 3;
+  cx.clearRect(0, 0, cv.width, cv.height);
+  for (let x = 0; x < IW; x += step) {
+    const u = x / IW, ph = u * Math.PI * 2.4 - t * 3.2;
+    const dy = Math.sin(ph) * amp * (0.15 + 0.85 * u);
+    cx.drawImage(trueCv, x, 0, step, IH, x, PAD + dy, step, IH);
+  }
+  cx.globalCompositeOperation = 'source-atop';
+  for (let x = 0; x < IW; x += step) {
+    const u = x / IW, s = Math.cos(u * Math.PI * 2.4 - t * 3.2) * (0.15 + 0.85 * u);
+    cx.fillStyle = s > 0 ? `rgba(255,255,255,${0.16 * s})` : `rgba(0,0,0,${-0.16 * s})`;
+    cx.fillRect(x, 0, step, cv.height);
+  }
+  cx.globalCompositeOperation = 'source-over';
+  waveRaf = requestAnimationFrame(wave);
+}
+function win() {
+  finished = true; markDone(F.id);
+  $('ref').classList.add('hidden'); $('score').textContent = '';
+  $('cmpBtn').classList.add('hidden'); $('cmpBtn').classList.remove('go');
+  $('palette').classList.add('hidden'); $('resetBtn').classList.add('hidden');
+  sfx.win(); vib([40, 60, 40, 60, 120]); confetti();
+  stopWave(); waveRaf = requestAnimationFrame(wave);
+  const f = F, info = $('info');
+  info.innerHTML = '';
+  const rows = [
+    ['nm', `${f.th} <small>· ${f.en}</small>`, [0, 1]],
+    ['hi', `${f.hi} <small>${f.hiTh ? '(' + f.hiTh + ') · ' : ''}${f.hiL}</small>`, [2]],
+    ['ft', '💡 ' + f.fact, [3]],
+  ];
+  const lines = flagLines(f), els = [];
+  rows.forEach(([cls, html, idx]) => {
+    const d = document.createElement('div'); d.className = 'ln ' + cls; d.innerHTML = html;
+    d.addEventListener('click', () => { ac(); say(idx.map((i) => lines[i]), (s) => mark(s < 0 ? -1 : idx[s])); });
+    info.appendChild(d); els.push([d, idx]);
+  });
+  const mark = (li) => els.forEach(([d, idx]) => d.classList.toggle('say', idx.includes(li)));
+  info.classList.remove('hidden');
+  $('nextBtn').classList.remove('hidden'); $('mapBtn').classList.remove('hidden');
+  say(lines, mark);
+}
+$('nextBtn').addEventListener('click', () => {
+  ac(); sfx.tap();
+  const list = pool().length ? pool() : FLAGS;
+  const i = list.indexOf(F);
+  const next = list.slice(i + 1).concat(list.slice(0, i + 1)).find((f) => !done.includes(f.id)) || list[(i + 1) % list.length];
+  openFlag(next, painting);
+});
+$('mapBtn').addEventListener('click', () => { ac(); sfx.tap(); zoom = zoomFor(F); setMode('map', true); say(flagLines(F).slice(0, 1)); });
+
+function confetti() {
+  const cols = F ? Object.values(F.col) : ['#ff6b9d', '#ffd93d', '#6c5ce7'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div'); c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % cols.length];
+    c.style.outline = '1px solid rgba(0,0,0,.15)';
+    c.style.animationDuration = 1.6 + Math.random() * 1.6 + 's'; c.style.animationDelay = Math.random() * 0.4 + 's';
+    document.body.appendChild(c); setTimeout(() => c.remove(), 3800);
+  }
+}
+
+// ============================================================================
+// 🌏 Map — Natural Earth land, equirectangular (x = (lon+180)·2, y = (84−lat)·2);
+// each flag stands on its capital city.
+// ============================================================================
+const ZOOMS = [
+  ['world', '🌏 ทั้งโลก', [0, 0, 720, 284], 0.05],
+  ['asean', 'อาเซียน', [530, 104, 92, 92], 0.07],
+  ['asia', 'เอเชีย', [470, 50, 200, 160], 0.06],
+  ['europe', 'ยุโรป', [330, 22, 125, 90], 0.055],
+  ['america', 'อเมริกา', [90, 30, 230, 250], 0.06],
+  ['south', 'แอฟริกา · ออสเตรเลีย', [330, 100, 380, 175], 0.055],
+];
+let zoom = 'world';
+const capXY = (f) => [(f.lon + 180) * 2, (84 - f.lat) * 2];
+function zoomFor(f) {
+  if (['th', 'la', 'kh', 'mm', 'my', 'id', 'vn', 'ph'].includes(f.id)) return 'asean';
+  const [x, y] = capXY(f);
+  for (const [id, , [vx, vy, vw, vh]] of ZOOMS.slice(2)) if (x > vx && x < vx + vw && y > vy && y < vy + vh) return id;
+  return 'world';
+}
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+function drawMap() {
+  const zc = $('zoomChips'); zc.innerHTML = '';
+  for (const [id, label] of ZOOMS) {
+    const b = document.createElement('button'); b.className = 'chip' + (id === zoom ? ' on' : ''); b.textContent = label;
+    b.addEventListener('click', () => { sfx.tap(); zoom = id; drawMap(); });
+    zc.appendChild(b);
+  }
+  const [, , vb, fs] = ZOOMS.find((z) => z[0] === zoom);
+  const svg = $('mapSvg'); svg.innerHTML = '';
+  svg.setAttribute('viewBox', vb.join(' '));
+  el('rect', { x: -10, y: -10, width: 740, height: 310, fill: '#8fd3f4' }, svg);
+  el('path', { d: window.WORLD_LAND || '', fill: '#a8e27f', stroke: '#5f9e43', 'stroke-width': vb[2] / 720 * 0.8, 'stroke-linejoin': 'round' }, svg);
+  const fw = vb[2] * fs;
+  const list = FLAGS.slice().sort((a, b) => b.lat - a.lat);
+  for (const f of list) {
+    const [x, y] = capXY(f), [, , w, h] = vbOf(f), fh = fw * Math.min(h / w, 1.2), ffw = f.id === 'np' ? fh * w / h : fw;
+    const top = y - fh * 1.7, isDone = done.includes(f.id);
+    const g = el('g', { class: 'pin' }, svg);
+    el('rect', { x: x - fw * 0.4, y: top - fw * 0.3, width: ffw + fw * 0.8, height: y - top + fw * 0.6, fill: 'transparent' }, g);
+    el('line', { x1: x, y1: y, x2: x, y2: top, stroke: '#5d4037', 'stroke-width': fw * 0.06, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: x, cy: y, r: fw * 0.09, fill: isDone ? '#e54b82' : '#636e72' }, g);
+    if (isDone) {
+      const im = el('image', { x, y: top, width: ffw, height: fh, preserveAspectRatio: 'none' }, g);
+      im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', trueUrl(f)); im.setAttribute('href', trueUrl(f));
+      if (f.id !== 'np') el('rect', { x, y: top, width: ffw, height: fh, fill: 'none', stroke: 'rgba(0,0,0,.35)', 'stroke-width': fw * 0.02 }, g);
+    } else {
+      el('rect', { x, y: top, width: fw, height: fh, rx: fw * 0.06, fill: '#fff', stroke: '#9aa5ad', 'stroke-width': fw * 0.04, 'stroke-dasharray': `${fw * 0.08} ${fw * 0.06}` }, g);
+      const t = el('text', { x: x + fw / 2, y: top + fh * 0.72, 'font-size': fh * 0.7, 'text-anchor': 'middle', fill: '#9aa5ad', 'font-family': 'Itim, sans-serif' }, g);
+      t.textContent = '?';
+    }
+    g.addEventListener('click', () => {
+      ac(); sfx.tap();
+      if (isDone) say(flagLines(f).slice(0, 3));
+      else { openFlag(f, 'follow'); say([LINES.notyet]); }
+    });
+  }
+  $('mapCount').textContent = `🚩 ${done.length} / ${FLAGS.length}`;
+}
+
+// ============================================================================
+// 🎯 Quiz — "which flag belongs to …?" three choices
+// ============================================================================
+let qAns = null, qLast = null, qStars = 0, qLocked = false;
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function newQuestion() {
+  const p = pool().length >= 3 ? pool() : FLAGS;
+  do { qAns = p[Math.floor(Math.random() * p.length)]; } while (qAns === qLast && p.length > 1);
+  qLast = qAns; qLocked = false;
+  const opts = shuffle([qAns, ...shuffle(p.filter((f) => f !== qAns)).slice(0, 2)]);
+  $('qTxt').textContent = `ธงไหนเป็นของ ${qAns.th}?`;
+  $('qNext').classList.add('hidden');
+  const box = $('opts'); box.innerHTML = '';
+  for (const f of opts) {
+    const b = document.createElement('button'); b.className = 'opt'; b.appendChild(flagImg(f));
+    b.addEventListener('click', () => answer(f, b));
+    box.appendChild(b);
+  }
+  $('qStars').textContent = qStars ? '⭐'.repeat(((qStars - 1) % 10) + 1) : '';
+  say(['ธงไหนเป็นของประเทศ' + sayName(qAns)]);
+}
+function answer(f, b) {
+  if (qLocked || b.classList.contains('no')) return;
+  ac();
+  if (f === qAns) {
+    qLocked = true; b.classList.add('ok'); sfx.win(); vib([30, 50, 60]); qStars++;
+    $('qStars').textContent = '⭐'.repeat(((qStars - 1) % 10) + 1);
+    $('qNext').classList.remove('hidden');
+    say([[LINES.right], ...flagLines(f).slice(1, 3)]);
+  } else {
+    b.classList.add('no'); sfx.wrong(); vib(40);
+    say([[LINES.thisIs], ['ธงชาติ' + sayName(f)]]);
+  }
+}
+$('qSay').addEventListener('click', () => { ac(); if (qAns) say(['ธงไหนเป็นของประเทศ' + sayName(qAns)]); });
+$('qNext').addEventListener('click', () => { ac(); sfx.tap(); newQuestion(); });
+
+// #jp opens a flag to paint, #map / #quiz / #free open a mode
+const H = location.hash.slice(1);
+if (BY[H]) { setMode('follow', true); openFlag(BY[H], 'follow'); }
+else if (['map', 'quiz', 'free'].includes(H)) setMode(H, true);
+else setMode('follow', true);
+</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

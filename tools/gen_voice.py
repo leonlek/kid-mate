@@ -22,6 +22,18 @@ VOICES = {
     'zh': ('zh-CN', 'zh-CN-XiaoxiaoNeural', '-20%'),
     'ja': ('ja-JP', 'ja-JP-NanamiNeural', '-20%'),
 }
+# Greetings in the flags game — a native voice per language/accent, keyed by the full tag.
+for _loc, _voice in [('en-GB', 'SoniaNeural'), ('en-AU', 'NatashaNeural'), ('en-CA', 'ClaraNeural'),
+                     ('lo-LA', 'KeomanyNeural'), ('km-KH', 'SreymomNeural'), ('my-MM', 'NilarNeural'),
+                     ('ms-MY', 'YasminNeural'), ('id-ID', 'GadisNeural'), ('vi-VN', 'HoaiMyNeural'),
+                     ('fil-PH', 'BlessicaNeural'), ('ko-KR', 'SunHiNeural'), ('hi-IN', 'SwaraNeural'),
+                     ('ne-NP', 'HemkalaNeural'), ('tr-TR', 'EmelNeural'), ('fr-FR', 'DeniseNeural'),
+                     ('de-DE', 'KatjaNeural'), ('de-CH', 'LeniNeural'), ('it-IT', 'ElsaNeural'),
+                     ('es-ES', 'ElviraNeural'), ('es-AR', 'ElenaNeural'), ('sv-SE', 'SofieNeural'),
+                     ('fi-FI', 'SelmaNeural'), ('el-GR', 'AthinaNeural'), ('nl-NL', 'ColetteNeural'),
+                     ('uk-UA', 'PolinaNeural'), ('ru-RU', 'SvetlanaNeural'), ('pt-BR', 'FranciscaNeural'),
+                     ('zu-ZA', 'ThandoNeural')]:
+    VOICES[_loc.lower()] = (_loc, f'{_loc}-{_voice}', '-10%')
 
 
 def game_lines(game):
