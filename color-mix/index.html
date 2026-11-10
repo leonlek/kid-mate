@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🎨 ผสมสี — คิดส์เล่น</title>
-<meta name="description" content="เกมผสมสี เรียนรู้ว่าสีอะไรผสมกันได้สีใหม่อะไร สำหรับเด็กไทย">
+<meta name="description" content="ผสมสีบนจานสีด้วยพู่กันเหมือนจริง สีผสมตามหลักสีจริง ใส่มากใส่น้อยได้เฉดต่างกัน เอาไประบายรูป และผสมแสงสี สำหรับเด็ก">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -21,1413 +23,797 @@
 <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
 <style>
   :root {
-    --sky-3: #b5e8ff; --grass-1: #7ed957;
     --brand: #ff6b9d; --brand-dark: #e54b82;
-    --gold: #ffd93d; --good: #5bc13a; --good-dark: #3fa024;
-    --bad: #ff5757; --bad-dark: #d83838;
-    --ink: #2d3436; --card: #ffffff; --card-border: #ffd6e4;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     margin: 0; padding: 0;
     font-family: 'Mitr', -apple-system, sans-serif;
     color: var(--ink);
-    overflow-x: hidden;
     min-height: 100vh;
-    background:
-      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
-      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
-      linear-gradient(180deg, var(--sky-3) 0%, #d9f3c9 65%, var(--grass-1) 100%);
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
     background-attachment: fixed;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
   }
   body::before {
     content: '☁️ ☁️     ☁️';
     position: fixed; top: 20px; left: 0; right: 0;
     text-align: center; font-size: 42px;
-    opacity: 0.55; pointer-events: none;
+    opacity: 0.5; pointer-events: none;
     letter-spacing: 80px;
     animation: drift 40s linear infinite;
     z-index: 0;
   }
   @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
 
-  .app { max-width: 880px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
-  body:has(#freeScreen.active) .app,
-  body:has(#targetScreen.active) .app,
-  body:has(#quizScreen.active) .app {
-    max-width: 100%; padding: 0; min-height: 100vh; min-height: 100dvh;
-  }
-  body:has(#freeScreen.active)::before,
-  body:has(#targetScreen.active)::before,
-  body:has(#quizScreen.active)::before { display: none; }
-
-  .screen { display: none; }
-  .screen.active { display: block; animation: fadeIn .35s ease; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .hero { text-align: center; padding: 14px 10px 18px; }
-  .hero h1 {
-    font-family: 'Itim', cursive;
-    font-size: clamp(42px, 9vw, 68px);
-    margin: 0; color: var(--brand-dark);
-    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
-    letter-spacing: 1px;
-  }
-  .howto {
-    list-style: none; padding: 12px 18px; margin: 8px auto 18px;
-    max-width: 360px; background: rgba(255,255,255,0.55);
-    border: 2px dashed var(--card-border); border-radius: 18px;
-    font-size: 16px; color: #555; font-weight: 500; text-align: left;
-  }
-  .howto li { display: flex; align-items: center; gap: 10px; padding: 3px 0; line-height: 1.3; }
-  .howto-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
-  @media (min-width: 768px) { .howto { font-size: 18px; max-width: 440px; } .howto-icon { font-size: 26px; } }
-
-  .lgrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px; margin: 10px 0 32px;
-  }
-  .lcard {
-    background: var(--card); border: 4px solid var(--card-border);
-    border-radius: 24px; padding: 22px 14px 18px; text-align: center;
-    cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.07);
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-    position: relative; overflow: hidden;
-  }
-  .lcard:active { transform: scale(0.96) translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.07); }
-  .lcard:hover { border-color: var(--brand); }
-  .lcard .preview { font-size: 56px; line-height: 1; margin-bottom: 6px; filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12)); }
-  .lcard .ltitle { font-family: 'Itim', cursive; font-size: 26px; color: var(--brand-dark); text-shadow: 2px 2px 0 #fff; }
-  .lcard .lsub { font-size: 14px; color: #777; font-weight: 500; margin-top: 4px; }
-  .lcard .stars { position: absolute; top: 10px; right: 10px; font-size: 18px; letter-spacing: 1px; }
-  .lcard .mode-tag {
-    display: inline-block; font-family: 'Itim', cursive; font-size: 13px;
-    color: #fff; background: var(--brand); padding: 2px 12px;
-    border-radius: 999px; margin-bottom: 6px;
-  }
-  .lcard .mode-tag.free   { background: #2980b9; }
-  .lcard .mode-tag.lab    { background: #8e44ad; }
-  .lcard .mode-tag.target { background: var(--good-dark); }
-  .lcard .mode-tag.quiz   { background: #c0392b; }
-
-  /* Game shell */
-  .game-screen.active {
-    display: flex; flex-direction: column;
-    min-height: 100vh; min-height: 100dvh;
-    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-  }
-  .hud {
-    flex: 0 0 auto; display: flex; justify-content: center; gap: 10px;
-    margin: 10px 14px 0; font-family: 'Itim', cursive; font-size: 22px;
-    flex-wrap: wrap;
-  }
-  .hud-item {
-    background: #fff; border: 3px solid var(--card-border);
-    border-radius: 999px; padding: 6px 16px;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
-    min-width: 80px; text-align: center;
-  }
-
-  .stage {
-    flex: 1 1 auto;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    padding: 14px;
-    gap: 14px;
-    overflow-y: auto;
-  }
-
-  /* Beaker */
-  .beaker-row { display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap; justify-content: center; }
-  .beaker-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .beaker-label {
-    font-family: 'Itim', cursive; font-size: 18px; color: var(--brand-dark);
-    text-shadow: 2px 2px 0 #fff; min-height: 22px;
-  }
-  .beaker {
-    width: 110px; height: 150px;
-    border: 5px solid var(--ink);
-    border-top: 0; border-radius: 0 0 32px 32px;
-    background: rgba(255,255,255,0.6);
-    box-shadow: 0 5px 0 rgba(0,0,0,0.10), inset 0 0 16px rgba(0,0,0,0.06);
-    position: relative;
-    overflow: hidden;
-  }
-  .beaker::before {
-    /* mouth ring */
-    content: '';
-    position: absolute;
-    top: -10px; left: -8px; right: -8px;
-    height: 12px;
-    border: 5px solid var(--ink);
-    border-radius: 14px;
-    background: linear-gradient(180deg, #fff, #efefef);
-  }
-  .beaker .liquid {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 0;
-    background: transparent;
-    transition: height 0.4s ease, background 0.45s ease;
-    overflow: hidden;
-  }
-  .beaker .liquid.fill1 { height: 50%; }
-  .beaker .liquid.fill2 { height: 78%; }
-  .beaker .liquid::after {
-    /* surface highlight */
-    content: '';
-    position: absolute;
-    top: -5px; left: 0; right: 0; height: 10px;
-    background: rgba(255,255,255,0.45);
-    border-radius: 50%;
-  }
-  .beaker.muddy .liquid {
-    background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.06) 0 6px, transparent 6px 12px);
-  }
-  .beaker.shake { animation: bShake .35s ease; }
-  @keyframes bShake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-8px) rotate(-2deg); }
-    75% { transform: translateX(8px) rotate(2deg); }
-  }
-  .beaker.pop { animation: bPop .5s ease; }
-  @keyframes bPop {
-    0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); }
-  }
-  .beaker.target {
-    box-shadow: 0 5px 0 rgba(0,0,0,0.10), inset 0 0 16px rgba(0,0,0,0.06), 0 0 0 4px var(--gold);
-  }
-  .beaker .drop-anim {
-    position: absolute;
-    left: 50%; top: -40px;
-    width: 36px; height: 50px;
-    transform: translate(-50%, 0);
-    pointer-events: none;
-    z-index: 5;
-    animation: dropFall .55s cubic-bezier(0.5, 0, 0.7, 1) forwards;
-  }
-  .drop-shape {
-    width: 100%; height: 100%;
-    background: var(--dropC, #999);
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    border: 3px solid rgba(0,0,0,0.18);
-    box-shadow: inset -4px -4px 0 rgba(0,0,0,0.18);
-  }
-  @keyframes dropFall {
-    0%   { transform: translate(-50%, -10px); }
-    65%  { transform: translate(-50%, calc(150px - 60px)); }
-    80%  { transform: translate(-50%, calc(150px - 50px)) scaleY(0.5); }
-    100% { transform: translate(-50%, calc(150px - 50px)) scaleY(0.5); opacity: 0; }
-  }
-
-  .equation {
-    font-family: 'Itim', cursive;
-    font-size: clamp(28px, 6vw, 44px);
-    color: var(--brand-dark); text-shadow: 2px 2px 0 #fff;
-    display: inline-flex; align-items: center; gap: 6px;
-    flex-wrap: wrap; justify-content: center;
-  }
-  .eq-color {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: 4px solid #fff;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.18);
-    background: var(--c, #ccc);
-    display: inline-block;
-    vertical-align: middle;
-  }
-  .eq-q {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: 4px dashed var(--brand);
-    background: rgba(255,255,255,0.7);
-    color: var(--brand-dark);
-    font-family: 'Itim', cursive;
-    font-size: 36px; line-height: 50px;
-    text-align: center;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.10);
-  }
-
-  /* Palette */
-  .palette {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    justify-content: center;
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 22px;
-    border: 3px dashed var(--card-border);
-    max-width: 520px;
-  }
-  .swatch {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: 4px solid #fff;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.18);
-    cursor: pointer;
-    transition: transform .12s, box-shadow .12s;
-    position: relative;
-    background: var(--c, #ccc);
-  }
-  .swatch:active { transform: translateY(2px) scale(0.94); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
-  .swatch.disabled { opacity: 0.3; pointer-events: none; }
-
-  .topbar-actions {
-    display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap;
-  }
-  .icon-btn {
-    background: #fff; border: 3px solid var(--card-border);
-    border-radius: 999px; padding: 8px 16px;
-    font-family: 'Itim', cursive; font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
-    transition: transform .12s, box-shadow .12s;
-    color: var(--ink);
-  }
-  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
-  .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
-
-  /* Saved colors row (lab mode) */
-  .saved-colors {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    justify-content: center;
-    padding: 6px 10px;
-    min-height: 50px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-  .saved-colors:empty::before {
-    content: 'กดปุ่ม "เก็บสี" เพื่อเก็บสีที่ชอบ';
-    color: #888; font-style: italic; font-size: 13px; align-self: center;
-  }
-  .swatch-saved {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.18);
-    cursor: pointer;
-    background: var(--c, #ccc);
-    padding: 0;
-    transition: transform .12s, box-shadow .12s;
-  }
-  .swatch-saved:active { transform: translateY(2px) scale(0.94); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
-
-  /* Recipe checklist (free mode) */
-  .recipes {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    justify-content: center;
-    margin-top: 6px;
-  }
-  .recipe {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,255,255,0.7);
-    border: 3px solid var(--card-border);
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-family: 'Itim', cursive;
-    font-size: 16px;
-    color: #777;
-    transition: background .25s, border-color .25s, color .25s;
-  }
-  .recipe.discovered {
-    background: #fffbe0;
-    border-color: var(--gold);
-    color: var(--ink);
-    box-shadow: 0 3px 0 rgba(238,205,30,0.5);
-  }
-  .recipe .rsw {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
-    background: var(--c, #ccc);
-  }
-  .recipe .rstate {
-    font-size: 18px;
-  }
-
-  /* Quiz options */
-  .opts {
-    display: flex; gap: 12px;
-    justify-content: center; flex-wrap: wrap;
-    max-width: 480px;
-  }
-  .opts .opt {
-    width: 80px; height: 80px;
-    border-radius: 24px;
-    background: var(--c, #ccc);
-    border: 4px solid #fff;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
-    cursor: pointer;
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Itim', cursive; font-size: 24px; color: #fff;
-    text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
-    transition: transform .12s, box-shadow .12s, opacity .12s;
-  }
-  .opts .opt:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
-  .opts .opt.good   { animation: pulseGood .5s ease; box-shadow: 0 5px 0 rgba(0,0,0,0.18), 0 0 0 5px var(--good); }
-  .opts .opt.bad    { animation: pulseBad .4s ease; box-shadow: 0 5px 0 rgba(0,0,0,0.18), 0 0 0 5px var(--bad); }
-  .opts .opt.faded  { opacity: 0.35; pointer-events: none; }
-  @keyframes pulseGood {
-    0% { transform: scale(1); } 50% { transform: scale(1.18); } 100% { transform: scale(1); }
-  }
-  @keyframes pulseBad {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-
-  .name-tag {
-    background: #fff;
-    border: 3px solid var(--card-border);
-    border-radius: 999px;
-    padding: 4px 18px;
-    font-family: 'Itim', cursive;
-    color: var(--brand-dark);
-    font-size: 22px;
-    text-shadow: 2px 2px 0 #fff;
-    margin-top: 6px;
-    min-height: 30px;
-    display: inline-flex; align-items: center;
-  }
-  .name-tag.empty { color: #999; background: rgba(255,255,255,0.4); border-style: dashed; }
-
-  /* Results */
-  #resultsScreen { text-align: center; padding-top: 20px; }
-  .trophy {
-    font-size: clamp(120px, 22vw, 180px); line-height: 1;
-    filter: drop-shadow(4px 6px 0 rgba(0,0,0,0.18));
-    animation: bobBig 1.2s ease-in-out infinite;
-  }
-  @keyframes bobBig {
-    0%, 100% { transform: translateY(0) rotate(-4deg); }
-    50%      { transform: translateY(-12px) rotate(4deg); }
-  }
-  .winner-name {
-    font-family: 'Itim', cursive;
-    font-size: clamp(44px, 9vw, 72px);
-    color: var(--brand-dark); margin: 18px 0 6px;
-    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
-  }
-  .winner-sub {
-    font-size: clamp(18px, 4vw, 24px);
-    color: #555; margin: 0 0 6px; font-weight: 500;
-  }
-  .stars-row {
-    font-size: clamp(48px, 10vw, 72px); line-height: 1;
-    margin: 8px 0 4px; letter-spacing: 4px;
-    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.12));
-  }
-  .rating-text {
-    font-family: 'Itim', cursive;
-    font-size: clamp(28px, 6vw, 40px);
-    color: var(--brand-dark); margin: 4px 0 16px;
-  }
-  .action-bar {
-    display: flex; gap: 12px; justify-content: center; align-items: center;
-    margin-top: 12px; flex-wrap: wrap;
-  }
-  .btn-main {
-    font-family: 'Itim', cursive;
-    font-size: 28px; padding: 16px 36px;
-    border: 4px solid #fff; border-radius: 999px;
-    background: var(--brand); color: #fff;
-    box-shadow: 0 6px 0 var(--brand-dark);
-    cursor: pointer;
-    transition: transform .12s, box-shadow .12s;
-    text-shadow: 2px 2px 0 var(--brand-dark);
-  }
-  .btn-main:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--brand-dark); }
-  .btn-ghost {
-    font-family: 'Itim', cursive;
-    font-size: 24px; padding: 14px 30px;
-    border: 4px solid var(--brand); border-radius: 999px;
-    background: #fff; color: var(--brand-dark);
-    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
-    cursor: pointer;
-    transition: transform .12s, box-shadow .12s;
-  }
-  .btn-ghost:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
-
-  .confetti {
-    position: fixed; top: -20px;
-    width: 12px; height: 18px;
-    z-index: 90; pointer-events: none;
-    animation: fall linear forwards;
-  }
-  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
-
-  .home-btn, .back-btn {
-    position: fixed;
-    top: calc(12px + env(safe-area-inset-top));
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: #fff; border: 3px solid var(--brand);
-    box-shadow: 0 3px 0 var(--brand-dark);
-    align-items: center; justify-content: center;
-    font-size: 24px; text-decoration: none; color: var(--ink);
-    z-index: 60;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
     transition: transform .12s;
-    font-family: inherit; padding: 0; cursor: pointer;
   }
-  .home-btn { left: 12px; display: flex; font-size: 26px; }
-  .back-btn { right: 12px; display: none; }
-  .back-btn.show { display: flex; }
-  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 6px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(30px, 6.5vw, 50px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .modes, .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .chip, .btn {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 700;
+    min-height: 64px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18); transition: transform .1s;
+  }
+  .chip:active, .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .view { position: relative; background: #fffef9; border: 4px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .view canvas { display: block; width: 100%; height: auto; touch-action: none; }
+  .hidden { display: none !important; }
 
-  @media (min-width: 768px) {
-    .lgrid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .hud { font-size: 26px; }
-    .hud-item { padding: 8px 22px; min-width: 110px; }
-    .beaker { width: 130px; height: 180px; }
-    .swatch { width: 64px; height: 64px; }
-    .opts .opt { width: 96px; height: 96px; }
+  /* paint tubes */
+  .tubes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+  .tube {
+    min-height: 92px; border-radius: 22px; border: 3px solid #fff; background: rgba(255,255,255,0.85); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,0.15); padding: 4px 2px;
   }
-  @media (max-width: 480px) {
-    .lcard { padding: 16px 10px 14px; border-width: 3px; border-radius: 20px; }
-    .lcard .ltitle { font-size: 22px; }
-    .hud { font-size: 18px; margin: 8px 10px 0; }
-    .hud-item { padding: 5px 12px; min-width: 60px; }
-    .beaker { width: 90px; height: 130px; }
-    .swatch { width: 48px; height: 48px; border-width: 3px; }
-    .stage { padding: 8px; gap: 10px; }
-    .opts .opt { width: 64px; height: 64px; border-radius: 18px; }
-    .recipes { gap: 6px; }
-    .recipe { font-size: 14px; padding: 3px 8px; }
-  }
+  .tube svg { width: 100%; max-width: 92px; height: 52px; }
+  .tube:active { transform: scale(.94); }
+  .tube.squeeze svg { animation: squeeze .35s; }
+  @keyframes squeeze { 40% { transform: scaleX(.8) scaleY(1.08); } }
+  .tube .n { font-size: 12px; color: #6b7280; min-height: 14px; }
+
+  /* target */
+  .target { display: flex; align-items: center; gap: 12px; justify-content: center; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 8px 14px; margin-bottom: 8px; box-shadow: 0 5px 0 rgba(0,0,0,0.12); }
+  .swatch { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 0 3px #e5e7eb; flex-shrink: 0; cursor: pointer; }
+  .meter { flex: 1; max-width: 320px; }
+  .meter .bar { height: 22px; border-radius: 999px; background: #eef0f5; overflow: hidden; }
+  .meter .fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #ffb3c7, #7ed957); transition: width .3s; }
+  .meter .lbl { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+
+  .result { display: flex; align-items: center; gap: 12px; justify-content: center; min-height: 72px; margin-top: 10px; }
+  .result .swatch { width: 60px; height: 60px; }
+  .result .rname { font-family: 'Itim', cursive; font-size: 30px; color: var(--brand-dark); }
+  .saved { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; min-height: 8px; }
+  .saved .swatch { width: 54px; height: 54px; }
+
+  /* paint mode */
+  .wells { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+  .well { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18), inset 0 -6px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .well:active { transform: scale(.92); }
+  .cup { width: 72px; height: 72px; border-radius: 16px 16px 26px 26px; border: 4px solid #cfe3f2; background: rgba(200,230,255,0.6); cursor: pointer; position: relative; overflow: hidden; font-size: 30px; display: flex; align-items: center; justify-content: center; }
+  .cup .water { position: absolute; left: 0; right: 0; bottom: 0; height: 70%; opacity: 0; }
+  .brushNow { display: flex; align-items: center; gap: 8px; justify-content: center; font-weight: 700; margin-top: 8px; }
+  .brushNow .swatch { width: 44px; height: 44px; }
+  .pics { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+
+  .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
+  .fact::before { content: '💡 '; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 </style>
 </head>
 <body>
 <a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
-<button class="back-btn" id="backBtn" type="button" aria-label="เลือกโหมดใหม่">📋</button>
+
 <div class="app">
+  <header><h1>🎨 ผสมสี</h1></header>
+  <div class="modes" id="modes">
+    <button class="chip on" data-mode="mix">🎨 ผสม</button>
+    <button class="chip" data-mode="target">🎯 โจทย์</button>
+    <button class="chip" data-mode="paint">🖌️ ระบาย</button>
+    <button class="chip" data-mode="light">🔦 แสงสี</button>
+  </div>
 
-  <section id="selectScreen" class="screen active">
-    <header class="hero">
-      <h1>🎨 ผสมสี</h1>
-      <ul class="howto">
-        <li><span class="howto-icon">🔴</span> เลือกสีจากจาน 2 สี</li>
-        <li><span class="howto-icon">🧪</span> หยดลงในขวด ดูว่าได้สีอะไร</li>
-        <li><span class="howto-icon">🎯</span> มีโหมดทำตามเป้าและทายสูตรด้วย!</li>
-      </ul>
-    </header>
-    <div id="levelGrid" class="lgrid"></div>
-  </section>
+  <!-- MIX + TARGET: wooden palette, tubes, brush -->
+  <div id="mixUI">
+    <div class="target hidden" id="targetBox">
+      <div class="swatch" id="tSwatch"></div>
+      <div class="meter"><div class="lbl" id="tLabel">ผสมให้ได้สีนี้</div><div class="bar"><div class="fill" id="tFill"></div></div></div>
+      <button class="btn hidden" id="tNext">➡️ ข้อต่อไป</button>
+    </div>
+    <div class="view"><canvas id="pal" width="720" height="480" aria-label="จานสี"></canvas></div>
+    <div class="tubes" id="tubes"></div>
+    <div class="result" id="result"></div>
+    <div class="row">
+      <button class="btn" id="cleanBtn">🧽 ล้างจาน</button>
+      <button class="btn" id="saveBtn">💾 เก็บสี</button>
+      <button class="btn" id="toPaint">🖌️ เอาไประบาย</button>
+    </div>
+    <div class="saved" id="saved"></div>
+  </div>
 
-  <!-- FREE PLAY -->
-  <section id="freeScreen" class="screen game-screen">
-    <div class="hud">
-      <div class="hud-item" style="color:#2980b9;">🧪 เล่นอิสระ</div>
-      <div class="hud-item" id="discCount" style="color:var(--good-dark);">✨ <span id="discNum">0</span>/5</div>
-    </div>
-    <div class="stage">
-      <div class="beaker-cell">
-        <div class="beaker" id="freeBeaker"><div class="liquid" id="freeLiquid"></div></div>
-        <div class="name-tag empty" id="freeNameTag">ขวดเปล่า — ลองหยดสี!</div>
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" id="freeClearBtn">🧽 เทออก</button>
-      </div>
-      <div class="palette" id="freePalette"></div>
-      <div class="recipes" id="freeRecipes"></div>
-    </div>
-  </section>
+  <!-- PAINT -->
+  <div id="paintUI" class="hidden">
+    <div class="view"><canvas id="pic" width="800" height="800" aria-label="รูประบายสี"></canvas></div>
+    <div class="brushNow"><span>🖌️ พู่กัน</span><div class="swatch" id="brushSw"></div><span id="brushTxt"></span></div>
+    <div class="wells" id="wells"></div>
+    <div class="pics" id="pics"></div>
+  </div>
 
-  <!-- LAB MODE — many colors, accumulating mix, save creations -->
-  <section id="labScreen" class="screen game-screen">
-    <div class="hud">
-      <div class="hud-item" style="color:#8e44ad;">🌈 ห้องทดลอง</div>
-      <div class="hud-item" style="color:var(--good-dark);">💧 <span id="labDropCount">0</span> หยด</div>
-      <div class="hud-item" style="color:#c0392b;">💾 <span id="labSavedCount">0</span>/12</div>
-    </div>
-    <div class="stage">
-      <div class="beaker-cell">
-        <div class="beaker" id="labBeaker"><div class="liquid" id="labLiquid"></div></div>
-        <div class="name-tag empty" id="labNameTag">ขวดเปล่า — แตะสีเลย!</div>
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" id="labSaveBtn">💾 เก็บสี</button>
-        <button class="icon-btn" id="labClearBtn">🧽 เทออก</button>
-      </div>
-      <div class="palette" id="labPalette"></div>
-      <div class="saved-colors" id="labSavedRow"></div>
-    </div>
-  </section>
+  <!-- LIGHT -->
+  <div id="lightUI" class="hidden">
+    <div class="view" style="background:#0a0d1c"><canvas id="lightC" width="800" height="560" aria-label="ไฟฉายสามสี"></canvas></div>
+  </div>
 
-  <!-- TARGET MODE -->
-  <section id="targetScreen" class="screen game-screen">
-    <div class="hud">
-      <div class="hud-item" style="color:var(--good-dark);">🎯 ข้อ <span id="tRound">1</span>/<span id="tTotal">3</span></div>
-      <div class="hud-item" style="color:var(--bad-dark);">❌ <span id="tMisses">0</span></div>
-    </div>
-    <div class="stage">
-      <div class="beaker-row">
-        <div class="beaker-cell">
-          <div class="beaker-label">เป้าหมาย</div>
-          <div class="beaker target" id="targetBeaker"><div class="liquid" id="targetLiquid"></div></div>
-          <div class="name-tag" id="targetName">—</div>
-        </div>
-        <div class="beaker-cell">
-          <div class="beaker-label">ขวดของเรา</div>
-          <div class="beaker" id="mixBeaker"><div class="liquid" id="mixLiquid"></div></div>
-          <div class="name-tag empty" id="mixName">ขวดเปล่า</div>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" id="targetClearBtn">🧽 เทออก</button>
-      </div>
-      <div class="palette" id="targetPalette"></div>
-    </div>
-  </section>
-
-  <!-- QUIZ MODE -->
-  <section id="quizScreen" class="screen game-screen">
-    <div class="hud">
-      <div class="hud-item" style="color:#c0392b;">❓ ข้อ <span id="qRound">1</span>/<span id="qTotal">10</span></div>
-      <div class="hud-item" style="color:var(--good-dark);">✅ <span id="qRight">0</span></div>
-    </div>
-    <div class="stage">
-      <div class="equation" id="qEquation">—</div>
-      <div class="opts" id="qOpts"></div>
-    </div>
-  </section>
-
-  <!-- RESULTS -->
-  <section id="resultsScreen" class="screen">
-    <div class="trophy">🏆</div>
-    <h2 id="resultTitle" class="winner-name">เก่งมาก!</h2>
-    <p id="resultSub" class="winner-sub">—</p>
-    <div id="resultStars" class="stars-row">⭐</div>
-    <div id="resultText" class="rating-text">ลองอีกที!</div>
-    <div class="action-bar">
-      <button id="againBtn" class="btn-ghost">🔄 เล่นอีก</button>
-      <button id="newBtn" class="btn-main">เลือกใหม่</button>
-    </div>
-  </section>
-
+  <div class="fact" id="fact"></div>
 </div>
 
 <script>
 'use strict';
-
-// ============================================================================
-// COLORS — 10 fixed colors
-// ============================================================================
-const COLORS = {
-  red:    { hex: '#e74c3c', name: 'แดง'   },
-  yellow: { hex: '#f1c40f', name: 'เหลือง' },
-  blue:   { hex: '#3498db', name: 'ฟ้า'   },
-  white:  { hex: '#ffffff', name: 'ขาว'   },
-  black:  { hex: '#2d3436', name: 'ดำ'    },
-  orange: { hex: '#f39c12', name: 'ส้ม'   },
-  green:  { hex: '#2ecc71', name: 'เขียว' },
-  purple: { hex: '#9b59b6', name: 'ม่วง'  },
-  pink:   { hex: '#ff6b9d', name: 'ชมพู'  },
-  gray:   { hex: '#95a5a6', name: 'เทา'   },
-  // Lab-mode extras
-  brown:   { hex: '#8b5a3a', name: 'น้ำตาล'   },
-  sky:     { hex: '#7dd3f0', name: 'ฟ้าอ่อน'  },
-  lime:    { hex: '#b8e986', name: 'เขียวอ่อน' },
-  magenta: { hex: '#d63384', name: 'บานเย็น'  },
-};
-
-// Recipes are unordered pairs (a,b) → result
-const RECIPES = [
-  { a: 'red',    b: 'yellow', result: 'orange' },
-  { a: 'yellow', b: 'blue',   result: 'green'  },
-  { a: 'red',    b: 'blue',   result: 'purple' },
-  { a: 'red',    b: 'white',  result: 'pink'   },
-  { a: 'black',  b: 'white',  result: 'gray'   },
-];
-
-// Extra recipes only used in lab mode (involve derived colors)
-const LAB_EXTRA_RECIPES = [
-  { a: 'orange', b: 'black',  result: 'brown'   },
-  { a: 'blue',   b: 'white',  result: 'sky'     },
-  { a: 'yellow', b: 'green',  result: 'lime'    },
-  { a: 'red',    b: 'pink',   result: 'magenta' },
-];
-const LAB_RECIPES = [...RECIPES, ...LAB_EXTRA_RECIPES];
-
-function recipeFor(a, b) {
-  return RECIPES.find(r => (r.a === a && r.b === b) || (r.a === b && r.b === a));
-}
-function labRecipeFor(a, b) {
-  return LAB_RECIPES.find(r => (r.a === a && r.b === b) || (r.a === b && r.b === a));
-}
-
-// LEVELS — four modes
-const LEVELS = [
-  // Free
-  { id: 'free', mode: 'free', stars: 1, tag: 'free',
-    title: 'เล่นอิสระ', sub: 'ลองทุกสูตร · ไม่มีจับเวลา', preview: '🧪',
-    palette: ['red','yellow','blue','white','black'] },
-
-  // Lab — many colors, accumulating drops, save your creations
-  { id: 'lab', mode: 'lab', stars: 1, tag: 'lab',
-    title: 'ห้องทดลอง', sub: '14 สี · ผสมตามใจ · เก็บสีได้', preview: '🌈',
-    palette: ['red','yellow','blue','white','black','orange','green','purple','pink','gray','brown','sky','lime','magenta'] },
-
-  // Target — 3 difficulty levels
-  { id: 'target1', mode: 'target', stars: 1, tag: 'target',
-    title: 'ทำตามเป้า · ง่าย', sub: '3 สูตรพื้นฐาน', preview: '🎯',
-    palette: ['red','yellow','blue'],
-    questions: ['orange','green','purple'] },
-  { id: 'target2', mode: 'target', stars: 2, tag: 'target',
-    title: 'ทำตามเป้า · กลาง', sub: '+ ขาว ดำ ชมพู เทา', preview: '🎯',
-    palette: ['red','yellow','blue','white','black'],
-    questions: ['pink','gray','orange','green','purple'] },
-  { id: 'target3', mode: 'target', stars: 3, tag: 'target',
-    title: 'ทำตามเป้า · ยาก', sub: '5 สูตร สลับ 8 ข้อ', preview: '🎯',
-    palette: ['red','yellow','blue','white','black'],
-    questions: shuffleQuestionsHard() },
-
-  // Quiz — 2 difficulty levels
-  { id: 'quiz1', mode: 'quiz', stars: 1, tag: 'quiz',
-    title: 'ทายสูตร · ง่าย', sub: '3 สูตรพื้นฐาน · 8 ข้อ', preview: '❓',
-    quizRecipes: ['orange','green','purple'], rounds: 8 },
-  { id: 'quiz2', mode: 'quiz', stars: 2, tag: 'quiz',
-    title: 'ทายสูตร · ครบ', sub: 'ทุกสูตร · 10 ข้อ', preview: '❓',
-    quizRecipes: ['orange','green','purple','pink','gray'], rounds: 10 },
-];
-
-function shuffleQuestionsHard() {
-  // Build deterministically at module load: 8 picks from all 5 results, balanced
-  const all = ['orange','green','purple','pink','gray'];
-  const picks = [];
-  // Each result at least once, then 3 random extras
-  for (const r of all) picks.push(r);
-  while (picks.length < 8) picks.push(all[Math.floor(Math.random() * all.length)]);
-  // Shuffle
-  for (let i = picks.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [picks[i], picks[j]] = [picks[j], picks[i]];
-  }
-  return picks;
-}
-
-// ============================================================================
-// STATE
-// ============================================================================
-const state = {
-  mode: null, level: null,
-
-  // Free mode
-  freeFill: [],     // up to 2 color ids
-  discovered: new Set(), // recipe ids "a+b"
-
-  // Lab mode
-  labDrops: [],     // accumulating color ids
-  labSaved: [],     // saved hex strings
-
-  // Target mode
-  tRound: 0, tMisses: 0, tFill: [],
-
-  // Quiz mode
-  qRound: 0, qRight: 0, qWrong: 0, qCurrent: null,
-
-  pendingTimers: [],
-};
-const FREE_DISCOVERED_KEY = 'colorMixDiscovered';
-
-// ============================================================================
-// AUDIO
-// ============================================================================
-let audioCtx = null;
-function ensureAudio() {
-  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-}
-function tone(freq, ms, type='sine', vol=0.18) {
-  if (!audioCtx) return;
-  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-  o.type = type; o.frequency.value = freq;
-  o.connect(g).connect(audioCtx.destination);
-  const t = audioCtx.currentTime, d = ms/1000;
-  g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(vol, t + 0.01);
-  g.gain.linearRampToValueAtTime(0, t + d);
-  o.start(t); o.stop(t + d + 0.02);
-}
-function playDrop()  { tone(330, 90, 'sine', 0.10); }
-function playMix()   { tone(523, 130, 'triangle', 0.16); setTimeout(()=>tone(784, 140, 'triangle', 0.14), 110); }
-function playWrong() { tone(180, 200, 'sawtooth', 0.14); }
-function playWin()   {
-  [523, 659, 784, 1047].forEach((f, i) => setTimeout(()=>tone(f, 180, 'triangle', 0.18), i * 110));
-}
-
-// ============================================================================
-// DOM
-// ============================================================================
 const $ = (id) => document.getElementById(id);
-const screens = {
-  select:  $('selectScreen'),
-  free:    $('freeScreen'),
-  lab:     $('labScreen'),
-  target:  $('targetScreen'),
-  quiz:    $('quizScreen'),
-  results: $('resultsScreen'),
+
+// ============================================================================
+// PAINT PHYSICS — two-constant Kubelka–Munk over 10 wavelength bands (410–680 nm).
+// Each pigment = reflectance curve + scattering strength S; a mixture adds K and S by
+// amount, so yellow + blue really gives green, ratios matter, white tints, black shades.
+// The curves were fitted so the classic mixes land on real poster-paint colours.
+// ============================================================================
+const CMF = [[0.0435,0.0012,0.2074],[0.3483,0.0230,1.7471],[0.1954,0.0910,1.2876],[0.0049,0.3230,0.2720],[0.1655,0.8620,0.0422],
+  [0.5945,0.9950,0.0039],[1.0263,0.7570,0.0011],[0.8544,0.3810,0.0002],[0.2835,0.1070,0],[0.0468,0.0170,0]];
+const PIG = ['red', 'yellow', 'blue', 'white', 'black'];
+const PIG_TH = { red: 'แดง', yellow: 'เหลือง', blue: 'น้ำเงิน', white: 'ขาว', black: 'ดำ' };
+const CURVE = {
+  red:    [[0.119,0.097,0.055,0.01,0.01,0.08,0.34,0.95,0.851,0.95], 0.05],
+  yellow: [[0.047,0.036,0.089,0.395,0.476,0.786,0.95,0.95,0.155,0.048], 0.472],
+  blue:   [[0.95,0.583,0.295,0.223,0.206,0.087,0.01,0.04,0.173,0.95], 0.102],
+  white:  [[0.93,0.93,0.93,0.93,0.93,0.93,0.93,0.93,0.93,0.93], 1.0],
+  black:  [[0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03], 0.35],
 };
-const levelGrid = $('levelGrid');
-
-// ============================================================================
-// UTIL
-// ============================================================================
-function buzz(p) { if (navigator.vibrate) navigator.vibrate(p); }
-function showScreen(name) {
-  for (const k of Object.keys(screens)) screens[k].classList.toggle('active', k===name);
-  $('backBtn').classList.toggle('show', name === 'free' || name === 'lab' || name === 'target' || name === 'quiz');
-}
-function later(fn, ms) { const id = setTimeout(fn, ms); state.pendingTimers.push(id); return id; }
-function clearTimers() { for (const id of state.pendingTimers) clearTimeout(id); state.pendingTimers = []; }
-function shuffle(a) { const r = a.slice(); for (let i=r.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
-
-// ============================================================================
-// SELECT SCREEN
-// ============================================================================
-function renderLevels() {
-  levelGrid.innerHTML = '';
-  for (const lvl of LEVELS) {
-    const c = document.createElement('div');
-    c.className = 'lcard';
-    const tagLabel = lvl.tag === 'free' ? 'อิสระ' : lvl.tag === 'lab' ? 'ห้องแล็บ' : lvl.tag === 'target' ? 'เป้าหมาย' : 'ทายสูตร';
-    c.innerHTML = `
-      <div class="stars">${'⭐'.repeat(lvl.stars)}</div>
-      <div class="preview">${lvl.preview}</div>
-      <div class="mode-tag ${lvl.tag}">${tagLabel}</div>
-      <div class="ltitle">${lvl.title}</div>
-      <div class="lsub">${lvl.sub}</div>
-    `;
-    c.addEventListener('click', () => { ensureAudio(); startLevel(lvl); });
-    levelGrid.appendChild(c);
+const KK = PIG.map((p) => CURVE[p][0].map((R) => (1 - R) ** 2 / (2 * R) * CURVE[p][1])), SS = PIG.map((p) => CURVE[p][1]);
+const WX = CMF.reduce((a, c) => a + c[0], 0), WY = CMF.reduce((a, c) => a + c[1], 0), WZ = CMF.reduce((a, c) => a + c[2], 0);
+const gam = (u) => 255 * (u <= 0.0031308 ? 12.92 * u : 1.055 * Math.pow(u, 1 / 2.4) - 0.055);
+// c = amounts of the 5 pigments (any scale) → [r, g, b] 0..255
+function kmRGB(c) {
+  let S = 0; for (let i = 0; i < 5; i++) S += c[i] * SS[i];
+  if (S <= 0) return [255, 255, 255];
+  let X = 0, Y = 0, Z = 0;
+  for (let b = 0; b < 10; b++) {
+    let K = 0; for (let i = 0; i < 5; i++) K += c[i] * KK[i][b];
+    const k = K / S, R = 1 + k - Math.sqrt(k * k + 2 * k);
+    X += R * CMF[b][0]; Y += R * CMF[b][1]; Z += R * CMF[b][2];
   }
+  X = X / WX * 0.9505; Y /= WY; Z = Z / WZ * 1.089;
+  const r = 3.2406 * X - 1.5372 * Y - 0.4986 * Z, g = -0.9689 * X + 1.8758 * Y + 0.0415 * Z, bl = 0.0557 * X - 0.2040 * Y + 1.0570 * Z;
+  return [r, g, bl].map((u) => Math.max(0, Math.min(255, Math.round(gam(Math.max(0, u))))));
 }
+const hex = (rgb) => '#' + rgb.map((v) => v.toString(16).padStart(2, '0')).join('');
+function lab(rgb) {
+  const l = (u) => { u /= 255; return u <= 0.04045 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4); };
+  const [r, g, b] = rgb.map(l);
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.9505), fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b), fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.089);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+const dE = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const vec = (o) => PIG.map((p) => o[p] || 0);
 
-function startLevel(lvl) {
-  state.level = lvl;
-  state.mode = lvl.mode;
-  clearTimers();
-  if (lvl.mode === 'free') startFree();
-  else if (lvl.mode === 'lab') startLab();
-  else if (lvl.mode === 'target') startTarget();
-  else if (lvl.mode === 'quiz') startQuiz();
-}
+// Colour names — each one's reference is what THIS paint model gives for the classic
+// recipe, so the name always agrees with what the child sees. [name, recipe…]
+const NAMES = [
+  ['แดง', { red: 1 }], ['เหลือง', { yellow: 1 }], ['น้ำเงิน', { blue: 1 }], ['ขาว', { white: 1 }], ['ดำ', { black: 1 }],
+  ['ส้ม', { red: 1, yellow: 1 }, { red: 1, yellow: 2 }], ['เขียว', { yellow: 1, blue: 1 }, { yellow: 2, blue: 1 }], ['ม่วง', { red: 1, blue: 1 }, { red: 2, blue: 1 }],
+  ['ชมพู', { red: 1, white: 1 }, { red: 1, white: 2 }], ['ชมพูอ่อน', { red: 1, white: 5 }], ['ฟ้า', { blue: 1, white: 1 }, { blue: 1, white: 2 }], ['ฟ้าอ่อน', { blue: 1, white: 5 }],
+  ['ม่วงอ่อน', { red: 1, blue: 1, white: 3 }], ['น้ำตาล', { red: 1, yellow: 1, blue: 1 }, { red: 1, yellow: 1, black: 1 }, { red: 2, yellow: 1, blue: 1 }],
+  ['เทา', { black: 1, white: 3 }, { black: 1, white: 2 }], ['เทาอ่อน', { black: 1, white: 8 }], ['ครีม', { yellow: 1, white: 5 }], ['เหลืองอ่อน', { yellow: 1, white: 2 }],
+  ['เขียวอ่อน', { yellow: 3, blue: 1, white: 3 }, { yellow: 4, blue: 1 }], ['เขียวเข้ม', { yellow: 1, blue: 1, black: 1 }, { yellow: 1, blue: 2 }],
+  ['น้ำเงินเข้ม', { blue: 2, black: 1 }], ['แดงเข้ม', { red: 2, black: 1 }], ['ส้มอ่อน', { red: 1, yellow: 1, white: 3 }],
+];
+const REFS = []; for (const [n, ...rs] of NAMES) for (const r of rs) REFS.push({ n, lab: lab(kmRGB(vec(r))) });
+const NAME_REF = Object.fromEntries(NAMES.map(([n, r]) => [n, r]));
+function nameOf(rgb) { const L = lab(rgb); let b = REFS[0], bd = 1e9; for (const r of REFS) { const d = dE(L, r.lab); if (d < bd) { bd = d; b = r; } } return b.n; }
+const recipeLine = (c) => { const tot = c.reduce((a, b) => a + b, 0); return PIG.filter((p, i) => c[i] > 0.03 * tot).map((p) => PIG_TH[p]).join('ผสม'); };
 
 // ============================================================================
-// COMMON: drop a color into a beaker, then run a callback after the splash.
+// 🎨 THE PALETTE — a grid of wet paint (thickness + pigment amounts per cell).
+// Tubes squeeze blobs; dragging the brush smears paint along the stroke and slowly
+// evens it out, so colours streak first and then blend — like real paint.
 // ============================================================================
-function dropColor(beakerEl, liquidEl, colorId, fillArr, onSettle) {
-  if (fillArr.length >= 2) return;
-  fillArr.push(colorId);
-
-  // Animated drop falling into beaker
-  const drop = document.createElement('div');
-  drop.className = 'drop-anim';
-  drop.style.setProperty('--dropC', COLORS[colorId].hex);
-  drop.innerHTML = '<div class="drop-shape"></div>';
-  beakerEl.appendChild(drop);
-  playDrop();
-  buzz(15);
-  setTimeout(() => drop.remove(), 600);
-
-  // Update liquid after splash
-  later(() => {
-    updateLiquid(beakerEl, liquidEl, fillArr);
-    if (onSettle) onSettle();
-  }, 380);
+const pal = $('pal'), pctx = pal.getContext('2d');
+const GW = 180, GH = 120, CELL = 4, N = GW * GH;
+const A = new Float32Array(N), C = new Float32Array(N * 5);       // thickness, pigment amount per cell
+const RGB = new Uint8ClampedArray(N * 3), dirty = new Uint8Array(N);
+const inPal = new Uint8Array(N);
+for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+  const ex = (x - 90) / 85.5, ey = (y - 60) / 55.5, hole = Math.hypot(x - 150.75, y - 84.75) < 10.5;
+  inPal[y * GW + x] = ex * ex + ey * ey < 1 && !hole ? 1 : 0;
 }
-
-function updateLiquid(beakerEl, liquidEl, fillArr) {
-  liquidEl.classList.remove('fill1', 'fill2');
-  beakerEl.classList.remove('muddy');
-  if (fillArr.length === 0) {
-    liquidEl.style.background = 'transparent';
-    return;
+const woodC = document.createElement('canvas'); woodC.width = 720; woodC.height = 480;
+(function drawWood() {
+  const w = woodC.getContext('2d');
+  w.fillStyle = '#fffef9'; w.fillRect(0, 0, 720, 480);
+  w.save(); w.beginPath(); w.ellipse(360, 240, 350, 228, 0, 0, Math.PI * 2); w.clip();
+  const g = w.createLinearGradient(0, 0, 720, 480); g.addColorStop(0, '#e9c48f'); g.addColorStop(1, '#c9955a'); w.fillStyle = g; w.fillRect(0, 0, 720, 480);
+  w.strokeStyle = 'rgba(120,70,30,0.18)'; w.lineWidth = 2;
+  for (let i = 0; i < 26; i++) { w.beginPath(); const y0 = 20 + i * 18; w.moveTo(0, y0); for (let x = 0; x <= 720; x += 40) w.lineTo(x, y0 + Math.sin(x / 90 + i) * 6); w.stroke(); }
+  w.restore();
+  w.lineWidth = 8; w.strokeStyle = '#a8743f'; w.beginPath(); w.ellipse(360, 240, 350, 228, 0, 0, Math.PI * 2); w.stroke();
+  w.fillStyle = '#fffef9'; w.beginPath(); w.arc(603, 339, 40, 0, Math.PI * 2); w.fill(); w.strokeStyle = '#a8743f'; w.lineWidth = 6; w.stroke();
+})();
+let palDirty = true;
+function shade(i) {
+  if (A[i] <= 0.001) return;
+  const rgb = kmRGB([C[i * 5], C[i * 5 + 1], C[i * 5 + 2], C[i * 5 + 3], C[i * 5 + 4]]);
+  RGB[i * 3] = rgb[0]; RGB[i * 3 + 1] = rgb[1]; RGB[i * 3 + 2] = rgb[2];
+}
+const img = pctx.createImageData(GW, GH), small = document.createElement('canvas'); small.width = GW; small.height = GH;
+const sctx = small.getContext('2d');
+function renderPal() {
+  for (let i = 0; i < N; i++) if (dirty[i]) { shade(i); dirty[i] = 0; }
+  const d = img.data;
+  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+    const i = y * GW + x, a = A[i], o = i * 4;
+    if (a < 0.01) { d[o + 3] = 0; continue; }
+    // wet-paint relief: light comes from the top-left
+    const up = A[Math.max(0, y - 1) * GW + Math.max(0, x - 1)], dn = A[Math.min(GH - 1, y + 1) * GW + Math.min(GW - 1, x + 1)];
+    const lit = Math.max(-40, Math.min(55, (up - dn) * -60 + 8));
+    d[o] = RGB[i * 3] + lit; d[o + 1] = RGB[i * 3 + 1] + lit; d[o + 2] = RGB[i * 3 + 2] + lit;
+    d[o + 3] = Math.min(255, a * 900);
   }
-  if (fillArr.length === 1) {
-    liquidEl.classList.add('fill1');
-    liquidEl.style.background = COLORS[fillArr[0]].hex;
-    return;
+  sctx.putImageData(img, 0, 0);
+  pctx.drawImage(woodC, 0, 0);
+  pctx.imageSmoothingEnabled = true; pctx.imageSmoothingQuality = 'high';
+  pctx.drawImage(small, 0, 0, 720, 480);
+  if (brushAt) drawBrush(pctx, brushAt.x, brushAt.y, brushAt.ang, mixColor());
+  palDirty = false;
+}
+function drawBrush(ctx, x, y, ang, tip) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+  ctx.fillStyle = '#c0392b'; ctx.fillRect(-8, -170, 16, 120);
+  ctx.fillStyle = '#bdc3c7'; ctx.fillRect(-11, -58, 22, 26);
+  ctx.fillStyle = tip || '#d9b38c'; ctx.beginPath(); ctx.moveTo(-11, -32); ctx.quadraticCurveTo(-12, -6, 0, 6); ctx.quadraticCurveTo(12, -6, 11, -32); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
+}
+function addBlob(p, gx, gy, amt = 1) {
+  const r = 10;
+  for (let y = gy - r; y <= gy + r; y++) for (let x = gx - r; x <= gx + r; x++) {
+    if (x < 0 || y < 0 || x >= GW || y >= GH) continue;
+    const i = y * GW + x, dd = Math.hypot(x - gx, y - gy) / r;
+    if (dd > 1 || !inPal[i]) continue;
+    const add = amt * 1.15 * (1 - dd * dd);
+    A[i] += add; C[i * 5 + p] += add; dirty[i] = 1;
   }
-  // 2 drops — mix
-  const result = mixOf(fillArr[0], fillArr[1]);
-  liquidEl.classList.add('fill2');
-  liquidEl.style.background = result.hex;
-  if (!result.named) beakerEl.classList.add('muddy');
-  beakerEl.classList.remove('pop'); void beakerEl.offsetWidth; beakerEl.classList.add('pop');
-  playMix();
+  palDirty = true; changed();
 }
-
-function mixOf(a, b) {
-  if (a === b) return { hex: COLORS[a].hex, named: true, name: COLORS[a].name, id: a };
-  const rec = recipeFor(a, b);
-  if (rec) {
-    const r = COLORS[rec.result];
-    return { hex: r.hex, named: true, name: r.name, id: rec.result };
+// The brush is a little reservoir: under its tip it picks up some paint, mixes it in
+// the bristles and lays some back down — paint is carried along the stroke and blended,
+// but never created or lost (it doesn't thin out to nothing as you keep stirring).
+let lastMove = null, brushAt = null;
+const res = { a: 0, c: [0, 0, 0, 0, 0] };
+function smear(gx, gy) {
+  const r = 10, cells = [];
+  let W = 0;
+  for (let y = gy - r; y <= gy + r; y++) for (let x = gx - r; x <= gx + r; x++) {
+    if (x < 0 || y < 0 || x >= GW || y >= GH) continue;
+    const i = y * GW + x, dd = Math.hypot(x - gx, y - gy) / r;
+    if (dd > 1 || !inPal[i]) continue;
+    const f = 1 - dd * dd; cells.push([i, f]); W += f;
   }
-  // Fallback: muddy average
-  const ah = hexToRgb(COLORS[a].hex), bh = hexToRgb(COLORS[b].hex);
-  const mid = {
-    r: Math.round((ah.r + bh.r) / 2 * 0.85),
-    g: Math.round((ah.g + bh.g) / 2 * 0.85),
-    b: Math.round((ah.b + bh.b) / 2 * 0.85),
-  };
-  return { hex: rgbToHex(mid.r, mid.g, mid.b), named: false, name: '', id: null };
-}
-
-function hexToRgb(h) {
-  h = h.replace('#','');
-  return { r: parseInt(h.substr(0,2),16), g: parseInt(h.substr(2,2),16), b: parseInt(h.substr(4,2),16) };
-}
-function rgbToHex(r,g,b) {
-  const t = (n) => n.toString(16).padStart(2,'0');
-  return '#' + t(r) + t(g) + t(b);
-}
-
-// ============================================================================
-// FREE MODE
-// ============================================================================
-function startFree() {
-  state.freeFill = [];
-  loadDiscovered();
-  // Reset beaker
-  const beaker = $('freeBeaker'), liquid = $('freeLiquid');
-  beaker.classList.remove('muddy', 'pop', 'shake');
-  liquid.classList.remove('fill1','fill2');
-  liquid.style.background = 'transparent';
-  $('freeNameTag').textContent = 'ขวดเปล่า — ลองหยดสี!';
-  $('freeNameTag').classList.add('empty');
-
-  // Palette (free mode shows the 5 base colors)
-  const palette = $('freePalette');
-  palette.innerHTML = '';
-  for (const id of state.level.palette) {
-    const sw = document.createElement('button');
-    sw.type = 'button';
-    sw.className = 'swatch';
-    sw.style.setProperty('--c', COLORS[id].hex);
-    sw.setAttribute('aria-label', COLORS[id].name);
-    sw.addEventListener('click', () => onFreeSwatch(id));
-    palette.appendChild(sw);
+  for (const [i, f] of cells) {                         // pick up
+    if (A[i] <= 0.001) continue;
+    const k = 0.45 * f;
+    res.a += A[i] * k; A[i] -= A[i] * k;
+    for (let p = 0; p < 5; p++) { const t = C[i * 5 + p] * k; res.c[p] += t; C[i * 5 + p] -= t; }
   }
-
-  renderRecipes();
-  showScreen('free');
-}
-
-function onFreeSwatch(id) {
-  if (state.freeFill.length >= 2) return;
-  const beaker = $('freeBeaker'), liquid = $('freeLiquid');
-  dropColor(beaker, liquid, id, state.freeFill, () => {
-    if (state.freeFill.length === 1) {
-      $('freeNameTag').textContent = COLORS[id].name + ' · เลือกสีอีกหนึ่ง';
-      $('freeNameTag').classList.remove('empty');
-    } else if (state.freeFill.length === 2) {
-      const m = mixOf(state.freeFill[0], state.freeFill[1]);
-      if (m.named && m.id) {
-        $('freeNameTag').textContent = '✨ ได้สี' + m.name + '!';
-        $('freeNameTag').classList.remove('empty');
-        // Mark recipe as discovered if it's a real recipe (not same+same)
-        const rec = recipeFor(state.freeFill[0], state.freeFill[1]);
-        if (rec) {
-          const wasNew = !state.discovered.has(rec.result);
-          state.discovered.add(rec.result);
-          saveDiscovered();
-          renderRecipes();
-          if (wasNew) {
-            buzz([20, 40, 80]);
-            celebrate(40);
-            if (state.discovered.size === RECIPES.length) {
-              later(() => celebrate(100), 200);
-            }
-          }
-        }
-      } else {
-        $('freeNameTag').textContent = 'อืม... สีไม่สวยเท่าไหร่';
-        $('freeNameTag').classList.remove('empty');
-      }
+  if (res.a > 0 && W > 0) {                             // lay down
+    const out = res.a * 0.45, ratio = res.c.map((v) => v / res.a);
+    for (const [i, f] of cells) {
+      const d = out * f / W;
+      A[i] += d; for (let p = 0; p < 5; p++) C[i * 5 + p] += d * ratio[p];
+      dirty[i] = 1;
     }
+    res.a -= out; for (let p = 0; p < 5; p++) res.c[p] -= out * ratio[p];
+  }
+  for (const [i] of cells) dirty[i] = 1;
+  palDirty = true; changed();
+}
+function dropReservoir(gx, gy) {                         // lifting the brush leaves its paint on the palette
+  if (res.a <= 0) return;
+  const a = res.a, c = res.c.slice(); res.a = 0; res.c = [0, 0, 0, 0, 0];
+  const r = 7, cells = []; let W = 0;
+  for (let y = gy - r; y <= gy + r; y++) for (let x = gx - r; x <= gx + r; x++) {
+    if (x < 0 || y < 0 || x >= GW || y >= GH) continue;
+    const i = y * GW + x, dd = Math.hypot(x - gx, y - gy) / r;
+    if (dd > 1 || !inPal[i]) continue;
+    const f = 1 - dd * dd; cells.push([i, f]); W += f;
+  }
+  for (const [i, f] of cells) { const d = f / W; A[i] += a * d; for (let p = 0; p < 5; p++) C[i * 5 + p] += c[p] * d; dirty[i] = 1; }
+  palDirty = true; changed();
+}
+function palPt(ev) { const r = pal.getBoundingClientRect(); return { x: (ev.clientX - r.left) * 720 / r.width, y: (ev.clientY - r.top) * 480 / r.height }; }
+pal.addEventListener('pointerdown', (ev) => {
+  ensureAudio(); try { pal.setPointerCapture(ev.pointerId); } catch (e) {}
+  const p = palPt(ev); lastMove = p; brushAt = { x: p.x, y: p.y, ang: 0.5 }; palDirty = true;
+});
+pal.addEventListener('pointermove', (ev) => {
+  if (!lastMove) return;
+  const p = palPt(ev), dx = p.x - lastMove.x, dy = p.y - lastMove.y, dist = Math.hypot(dx, dy);
+  if (dist < 3) return;
+  const steps = Math.ceil(dist / 10);
+  for (let s = 1; s <= steps; s++) {
+    const x = lastMove.x + dx * s / steps, y = lastMove.y + dy * s / steps;
+    smear(Math.round(x / CELL), Math.round(y / CELL));
+  }
+  brushAt = { x: p.x, y: p.y, ang: Math.max(-0.9, Math.min(0.9, dx / 30)) + 0.4 };
+  lastMove = p; stirred += dist;
+  if (Math.random() < 0.25) swish();
+});
+const endBrush = () => {
+  if (lastMove) { const gx = Math.round(lastMove.x / CELL), gy = Math.round(lastMove.y / CELL); dropReservoir(gx, gy); }
+  lastMove = null; brushAt = null; palDirty = true;
+};
+pal.addEventListener('pointerup', endBrush); pal.addEventListener('pointercancel', endBrush);
+
+// totals, "is it mixed yet?", naming
+function totals() { const t = [0, 0, 0, 0, 0]; for (let i = 0; i < N; i++) if (A[i] > 0.001) for (let k = 0; k < 5; k++) t[k] += C[i * 5 + k]; return t; }
+const mixColor = () => { const t = totals(); return t.some((v) => v > 0) ? hex(kmRGB(t)) : null; };
+function mixedness() {                     // mean colour distance of painted cells from the average colour
+  for (let i = 0; i < N; i++) if (dirty[i]) { shade(i); dirty[i] = 0; }
+  palDirty = true;
+  let n = 0, r = 0, g = 0, b = 0;
+  // weighted by paint thickness, so a faint smear at the edge counts little
+  for (let i = 0; i < N; i++) if (A[i] > 0.03) { const w = A[i]; n += w; r += RGB[i * 3] * w; g += RGB[i * 3 + 1] * w; b += RGB[i * 3 + 2] * w; }
+  if (!n) return 999;
+  r /= n; g /= n; b /= n; let s = 0;
+  for (let i = 0; i < N; i++) if (A[i] > 0.03) s += A[i] * Math.hypot(RGB[i * 3] - r, RGB[i * 3 + 1] - g, RGB[i * 3 + 2] - b);
+  return s / n;
+}
+let chkTimer = 0, lastSaid = '', counts = [0, 0, 0, 0, 0], stirred = 0;
+function changed() { if (!chkTimer) chkTimer = setTimeout(checkMix, 450); }
+function checkMix() {
+  chkTimer = 0;
+  const t = totals(), used = t.filter((v) => v > 0).length;
+  if (!used) { $('result').innerHTML = ''; return; }
+  const m = mixedness(), rgb = kmRGB(t), nm = nameOf(rgb), mixed = used === 1 || m < 16 || stirred > 3000;   // or: stirred long enough
+  $('result').innerHTML = mixed
+    ? `<div class="swatch" style="background:${hex(rgb)}" id="resSw"></div><div class="rname">สี${nm}</div>`
+    : `<div class="rname" style="font-size:22px">🖌️ ลากพู่กันวนๆ ให้สีเข้ากัน</div>`;
+  if (mixed) $('resSw').onclick = () => { ensureAudio(); speakSeq(used > 1 ? [recipeLine(t), 'ได้สี' + nm] : ['สี' + nm]); };
+  const key = used + '|' + nm;
+  if (mixed && used > 1 && key !== lastSaid) { lastSaid = key; chime(); speakSeq([recipeLine(t), 'ได้สี' + nm]); }
+  if (mode === 'target') updateTarget(rgb, mixed, used);
+}
+function cleanPalette() { A.fill(0); C.fill(0); stirred = 0; res.a = 0; res.c = [0, 0, 0, 0, 0]; counts = [0, 0, 0, 0, 0]; lastSaid = ''; renderTubeCounts(); palDirty = true; checkMix(); }
+
+// tubes
+function tubeSvg(col) {
+  return `<svg viewBox="0 0 120 52"><path d="M8,10 h70 l18,8 v16 l-18,8 h-70 z" fill="#eef1f5" stroke="#9aa3ad" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="12" y="16" width="56" height="20" rx="4" fill="${col}"/><rect x="96" y="20" width="16" height="12" rx="3" fill="${col}" stroke="#2d3436" stroke-width="2"/>
+    <path d="M4,10 v32" stroke="#9aa3ad" stroke-width="5"/></svg>`;
+}
+function buildTubes() {
+  $('tubes').innerHTML = PIG.map((p, i) => `<button class="tube" data-p="${i}">${tubeSvg(hex(kmRGB(PIG.map((_, j) => (j === i ? 1 : 0)))))}<span>${PIG_TH[p]}</span><span class="n" id="n${i}"></span></button>`).join('');
+  for (const b of $('tubes').children) b.addEventListener('click', () => {
+    ensureAudio(); buzz(12); squish();
+    const p = +b.dataset.p; b.classList.remove('squeeze'); void b.offsetWidth; b.classList.add('squeeze');
+    const a = Math.random() * Math.PI * 2, d = 4 + Math.random() * 9;           // squeezed close together, like on a real palette
+    addBlob(p, Math.round(90 + Math.cos(a) * d * 2.1), Math.round(57 + Math.sin(a) * d * 1.5), 1);
+    stirred = 0;
+    counts[p]++; renderTubeCounts();
+    speak('สี' + PIG_TH[PIG[p]]);
   });
 }
+function renderTubeCounts() { PIG.forEach((_, i) => { const el = $('n' + i); if (el) el.textContent = counts[i] ? '×' + counts[i] : ''; }); }
 
-function renderRecipes() {
-  const box = $('freeRecipes');
-  box.innerHTML = '';
-  for (const r of RECIPES) {
-    const found = state.discovered.has(r.result);
-    const el = document.createElement('div');
-    el.className = 'recipe' + (found ? ' discovered' : '');
-    if (found) {
-      el.innerHTML = `
-        <span class="rsw" style="--c:${COLORS[r.a].hex}"></span>+
-        <span class="rsw" style="--c:${COLORS[r.b].hex}"></span>=
-        <span class="rsw" style="--c:${COLORS[r.result].hex}"></span>
-        <span>${COLORS[r.result].name}</span>
-      `;
-    } else {
-      el.innerHTML = `
-        <span class="rsw" style="--c:${COLORS[r.a].hex}"></span>+
-        <span class="rsw" style="--c:${COLORS[r.b].hex}"></span>=
-        <span class="rstate">❓</span>
-      `;
-    }
-    box.appendChild(el);
-  }
-  $('discNum').textContent = state.discovered.size;
+// saved colours ("สีของหนู")
+let saved = [];
+try { saved = JSON.parse(localStorage.getItem('colorMix2') || '[]'); } catch (e) {}
+function renderSaved() {
+  $('saved').innerHTML = saved.map((s, i) => `<div class="swatch" data-i="${i}" style="background:${hex(kmRGB(s))}"></div>`).join('');
+  for (const el of $('saved').children) el.addEventListener('click', () => { ensureAudio(); speak('สี' + nameOf(kmRGB(saved[+el.dataset.i]))); });
 }
-
-function saveDiscovered() {
-  try { localStorage.setItem(FREE_DISCOVERED_KEY, JSON.stringify([...state.discovered])); } catch(e){}
-}
-function loadDiscovered() {
-  try {
-    const raw = localStorage.getItem(FREE_DISCOVERED_KEY);
-    if (raw) state.discovered = new Set(JSON.parse(raw));
-  } catch(e){}
-}
-
-$('freeClearBtn').addEventListener('click', () => {
-  state.freeFill = [];
-  const beaker = $('freeBeaker'), liquid = $('freeLiquid');
-  beaker.classList.remove('muddy', 'pop');
-  liquid.classList.remove('fill1','fill2');
-  liquid.style.background = 'transparent';
-  $('freeNameTag').textContent = 'ขวดเปล่า — ลองหยดสี!';
-  $('freeNameTag').classList.add('empty');
-  buzz(20);
+$('saveBtn').addEventListener('click', () => {
+  ensureAudio(); const t = totals();
+  if (!t.some((v) => v > 0)) { speak('บีบสีลงจานก่อนนะ'); return; }
+  const s = t.map((v) => v / t.reduce((a, b) => a + b, 0));
+  saved.unshift(s); saved = saved.slice(0, 14); try { localStorage.setItem('colorMix2', JSON.stringify(saved)); } catch (e) {}
+  renderSaved(); chime(); buzz(10); speak('เก็บสี' + nameOf(kmRGB(s)) + 'ไว้แล้ว');
+});
+$('cleanBtn').addEventListener('click', () => { ensureAudio(); buzz(10); swish(); cleanPalette(); speak('ล้างจานสีแล้ว'); });
+$('toPaint').addEventListener('click', () => {
+  ensureAudio(); const t = totals();
+  if (t.some((v) => v > 0)) loadBrush(t.map((v) => v / t.reduce((a, b) => a + b, 0)), true);
+  setMode('paint');
 });
 
 // ============================================================================
-// LAB MODE — many colors, accumulating drops, save creations
+// 🎯 TARGET — mix to match. The hint names the tube that would bring it closest.
 // ============================================================================
-const LAB_SAVED_KEY = 'colorMixLabSaved';
-const LAB_MAX_DROPS = 10;
-const LAB_MAX_SAVED = 12;
-
-function startLab() {
-  state.labDrops = [];
-  state.labSaved = loadLabSaved();
-  resetLabBeaker();
-  renderLabPalette();
-  renderLabSaved();
-  showScreen('lab');
-}
-
-function resetLabBeaker() {
-  state.labDrops = [];
-  const beaker = $('labBeaker'), liquid = $('labLiquid');
-  beaker.classList.remove('pop', 'muddy', 'shake');
-  liquid.classList.remove('fill1','fill2');
-  liquid.style.background = 'transparent';
-  $('labDropCount').textContent = '0';
-  $('labNameTag').textContent = 'ขวดเปล่า — แตะสีเลย!';
-  $('labNameTag').classList.add('empty');
-}
-
-function renderLabPalette() {
-  const palette = $('labPalette');
-  palette.innerHTML = '';
-  for (const id of state.level.palette) {
-    const sw = document.createElement('button');
-    sw.type = 'button';
-    sw.className = 'swatch';
-    sw.style.setProperty('--c', COLORS[id].hex);
-    sw.setAttribute('aria-label', COLORS[id].name);
-    sw.addEventListener('click', () => labDrop(id));
-    palette.appendChild(sw);
-  }
-}
-
-function labDrop(id) {
-  if (state.labDrops.length >= LAB_MAX_DROPS) {
-    // Soft cap: shake the beaker to nudge "เทออก"
-    const beaker = $('labBeaker');
-    beaker.classList.remove('shake'); void beaker.offsetWidth; beaker.classList.add('shake');
-    buzz([30, 60, 30]);
-    return;
-  }
-  state.labDrops.push(id);
-  const beaker = $('labBeaker'), liquid = $('labLiquid');
-  const drop = document.createElement('div');
-  drop.className = 'drop-anim';
-  drop.style.setProperty('--dropC', COLORS[id].hex);
-  drop.innerHTML = '<div class="drop-shape"></div>';
-  beaker.appendChild(drop);
-  playDrop();
-  buzz(15);
-  setTimeout(() => drop.remove(), 600);
-  later(() => updateLabLiquid(), 380);
-}
-
-function updateLabLiquid() {
-  const beaker = $('labBeaker'), liquid = $('labLiquid');
-  const blend = blendLabDrops(state.labDrops);
-  liquid.classList.remove('fill1','fill2');
-  liquid.classList.add(state.labDrops.length === 1 ? 'fill1' : 'fill2');
-  liquid.style.background = blend.hex;
-  $('labDropCount').textContent = state.labDrops.length;
-  $('labNameTag').classList.remove('empty');
-  if (blend.named) {
-    $('labNameTag').textContent = '✨ ' + blend.name;
-    beaker.classList.remove('muddy');
-  } else {
-    $('labNameTag').textContent = state.labDrops.length + ' หยด · สีของเรา';
-    beaker.classList.add('muddy');
-  }
-  beaker.classList.remove('pop'); void beaker.offsetWidth; beaker.classList.add('pop');
-  playMix();
-}
-
-function blendLabDrops(drops) {
-  if (drops.length === 0) return { hex: 'transparent', named: false };
-  if (drops.length === 1) {
-    const c = COLORS[drops[0]];
-    return { hex: c.hex, named: true, name: c.name };
-  }
-  if (drops.length === 2) {
-    if (drops[0] === drops[1]) {
-      const c = COLORS[drops[0]];
-      return { hex: c.hex, named: true, name: c.name };
-    }
-    const rec = labRecipeFor(drops[0], drops[1]);
-    if (rec) {
-      const r = COLORS[rec.result];
-      return { hex: r.hex, named: true, name: r.name };
-    }
-  }
-  // 3+ drops or unknown pair: weighted RGB average (slight darken so it feels mixed)
-  let r=0, g=0, b=0;
-  for (const id of drops) {
-    const ch = hexToRgb(COLORS[id].hex);
-    r += ch.r; g += ch.g; b += ch.b;
-  }
-  const n = drops.length;
-  r = Math.round(r/n * 0.92); g = Math.round(g/n * 0.92); b = Math.round(b/n * 0.92);
-  return { hex: rgbToHex(r, g, b), named: false };
-}
-
-function renderLabSaved() {
-  const row = $('labSavedRow');
-  row.innerHTML = '';
-  for (let i = 0; i < state.labSaved.length; i++) {
-    const hex = state.labSaved[i];
-    const sw = document.createElement('button');
-    sw.type = 'button';
-    sw.className = 'swatch-saved';
-    sw.style.setProperty('--c', hex);
-    sw.setAttribute('aria-label', 'แตะเพื่อลบสีนี้');
-    sw.title = 'แตะเพื่อลบ';
-    sw.addEventListener('click', () => removeLabSaved(i));
-    row.appendChild(sw);
-  }
-  $('labSavedCount').textContent = state.labSaved.length;
-}
-
-function saveLabColor() {
-  if (state.labDrops.length === 0) return;
-  if (state.labSaved.length >= LAB_MAX_SAVED) {
-    const beaker = $('labBeaker');
-    beaker.classList.remove('shake'); void beaker.offsetWidth; beaker.classList.add('shake');
-    return;
-  }
-  const blend = blendLabDrops(state.labDrops);
-  if (blend.hex === 'transparent') return;
-  if (state.labSaved.includes(blend.hex)) {
-    // Already saved — small nudge, no duplicate
-    buzz(20);
-    return;
-  }
-  state.labSaved.push(blend.hex);
-  persistLabSaved();
-  renderLabSaved();
-  buzz([20, 40, 80]);
-  celebrate(28);
-}
-
-function removeLabSaved(i) {
-  state.labSaved.splice(i, 1);
-  persistLabSaved();
-  renderLabSaved();
-  buzz(20);
-}
-
-function persistLabSaved() {
-  try { localStorage.setItem(LAB_SAVED_KEY, JSON.stringify(state.labSaved)); } catch(e){}
-}
-function loadLabSaved() {
-  try {
-    const raw = localStorage.getItem(LAB_SAVED_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e){}
-  return [];
-}
-
-$('labClearBtn').addEventListener('click', resetLabBeaker);
-$('labSaveBtn').addEventListener('click', saveLabColor);
-
-// ============================================================================
-// TARGET MODE
-// ============================================================================
+const TARGETS = ['ส้ม', 'เขียว', 'ม่วง', 'ชมพู', 'ฟ้า', 'เทา', 'น้ำตาล', 'เขียวอ่อน', 'ม่วงอ่อน', 'ครีม', 'ส้มอ่อน', 'เขียวเข้ม', 'ฟ้าอ่อน', 'แดงเข้ม'];
+let tIdx = 0, tDone = false, hintAt = 0;
+const tRGB = () => kmRGB(vec(NAME_REF[TARGETS[tIdx]]));
 function startTarget() {
-  state.tRound = 0;
-  state.tMisses = 0;
-  state.tFill = [];
-  $('tTotal').textContent = state.level.questions.length;
-  $('tMisses').textContent = '0';
-  // Palette
-  const palette = $('targetPalette');
-  palette.innerHTML = '';
-  for (const id of state.level.palette) {
-    const sw = document.createElement('button');
-    sw.type = 'button';
-    sw.className = 'swatch';
-    sw.style.setProperty('--c', COLORS[id].hex);
-    sw.setAttribute('aria-label', COLORS[id].name);
-    sw.addEventListener('click', () => onTargetSwatch(id, sw));
-    palette.appendChild(sw);
+  tDone = false; cleanPalette();
+  $('tSwatch').style.background = hex(tRGB()); $('tLabel').textContent = 'ผสมให้ได้สีนี้'; $('tFill').style.width = '0%';
+  $('tNext').classList.add('hidden');
+  speak('ผสมให้ได้สี' + TARGETS[tIdx]);
+}
+function updateTarget(rgb, mixed, used) {
+  if (tDone) return;
+  const d = dE(lab(rgb), lab(tRGB())), pct = Math.max(0, Math.min(100, Math.round(100 - d * 2.2)));
+  $('tFill').style.width = pct + '%'; $('tLabel').textContent = `ใกล้แล้ว ${pct}%`;
+  if (mixed && d < 9) {
+    tDone = true; $('tLabel').textContent = '⭐ เก่งมาก!'; $('tNext').classList.remove('hidden');
+    cheer(); celebrate(40); setTimeout(() => speak('เก่งมาก ได้สี' + TARGETS[tIdx] + 'แล้ว'), 1800);
+  } else if (mixed && used >= 1 && Date.now() - hintAt > 6000) {
+    hintAt = Date.now();
+    const t = totals(), tot = t.reduce((a, b) => a + b, 0), tl = lab(tRGB());
+    let best = -1, bd = d;
+    for (let p = 0; p < 5; p++) { const u = t.slice(); u[p] += tot * 0.25; const dd = dE(lab(kmRGB(u)), tl); if (dd < bd - 1) { bd = dd; best = p; } }
+    setTimeout(() => speak(best >= 0 ? 'ลองเติมสี' + PIG_TH[PIG[best]] + 'อีกนิด' : 'สีเพี้ยนไปแล้ว ล้างจานแล้วเริ่มใหม่นะ'), 2600);
   }
-  showScreen('target');
-  nextTarget();
+}
+$('tNext').addEventListener('click', () => { ensureAudio(); buzz(8); tIdx = (tIdx + 1) % TARGETS.length; startTarget(); });
+$('tSwatch').addEventListener('click', () => { ensureAudio(); speak('ผสมให้ได้สี' + TARGETS[tIdx]); });
+
+// ============================================================================
+// 🖌️ PAINT — brush strokes stay inside the shape where they start. The brush runs
+// dry as it paints; dipping a dirty brush into a new colour carries the old colour
+// in (wash it in the water cup — the water gets murkier each time).
+// ============================================================================
+const pic = $('pic'), qctx = pic.getContext('2d');
+const layer = document.createElement('canvas'); layer.width = 800; layer.height = 800; const lctx = layer.getContext('2d');
+const circ = (cx, cy, r) => `M${cx - r},${cy} a${r},${r} 0 1 0 ${2 * r},0 a${r},${r} 0 1 0 ${-2 * r},0 Z`;
+const PICS = [
+  { id: 'fruit', icon: '🍎', th: 'ผลไม้', regions: [
+    { th: 'ส้ม', real: 'ส้ม', d: circ(210, 520, 130) },
+    { th: 'แอปเปิล', real: 'แดง', d: 'M560,330 C470,280 400,360 420,450 C440,560 520,620 590,590 C660,620 740,560 760,450 C780,360 710,280 620,330 C600,340 580,340 560,330 Z' },
+    { th: 'ใบไม้', real: 'เขียว', d: 'M600,320 C620,230 700,200 760,220 C730,290 670,330 600,320 Z' },
+    { th: 'องุ่น', real: 'ม่วง', d: [[300, 170], [370, 170], [440, 170], [335, 235], [405, 235], [370, 300]].map(([x, y]) => circ(x, y, 42)).join(' ') },
+    { th: 'กล้วย', real: 'เหลือง', d: 'M120,720 C260,800 520,790 660,690 C680,670 670,650 650,655 C520,720 300,730 150,680 C120,670 100,705 120,720 Z' } ] },
+  { id: 'tree', icon: '🌳', th: 'ต้นไม้', regions: [
+    { th: 'ท้องฟ้า', real: 'ฟ้า', d: 'M0,0 H800 V560 H0 Z', back: true },
+    { th: 'ดวงอาทิตย์', real: 'เหลือง', d: circ(660, 130, 75) },
+    { th: 'ลำต้น', real: 'น้ำตาล', d: 'M365,330 L435,330 L460,640 L340,640 Z' },
+    { th: 'ใบไม้', real: 'เขียว', d: [[330, 270, 130], [460, 250, 120], [400, 160, 110], [270, 380, 90], [520, 370, 100]].map(([x, y, r]) => circ(x, y, r)).join(' ') },
+    { th: 'สนามหญ้า', real: 'เขียวอ่อน', d: 'M0,560 H800 V800 H0 Z' } ] },
+  { id: 'flower', icon: '🌷', th: 'ดอกไม้', regions: [
+    { th: 'ก้าน', real: 'เขียว', d: 'M385,300 H415 V640 H385 Z' },
+    { th: 'กลีบดอก', real: 'ชมพู', d: [0, 1, 2, 3, 4, 5].map((i) => circ(400 + 120 * Math.cos(i * Math.PI / 3), 260 + 120 * Math.sin(i * Math.PI / 3), 85)).join(' ') },
+    { th: 'เกสร', real: 'เหลือง', d: circ(400, 260, 70) },
+    { th: 'ใบ', real: 'เขียว', d: 'M410,540 C470,470 560,470 600,500 C550,560 470,570 410,540 Z M390,500 C330,430 240,430 200,460 C250,520 330,530 390,500 Z' },
+    { th: 'กระถาง', real: 'น้ำตาล', d: 'M260,620 H540 L500,780 H300 Z' } ] },
+  { id: 'house', icon: '🏠', th: 'บ้าน', regions: [
+    { th: 'หลังคา', real: 'แดง', d: 'M120,380 L400,140 L680,380 Z' },
+    { th: 'ผนัง', real: 'ครีม', d: 'M180,380 H620 V720 H180 Z' },
+    { th: 'ประตู', real: 'น้ำตาล', d: 'M350,520 H450 V720 H350 Z' },
+    { th: 'หน้าต่าง', real: 'ฟ้า', d: 'M220,440 H320 V530 H220 Z M480,440 H580 V530 H480 Z' },
+    { th: 'ก้อนเมฆ', real: 'ขาว', d: [[120, 120, 45], [180, 100, 60], [240, 125, 45]].map(([x, y, r]) => circ(x, y, r)).join(' ') } ] },
+  { id: 'fish', icon: '🐠', th: 'ปลา', regions: [
+    { th: 'น้ำทะเล', real: 'ฟ้า', d: 'M0,0 H800 V800 H0 Z', back: true },
+    { th: 'ตัวปลา', real: null, d: 'M180,400 C260,250 520,240 600,400 C520,560 260,550 180,400 Z' },
+    { th: 'หางปลา', real: null, d: 'M590,400 L740,280 L720,400 L740,520 Z' },
+    { th: 'ทราย', real: 'ครีม', d: 'M0,720 C200,690 600,700 800,720 V800 H0 Z' },
+    { th: 'สาหร่าย', real: 'เขียว', d: 'M90,800 C60,700 130,640 100,560 C140,620 150,720 130,800 Z M680,800 C650,720 720,660 690,600 C730,660 740,740 720,800 Z' } ] },
+];
+let picIdx = 0, regionPaths = [], region = null, regionStars = {}, brush = { c: null, load: 0 }, water = [0, 0, 0, 0, 0], washes = 0, lastP = null;
+function buildPics() {
+  $('pics').innerHTML = PICS.map((p, i) => `<button class="chip${i === picIdx ? ' on' : ''}" data-i="${i}">${p.icon} ${p.th}</button>`).join('');
+  for (const b of $('pics').children) b.addEventListener('click', () => { ensureAudio(); buzz(8); picIdx = +b.dataset.i; startPic(); });
+}
+const realLine = (P) => { const real = P.regions.filter((r) => r.real && !r.back).map((r) => r.th + 'สี' + r.real); return real.length ? 'สีจริงเป็นยังไง? ' + real.join(' · ') : 'ระบายตามใจเลย'; };
+function startPic() {
+  const P = PICS[picIdx];
+  regionPaths = P.regions.map((r) => new Path2D(r.d));
+  lctx.clearRect(0, 0, 800, 800); regionStars = {};
+  buildPics(); drawPic();
+  speak('ระบาย' + P.th);
+  setFact(realLine(P));
+}
+function drawPic() {
+  const P = PICS[picIdx];
+  qctx.fillStyle = '#fffef9'; qctx.fillRect(0, 0, 800, 800);
+  qctx.drawImage(layer, 0, 0);
+  qctx.drawImage(outlineFor(P), 0, 0);
+  qctx.font = '44px serif'; qctx.textAlign = 'center';
+  P.regions.forEach((r, i) => { if (regionStars[i]) { const b = r.star || starAt(i); qctx.fillText('⭐', b[0], b[1]); } });
+}
+// Outer outline only: a shape built from overlapping circles (tree crown, grapes)
+// must not show the circles' inner edges — stroke thick, then erase the inside.
+const outlines = {};
+function outlineFor(P) {
+  if (outlines[P.id]) return outlines[P.id];
+  const c = document.createElement('canvas'); c.width = c.height = 800;
+  const o = c.getContext('2d');
+  P.regions.forEach((r, i) => {
+    if (r.back) return;
+    const one = document.createElement('canvas'); one.width = one.height = 800;
+    const x = one.getContext('2d');
+    x.lineWidth = 14; x.strokeStyle = '#2d3436'; x.lineJoin = 'round';
+    for (const sub of r.d.split(/(?=M)/)) x.stroke(new Path2D(sub));
+    x.globalCompositeOperation = 'destination-out'; x.fill(regionPaths[i]);
+    for (let j = i + 1; j < regionPaths.length; j++) x.fill(regionPaths[j]);   // hidden behind a shape in front
+    o.drawImage(one, 0, 0);
+  });
+  return (outlines[P.id] = c);
+}
+function starAt(i) {                                      // a point inside the region for its ⭐
+  for (let y = 20; y < 800; y += 20) for (let x = 20; x < 800; x += 20) {
+    if (!qctx.isPointInPath(regionPaths[i], x, y)) continue;
+    if (regionPaths.some((P, j) => j > i && qctx.isPointInPath(P, x, y))) continue;   // not hidden under a shape in front
+    PICS[picIdx].regions[i].star = [x + 10, y + 34]; return [x + 10, y + 34];
+  }
+  return [400, 400];
+}
+function picPt(ev) { const r = pic.getBoundingClientRect(); return { x: (ev.clientX - r.left) * 800 / r.width, y: (ev.clientY - r.top) * 800 / r.height }; }
+function regionAt(p) {                                    // front-most shape under the finger
+  for (let i = regionPaths.length - 1; i >= 0; i--) if (qctx.isPointInPath(regionPaths[i], p.x, p.y)) return i;
+  return -1;
+}
+pic.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  const p = picPt(ev), i = regionAt(p);
+  if (i < 0) return;
+  if (!brush.c) { speak('จุ่มพู่กันในสีก่อนนะ'); return; }
+  try { pic.setPointerCapture(ev.pointerId); } catch (e) {}
+  region = i; lastP = p; stroke(p, p);
+});
+pic.addEventListener('pointermove', (ev) => { if (region === null) return; const p = picPt(ev); stroke(lastP, p); lastP = p; });
+const endPaint = () => {
+  if (region === null) return;
+  const i = region, r = PICS[picIdx].regions[i]; region = null;
+  if (r.real && !regionStars[i] && brush.c && dE(lab(kmRGB(brush.c)), lab(kmRGB(vec(NAME_REF[r.real])))) < 14) {
+    regionStars[i] = 1; drawPic(); chime(); speak(r.th + 'สี' + r.real + ' เหมือนจริงเลย');
+  }
+};
+pic.addEventListener('pointerup', endPaint); pic.addEventListener('pointercancel', endPaint);
+function stroke(a, b) {
+  const rgb = kmRGB(brush.c), load = Math.max(0.28, brush.load);
+  // a shape in front (e.g. the sun over the sky) is left untouched
+  lctx.save(); lctx.clip(regionPaths[region]);
+  for (let j = region + 1; j < regionPaths.length; j++) { const out = new Path2D(); out.rect(0, 0, 800, 800); out.addPath(regionPaths[j]); lctx.clip(out, 'evenodd'); }
+  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+  lctx.lineCap = 'round';
+  lctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(0.55 + 0.4 * load).toFixed(2)})`; lctx.lineWidth = 46;
+  lctx.beginPath(); lctx.moveTo(a.x, a.y); lctx.lineTo(b.x + 0.1, b.y); lctx.stroke();
+  for (let k = -3; k <= 3; k++) {                         // bristle streaks
+    const j = (Math.random() - 0.5) * 18, o = k * 7;
+    lctx.strokeStyle = `rgba(${rgb[0] + j | 0},${rgb[1] + j | 0},${rgb[2] + j | 0},${(0.25 + 0.35 * load).toFixed(2)})`; lctx.lineWidth = 4;
+    lctx.beginPath(); lctx.moveTo(a.x + nx * o, a.y + ny * o); lctx.lineTo(b.x + nx * o + 0.1, b.y + ny * o); lctx.stroke();
+  }
+  lctx.restore();
+  brush.load = Math.max(0, brush.load - L / 2600);
+  renderBrush(); drawPic();
+}
+let warnAt = 0;
+function loadBrush(c, quiet) {
+  if (brush.c && brush.load > 0.05 && dE(lab(kmRGB(brush.c)), lab(kmRGB(c))) >= 3) {
+    // dirty brush: the old colour comes along
+    const k = 0.35 * brush.load; c = c.map((v, i) => v * (1 - k) + brush.c[i] * k);
+    if (!quiet && Date.now() - warnAt > 9000) { warnAt = Date.now(); setTimeout(() => speak('สีเก่าติดมาด้วย ล้างพู่กันในแก้วน้ำก่อนนะ'), 900); }
+  }
+  brush = { c, load: 1 }; renderBrush();
+  if (!quiet) speak('สี' + nameOf(kmRGB(c)));
+}
+function renderBrush() {
+  $('brushSw').style.background = brush.c ? hex(kmRGB(brush.c)) : '#f1f2f6';
+  $('brushSw').style.opacity = brush.c ? 0.45 + 0.55 * brush.load : 1;
+  $('brushTxt').textContent = !brush.c ? 'สะอาด' : brush.load < 0.15 ? 'สีหมด จุ่มใหม่' : 'สี' + nameOf(kmRGB(brush.c));
+}
+function buildWells() {
+  const t = totals(), mix = t.some((v) => v > 0) ? t.map((v) => v / t.reduce((a, b) => a + b, 0)) : null;
+  const list = [...PIG.map((p, i) => PIG.map((_, j) => (j === i ? 1 : 0))), ...(mix ? [mix] : []), ...saved];
+  $('wells').innerHTML = list.map((c, i) => `<div class="well" data-i="${i}" style="background:${hex(kmRGB(c))}"></div>`).join('') +
+    `<div class="cup" id="cup" aria-label="แก้วน้ำล้างพู่กัน"><div class="water" id="water"></div>🥛</div>`;
+  for (const el of $('wells').querySelectorAll('.well')) el.addEventListener('click', () => { ensureAudio(); buzz(8); dip(); loadBrush(list[+el.dataset.i].slice()); });
+  $('cup').addEventListener('click', wash);
+  renderWater();
+}
+function wash() {
+  ensureAudio(); buzz(10); splash();
+  if (!brush.c && washes) { water = [0, 0, 0, 0, 0]; washes = 0; renderWater(); speak('เปลี่ยนน้ำใหม่แล้ว'); return; }
+  if (brush.c) { water = water.map((v, i) => v + brush.c[i] * (0.4 + brush.load)); washes++; }
+  brush = { c: null, load: 0 }; renderBrush(); renderWater();
+  speak(washes >= 4 ? 'น้ำล้างพู่กันสกปรกแล้ว แตะแก้วอีกทีเพื่อเปลี่ยนน้ำ' : 'ล้างพู่กันแล้ว');
+}
+function renderWater() {
+  const w = $('water'); if (!w) return;
+  const t = water.reduce((a, b) => a + b, 0);
+  w.style.background = t ? hex(kmRGB(water)) : 'transparent'; w.style.opacity = Math.min(0.75, washes * 0.18);
 }
 
-function nextTarget() {
-  state.tRound += 1;
-  if (state.tRound > state.level.questions.length) { showResults('target'); return; }
-  const targetId = state.level.questions[state.tRound - 1];
-  const t = COLORS[targetId];
-  $('tRound').textContent = state.tRound;
-  // Set target beaker
-  const tBeaker = $('targetBeaker'), tLiq = $('targetLiquid');
-  tBeaker.classList.remove('muddy','pop','shake');
-  tLiq.classList.remove('fill1');
-  void tBeaker.offsetWidth;
-  tLiq.classList.add('fill2');
-  tLiq.style.background = t.hex;
-  $('targetName').textContent = t.name;
-  // Reset mix beaker
-  resetMixBeaker();
-}
-
-function resetMixBeaker() {
-  state.tFill = [];
-  const beaker = $('mixBeaker'), liquid = $('mixLiquid');
-  beaker.classList.remove('muddy','pop','shake');
-  liquid.classList.remove('fill1','fill2');
-  liquid.style.background = 'transparent';
-  $('mixName').textContent = 'ขวดเปล่า';
-  $('mixName').classList.add('empty');
-  // Re-enable palette
-  for (const sw of $('targetPalette').querySelectorAll('.swatch')) sw.classList.remove('disabled');
-}
-
-function onTargetSwatch(id, swEl) {
-  if (state.tFill.length >= 2) return;
-  const beaker = $('mixBeaker'), liquid = $('mixLiquid');
-  swEl.classList.add('disabled');
-  // Allow same color twice in target mode (so kids can experiment)
-  dropColor(beaker, liquid, id, state.tFill, () => {
-    if (state.tFill.length === 1) {
-      $('mixName').textContent = COLORS[id].name;
-      $('mixName').classList.remove('empty');
-      // Re-enable other swatches so kid can pick second
-      for (const sw of $('targetPalette').querySelectorAll('.swatch')) sw.classList.remove('disabled');
-    } else if (state.tFill.length === 2) {
-      const m = mixOf(state.tFill[0], state.tFill[1]);
-      $('mixName').textContent = m.named ? m.name : '...';
-      $('mixName').classList.remove('empty');
-      const targetId = state.level.questions[state.tRound - 1];
-      // Disable palette while we evaluate
-      for (const sw of $('targetPalette').querySelectorAll('.swatch')) sw.classList.add('disabled');
-      later(() => {
-        if (m.id === targetId) {
-          // Correct!
-          playWin();
-          buzz([30, 30, 80]);
-          celebrate(50);
-          later(nextTarget, 900);
-        } else {
-          state.tMisses += 1;
-          $('tMisses').textContent = state.tMisses;
-          beaker.classList.add('shake');
-          playWrong();
-          buzz([60, 40, 80]);
-          later(() => {
-            beaker.classList.remove('shake');
-            resetMixBeaker();
-          }, 700);
-        }
-      }, 350);
-    }
+// ============================================================================
+// 🔦 LIGHT — three torches (red, green, blue) add up on a dark wall:
+// red+green = yellow, green+blue = cyan, red+blue = magenta, all three = white.
+// ============================================================================
+const lightC = $('lightC'), lc = lightC.getContext('2d');
+const SPOTS = [{ c: [255, 40, 40], x: 330, y: 230 }, { c: [40, 255, 60], x: 470, y: 230 }, { c: [50, 90, 255], x: 400, y: 340 }];
+const SR = 135;
+let dragSpot = null, lastCombo = '';
+function drawLight() {
+  lc.globalCompositeOperation = 'source-over'; lc.fillStyle = '#0a0d1c'; lc.fillRect(0, 0, 800, 560);
+  lc.globalCompositeOperation = 'lighter';
+  for (const s of SPOTS) {
+    const g = lc.createRadialGradient(s.x, s.y, SR * 0.55, s.x, s.y, SR);
+    g.addColorStop(0, `rgb(${s.c})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    lc.fillStyle = g; lc.beginPath(); lc.arc(s.x, s.y, SR, 0, Math.PI * 2); lc.fill();
+  }
+  lc.globalCompositeOperation = 'source-over';
+  SPOTS.forEach((s, i) => {                               // the torches, aimed up at their spot
+    const bx = 220 + i * 180, by = 490, a = Math.atan2(s.y - by, s.x - bx);
+    lc.save(); lc.translate(bx, by); lc.rotate(a + Math.PI / 2);
+    lc.fillStyle = '#5b6170'; lc.fillRect(-16, 0, 32, 60); lc.fillStyle = `rgb(${s.c})`; lc.fillRect(-22, -14, 44, 16);
+    lc.restore();
   });
 }
-
-$('targetClearBtn').addEventListener('click', () => { resetMixBeaker(); buzz(20); });
-
-// ============================================================================
-// QUIZ MODE
-// ============================================================================
-function startQuiz() {
-  state.qRound = 0;
-  state.qRight = 0;
-  state.qWrong = 0;
-  $('qTotal').textContent = state.level.rounds;
-  $('qRight').textContent = '0';
-  showScreen('quiz');
-  nextQuiz();
-}
-
-function nextQuiz() {
-  state.qRound += 1;
-  if (state.qRound > state.level.rounds) { showResults('quiz'); return; }
-  $('qRound').textContent = state.qRound;
-  // Pick a recipe from the level's pool
-  const allowedResults = state.level.quizRecipes;
-  const recipe = pickFromAllowedRecipes(allowedResults);
-  // Pick which slot to hide: 0 = a, 1 = b, 2 = result
-  const hide = Math.floor(Math.random() * 3);
-  let answerId;
-  if (hide === 0) answerId = recipe.a;
-  else if (hide === 1) answerId = recipe.b;
-  else answerId = recipe.result;
-
-  // Render equation
-  const eq = $('qEquation');
-  const slot = (id) => `<span class="eq-color" style="--c:${COLORS[id].hex}" aria-label="${COLORS[id].name}"></span>`;
-  const qslot = `<span class="eq-q">?</span>`;
-  const a = hide === 0 ? qslot : slot(recipe.a);
-  const b = hide === 1 ? qslot : slot(recipe.b);
-  const r = hide === 2 ? qslot : slot(recipe.result);
-  eq.innerHTML = `${a} <span>+</span> ${b} <span>=</span> ${r}`;
-
-  // Build options: correct + 3 distractors
-  const allColorIds = Object.keys(COLORS);
-  const distractorPool = allColorIds.filter(id => id !== answerId);
-  const distractors = shuffle(distractorPool).slice(0, 3);
-  const opts = shuffle([answerId, ...distractors]);
-
-  state.qCurrent = { answerId, hide };
-
-  const optsEl = $('qOpts');
-  optsEl.innerHTML = '';
-  for (const id of opts) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'opt';
-    btn.style.setProperty('--c', COLORS[id].hex);
-    btn.setAttribute('aria-label', COLORS[id].name);
-    btn.addEventListener('click', () => onQuizPick(btn, id));
-    optsEl.appendChild(btn);
-  }
-}
-
-function pickFromAllowedRecipes(allowedResults) {
-  const eligible = RECIPES.filter(r => allowedResults.includes(r.result));
-  return eligible[Math.floor(Math.random() * eligible.length)];
-}
-
-function onQuizPick(btn, id) {
-  if (!state.qCurrent) return;
-  const { answerId } = state.qCurrent;
-  if (id === answerId) {
-    btn.classList.add('good');
-    state.qRight += 1;
-    $('qRight').textContent = state.qRight;
-    playWin();
-    buzz(30);
-    state.qCurrent = null; // lock
-    for (const o of $('qOpts').querySelectorAll('.opt')) {
-      if (o !== btn) o.classList.add('faded');
-    }
-    later(nextQuiz, 750);
-  } else {
-    btn.classList.add('bad');
-    state.qWrong += 1;
-    playWrong();
-    buzz([30, 80, 30]);
-    later(() => btn.classList.remove('bad'), 600);
-  }
-}
+function lightPt(ev) { const r = lightC.getBoundingClientRect(); return { x: (ev.clientX - r.left) * 800 / r.width, y: (ev.clientY - r.top) * 560 / r.height }; }
+lightC.addEventListener('pointerdown', (ev) => {
+  ensureAudio(); const p = lightPt(ev);
+  let best = null, bd = 1e9; for (const s of SPOTS) { const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < bd) { bd = d; best = s; } }
+  if (bd < SR) { dragSpot = { s: best, ox: p.x - best.x, oy: p.y - best.y }; try { lightC.setPointerCapture(ev.pointerId); } catch (e) {} }
+});
+lightC.addEventListener('pointermove', (ev) => {
+  if (!dragSpot) return; const p = lightPt(ev);
+  dragSpot.s.x = Math.max(60, Math.min(740, p.x - dragSpot.ox)); dragSpot.s.y = Math.max(60, Math.min(440, p.y - dragSpot.oy)); drawLight();
+});
+const LIGHT_SAY = {
+  '01': 'แสงแดงกับแสงเขียว รวมกันได้แสงสีเหลือง', '12': 'แสงเขียวกับแสงน้ำเงิน รวมกันได้แสงสีฟ้าอมเขียว',
+  '02': 'แสงแดงกับแสงน้ำเงิน รวมกันได้แสงสีชมพูอมม่วง', '012': 'แสงสามสีรวมกัน ได้แสงสีขาว',
+};
+const endLight = () => {
+  if (!dragSpot) return; dragSpot = null;
+  const near = (a, b) => Math.hypot(SPOTS[a].x - SPOTS[b].x, SPOTS[a].y - SPOTS[b].y) < SR * 0.9;
+  const combo = near(0, 1) && near(1, 2) && near(0, 2) ? '012' : near(0, 1) ? '01' : near(1, 2) ? '12' : near(0, 2) ? '02' : '';
+  if (combo && combo !== lastCombo) { chime(); speak(LIGHT_SAY[combo]); }
+  lastCombo = combo;
+};
+lightC.addEventListener('pointerup', endLight); lightC.addEventListener('pointercancel', endLight);
 
 // ============================================================================
-// RESULTS
+// MODES + TIPS
 // ============================================================================
-function showResults(forMode) {
-  let title, sub, stars, text, conf;
-  if (forMode === 'target') {
-    const total = state.level.questions.length;
-    const misses = state.tMisses;
-    title = 'ผสมครบทุกสี!';
-    sub = `${state.level.title} · ผิด ${misses} ครั้ง`;
-    if (misses === 0)        { stars='🌟🌟🌟'; text='ไร้ที่ติ!';    conf=140; }
-    else if (misses <= 2)    { stars='⭐⭐';     text='เก่งมาก!';   conf=90;  }
-    else                     { stars='⭐';         text='ผ่านแล้ว!'; conf=50;  }
-  } else if (forMode === 'quiz') {
-    const total = state.level.rounds;
-    title = `ตอบถูก ${state.qRight}/${total}`;
-    sub = `${state.level.title} · ผิด ${state.qWrong}`;
-    const pct = state.qRight / total;
-    if (pct >= 0.95)      { stars='🌟🌟🌟'; text='สุดยอด!';  conf=140; }
-    else if (pct >= 0.8)  { stars='⭐⭐';     text='เก่ง!';     conf=90;  }
-    else if (pct >= 0.5)  { stars='⭐';         text='ดี!';        conf=50;  }
-    else                  { stars='✨';          text='ลองอีกที!'; conf=20;  }
-  }
-  $('resultTitle').textContent = title;
-  $('resultSub').textContent   = sub;
-  $('resultStars').textContent = stars;
-  $('resultText').textContent  = text;
-  showScreen('results');
-  celebrate(conf);
-  buzz([60, 40, 60, 40, 100]);
+const TIPS = {
+  mix: ['สีแม่ 3 สี คือ แดง เหลือง น้ำเงิน ผสมกันได้เกือบทุกสี', 'แตะหลอดสีเพื่อบีบสีลงจาน แล้วลากพู่กันวนๆ ให้สีเข้ากัน',
+    'ใส่สีไหนมากกว่า สีที่ได้จะเอียงไปทางสีนั้น', 'เติมสีขาวให้สีอ่อนลง เติมสีดำให้สีเข้มขึ้น', 'ผสมสีแม่ทั้งสามสีเข้าด้วยกัน จะได้สีน้ำตาลหม่นๆ'],
+  target: ['ดูสีในวงกลม แล้วผสมให้เหมือน ถ้าสีเพี้ยนไป ล้างจานแล้วเริ่มใหม่ได้'],
+  light: ['ลากวงไฟให้ซ้อนกันดูสิ แสงยิ่งผสมยิ่งสว่าง ไม่เหมือนสีน้ำที่ยิ่งผสมยิ่งเข้ม',
+    'จอโทรศัพท์และทีวีมีจุดแสงแดง เขียว น้ำเงิน เล็กๆ เต็มไปหมด รวมกันเป็นทุกสีที่เราเห็น'],
+};
+let mode = 'mix', tipN = 0;
+function setFact(t) { $('fact').textContent = t; }
+$('fact').addEventListener('click', () => { ensureAudio(); speak($('fact').textContent); });
+function setMode(m) {
+  mode = m;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.mode === m);
+  $('mixUI').classList.toggle('hidden', !(m === 'mix' || m === 'target'));
+  $('targetBox').classList.toggle('hidden', m !== 'target');
+  $('paintUI').classList.toggle('hidden', m !== 'paint');
+  $('lightUI').classList.toggle('hidden', m !== 'light');
+  ['saveBtn', 'toPaint'].forEach((id) => $(id).classList.toggle('hidden', m === 'target'));
+  $('saved').classList.toggle('hidden', m === 'target');
+  if (m === 'mix') { setFact(TIPS.mix[tipN++ % TIPS.mix.length]); speak('บีบสีลงจาน แล้วลากพู่กันผสมสีเลย'); }
+  else if (m === 'target') { setFact(TIPS.target[0]); startTarget(); }
+  else if (m === 'paint') { buildWells(); renderBrush(); startPic(); }
+  else if (m === 'light') { setFact(TIPS.light[tipN++ % 2]); drawLight(); speak('ลากไฟฉายให้แสงซ้อนกันดูสิ'); }
 }
+for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
 
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function noise(dur, f, q, v) {
+  if (!AC) return;
+  const t = AC.currentTime, b = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const s = AC.createBufferSource(), bp = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = b; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; g.gain.value = v;
+  s.connect(bp).connect(g).connect(AC.destination); s.start(t);
+}
+const squish = () => { noise(0.18, 500, 2, 0.5); tone(160, 0.12, 'sine', 0.08); };
+const swish = () => noise(0.12, 2200, 0.8, 0.12);
+const dip = () => noise(0.1, 900, 3, 0.3);
+const splash = () => { noise(0.35, 1200, 1, 0.4); tone(600, 0.1, 'sine', 0.05); };
+const chime = () => { tone(880, 0.12, 'sine', 0.1); setTimeout(() => tone(1320, 0.16, 'sine', 0.09), 90); };
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+// Recorded clip first (voice/, made by tools/gen_voice.py), device TTS as fallback.
+function speak(text) { seqTok++; say1(text); }
+function say1(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (!window.VoiceClips) { deviceSpeak(text); return Promise.resolve(false); }
+  ensureAudio(); return VoiceClips.say(text, AC, deviceSpeak);
+}
+// "แดงผสมเหลือง" + "ได้สีส้ม" — two short clips chained instead of one per combination
+let seqTok = 0;
+async function speakSeq(parts) {
+  const my = ++seqTok;
+  for (const p of parts) { if (my !== seqTok) return; const ok = await say1(p); if (!ok) await new Promise((r) => setTimeout(r, 300 + p.length * 90)); }
+}
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
 function celebrate(n) {
-  const colors = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
   for (let i = 0; i < n; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
     c.style.left = Math.random() * 100 + 'vw';
-    c.style.background = colors[Math.floor(Math.random() * colors.length)];
-    c.style.animationDuration = (2 + Math.random() * 2) + 's';
-    c.style.animationDelay = Math.random() * 0.8 + 's';
-    c.style.transform = `rotate(${Math.random() * 360}deg)`;
-    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
     document.body.appendChild(c);
-    setTimeout(() => c.remove(), 5000);
+    setTimeout(() => c.remove(), 3800);
   }
 }
+function loop() { if (palDirty && (mode === 'mix' || mode === 'target')) renderPal(); requestAnimationFrame(loop); }
 
-// ============================================================================
-// EVENTS
-// ============================================================================
-$('backBtn').addEventListener('click', () => {
-  clearTimers();
-  renderLevels();
-  showScreen('select');
-});
-$('againBtn').addEventListener('click', () => {
-  if (!state.level) { showScreen('select'); return; }
-  ensureAudio();
-  startLevel(state.level);
-});
-$('newBtn').addEventListener('click', () => {
-  state.level = null;
-  clearTimers();
-  showScreen('select');
-});
-
+// Block double-tap zoom on iOS
 let lastTouchEnd = 0;
-document.addEventListener('touchend', (e) => {
-  const now = Date.now();
-  if (now - lastTouchEnd < 300) e.preventDefault();
-  lastTouchEnd = now;
-}, { passive: false });
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
 
-renderLevels();
+buildTubes(); renderSaved(); setFact(TIPS.mix[tipN++]); renderPal(); requestAnimationFrame(loop);
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const L = ['บีบสีลงจาน แล้วลากพู่กันผสมสีเลย', 'บีบสีลงจานก่อนนะ', 'ล้างจานสีแล้ว', 'สีเพี้ยนไปแล้ว ล้างจานแล้วเริ่มใหม่นะ', 'จุ่มพู่กันในสีก่อนนะ',
+    'สีเก่าติดมาด้วย ล้างพู่กันในแก้วน้ำก่อนนะ', 'เปลี่ยนน้ำใหม่แล้ว', 'น้ำล้างพู่กันสกปรกแล้ว แตะแก้วอีกทีเพื่อเปลี่ยนน้ำ', 'ล้างพู่กันแล้ว', 'ลากไฟฉายให้แสงซ้อนกันดูสิ',
+    ...Object.values(LIGHT_SAY), ...Object.values(TIPS).flat()];
+  for (const [n] of NAMES) L.push('สี' + n, 'ได้สี' + n, 'เก็บสี' + n + 'ไว้แล้ว');
+  for (const n of TARGETS) L.push('ผสมให้ได้สี' + n, 'เก่งมาก ได้สี' + n + 'แล้ว');
+  for (const p of PIG) L.push('ลองเติมสี' + PIG_TH[p] + 'อีกนิด');
+  for (let m = 1; m < 32; m++) L.push(PIG.filter((_, i) => m & (1 << i)).map((p) => PIG_TH[p]).join('ผสม'));
+  for (const P of PICS) {
+    L.push('ระบาย' + P.th, realLine(P));
+    for (const r of P.regions) if (r.real) L.push(r.th + 'สี' + r.real + ' เหมือนจริงเลย');
+  }
+  return L;
+});
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed
