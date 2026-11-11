@@ -124,7 +124,35 @@
   .pot.pouring { transform: scale(.94); }
   .ratio { display: flex; height: 30px; border-radius: 999px; overflow: hidden; margin-top: 10px; background: #eef0f5; border: 3px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
   .ratio div { height: 100%; transition: width .15s; min-width: 0; }
-  .ratio:empty::after { content: ''; }
+  /* the glass never pushes the buckets off-screen: it shrinks to the screen height */
+  #pourUI .view { max-width: max(240px, calc((100vh - 470px) * 1.25)); max-width: max(240px, calc((100dvh - 470px) * 1.25)); margin: 0 auto; }
+  #pourUI .ratio { max-width: max(240px, calc((100dvh - 470px) * 1.25)); margin-left: auto; margin-right: auto; }
+  #pourRes { position: absolute; top: 6px; right: 10px; margin: 0; min-height: 0; gap: 8px; pointer-events: none; }
+  #pourRes .swatch { width: 46px; height: 46px; pointer-events: auto; }
+  #pourRes .rname { font-size: 24px; text-shadow: 2px 2px 0 #fff; }
+
+  /* iPad / wide landscape: buckets and tubes in a column beside the glass / palette */
+  @media (orientation: landscape) and (min-width: 900px) and (min-height: 600px) {
+    .app { max-width: 1240px; text-align: center; }
+    header { display: inline-block; vertical-align: middle; margin: 0 14px 0 64px; }
+    .modes { display: inline-flex; vertical-align: middle; margin: 4px 0 10px; }
+    #pourUI:not(.hidden), #mixUI:not(.hidden) { display: grid; gap: 0 16px; justify-content: center; align-items: start; text-align: left; }
+    #pourUI { grid-template-columns: auto 260px; grid-template-areas: "v s" "r s"; grid-template-rows: auto 1fr; }
+    #pourUI .view { grid-area: v; width: calc((100dvh - 190px) * 1.25); max-width: calc(100vw - 330px); }
+    #pourUI .ratio { grid-area: r; width: 100%; max-width: none; }
+    .pourSide { grid-area: s; }
+    #pourUI .pots { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+    #pourUI .row .btn { font-size: 16px; padding: 0 14px; }
+    #pourUI .pot { min-height: 72px; }
+    #pourUI .row { gap: 6px; } #pourUI .row .btn { min-height: 60px; }
+    #mixUI { grid-template-columns: auto 170px; grid-template-areas: "t t" "v tb" "res res" "row row" "sv sv"; }
+    #mixUI .tube { min-height: 72px; flex-direction: row; gap: 6px; padding: 4px 8px; }
+    #mixUI .tube svg { width: 64px; height: 34px; flex-shrink: 0; }
+    #mixUI .tube .n { display: none; }
+    #targetBox { grid-area: t; } #mixUI .view { grid-area: v; width: calc((100dvh - 290px) * 1.5); max-width: calc(100vw - 200px); }
+    #mixUI .tubes { grid-area: tb; grid-template-columns: 1fr; margin-top: 0; }
+    #result { grid-area: res; } #mixUI .row { grid-area: row; } #saved { grid-area: sv; }
+  }
 
   /* paint mode */
   .wells { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
@@ -175,14 +203,15 @@
 
   <!-- POUR: paint buckets + a big glass -->
   <div id="pourUI" class="hidden">
-    <div class="view"><canvas id="pourC" width="800" height="640" aria-label="แก้วผสมสี"></canvas></div>
+    <div class="view"><canvas id="pourC" width="800" height="640" aria-label="แก้วผสมสี"></canvas><div class="result" id="pourRes"></div></div>
     <div class="ratio" id="ratio"></div>
-    <div class="result" id="pourRes"></div>
-    <div class="pots" id="pots"></div>
-    <div class="row">
-      <button class="btn" id="emptyBtn">🫗 เทออก</button>
-      <button class="btn" id="pSaveBtn">💾 เก็บสี</button>
-      <button class="btn" id="pToPaint">🖌️ เอาไประบาย</button>
+    <div class="pourSide">
+      <div class="pots" id="pots"></div>
+      <div class="row">
+        <button class="btn" id="emptyBtn">🫗 เทออก</button>
+        <button class="btn" id="pSaveBtn">💾 เก็บสี</button>
+        <button class="btn" id="pToPaint">🖌️ เอาไประบาย</button>
+      </div>
     </div>
   </div>
 
