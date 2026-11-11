@@ -28,3 +28,4 @@ tools/.freesound_token
 tools/.tts-keys
 tools/_tts_compare/
 tools/_voice_check/
+tools/_trace_glyphs.json

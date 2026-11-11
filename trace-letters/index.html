@@ -5,9 +5,10 @@
 <script src="../audio-unlock.js"></script>
 <script src="../voice-clips.js"></script>
 <script src="voice/map.js"></script>
+<script src="glyphs-th.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>✏️ เขียนตามรอย — คิดส์เล่น</title>
-<meta name="description" content="เขียนตามรอย ลากนิ้วตามเส้นประ ฝึกกล้ามเนื้อมือก่อนเขียน ตัวเลข 0-9 และ A-Z">
+<meta name="description" content="เขียนตามรอย ลากนิ้วตามเส้นประ ฝึกเขียน ก-ฮ สระ เลขไทย ตัวเลข 0-9 A-Z และ a-z เริ่มจากหัวตัวอักษรเหมือนคัดไทย">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -177,6 +178,9 @@
   .ghost { fill: none; stroke: #e9eef2; stroke-width: 96; stroke-linecap: round; stroke-linejoin: round; }
   .guide { fill: none; stroke: #c4cdd6; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 26; }
   .trail { fill: none; stroke: var(--brand); stroke-width: 70; stroke-linecap: round; stroke-linejoin: round; }
+  /* Thai letters have small head loops — a thinner line keeps the loops open */
+  svg.thai .ghost { stroke-width: 44; } svg.thai .trail { stroke-width: 34; } svg.thai .guide { stroke-dasharray: 4 20; }
+  svg.thai .ghost.base, .ghost.base { stroke: #eef1f4; stroke-width: 30; }
   .trail.glow { animation: trailGlow 1.6s ease-in-out; }
   @keyframes trailGlow {
     0%,100% { filter: drop-shadow(0 0 0 transparent); }
@@ -370,13 +374,61 @@ const G = {
   'Z': [ 'M 330 190 L 670 190 L 330 820 L 670 820' ],
 };
 
+// ---- lowercase a-z: ball-and-stick school print (x-height 400..700, tall 180, tail 920) ----
+const BOWL_L = 'M 620 550 C 620 440 560 400 500 400 C 430 400 380 460 380 550 C 380 640 430 700 500 700 C 560 700 620 660 620 550';   // anticlockwise from the right (a d g q)
+const BOWL_R = 'M 380 550 C 380 450 440 400 500 400 C 570 400 620 460 620 550 C 620 640 570 700 500 700 C 440 700 380 650 380 550';   // clockwise from the left (b p)
+const HUMP = 'M 380 520 C 400 440 460 400 510 400 C 580 400 620 440 620 520 L 620 700';
+Object.assign(G, {
+  'a': [ BOWL_L, 'M 620 400 L 620 700' ],
+  'b': [ 'M 380 180 L 380 700', BOWL_R ],
+  'c': [ 'M 610 470 C 570 410 530 400 500 400 C 430 400 380 460 380 550 C 380 640 430 700 500 700 C 540 700 580 680 612 632' ],
+  'd': [ BOWL_L, 'M 620 180 L 620 700' ],
+  'e': [ 'M 385 550 L 620 550 C 620 450 570 400 500 400 C 430 400 380 460 380 550 C 380 640 430 700 505 700 C 550 700 590 680 612 640' ],
+  'f': [ 'M 620 230 C 600 190 570 180 540 180 C 490 180 470 220 470 280 L 470 700', 'M 370 400 L 590 400' ],
+  'g': [ BOWL_L, 'M 620 400 L 620 800 C 620 880 570 920 500 920 C 450 920 410 900 390 860' ],
+  'h': [ 'M 380 180 L 380 700', HUMP ],
+  'i': [ 'M 500 400 L 500 700', 'M 500 240 L 500 300' ],
+  'j': [ 'M 540 400 L 540 800 C 540 880 500 920 440 920 C 410 920 385 905 370 880', 'M 540 240 L 540 300' ],
+  'k': [ 'M 390 180 L 390 700', 'M 610 400 L 390 580', 'M 460 525 L 620 700' ],
+  'l': [ 'M 500 180 L 500 700' ],
+  'm': [ 'M 300 400 L 300 700', 'M 300 500 C 320 430 360 400 400 400 C 460 400 500 440 500 500 L 500 700', 'M 500 500 C 520 430 560 400 600 400 C 660 400 700 440 700 500 L 700 700' ],
+  'n': [ 'M 380 400 L 380 700', HUMP ],
+  'o': [ 'M 500 400 C 430 400 380 460 380 550 C 380 640 430 700 500 700 C 570 700 620 640 620 550 C 620 460 570 400 500 400 Z' ],
+  'p': [ 'M 380 400 L 380 920', BOWL_R ],
+  'q': [ BOWL_L, 'M 620 400 L 620 920' ],
+  'r': [ 'M 400 400 L 400 700', 'M 400 520 C 420 440 480 400 530 400 C 570 400 600 415 620 440' ],
+  's': [ 'M 600 460 C 570 410 530 400 500 400 C 440 400 395 430 395 475 C 395 530 450 540 505 552 C 560 565 610 580 610 630 C 610 675 560 700 500 700 C 450 700 405 680 385 640' ],
+  't': [ 'M 480 220 L 480 620 C 480 680 510 700 550 700 C 580 700 600 690 615 670', 'M 370 400 L 600 400' ],
+  'u': [ 'M 380 400 L 380 590 C 380 660 430 700 490 700 C 560 700 600 650 620 590', 'M 620 400 L 620 700' ],
+  'v': [ 'M 370 400 L 500 700 L 630 400' ],
+  'w': [ 'M 300 400 L 400 700 L 500 440 L 600 700 L 700 400' ],
+  'x': [ 'M 380 400 L 620 700', 'M 620 400 L 380 700' ],
+  'y': [ 'M 380 400 L 505 690', 'M 630 400 L 470 800 C 440 880 400 920 340 910' ],
+  'z': [ 'M 380 400 L 620 400 L 380 700 L 620 700' ],
+});
+
+// ---- Thai: centre lines of TH Sarabun (glyphs-th.js, made by tools/gen_trace_glyphs.py), written
+// from the head loop the way Thai is taught. Vowel marks are drawn over a ghost อ (TH_GHOST).
+const TH = window.TH_GLYPHS || {}, TH_GHOST = window.TH_GHOST || {};
+Object.assign(G, TH);
+
 const NUM = '0123456789'.split('');
 const ENG = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const ENG_LOW = 'abcdefghijklmnopqrstuvwxyz'.split('');
+const THAI = 'กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ'.split('').filter(c => G[c]);
+const VOWELS = ['ะ', 'ั', 'า', 'ำ', 'ิ', 'ี', 'ึ', 'ื', 'ุ', 'ู', 'เ', 'แ', 'โ', 'ใ', 'ไ'].filter(c => G[c]);
+const THNUM = '๐๑๒๓๔๕๖๗๘๙'.split('').filter(c => G[c]);
 const GROUPS = [
   { id: 'num', label: '🔢 ตัวเลข 0-9', chars: NUM },
+  { id: 'thai', label: '🐔 ก ไก่ ถึง ฮ นกฮูก', chars: THAI },
+  { id: 'vowel', label: '🅰️ สระ', chars: VOWELS },
+  { id: 'thnum', label: '🔢 เลขไทย ๐-๙', chars: THNUM },
   { id: 'eng', label: '🔤 ตัวอักษร A-Z', chars: ENG },
+  { id: 'low', label: '🔡 ตัวเล็ก a-z', chars: ENG_LOW },
 ];
-const ALL = [].concat(NUM, ENG);
+const ALL = [].concat(...GROUPS.map(g => g.chars));
+// a vowel that sits above/below is shown on อ so it can be read
+const shown = (ch) => (TH_GHOST[ch] ? 'อ' + ch : ch);
 
 // Trail colors the kid can pick (decorative; default pink)
 const COLORS = ['#ff6b9d', '#ff914d', '#f1c40f', '#7ed957', '#5bc0eb', '#9b59b6'];
@@ -393,9 +445,25 @@ const NUM_NAME = {
   '0':'ศูนย์','1':'หนึ่ง','2':'สอง','3':'สาม','4':'สี่',
   '5':'ห้า','6':'หก','7':'เจ็ด','8':'แปด','9':'เก้า',
 };
+// letter names spelled the way they SOUND (TTS misreads lone letters and Pali spellings)
+const THAI_SAY = {
+  'ก':'กอ ไก่','ข':'ขอ ไข่','ฃ':'ขอ ขวด','ค':'คอ ควาย','ฅ':'คอ คน','ฆ':'คอ ระฆัง',
+  'ง':'งอ งู','จ':'จอ จาน','ฉ':'ฉอ ฉิ่ง','ช':'ชอ ช้าง','ซ':'ซอ โซ่','ฌ':'ชอ เชอ',
+  'ญ':'ยอ หญิง','ฎ':'ดอ ชะดา','ฏ':'ตอ ปะตัก','ฐ':'ถอ ถาน','ฑ':'ทอ มนโท','ฒ':'ทอ ผู้เท่า',
+  'ณ':'นอ เนน','ด':'ดอ เด็ก','ต':'ตอ เต่า','ถ':'ถอ ถุง','ท':'ทอ ทะหาน','ธ':'ทอ ทง',
+  'น':'นอ หนู','บ':'บอ ใบไม้','ป':'ปอ ปลา','ผ':'ผอ ผึ้ง','ฝ':'ฝอ ฝา','พ':'พอ พาน',
+  'ฟ':'ฟอ ฟัน','ภ':'พอ สำเพา','ม':'มอ ม้า','ย':'ยอ ยัก','ร':'รอ เรือ','ล':'ลอ ลิง',
+  'ว':'วอ แหวน','ศ':'สอ สาลา','ษ':'สอ รือสี','ส':'สอ เสือ','ห':'หอ หีบ','ฬ':'ลอ จุลา',
+  'อ':'ออ อ่าง','ฮ':'ฮอ นกฮูก',
+  'ะ':'สระอะ','ั':'ไม้หันอากาศ','า':'สระอา','ำ':'สระอำ','ิ':'สระอิ','ี':'สระอี','ึ':'สระอึ','ื':'สระอือ',
+  'ุ':'สระอุ','ู':'สระอู','เ':'สระเอ','แ':'สระแอ','โ':'สระโอ','ใ':'สระใอ ไม้ม้วน','ไ':'สระไอ ไม้มลาย',
+};
 function saySpec(ch) {
+  const d = '๐๑๒๓๔๕๖๗๘๙'.indexOf(ch);
+  if (d >= 0) ch = String(d);                       // Thai digits read the same as 0-9
   if (NUM_NAME[ch]) return { text: NUM_NAME[ch], lang: 'th-TH' };
-  return { text: ch, lang: 'en-US' };   // English letter name
+  if (THAI_SAY[ch]) return { text: THAI_SAY[ch], lang: 'th-TH' };
+  return { text: ch.toUpperCase(), lang: 'en-US' };   // English letter name (a = A)
 }
 function pickVoice(lang) {
   try {
@@ -522,7 +590,7 @@ function openGlyph(ch) {
   state.drawing = false;
   state.active = 0;
   state.strokes = [];
-  $('glyphTitle').textContent = ch;
+  $('glyphTitle').textContent = shown(ch);
   ghostGroup.innerHTML = '';
   guideGroup.innerHTML = '';
   trailGroup.innerHTML = '';
@@ -530,7 +598,10 @@ function openGlyph(ch) {
   startGroup.innerHTML = '';
   stopHint();
 
+  for (const d of (TH_GHOST[ch] || [])) ghostGroup.appendChild(el('path', { d, class: 'ghost base' }));   // the อ a vowel mark sits on
   const defs = G[ch];
+  svg.classList.toggle('thai', !!TH[ch]);
+  state.window = TH[ch] ? 220 : 0;                  // Thai strokes are long and loop back on themselves: look less far ahead
   defs.forEach((d, si) => {
     const ghost = el('path', { d, class: 'ghost' });
     ghostGroup.appendChild(ghost);
@@ -618,7 +689,7 @@ function toView(e) {
 // closest to (x,y). Returns { l, dist }. Coarse then fine scan = forgiving.
 function nearestForward(s, x, y) {
   const from = s.progress;
-  const to = Math.min(s.len, s.progress + s.len * 0.18 + ADVANCE);
+  const to = Math.min(s.len, s.progress + (state.window || s.len * 0.18 + ADVANCE));
   let bestL = from, bestD = Infinity;
   const coarse = 16;
   for (let l = from; l <= to; l += (to - from) / coarse || 1) {
@@ -755,7 +826,7 @@ function renderSelect() {
     for (const ch of grp.chars) {
       const card = document.createElement('div');
       card.className = 'gcard' + (progress[ch] ? ' done' : '');
-      card.innerHTML = `<span class="glyph">${ch}</span>`;
+      card.innerHTML = `<span class="glyph">${shown(ch)}</span>`;
       card.addEventListener('click', () => { ensureAudio(); openGlyph(ch); });
       grid.appendChild(card);
     }
@@ -848,7 +919,7 @@ renderPalette();
 renderSelect();
 
 // Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
-if (window.VoiceClips) VoiceClips.lines(() => [...NUM, ...ENG].map(ch => { const s = saySpec(ch); return [s.lang, s.text]; }));
+if (window.VoiceClips) VoiceClips.lines(() => ALL.map(ch => { const s = saySpec(ch); return [s.lang, s.text]; }));
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed
