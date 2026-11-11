@@ -237,6 +237,9 @@ const ART = window.FLAG_ART || {};
 // SVGs (public domain). Each flag: viewBox `vb`, optional `defs`, colours `col`,
 // paintable regions `regs` = [colourKey, svg] drawn back→front (a later region hides
 // what's under it), and fixed `decor` drawn on top. Regions use fill="currentColor".
+// Tiny parts (stars, a sun, trigrams) add a 3rd item: a big "hit" shape — a tap
+// anywhere inside it paints the tiny part (see pickRegion), and they glow when the
+// chosen colour is theirs, so a 3-year-old finger never has to land on a 4 mm star.
 // ============================================================================
 const R = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`;
 const C = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
@@ -325,7 +328,7 @@ const FLAGS = [
     vb: '0 0 300 200', col: { r: '#DA251D', y: '#FFFF00' }, regs: [['r', R(0, 0, 300, 200)], ['y', STAR(150, 100, 60)]] },
   { id: 'cn', lv: 2, th: 'จีน', en: 'China', hi: '你好', hiTh: 'หนีห่าว', lang: 'zh', hiL: 'ภาษาจีน', lat: 39.9, lon: 116.4,
     fact: 'มีดาวสีเหลืองห้าดวง ดวงใหญ่หนึ่งดวง ดวงเล็กสี่ดวง',
-    vb: '0 0 300 200', col: { r: '#EE1C25', y: '#FFFF00' }, regs: [['r', R(0, 0, 300, 200)], ['y', STAR(50, 50, 30)], ['y', CN_SMALL]] },
+    vb: '0 0 300 200', col: { r: '#EE1C25', y: '#FFFF00' }, regs: [['r', R(0, 0, 300, 200)], ['y', STAR(50, 50, 30), C(50, 50, 48)], ['y', CN_SMALL, R(78, 0, 62, 112)]] },
   { id: 'se', lv: 2, th: 'สวีเดน', en: 'Sweden', hi: 'Hej', hiTh: 'เฮ', lang: 'sv-SE', hiL: 'ภาษาสวีเดน', lat: 59.33, lon: 18.07,
     fact: 'กากบาทสีเหลืองบนพื้นสีฟ้า อยู่ค่อนไปทางเสาธง',
     vb: '0 0 320 200', col: { b: '#006AA7', y: '#FECC00' }, regs: [['b', R(0, 0, 320, 200)], ['y', R(100, 0, 40, 200) + R(0, 80, 320, 40)]] },
@@ -362,11 +365,11 @@ const FLAGS = [
   { id: 'us', lv: 3, th: 'สหรัฐอเมริกา', en: 'United States', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en', hiL: 'ภาษาอังกฤษ', lat: 38.9, lon: -77.04,
     fact: 'ดาวห้าสิบดวงคือห้าสิบรัฐ แถบสิบสามแถบคืออาณานิคมสิบสามแห่งแรก',
     vb: '0 0 7410 3900', col: { r: '#B31942', w: '#FFFFFF', b: '#0A3161' },
-    regs: [['r', usStripes(false)], ['w', usStripes(true)], ['b', R(0, 0, 0.76 * US_H, 7 * US_S)], ['w', usStars()]] },
+    regs: [['r', usStripes(false)], ['w', usStripes(true)], ['b', R(0, 0, 0.76 * US_H, 7 * US_S)], ['w', usStars(), R(0, 0, 0.76 * US_H, 7 * US_S)]] },
   { id: 'kr', lv: 3, th: 'เกาหลีใต้', en: 'South Korea', hi: '안녕하세요', hiTh: 'อันนยองฮาเซโย', lang: 'ko-KR', hiL: 'ภาษาเกาหลี', lat: 37.57, lon: 126.98,
     fact: 'วงกลมตรงกลางเรียกว่า แทกึก และมีขีดสีดำอยู่สี่มุม',
     vb: '-72 -48 144 96', col: { w: '#FFFFFF', r: '#CD2E3A', b: '#0047A0', k: '#000000' },
-    regs: [['w', R(-72, -48, 144, 96)], ['k', KR_TRI],
+    regs: [['w', R(-72, -48, 144, 96)], ['k', KR_TRI, R(-72, -48, 144, 96)],
            ['r', '<g transform="rotate(33.69006752598)"><path d="M12 0a18 18 0 11-36 0 24 24 0 1148 0"/></g>'],
            ['b', '<g transform="rotate(33.69006752598)"><path d="M-24 0a24 24 0 1048 0A12 12 0 100 0a12 12 0 11-24 0"/></g>']] },
   { id: 'br', lv: 3, th: 'บราซิล', en: 'Brazil', hi: 'Olá', hiTh: 'โอลา', lang: 'pt-BR', hiL: 'ภาษาโปรตุเกส', lat: -15.79, lon: -47.88,
@@ -374,7 +377,7 @@ const FLAGS = [
     vb: '-2100 -1470 4200 2940', defs: (ART.brDefs || '') + '<clipPath id="B"><circle r="735"/></clipPath>',
     col: { g: '#009440', y: '#FFCB00', b: '#302681', w: '#FFFFFF' },
     regs: [['g', R(-2100, -1470, 4200, 2940)], ['y', '<path d="M -1743,0 0,1113 1743,0 0,-1113 Z"/>'], ['b', C(0, 0, 735)],
-           ['w', '<path d="m-2205 1470a1785 1785 0 0 1 3570 0h-105a1680 1680 0 1 0-3360 0z" clip-path="url(#B)"/>'], ['w', ART.brStars || '']],
+           ['w', '<path d="m-2205 1470a1785 1785 0 0 1 3570 0h-105a1680 1680 0 1 0-3360 0z" clip-path="url(#B)"/>' + (ART.brStars || ''), C(0, 0, 735)]],
     decor: ART.brText },
   { id: 'ca', lv: 3, th: 'แคนาดา', en: 'Canada', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-CA', hiL: 'ภาษาอังกฤษ', lat: 45.42, lon: -75.7,
     fact: 'ใบเมเปิลสีแดงตรงกลาง มีสิบเอ็ดแฉก',
@@ -387,15 +390,15 @@ const FLAGS = [
     regs: [['w', R(0, 0, 13440, 6720)],
            ['r', '<g transform="scale(480)" fill="none" stroke="currentColor"><path d="m0 .5h28m0 2H0m0 2h28m0 2H0"/><path d="m0 8.5h28m0 2H0m0 2h28"/></g>'],
            ['b', R(0, 0, 6720, 4080)],
-           ['y', '<path d="m4200 720 107 732 414-613-222 706 639-373-506 540 738-59-690 267 690 267-738-59 506 540-639-373 222 706-414-613-107 732-107-732-414 613 222-706-639 373 506-540-738 59 690-267-690-267 738 59-506-540 639 373-222-706 414 613zm-600 30a1280 1280 0 1 0 0 2340 1440 1440 0 1 1 0-2340z"/>']] },
+           ['y', '<path d="m4200 720 107 732 414-613-222 706 639-373-506 540 738-59-690 267 690 267-738-59 506 540-639-373 222 706-414-613-107 732-107-732-414 613 222-706-639 373 506-540-738 59 690-267-690-267 738 59-506-540 639 373-222-706 414 613zm-600 30a1280 1280 0 1 0 0 2340 1440 1440 0 1 1 0-2340z"/>', R(0, 0, 6720, 4080)]] },
   { id: 'ph', lv: 3, th: 'ฟิลิปปินส์', en: 'Philippines', hi: 'Kumusta', hiTh: 'กูมุสตา', lang: 'fil-PH', hiL: 'ภาษาฟิลิปีโน', lat: 14.6, lon: 120.98,
     fact: 'ถ้ามีสงคราม ฟิลิปปินส์จะกลับธงให้สีแดงขึ้นข้างบน',
     vb: '-28 -45 180 90', col: { b: '#0038A8', r: '#CE1126', w: '#FFFFFF', y: '#FCD116' },
-    regs: [['b', '<path d="m-28-45h180V0L0 44z"/>'], ['r', '<path d="m0 0h152v45H-28z"/>'], ['w', '<path d="m49.942 0L-28 45v-90z"/>'], ['y', PH_SUN], ['y', PH_STARS]] },
+    regs: [['b', '<path d="m-28-45h180V0L0 44z"/>'], ['r', '<path d="m0 0h152v45H-28z"/>'], ['w', '<path d="m49.942 0L-28 45v-90z"/>'], ['y', PH_SUN + PH_STARS, '<path d="m49.942 0L-28 45v-90z"/>']] },
   { id: 'np', lv: 3, th: 'เนปาล', en: 'Nepal', hi: 'नमस्ते', hiTh: 'นมัสเต', lang: 'ne-NP', hiL: 'ภาษาเนปาลี', lat: 27.7, lon: 85.32,
     fact: 'เป็นธงชาติเดียวในโลก ที่ไม่ใช่รูปสี่เหลี่ยม',
     vb: '-17.582 -4.664 71.571 87.246', col: { b: '#003893', r: '#DC143C', w: '#FFFFFF' },
-    regs: [['b', `<path d="${NP_D}" stroke="currentColor" stroke-width="5.165"/>`], ['r', `<path d="${NP_D}"/>`], ['w', NP_MOON], ['w', NP_SUN]] },
+    regs: [['b', `<path d="${NP_D}" stroke="currentColor" stroke-width="5.165"/>`], ['r', `<path d="${NP_D}"/>`], ['w', NP_MOON, C(0, 27, 19)], ['w', NP_SUN, C(0, 58.8, 21)]] },
   { id: 'kh', lv: 3, th: 'กัมพูชา', en: 'Cambodia', hi: 'សួស្តី', hiTh: 'ซัวสเดย', lang: 'km-KH', hiL: 'ภาษาเขมร', lat: 11.56, lon: 104.92,
     fact: 'ตรงกลางเป็นรูปปราสาทนครวัด',
     vb: '0 0 1000 640', col: { b: '#032EA1', r: '#E00025' }, regs: [['b', R(0, 0, 1000, 640)], ['r', R(0, 160, 1000, 320)]], decor: ART.khTemple },
@@ -405,7 +408,7 @@ const FLAGS = [
     regs: [['b', R(0, 0, 10080, 5040)], ['w', AU_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.6, 'clip-path="url(#c1)"'))],
            ['r', AU_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.4, 'clip-path="url(#c2)"'))], ['w', AU_UJ(STROKE('M3,0V3M0,1.5H6', 1))],
            ['r', AU_UJ(STROKE('M3,0V3M0,1.5H6', 0.6))],
-           ['w', '<use xlink:href="#Star7" transform="translate(2520, 3780) scale(2.1)"/><use xlink:href="#Star7" x="7560" y="4200"/><use xlink:href="#Star7" x="6300" y="2205"/><use xlink:href="#Star7" x="7560" y="840"/><use xlink:href="#Star7" x="8680" y="1869"/><use xlink:href="#Star5" x="8064" y="2730"/>']] },
+           ['w', '<use xlink:href="#Star7" transform="translate(2520, 3780) scale(2.1)"/><use xlink:href="#Star7" x="7560" y="4200"/><use xlink:href="#Star7" x="6300" y="2205"/><use xlink:href="#Star7" x="7560" y="840"/><use xlink:href="#Star7" x="8680" y="1869"/><use xlink:href="#Star5" x="8064" y="2730"/>', R(0, 2520, 5040, 2520) + R(5040, 0, 5040, 5040)]] },
   { id: 'za', lv: 3, th: 'แอฟริกาใต้', en: 'South Africa', hi: 'Sawubona', hiTh: 'ซาวูโบนา', lang: 'zu-ZA', hiL: 'ภาษาซูลู', lat: -25.75, lon: 28.19,
     fact: 'มีหกสี แดง น้ำเงิน ขาว ดำ เหลือง และเขียว',
     vb: '0 0 90 60', defs: '<clipPath id="t"><path d="m0 0 45 30L0 60z"/></clipPath><clipPath id="f"><path d="m0 0h90v60H0z"/></clipPath>',
@@ -567,7 +570,7 @@ function renderPick() {
 // finds its region instantly, and thin parts are forgiving (see pickRegion).
 // ============================================================================
 const cv = $('cv'), cx = cv.getContext('2d');
-let F = null, IW = 0, IH = 0, PAD = 0, lab = null, edge = null, img = null, decorCv = null, trueCv = null;
+let F = null, IW = 0, IH = 0, PAD = 0, lab = null, hitLab = null, glowCv = [], edge = null, img = null, decorCv = null, trueCv = null;
 let tgt = [], cur = [], sel = null, anim = null, flash = null, finished = false, wrongRun = 0, painting = 'follow';
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 const HATCH = [[232, 235, 240], [214, 219, 226]], INK = [45, 52, 54];
@@ -603,6 +606,22 @@ async function openFlag(f, from) {
       sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
       const a = sx.getImageData(0, 0, IW, IH).data;
       for (let p = 0, q = 3; p < lab.length; p++, q += 4) if (a[q] >= 128) lab[p] = i;
+    }
+  } catch (e) { console.warn(e); }
+  // hit zones of tiny parts + a gold glow mask for each
+  hitLab = new Int16Array(IW * IH).fill(-1); glowCv = [];
+  try {
+    for (let i = 0; i < f.regs.length; i++) {
+      if (!f.regs[i][2]) continue;
+      const im = await loadImg(dataUrl(svgDoc(f, `<g fill="#000">${f.regs[i][2]}</g>`, IW, IH)));
+      if (F !== f) return;
+      sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
+      const a = sx.getImageData(0, 0, IW, IH).data;
+      for (let p = 0, q = 3; p < hitLab.length; p++, q += 4) if (a[q] >= 128 && hitLab[p] < 0) hitLab[p] = i;
+      const g = document.createElement('canvas'); g.width = IW; g.height = IH;
+      const gx = g.getContext('2d'), gd = gx.createImageData(IW, IH);
+      for (let p = 0; p < lab.length; p++) if (lab[p] === i) { const q = p * 4; gd.data[q] = 255; gd.data[q + 1] = 217; gd.data[q + 2] = 61; gd.data[q + 3] = 255; }
+      gx.putImageData(gd, 0, 0); glowCv[i] = g;
     }
   } catch (e) { console.warn(e); }
   edge = new Uint8Array(IW * IH);
@@ -648,6 +667,7 @@ function buildPalette() {
     b.addEventListener('click', () => {
       ac(); sfx.tap(); vib(10); sel = k;
       pal.querySelectorAll('.sw').forEach((s) => s.classList.toggle('on', s.dataset.k === k));
+      kick();
     });
     pal.appendChild(b);
   }
@@ -673,7 +693,17 @@ function compose(now) {
   cx.clearRect(0, 0, cv.width, cv.height);
   cx.putImageData(img, 0, PAD);
   if (decorCv) cx.drawImage(decorCv, 0, PAD);
+  const gl = glowing();
+  if (gl.length) {
+    const t = ((now === undefined ? performance.now() : now) / 1000) * Math.PI * 1.6;
+    cx.save(); cx.globalAlpha = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t));
+    cx.shadowColor = '#fff6c2'; cx.shadowBlur = Math.max(6, IW / 60);
+    for (const i of gl) cx.drawImage(glowCv[i], 0, PAD);
+    cx.restore();
+  }
 }
+// tiny parts still waiting for the colour in hand — they pulse gold
+const glowing = () => (finished || !glowCv.length ? [] : glowCv.map((g, i) => (g && !cur[i] && !(anim && anim.k === i) && tgt[i] === sel ? i : -1)).filter((i) => i >= 0));
 
 let raf = 0;
 function loop(now) {
@@ -685,7 +715,7 @@ function loop(now) {
   }
   if (flash && now - flash.t0 > 660) flash = null;
   compose(now);
-  if (anim || flash) raf = requestAnimationFrame(loop);
+  if (anim || flash || glowing().length) raf = requestAnimationFrame(loop);
 }
 const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
 
@@ -697,9 +727,16 @@ function toFlag(e) {
 // wants the chosen colour within ~a fingertip (thin stripes, stars, a crescent).
 function pickRegion(x, y, scale) {
   x = Math.round(x); y = Math.round(y);
-  const at = x >= 0 && y >= 0 && x < IW && y < IH ? lab[y * IW + x] : -1;
-  if (painting !== 'follow') return at;
+  const inside = x >= 0 && y >= 0 && x < IW && y < IH;
+  const at = inside ? lab[y * IW + x] : -1, hz = inside ? hitLab[y * IW + x] : -1;
+  if (painting !== 'follow') {
+    // 🖌️ free: a tap in a tiny part's zone paints the tiny part once the thing under
+    // it is painted (background first, details after), or when the tap wouldn't change it
+    if (hz >= 0 && at !== hz && (cur[hz] === null ? cur[at] !== null : cur[at] === sel)) return hz;
+    return at;
+  }
   if (at >= 0 && tgt[at] === sel && cur[at] !== sel) return at;
+  if (hz >= 0 && tgt[hz] === sel && cur[hz] !== sel) return hz;
   const rad = Math.round(30 * scale);
   let best = -1, bd = Infinity;
   for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
@@ -708,7 +745,11 @@ function pickRegion(x, y, scale) {
     const L = lab[yy * IW + xx];
     if (L >= 0 && tgt[L] === sel && cur[L] !== sel) { best = L; bd = d2; }
   }
-  return best >= 0 ? best : at;
+  if (best >= 0) return best;
+  // the part under the finger is done but a tiny part in this zone isn't: aim the
+  // "wrong colour" flash + swatch hint at the tiny part
+  if (hz >= 0 && cur[hz] !== tgt[hz] && (at < 0 || cur[at] === tgt[at])) return hz;
+  return at;
 }
 cv.addEventListener('pointerdown', (e) => {
   if (!F || !lab || finished || anim) return;
