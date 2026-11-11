@@ -174,5 +174,5 @@ Re-run after refreshing assets to keep attributions up to date.
 
 | Asset | Licence | Source |
 |---|---|---|
-| Flag geometry and emblems (Cambodia, Argentina, Brazil, Canada, Philippines, Nepal, South Africa, Malaysia, South Korea, Australia, India, Türkiye) | Public domain | Wikimedia Commons `Flag_of_<Country>.svg` files |
+| Flag geometry and emblems (Cambodia, Argentina, Brazil, Canada, Philippines, Nepal, South Africa, Malaysia, South Korea, Australia, India, Türkiye, Brunei, Bhutan, Sri Lanka, Mexico, Portugal, Egypt, Kenya, Ethiopia, Mongolia, Singapore, Pakistan, New Zealand, Chile, Jamaica, Morocco, Qatar, Timor-Leste) | Public domain | Wikimedia Commons `Flag_of_<Country>.svg` files |
 | World land outlines (`flags/world.js`) | Public domain | [Natural Earth](https://www.naturalearthdata.com/) 1:110m land |

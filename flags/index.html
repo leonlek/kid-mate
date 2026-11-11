@@ -9,7 +9,7 @@
 <script src="world.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🌏 ธงนานาชาติ — คิดส์เล่น</title>
-<meta name="description" content="ระบายสีธงชาติ 32 ประเทศให้เหมือนของจริง ฟังชื่อประเทศภาษาไทยและอังกฤษ และคำทักทายภาษาของประเทศนั้น ปักธงบนแผนที่โลก ทายธง">
+<meta name="description" content="ระบายสีธงชาติ 62 ประเทศให้เหมือนของจริง ฟังชื่อประเทศภาษาไทยและอังกฤษ และคำทักทายภาษาของประเทศนั้น ปักธงบนแผนที่โลก ทายธง">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -38,7 +38,7 @@
     background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
     background-attachment: fixed;
     user-select: none; -webkit-user-select: none;
-    overflow-x: hidden;
+    overflow-x: hidden; overflow-x: clip;   /* clip keeps position: sticky working (hidden breaks it) */
   }
   body::before {
     content: '☁️ ☁️     ☁️';
@@ -72,7 +72,7 @@
   }
   .hidden { display: none !important; }
 
-  .modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 10px; }
+  .modes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 6px 0 10px; }
   .mode {
     font-family: 'Mitr', sans-serif; font-weight: 600; font-size: 15px; line-height: 1.15;
     min-height: 72px; padding: 6px 4px; border-radius: 22px; border: 3px solid var(--card-border);
@@ -80,6 +80,7 @@
     box-shadow: 0 5px 0 rgba(0,0,0,0.16); transition: transform .1s;
   }
   .mode b { display: block; font-size: 28px; line-height: 1.1; }
+  .mode { overflow-wrap: anywhere; min-width: 0; }
   .mode.on { background: var(--gold); border-color: #e0b400; }
   .mode:active, .btn:active, .chip:active, .fcard:active, .opt:active, .sw:active { transform: translateY(3px); }
 
@@ -172,7 +173,27 @@
 
   .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
-  @media (max-width: 420px) { .mode { font-size: 13px; } .mode b { font-size: 24px; } }
+  @media (max-width: 420px) { .mode { font-size: 12px; padding: 6px 2px; } .mode b { font-size: 24px; } }
+
+  /* 👆 know */
+  .kstage {
+    position: sticky; top: calc(70px + env(safe-area-inset-top)); z-index: 5; display: flex; gap: 10px; align-items: center;
+    background: var(--paper); border: 3px solid var(--card-border); border-radius: 24px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.14); padding: 8px 10px; margin: 0 0 12px;
+  }
+  .kflag { flex: 0 0 36%; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; min-height: 96px; perspective: 500px; }
+  .kflag img { max-width: 100%; max-height: 120px; box-shadow: 0 0 0 1px rgba(0,0,0,0.25); transform-origin: left center; }
+  .kflag img.np { box-shadow: none; }
+  .kflag img.fly { animation: flutter 1.6s ease-in-out infinite; }
+  @keyframes flutter { 0%, 100% { transform: rotateY(-10deg) skewY(-1.5deg); } 50% { transform: rotateY(8deg) skewY(1.5deg); } }
+  .kside { flex: 1; min-width: 0; }
+  .kside .info { border: 0; box-shadow: none; padding: 0; margin: 0; background: transparent; }
+  .kside .info .nm { font-size: 21px; } .kside .info .hi { font-size: 20px; } .kside .info .ft { font-size: 15px; }
+  .kside .info .ln { min-height: 44px; padding: 3px 4px; }
+  .khelp { font-size: 20px; font-weight: 600; text-align: center; padding: 18px 4px; }
+  .kflag .btn { min-height: 52px; font-size: 15px; padding: 0 10px; }
+  .kside .info .ft { line-height: 1.3; }
+  .fcard.on { border-color: var(--brand); background: #fff0f6; }
 </style>
 </head>
 <body>
@@ -183,6 +204,7 @@
   <nav class="modes" id="modes">
     <button class="mode on" data-m="follow"><b>🎨</b>ระบายตามแบบ</button>
     <button class="mode" data-m="free"><b>🖌️</b>ระบายเอง</button>
+    <button class="mode" data-m="know"><b>👆</b>รู้จักธง</button>
     <button class="mode" data-m="map"><b>🌏</b>แผนที่โลก</button>
     <button class="mode" data-m="quiz"><b>🎯</b>ทายธง</button>
   </nav>
@@ -208,6 +230,17 @@
       <button class="btn hidden" id="mapBtn">🌏 ดูบนแผนที่</button>
       <button class="btn go hidden" id="nextBtn">➡️ ธงต่อไป</button>
     </div>
+  </section>
+
+  <section id="know" class="hidden">
+    <div class="kstage">
+      <div class="kflag"><img id="kImg" class="hidden" alt=""><button class="btn hidden" id="kPaint">🎨 ระบาย</button></div>
+      <div class="kside">
+        <div class="info" id="kInfo"><div class="khelp">👆 แตะธง แล้วฟังชื่อประเทศ</div></div>
+      </div>
+    </div>
+    <div class="chips" id="kChips"></div>
+    <div class="grid" id="kGrid"></div>
   </section>
 
   <section id="map" class="hidden">
@@ -281,6 +314,12 @@ const NP_MOON = '<path d="M -11.9502769431,23.4834957055 A 12.8400974233,12.8400
 const NP_SUN = '<g transform="matrix(8.1434 0 0 8.1434 0 58.787)"><circle r="1"/><g id="g"><g id="f"><path id="e" d="M 0.258819045103,0.965925826289 L 0,1.576749285537 L -0.258819045103,0.965925826289"/><use xlink:href="#e" transform="rotate(180)"/></g><use xlink:href="#f" transform="rotate(90)"/></g><use xlink:href="#g" transform="rotate(30)"/><use xlink:href="#g" transform="rotate(60)"/></g>';
 const CN_SMALL = [[100, 20], [120, 40], [120, 70], [100, 90]].map(([x, y]) => STAR(x, y, 10, toward(x, y, 50, 50))).join('');
 
+// NZ: Union Jack at scale 100 (same unit clip paths as AU), Southern Cross = red stars edged white (Commons geometry)
+const NZ_UJ = (inner) => `<g transform="scale(100)">${inner}</g>`;
+const NZ_STAR = '<g id="NP"><g id="NPA" transform="translate(0,-0.324925)"><path d="M0,0L0,0.5L1,0z"/><path d="M0,0L0,-0.5L1,0z" transform="rotate(-36,1,0)"/></g><use xlink:href="#NPA" transform="scale(-1,1)"/><use xlink:href="#NPA" transform="rotate(72,0,0)"/><use xlink:href="#NPA" transform="rotate(-72,0,0)"/><use xlink:href="#NPA" transform="rotate(-72,0,0) scale(-1,1)"/></g>';
+const nzStars = (g, d, b, a) => `<use xlink:href="#NP" transform="translate(900,120) scale(${g})"/><g transform="rotate(82,900,240)"><use xlink:href="#NP" transform="translate(900,120) rotate(-82) scale(${d})"/><use xlink:href="#NP" transform="translate(900,380) rotate(-82) scale(${b})"/></g><use xlink:href="#NP" transform="translate(900,480) scale(${a})"/>`;
+const KE_BAND = 'M-120-24v48h101c3 8 13 24 19 24s16-16 19-24h101v-48H19C16-32 6-48 0-48s-16 16-19 24z';
+const MN_SOYOMBO = 'M204.2035 60c-4.97 2.255-6.827 6.321-7.227 10.371-.25 3.41 1.255 7.251 1.405 10.586 0 5.739-5.938 7.629-5.938 15.82 0 2.815 2.6 5.917 2.6 13.223-.45 3.835-2.59 4.7-5 5a5 5 0 0 1-5-5 5 5 0 0 1 1.385-3.44 5 5 0 0 1 .51-.5c1.14-1.15 2.705-1.595 2.695-4.63 0-1.56-1.01-2.98-1.975-5.742-.91-2.68-.25-7.16 1.915-9.805-3.5 1.35-5.657 4.705-6.757 7.715-1.16 3.7-.15 5.831-1.74 8.906-.97 1.99-2.125 2.815-3.22 4.475-1.295 1.81-2.815 6.043-2.815 8.008a25 25 0 0 0 50 0c0-1.965-1.5-6.198-2.795-8.008-1.095-1.66-2.27-2.485-3.24-4.475-1.57-3.075-.56-5.206-1.72-8.906-1.1-3.01-3.26-6.364-6.758-7.715 2.165 2.645 2.825 7.125 1.915 9.805-.97 2.76-1.99 4.18-1.99 5.742 0 3.035 1.555 3.48 2.695 4.63a5 5 0 0 1 .51.5 5 5 0 0 1 1.385 3.44 5 5 0 0 1-5 5c-2.765-.35-4.75-1.64-5-5 0-9.626 4.12-10.24 4.12-17.363 0-10.171-9.121-14.986-9.121-22.422 0-2.52.59-6.815 4.16-10.2275zM90 270h50v240H90zm170 0h50v240h-50zm-110 0h100l-50 30zm0 40h100v20H150zm0 140h100v20H150zm0 30h100l-50 30z';
 const FLAGS = [
   // ---------- ⭐ stripes and a circle ----------
   { id: 'th', lv: 1, th: 'ไทย', en: 'Thailand', hi: 'สวัสดี', hiTh: '', lang: 'th', hiL: 'ภาษาไทย', lat: 13.75, lon: 100.5,
@@ -314,12 +353,36 @@ const FLAGS = [
   { id: 'es', lv: 1, th: 'สเปน', en: 'Spain', hi: 'Hola', hiTh: 'โอลา', lang: 'es-ES', hiL: 'ภาษาสเปน', lat: 40.4, lon: -3.7,
     fact: 'แถบสีเหลืองกว้างเป็นสองเท่าของแถบสีแดง ธงแบบเต็มจะมีตราแผ่นดินอยู่ด้วย',
     vb: '0 0 300 200', col: { r: '#AA151B', y: '#F1BF00' }, regs: [['r', R(0, 0, 300, 50) + R(0, 150, 300, 50)], ['y', R(0, 50, 300, 100)]] },
+  { id: 'bd', lv: 1, th: 'บังกลาเทศ', en: 'Bangladesh', hi: 'আসসালামু আলাইকুম', hiTh: 'อัสสะลามุอะลัยกุม', lang: 'bn-BD', hiL: 'ภาษาเบงกาลี', lat: 23.81, lon: 90.41,
+    fact: 'วงกลมสีแดงอยู่ค่อนไปทางเสาธงนิดหน่อย เวลาธงโบกจะดูอยู่ตรงกลางพอดี',
+    vb: '0 0 10 6', col: { g: '#006A4E', r: '#F42A41' }, regs: [['g', R(0, 0, 10, 6)], ['r', C(4.5, 3, 2)]] },
+  { id: 'ie', lv: 1, th: 'ไอร์แลนด์', en: 'Ireland', hi: 'Dia duit', hiTh: 'เดีย กวิช', lang: 'ga-IE', hiL: 'ภาษาไอริช', lat: 53.35, lon: -6.26,
+    fact: 'สีเขียว ขาว ส้ม สีขาวตรงกลางหมายถึงสันติภาพ',
+    vb: '0 0 600 300', col: { g: '#169B62', w: '#FFFFFF', o: '#FF883E' }, regs: [['g', R(0, 0, 200, 300)], ['w', R(200, 0, 200, 300)], ['o', R(400, 0, 200, 300)]] },
+  { id: 'at', lv: 1, th: 'ออสเตรีย', en: 'Austria', hi: 'Servus', hiTh: 'เซอร์วุส', lang: 'de-AT', hiL: 'ภาษาเยอรมัน', lat: 48.21, lon: 16.37,
+    fact: 'แดง ขาว แดง เป็นธงชาติที่เก่าแก่ที่สุดธงหนึ่งของโลก',
+    vb: '0 0 900 600', col: { r: '#C8102E', w: '#FFFFFF' }, regs: [['r', R(0, 0, 900, 200) + R(0, 400, 900, 200)], ['w', R(0, 200, 900, 200)]] },
+  { id: 'pl', lv: 1, th: 'โปแลนด์', en: 'Poland', hi: 'Cześć', hiTh: 'เชฉช์', lang: 'pl-PL', hiL: 'ภาษาโปแลนด์', lat: 52.23, lon: 21.01,
+    fact: 'สีขาวอยู่บน สีแดงอยู่ล่าง กลับหัวกับธงอินโดนีเซีย',
+    vb: '0 0 800 500', col: { w: '#FFFFFF', r: '#DC143C' }, regs: [['w', R(0, 0, 800, 250)], ['r', R(0, 250, 800, 250)]] },
+  { id: 'be', lv: 1, th: 'เบลเยียม', en: 'Belgium', hi: 'Hallo', hiTh: 'ฮาโล', lang: 'nl-BE', hiL: 'ภาษาดัตช์', lat: 50.85, lon: 4.35,
+    fact: 'มีแถบตั้งสามแถบ สีดำ สีเหลือง และสีแดง',
+    vb: '0 0 450 390', col: { k: '#000000', y: '#FDDA24', r: '#EF3340' }, regs: [['k', R(0, 0, 150, 390)], ['y', R(150, 0, 150, 390)], ['r', R(300, 0, 150, 390)]] },
+  { id: 'ng', lv: 1, th: 'ไนจีเรีย', en: 'Nigeria', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-NG', hiL: 'ภาษาอังกฤษ', lat: 9.08, lon: 7.4,
+    fact: 'สีเขียวคือป่าไม้และผืนดิน สีขาวคือสันติภาพ',
+    vb: '0 0 600 300', col: { g: '#008751', w: '#FFFFFF' }, regs: [['g', R(0, 0, 200, 300) + R(400, 0, 200, 300)], ['w', R(200, 0, 200, 300)]] },
+  { id: 'pe', lv: 1, th: 'เปรู', en: 'Peru', hi: 'Hola', hiTh: 'โอลา', lang: 'es-PE', hiL: 'ภาษาสเปน', lat: -12.05, lon: -77.04,
+    fact: 'แดง ขาว แดง ธงที่คนเปรูใช้ทั่วไปไม่มีตรา ธงของราชการจะมีตราอยู่ตรงกลาง',
+    vb: '0 0 900 600', col: { r: '#D91023', w: '#FFFFFF' }, regs: [['r', R(0, 0, 300, 600) + R(600, 0, 300, 600)], ['w', R(300, 0, 300, 600)]] },
+  { id: 'co', lv: 1, th: 'โคลอมเบีย', en: 'Colombia', hi: 'Hola', hiTh: 'โอลา', lang: 'es-CO', hiL: 'ภาษาสเปน', lat: 4.71, lon: -74.07,
+    fact: 'แถบสีเหลืองกว้างครึ่งหนึ่งของธงเลย',
+    vb: '0 0 900 600', col: { y: '#FCD116', b: '#003893', r: '#CE1126' }, regs: [['y', R(0, 0, 900, 300)], ['b', R(0, 300, 900, 150)], ['r', R(0, 450, 900, 150)]] },
 
   // ---------- ⭐⭐ stars, crosses, a moon ----------
   { id: 'la', lv: 2, th: 'ลาว', en: 'Laos', hi: 'ສະບາຍດີ', hiTh: 'สะบายดี', lang: 'lo-LA', hiL: 'ภาษาลาว', lat: 17.97, lon: 102.6,
     fact: 'วงกลมสีขาว คือดวงจันทร์เต็มดวงเหนือแม่น้ำโขง',
     vb: '0 0 300 200', col: { r: '#CE1126', b: '#002868', w: '#FFFFFF' }, regs: [['r', R(0, 0, 300, 50) + R(0, 150, 300, 50)], ['b', R(0, 50, 300, 100)], ['w', C(150, 100, 40)]] },
-  { id: 'mm', lv: 2, th: 'เมียนมา', en: 'Myanmar', hi: 'မင်္ဂလာပါ', hiTh: 'มิงกะลาบา', lang: 'my-MM', hiL: 'ภาษาพม่า', lat: 19.75, lon: 96.1,
+  { id: 'mm', lv: 2, th: 'พม่า', full: 'เมียนมา', en: 'Myanmar', hi: 'မင်္ဂလာပါ', hiTh: 'มิงกะลาบา', lang: 'my-MM', hiL: 'ภาษาพม่า', lat: 19.75, lon: 96.1,
     fact: 'มีสามแถบ สีเหลือง เขียว แดง และดาวสีขาวดวงใหญ่ตรงกลาง',
     vb: '0 0 300 200', col: { y: '#FECB00', g: '#34B233', r: '#EA2839', w: '#FFFFFF' },
     regs: [['y', R(0, 0, 300, 66.67)], ['g', R(0, 66.67, 300, 66.67)], ['r', R(0, 133.33, 300, 66.67)], ['w', STAR(150, 107, 74)]] },
@@ -338,7 +401,7 @@ const FLAGS = [
   { id: 'ch', lv: 2, th: 'สวิตเซอร์แลนด์', en: 'Switzerland', hi: 'Grüezi', hiTh: 'กรือเอ็ตซี', lang: 'de-CH', hiL: 'ภาษาเยอรมันแบบสวิส', lat: 46.95, lon: 7.45,
     fact: 'ธงเป็นสี่เหลี่ยมจัตุรัส มีแค่สองประเทศในโลก คือสวิตเซอร์แลนด์ กับนครรัฐวาติกัน',
     vb: '0 0 320 320', col: { r: '#DA291C', w: '#FFFFFF' }, regs: [['r', R(0, 0, 320, 320)], ['w', R(130, 60, 60, 200) + R(60, 130, 200, 60)]] },
-  { id: 'tr', lv: 2, th: 'ทูร์เคีย (ตุรกี)', say: 'ทูร์เคีย', en: 'Türkiye', hi: 'Merhaba', hiTh: 'แมร์ฮาบา', lang: 'tr-TR', hiL: 'ภาษาตุรกี', lat: 39.93, lon: 32.86,
+  { id: 'tr', lv: 2, th: 'ตุรกี', full: 'ทูร์เคีย', en: 'Türkiye', hi: 'Merhaba', hiTh: 'แมร์ฮาบา', lang: 'tr-TR', hiL: 'ภาษาตุรกี', lat: 39.93, lon: 32.86,
     fact: 'มีพระจันทร์เสี้ยวกับดาวสีขาว บนพื้นสีแดง',
     vb: '0 -30000 90000 60000', col: { r: '#E30A17', w: '#FFFFFF' },
     regs: [['r', '<path d="m0-30000h90000v60000H0z"/>'], ['w', '<path d="m41750 0 13568-4408-8386 11541V-7133l8386 11541zm925 8021a15000 15000 0 1 1 0-16042 12000 12000 0 1 0 0 16042z"/>']] },
@@ -354,19 +417,76 @@ const FLAGS = [
   { id: 'ar', lv: 2, th: 'อาร์เจนตินา', en: 'Argentina', hi: 'Hola', hiTh: 'โอลา', lang: 'es-AR', hiL: 'ภาษาสเปน', lat: -34.6, lon: -58.38,
     fact: 'ดวงอาทิตย์ตรงกลาง เรียกว่า ดวงอาทิตย์แห่งเดือนพฤษภาคม',
     vb: '0 0 800 500', col: { b: '#74ACDF', w: '#FFFFFF' }, regs: [['b', R(0, 0, 800, 166.67) + R(0, 333.33, 800, 166.67)], ['w', R(0, 166.67, 800, 166.66)]], decor: ART.arSun },
+  { id: 'dk', lv: 2, th: 'เดนมาร์ก', en: 'Denmark', hi: 'Hej', hiTh: 'ไฮ', lang: 'da-DK', hiL: 'ภาษาเดนมาร์ก', lat: 55.68, lon: 12.57,
+    fact: 'เป็นธงชาติที่เก่าแก่ที่สุดในโลกที่ยังใช้อยู่ คนเดนมาร์กเรียกว่า ดันเนบรอก',
+    vb: '0 0 37 28', col: { r: '#C8102E', w: '#FFFFFF' }, regs: [['r', R(0, 0, 37, 28)], ['w', R(12, 0, 4, 28) + R(0, 12, 37, 4)]] },
+  { id: 'no', lv: 2, th: 'นอร์เวย์', en: 'Norway', hi: 'Hei', hiTh: 'ไฮ', lang: 'nb-NO', hiL: 'ภาษานอร์เวย์', lat: 59.91, lon: 10.75,
+    fact: 'กากบาทสีน้ำเงินมีขอบสีขาว อยู่บนพื้นสีแดง',
+    vb: '0 0 22 16', col: { r: '#BA0C2F', w: '#FFFFFF', b: '#00205B' },
+    regs: [['r', R(0, 0, 22, 16)], ['w', R(6, 0, 4, 16) + R(0, 6, 22, 4)], ['b', R(7, 0, 2, 16) + R(0, 7, 22, 2)]] },
+  { id: 'is', lv: 2, th: 'ไอซ์แลนด์', en: 'Iceland', hi: 'Halló', hiTh: 'ฮาลโล', lang: 'is-IS', hiL: 'ภาษาไอซ์แลนด์', lat: 64.15, lon: -21.94,
+    fact: 'สีน้ำเงินคือภูเขาและทะเล สีขาวคือน้ำแข็ง สีแดงคือไฟจากภูเขาไฟ',
+    vb: '0 0 25 18', col: { b: '#02529C', w: '#FFFFFF', r: '#DC1E35' },
+    regs: [['b', R(0, 0, 25, 18)], ['w', R(7, 0, 4, 18) + R(0, 7, 25, 4)], ['r', R(8, 0, 2, 18) + R(0, 8, 25, 2)]] },
+  { id: 'cz', lv: 2, th: 'เช็ก', full: 'เช็กเกีย', en: 'Czechia', hi: 'Ahoj', hiTh: 'อะฮอย', lang: 'cs-CZ', hiL: 'ภาษาเช็ก', lat: 50.08, lon: 14.44,
+    fact: 'มีสามเหลี่ยมสีน้ำเงิน ชี้เข้ามาถึงกลางธง',
+    vb: '0 0 900 600', col: { w: '#FFFFFF', r: '#D7141A', b: '#11457E' },
+    regs: [['w', R(0, 0, 900, 300)], ['r', R(0, 300, 900, 300)], ['b', '<path d="M0 0L450 300L0 600z"/>']] },
+  { id: 'jm', lv: 2, th: 'จาเมกา', en: 'Jamaica', hi: 'Wah gwaan', hiTh: 'วา กวาน', lang: 'en', hiL: 'ภาษาพูดของคนจาเมกา', lat: 18.0, lon: -76.79,
+    fact: 'เป็นธงชาติเดียวในโลก ที่ไม่มีสีแดง สีขาว หรือสีน้ำเงินเลย',
+    vb: '0 0 12 6', col: { g: '#007749', k: '#000000', y: '#FFB81C' },
+    regs: [['g', R(0, 0, 12, 6)], ['k', '<path d="M0 0L6 3L0 6zM12 0L6 3L12 6z"/>'], ['y', STROKE('M0 0L12 6M0 6L12 0', 1)]] },
+  { id: 'cl', lv: 2, th: 'ชิลี', en: 'Chile', hi: 'Hola', hiTh: 'โอลา', lang: 'es-CL', hiL: 'ภาษาสเปน', lat: -33.45, lon: -70.67,
+    fact: 'มีดาวสีขาวหนึ่งดวง ประเทศชิลียาวและแคบมาก',
+    vb: '0 0 900 600', col: { w: '#FFFFFF', r: '#DA291C', b: '#0032A0' },
+    regs: [['w', R(0, 0, 900, 300)], ['r', R(0, 300, 900, 300)], ['b', R(0, 0, 300, 300)], ['w', STAR(150, 150, 75), R(0, 0, 300, 300)]] },
+  { id: 'sg', lv: 2, th: 'สิงคโปร์', en: 'Singapore', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-SG', hiL: 'ภาษาอังกฤษ', lat: 1.29, lon: 103.85,
+    fact: 'ดาวห้าดวง หมายถึง ประชาธิปไตย สันติภาพ ความก้าวหน้า ความยุติธรรม และความเท่าเทียม',
+    vb: '0 0 54 36', defs: '<mask id="sgm"><circle cx="11.405" cy="9" r="6.625" fill="#fff"/><circle cx="15.03" cy="9" r="7.25" fill="#000"/></mask>',
+    col: { r: '#ED2939', w: '#FFFFFF' },
+    regs: [['r', R(0, 0, 54, 18)], ['w', R(0, 18, 54, 18)],
+           ['w', '<circle cx="11.405" cy="9" r="6.625" mask="url(#sgm)"/><path id="sgs" d="m15.03 3.475-1.01393 3.120554 2.654502-1.928609h-3.281145l2.654502 1.928609z"/><g id="sgt"><use xlink:href="#sgs" transform="rotate(72 15.03 9)"/><use xlink:href="#sgs" transform="rotate(216 15.03 9)"/></g><use xlink:href="#sgt" transform="rotate(72 15.03 9)"/>', R(0, 0, 27, 18)]] },
+  { id: 'qa', lv: 2, th: 'กาตาร์', en: 'Qatar', hi: 'السلام عليكم', hiTh: 'อัสสะลามุอะลัยกุม', lang: 'ar-QA', hiL: 'ภาษาอาหรับ', lat: 25.29, lon: 51.53,
+    fact: 'ขอบหยักมีเก้าซี่ สีน้ำตาลแดงเข้มนี้ไม่ค่อยมีในธงชาติอื่น',
+    vb: '0 0 75 29.4545', col: { m: '#8A1538', w: '#FFFFFF' },
+    regs: [['m', R(0, 0, 75, 29.4545)], ['w', '<path transform="scale(1 1.63636)" d="M22,18H0V0H22l6,1-6,1 6,1-6,1 6,1-6,1 6,1-6,1 6,1-6,1 6,1-6,1 6,1-6,1 6,1-6,1 6,1z"/>']] },
+  { id: 'ae', lv: 2, th: 'ยูเออี', full: 'สหรัฐอาหรับเอมิเรตส์', en: 'United Arab Emirates', hi: 'مرحبا', hiTh: 'มัรฮะบา', lang: 'ar-AE', hiL: 'ภาษาอาหรับ', lat: 24.45, lon: 54.38,
+    fact: 'มีสี่สี แดง เขียว ขาว ดำ เมืองดูไบอยู่ในประเทศนี้',
+    vb: '0 0 12 6', col: { r: '#FF0000', g: '#00732F', w: '#FFFFFF', k: '#000000' },
+    regs: [['r', R(0, 0, 3, 6)], ['g', R(3, 0, 9, 2)], ['w', R(3, 2, 9, 2)], ['k', R(3, 4, 9, 2)]] },
+  { id: 'tl', lv: 2, th: 'ติมอร์-เลสเต', en: 'Timor-Leste', hi: 'Bondia', hiTh: 'บนเดีย', lang: 'pt-PT', hiL: 'ภาษาเตตุม', lat: -8.56, lon: 125.57,
+    fact: 'ติมอร์-เลสเตเป็นสมาชิกอาเซียนลำดับที่สิบเอ็ด',
+    vb: '0 0 36 18', col: { r: '#DA291C', y: '#FFC72C', k: '#000000', w: '#FFFFFF' },
+    regs: [['r', R(0, 0, 36, 18)], ['y', '<path d="M18 9L0 18V0z"/>'], ['k', '<path d="M12 9L0 18V0z"/>'],
+           ['w', '<path d="m2.7816 6.2586 3.8155 4.2431-5.5809-1.1901 5.2145-2.3175-2.8564 4.9399z"/>', '<path d="M12 9L0 18V0z"/>']] },
+  { id: 'pk', lv: 2, th: 'ปากีสถาน', en: 'Pakistan', hi: 'السلام علیکم', hiTh: 'อัสสะลามุอะลัยกุม', lang: 'ur-PK', hiL: 'ภาษาอูรดู', lat: 33.69, lon: 73.05,
+    fact: 'แถบสีขาวทางเสาธง หมายถึงคนที่นับถือศาสนาอื่นในประเทศ',
+    vb: '-75 -40 120 80', defs: '<mask id="pkm"><circle r="24" fill="#fff"/><circle cx="6.137" cy="-5.451" r="22" fill="#000"/></mask>',
+    col: { w: '#FFFFFF', g: '#01411C' },
+    regs: [['w', R(-75, -40, 30, 80)], ['g', R(-45, -40, 90, 80)],
+           ['w', '<circle r="24" mask="url(#pkm)"/><polygon points="0,-513674 301930,415571 -488533,-158734 488533,-158734 -301930,415571" transform="rotate(-41.63354) translate(16) rotate(18) scale(0.00001557408)"/>', R(-45, -40, 90, 80)]] },
+  { id: 'ma', lv: 2, th: 'โมร็อกโก', en: 'Morocco', hi: 'سلام', hiTh: 'สลาม', lang: 'ar-MA', hiL: 'ภาษาอาหรับ', lat: 34.02, lon: -6.84,
+    fact: 'ดาวห้าแฉกสีเขียว วาดเป็นเส้นต่อกัน บนพื้นสีแดง',
+    vb: '0 0 90000 60000', col: { r: '#C1272D', g: '#006233' },
+    regs: [['r', R(0, 0, 90000, 60000)], ['g', STROKE('m45000 17308 7460 22960-19531-14190h24142L37540 40268z', 1426), C(45000, 30000, 15000)]] },
+  { id: 'et', lv: 2, th: 'เอธิโอเปีย', en: 'Ethiopia', hi: 'ሰላም', hiTh: 'เซลาม', lang: 'am-ET', hiL: 'ภาษาอัมฮารา', lat: 9.03, lon: 38.74,
+    fact: 'สีเขียว เหลือง แดง หลายประเทศในแอฟริกานำสามสีนี้ไปใช้ในธงของตัวเอง',
+    vb: '0 0 1200 600', col: { g: '#078930', y: '#FCDD09', r: '#DA121A', b: '#0F47AF' },
+    regs: [['g', R(0, 0, 1200, 200)], ['y', R(0, 200, 1200, 200)], ['r', R(0, 400, 1200, 200)], ['b', C(600, 300, 200)]],
+    decor: '<g transform="matrix(1.6666667,0,0,1.6666667,600,300)" fill="#FCDD09"><g id="eta"><path d="m 0,-96 -4.205849,12.944272 17.347494,53.390097 H -9.987258 l -2.599358,8 h 74.162668 l 11.011056,-8 H 21.553343 Z"/><path d="M 0,44 V 96" transform="rotate(-144)" stroke="#FCDD09" stroke-width="4"/></g><use xlink:href="#eta" transform="rotate(72)"/><use xlink:href="#eta" transform="rotate(144)"/><use xlink:href="#eta" transform="rotate(-144)"/><use xlink:href="#eta" transform="rotate(-72)"/></g>' },
 
   // ---------- ⭐⭐⭐ many parts ----------
-  { id: 'gb', lv: 3, th: 'สหราชอาณาจักร', en: 'United Kingdom', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-GB', hiL: 'ภาษาอังกฤษ', lat: 51.51, lon: -0.13,
+  { id: 'gb', lv: 3, th: 'อังกฤษ', full: 'สหราชอาณาจักร', en: 'United Kingdom', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en-GB', hiL: 'ภาษาอังกฤษ', lat: 51.51, lon: -0.13,
     fact: 'ธงนี้เรียกว่า ยูเนียนแจ็ก รวมกากบาทของอังกฤษ สกอตแลนด์ และไอร์แลนด์',
     vb: '0 0 60 30', defs: GB_DEFS, col: { b: '#012169', w: '#FFFFFF', r: '#C8102E' },
     regs: [['b', R(0, 0, 60, 30)], ['w', STROKE('M0,0 L60,30 M60,0 L0,30', 6, 'clip-path="url(#gs)"')],
            ['r', STROKE('M0,0 L60,30 M60,0 L0,30', 4, 'clip-path="url(#gt)"')],
            ['w', STROKE('M30,0 v30 M0,15 h60', 10)], ['r', STROKE('M30,0 v30 M0,15 h60', 6)]] },
-  { id: 'us', lv: 3, th: 'สหรัฐอเมริกา', en: 'United States', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en', hiL: 'ภาษาอังกฤษ', lat: 38.9, lon: -77.04,
+  { id: 'us', lv: 3, th: 'อเมริกา', full: 'สหรัฐอเมริกา', en: 'United States', hi: 'Hello', hiTh: 'เฮลโล', lang: 'en', hiL: 'ภาษาอังกฤษ', lat: 38.9, lon: -77.04,
     fact: 'ดาวห้าสิบดวงคือห้าสิบรัฐ แถบสิบสามแถบคืออาณานิคมสิบสามแห่งแรก',
     vb: '0 0 7410 3900', col: { r: '#B31942', w: '#FFFFFF', b: '#0A3161' },
     regs: [['r', usStripes(false)], ['w', usStripes(true)], ['b', R(0, 0, 0.76 * US_H, 7 * US_S)], ['w', usStars(), R(0, 0, 0.76 * US_H, 7 * US_S)]] },
-  { id: 'kr', lv: 3, th: 'เกาหลีใต้', en: 'South Korea', hi: '안녕하세요', hiTh: 'อันนยองฮาเซโย', lang: 'ko-KR', hiL: 'ภาษาเกาหลี', lat: 37.57, lon: 126.98,
+  { id: 'kr', lv: 3, th: 'เกาหลีใต้', en: 'South Korea', hi: '안녕하세요', hiTh: 'อันยองฮาเซโย', lang: 'ko-KR', hiL: 'ภาษาเกาหลี', lat: 37.57, lon: 126.98,
     fact: 'วงกลมตรงกลางเรียกว่า แทกึก และมีขีดสีดำอยู่สี่มุม',
     vb: '-72 -48 144 96', col: { w: '#FFFFFF', r: '#CD2E3A', b: '#0047A0', k: '#000000' },
     regs: [['w', R(-72, -48, 144, 96)], ['k', KR_TRI, R(-72, -48, 144, 96)],
@@ -399,7 +519,7 @@ const FLAGS = [
     fact: 'เป็นธงชาติเดียวในโลก ที่ไม่ใช่รูปสี่เหลี่ยม',
     vb: '-17.582 -4.664 71.571 87.246', col: { b: '#003893', r: '#DC143C', w: '#FFFFFF' },
     regs: [['b', `<path d="${NP_D}" stroke="currentColor" stroke-width="5.165"/>`], ['r', `<path d="${NP_D}"/>`], ['w', NP_MOON, C(0, 27, 19)], ['w', NP_SUN, C(0, 58.8, 21)]] },
-  { id: 'kh', lv: 3, th: 'กัมพูชา', en: 'Cambodia', hi: 'សួស្តី', hiTh: 'ซัวสเดย', lang: 'km-KH', hiL: 'ภาษาเขมร', lat: 11.56, lon: 104.92,
+  { id: 'kh', lv: 3, th: 'กัมพูชา', en: 'Cambodia', hi: 'សួស្តី', hiTh: 'ซัวสะเดย', lang: 'km-KH', hiL: 'ภาษาเขมร', lat: 11.56, lon: 104.92,
     fact: 'ตรงกลางเป็นรูปปราสาทนครวัด',
     vb: '0 0 1000 640', col: { b: '#032EA1', r: '#E00025' }, regs: [['b', R(0, 0, 1000, 640)], ['r', R(0, 160, 1000, 320)]], decor: ART.khTemple },
   { id: 'au', lv: 3, th: 'ออสเตรเลีย', en: 'Australia', hi: "G'day", hiTh: 'กูดเดย์', lang: 'en-AU', hiL: 'ภาษาอังกฤษ', lat: -35.28, lon: 149.13,
@@ -417,20 +537,83 @@ const FLAGS = [
            ['w', '<g clip-path="url(#f)">' + STROKE('m90 30H45L0 0v60l45-30', 20) + '</g>'], ['k', '<path d="m0 0 45 30L0 60z"/>'],
            ['y', '<g clip-path="url(#f)">' + STROKE('m0 0 45 30L0 60', 20, 'clip-path="url(#t)"') + '</g>'],
            ['g', '<g clip-path="url(#f)">' + STROKE('m0 0 45 30h45M0 60l45-30', 12) + '</g>']] },
+  { id: 'nz', lv: 3, th: 'นิวซีแลนด์', en: 'New Zealand', hi: 'Kia ora', hiTh: 'เกีย โอรา', lang: 'en-NZ', hiL: 'ภาษาเมารี', lat: -41.29, lon: 174.78,
+    fact: 'ดาวกางเขนใต้เป็นดาวสีแดงขอบขาวสี่ดวง ต่างจากธงออสเตรเลียที่เป็นดาวสีขาว',
+    vb: '0 0 1200 600', defs: AU_DEFS + NZ_STAR, col: { b: '#012169', w: '#FFFFFF', r: '#C8102E' },
+    regs: [['b', R(0, 0, 1200, 600)], ['w', NZ_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.6, 'clip-path="url(#c1)"'))],
+           ['r', NZ_UJ(STROKE('M0,0 6,3M6,0 0,3', 0.4, 'clip-path="url(#c2)"'))], ['w', NZ_UJ(STROKE('M3,0V3M0,1.5H6', 1))],
+           ['r', NZ_UJ(STROKE('M3,0V3M0,1.5H6', 0.6))],
+           ['w', nzStars(45.4, 40.4, 45.4, 50.4), R(600, 0, 600, 600)], ['r', nzStars(30, 25, 30, 35), R(600, 0, 600, 600)]] },
+  { id: 'ke', lv: 3, th: 'เคนยา', en: 'Kenya', hi: 'Jambo', hiTh: 'จัมโบ้', lang: 'sw-KE', hiL: 'ภาษาสวาฮีลี', lat: -1.29, lon: 36.82,
+    fact: 'ตรงกลางเป็นโล่และหอกสองเล่มของชาวมาไซ',
+    vb: '-120 -80 240 160',
+    defs: '<path id="KA" stroke-miterlimit="10" d="M-1 55.426h2V-38c2-2 2-5 2-8 0-2 0-10-3-18.663C-3-56-3-48-3-46c0 3 0 6 2 8z" transform="rotate(30)"/>' +
+          `<clipPath id="kec"><path clip-rule="evenodd" d="M-130-90h260v180h-260z${KE_BAND}"/></clipPath>`,
+    col: { w: '#FFFFFF', k: '#000000', g: '#006600', r: '#BB0000' },
+    regs: [['w', R(-120, -80, 240, 160)], ['k', R(-120, -80, 240, 48)], ['g', R(-120, 32, 240, 48)], ['r', `<path d="${KE_BAND}"/>`]],
+    decor: '<g clip-path="url(#kec)"><g id="KB"><use xlink:href="#KA" stroke="#000"/><use xlink:href="#KA" fill="#fff"/></g><use xlink:href="#KB" transform="scale(-1 1)"/></g>' +
+           '<path id="KC" d="M19 24c3-8 5-16 5-24s-2-16-5-24c-3 8-5 16-5 24s2 16 5 24"/><use xlink:href="#KC" transform="scale(-1 1)"/>' +
+           '<g fill="#fff"><ellipse rx="4" ry="6"/><path id="KD" d="M1 5.85s4 8 4 21-4 21-4 21z"/><use xlink:href="#KD" transform="scale(-1)"/><use xlink:href="#KD" transform="scale(-1 1)"/><use xlink:href="#KD" transform="scale(1 -1)"/></g>' },
+  { id: 'mn', lv: 3, th: 'มองโกเลีย', en: 'Mongolia', hi: 'Сайн байна уу', hiTh: 'แซน แบนอ', lang: 'mn-MN', hiL: 'ภาษามองโกเลีย', lat: 47.92, lon: 106.92,
+    fact: 'สัญลักษณ์สีเหลืองเรียกว่า โซยอมโบ มีไฟ ดวงอาทิตย์ และพระจันทร์',
+    vb: '0 0 1200 600',
+    defs: '<mask id="mn1"><circle cx="200" cy="205" r="55" fill="#fff"/><circle cx="200" cy="180" r="60" fill="#000"/></mask>' +
+          '<mask id="mn2"><circle cx="200" cy="390" r="50" fill="#fff"/><g fill="#000"><circle cx="200" cy="363.5" r="10"/><circle cx="200" cy="416.5" r="10"/><path d="M200 334a29.5 29.5 0 0 1 0 59 23.5 23.5 0 0 0 0 47v6a29.5 29.5 0 0 1 0-59 23.5 23.5 0 0 0 0-47z"/></g></mask>',
+    col: { r: '#DA2032', b: '#0066B2', y: '#FFD300' },
+    regs: [['r', R(0, 0, 1200, 600)], ['b', R(400, 0, 400, 600)],
+           ['y', `<circle cx="200" cy="205" r="55" mask="url(#mn1)"/><circle cx="200" cy="190" r="40"/><path d="${MN_SOYOMBO}"/><circle cx="200" cy="390" r="50" mask="url(#mn2)"/>`, R(0, 0, 400, 600)]] },
+  { id: 'bn', lv: 3, th: 'บรูไน', en: 'Brunei', hi: 'Apa khabar', hiTh: 'อาปา คาบาร์', lang: 'ms-MY', hiL: 'ภาษามลายู', lat: 4.89, lon: 114.94,
+    fact: 'ตรงกลางเป็นตราแผ่นดินสีแดง มีร่ม ปีก พระจันทร์เสี้ยว และมือสองข้าง',
+    vb: '0 0 1440 720', col: { y: '#F7E017', w: '#FFFFFF', k: '#000000' },
+    regs: [['y', R(0, 0, 1440, 720)], ['w', '<path d="M0,50V370L1440,520V350z"/>'], ['k', '<path d="M0,220V370L1440,670V520z"/>']], decor: ART.bnEmblem },
+  { id: 'bt', lv: 3, th: 'ภูฏาน', en: 'Bhutan', hi: 'Kuzu zangpo la', hiSay: 'กุซุซังโปลา', hiTh: 'กุซุซังโป ลา', lang: 'th', hiL: 'ภาษาซองคา', lat: 27.47, lon: 89.64,
+    fact: 'มังกรสายฟ้าสีขาว คนภูฏานเรียกประเทศตัวเองว่า ดินแดนแห่งมังกรสายฟ้า',
+    vb: '0 0 900 600', col: { y: '#FFCD00', o: '#FF671F' },
+    regs: [['y', R(0, 0, 900, 600)], ['o', '<path d="M0 600h900V0z"/>']], decor: ART.btDragon },
+  { id: 'lk', lv: 3, th: 'ศรีลังกา', en: 'Sri Lanka', hi: 'ආයුබෝවන්', hiTh: 'อายุโบวัน', lang: 'si-LK', hiL: 'ภาษาสิงหล', lat: 6.89, lon: 79.92,
+    fact: 'มีสิงโตถือดาบ และใบโพธิ์สี่ใบที่มุมทั้งสี่',
+    vb: '0 0 1200 600', col: { y: '#FFBE29', o: '#EB7400', g: '#00534E', m: '#8D153A' },
+    regs: [['y', R(0, 0, 1200, 600)], ['g', R(56, 56, 156, 488)], ['o', R(212, 56, 156, 488)], ['m', R(424, 56, 720, 488)]], decor: ART.lkLion },
+  { id: 'mx', lv: 3, th: 'เม็กซิโก', en: 'Mexico', hi: 'Hola', hiTh: 'โอลา', lang: 'es-MX', hiL: 'ภาษาสเปน', lat: 19.43, lon: -99.13,
+    fact: 'ตรงกลางเป็นนกอินทรีคาบงู ยืนอยู่บนต้นกระบองเพชร',
+    vb: '0 0 980 560', col: { g: '#006847', w: '#FFFFFF', r: '#CE1126' },
+    regs: [['g', R(0, 0, 326.67, 560)], ['w', R(326.67, 0, 326.66, 560)], ['r', R(653.33, 0, 326.67, 560)]], decor: ART.mxEagle },
+  { id: 'pt', lv: 3, th: 'โปรตุเกส', en: 'Portugal', hi: 'Olá', hiTh: 'โอลา', lang: 'pt-PT', hiL: 'ภาษาโปรตุเกส', lat: 38.72, lon: -9.14,
+    fact: 'ตรงกลางเป็นทรงกลมที่นักเดินเรือสมัยก่อนใช้ดูดาว กับโล่ตราประเทศ',
+    vb: '0 0 600 400', col: { g: '#006600', r: '#FF0000' },
+    regs: [['g', R(0, 0, 240, 400)], ['r', R(240, 0, 360, 400)]], decor: ART.ptArms },
+  { id: 'eg', lv: 3, th: 'อียิปต์', en: 'Egypt', hi: 'أهلاً', hiTh: 'อะห์ลัน', lang: 'ar-EG', hiL: 'ภาษาอาหรับ', lat: 30.04, lon: 31.24,
+    fact: 'นกอินทรีสีทองตรงกลาง เรียกว่า นกอินทรีของศอลาฮุดดีน',
+    vb: '0 0 900 600', col: { r: '#CE1126', w: '#FFFFFF', k: '#000000' },
+    regs: [['r', R(0, 0, 900, 200)], ['w', R(0, 200, 900, 200)], ['k', R(0, 400, 900, 200)]], decor: ART.egEagle },
 ];
+// Official shades of navy, dark green and red look dull and muddy on a phone, so the
+// screen lifts their lightness and saturation a little. The hue stays the same, and
+// maroons such as Qatar's and Sri Lanka's stay dark. f.real keeps the official values.
+function liven(hex) {
+  let [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  let L = (mx + mn) / 2, S = mx === mn ? 0 : (mx - mn) / (1 - Math.abs(2 * L - 1)), H = 0;
+  if (mx !== mn) H = mx === r ? 60 * (((g - b) / (mx - mn)) % 6) : mx === g ? 60 * ((b - r) / (mx - mn) + 2) : 60 * ((r - g) / (mx - mn) + 4);
+  H = (H + 360) % 360;
+  if (S < 0.2) return hex;                                                   // white, black, greys
+  if (H >= 190 && H <= 262) { H = Math.min(H, 236); L = Math.max(L, 0.33); S = Math.max(S, 0.68); }   // navy → clear blue
+  else if (H >= 90 && H < 190) { L = Math.max(L, 0.27); S = Math.max(S, 0.7); }                     // deep greens
+  else if ((H >= 330 || H < 20) && L >= 0.34) { L = Math.max(L, 0.42); }                            // dim reds (maroons stay)
+  else return hex;
+  const C = (1 - Math.abs(2 * L - 1)) * S, X = C * (1 - Math.abs((H / 60) % 2 - 1)), m0 = L - C / 2;
+  const [r1, g1, b1] = H < 60 ? [C, X, 0] : H < 120 ? [X, C, 0] : H < 180 ? [0, C, X] : H < 240 ? [0, X, C] : H < 300 ? [X, 0, C] : [C, 0, X];
+  return '#' + [r1, g1, b1].map((v) => Math.round((v + m0) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+for (const f of FLAGS) { f.real = f.col; f.col = Object.fromEntries(Object.entries(f.col).map(([k, v]) => [k, liven(v)])); }
 const BY = Object.fromEntries(FLAGS.map((f) => [f.id, f]));
 const sayName = (f) => f.say || f.th;
 const LINES = {
   follow: 'เลือกธงที่อยากระบาย', free: 'เลือกธง แล้วระบายสีเองได้เลย', tip: 'แตะสี แล้วแตะที่ธง',
   look: 'ดูธงตัวอย่างนะ', same: 'เหมือนธงจริงเลย เก่งมาก', near: 'เกือบแล้ว ลองดูธงจริงนะ',
   right: 'ถูกต้อง เก่งมาก', notyet: 'ยังไม่ได้ระบายธงนี้ มาระบายกัน', map: 'ธงที่ระบายแล้ว จะมาปักบนแผนที่โลก',
-  quiz: 'ทายธงกัน', thisIs: 'นี่คือ',
+  quiz: 'ทายธงกัน', thisIs: 'นี่คือ', know: 'แตะธง แล้วฟังชื่อประเทศ',
 };
-VoiceClips.lines(() => {
-  const out = Object.values(LINES);
-  for (const f of FLAGS) out.push('ธงชาติ' + sayName(f), ['en', f.en], [f.lang, f.hi], f.fact, 'ธงไหนเป็นของประเทศ' + sayName(f));
-  return out;
-});
 
 // ============================================================================
 // SVG documents
@@ -501,7 +684,12 @@ async function say(items, onStep) {
   }
   onStep && onStep(-1);
 }
-const flagLines = (f) => [['ธงชาติ' + sayName(f)], [f.en, 'en'], [f.hi, f.lang], [f.fact]];
+const flagLines = (f) => [['ธงชาติ' + sayName(f)], [f.en, 'en'], f.hiSay ? [f.hiSay] : [f.hi, f.lang], [f.fact]];
+VoiceClips.lines(() => {
+  const out = Object.values(LINES);
+  for (const f of FLAGS) out.push(...flagLines(f).map(([t, l]) => (l ? [l, t] : t)), 'ธงไหนเป็นของประเทศ' + sayName(f));
+  return out;
+});
 
 // ============================================================================
 // Progress
@@ -520,7 +708,7 @@ let mode = 'follow', level = 0;
 const LEVELS = [[0, '🌈 ทั้งหมด'], [1, '⭐'], [2, '⭐⭐'], [3, '⭐⭐⭐']];
 const pool = () => FLAGS.filter((f) => !level || f.lv === level);
 function show(id) {
-  for (const s of ['pick', 'paint', 'map', 'quiz']) $(s).classList.toggle('hidden', s !== id);
+  for (const s of ['pick', 'paint', 'know', 'map', 'quiz']) $(s).classList.toggle('hidden', s !== id);
   $('modes').classList.toggle('hidden', id === 'paint');
   if (id !== 'paint') stopWave();
   window.scrollTo(0, 0);
@@ -530,6 +718,7 @@ function setMode(m, quiet) {
   document.querySelectorAll('.mode').forEach((b) => b.classList.toggle('on', b.dataset.m === m));
   chainId++; VoiceClips.stop();
   if (m === 'map') { show('map'); drawMap(); if (!quiet) say([LINES.map]); }
+  else if (m === 'know') { show('know'); renderKnow(); if (!quiet) say([LINES.know]); }
   else if (m === 'quiz') { show('quiz'); renderChips($('qChips'), () => newQuestion()); newQuestion(); }
   else { show('pick'); renderPick(); if (!quiet) say([m === 'free' ? LINES.free : LINES.follow]); }
 }
@@ -570,7 +759,7 @@ function renderPick() {
 // finds its region instantly, and thin parts are forgiving (see pickRegion).
 // ============================================================================
 const cv = $('cv'), cx = cv.getContext('2d');
-let F = null, IW = 0, IH = 0, PAD = 0, lab = null, hitLab = null, glowCv = [], edge = null, img = null, decorCv = null, trueCv = null;
+let F = null, IW = 0, IH = 0, PAD = 0, lab = null, hits = [], glowCv = [], edge = null, img = null, decorCv = null, trueCv = null;
 let tgt = [], cur = [], sel = null, anim = null, flash = null, finished = false, wrongRun = 0, painting = 'follow';
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 const HATCH = [[232, 235, 240], [214, 219, 226]], INK = [45, 52, 54];
@@ -609,7 +798,7 @@ async function openFlag(f, from) {
     }
   } catch (e) { console.warn(e); }
   // hit zones of tiny parts + a gold glow mask for each
-  hitLab = new Int16Array(IW * IH).fill(-1); glowCv = [];
+  hits = []; glowCv = [];
   try {
     for (let i = 0; i < f.regs.length; i++) {
       if (!f.regs[i][2]) continue;
@@ -617,7 +806,9 @@ async function openFlag(f, from) {
       if (F !== f) return;
       sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
       const a = sx.getImageData(0, 0, IW, IH).data;
-      for (let p = 0, q = 3; p < hitLab.length; p++, q += 4) if (a[q] >= 128 && hitLab[p] < 0) hitLab[p] = i;
+      const m = new Uint8Array(IW * IH);
+      for (let p = 0, q = 3; p < m.length; p++, q += 4) if (a[q] >= 128) m[p] = 1;
+      hits.push({ i, m });
       const g = document.createElement('canvas'); g.width = IW; g.height = IH;
       const gx = g.getContext('2d'), gd = gx.createImageData(IW, IH);
       for (let p = 0; p < lab.length; p++) if (lab[p] === i) { const q = p * 4; gd.data[q] = 255; gd.data[q + 1] = 217; gd.data[q + 2] = 61; gd.data[q + 3] = 255; }
@@ -693,6 +884,11 @@ function compose(now) {
   cx.clearRect(0, 0, cv.width, cv.height);
   cx.putImageData(img, 0, PAD);
   if (decorCv) cx.drawImage(decorCv, 0, PAD);
+  // soft satin gloss so the colours read bright, not flat
+  cx.save(); cx.globalCompositeOperation = 'source-atop';
+  const gg = cx.createLinearGradient(0, PAD, IW * 0.6, PAD + IH);
+  gg.addColorStop(0, 'rgba(255,255,255,0.22)'); gg.addColorStop(0.45, 'rgba(255,255,255,0.04)'); gg.addColorStop(1, 'rgba(0,0,0,0.06)');
+  cx.fillStyle = gg; cx.fillRect(0, PAD, IW, IH); cx.restore();
   const gl = glowing();
   if (gl.length) {
     const t = ((now === undefined ? performance.now() : now) / 1000) * Math.PI * 1.6;
@@ -728,15 +924,17 @@ function toFlag(e) {
 function pickRegion(x, y, scale) {
   x = Math.round(x); y = Math.round(y);
   const inside = x >= 0 && y >= 0 && x < IW && y < IH;
-  const at = inside ? lab[y * IW + x] : -1, hz = inside ? hitLab[y * IW + x] : -1;
+  const at = inside ? lab[y * IW + x] : -1;
+  const zone = inside ? hits.filter((h) => h.m[y * IW + x] && h.i !== at).map((h) => h.i) : [];   // tiny parts whose zone this is
   if (painting !== 'follow') {
     // 🖌️ free: a tap in a tiny part's zone paints the tiny part once the thing under
     // it is painted (background first, details after), or when the tap wouldn't change it
-    if (hz >= 0 && at !== hz && (cur[hz] === null ? cur[at] !== null : cur[at] === sel)) return hz;
-    return at;
+    const z = zone.find((i) => cur[i] === null && cur[at] !== null) ?? zone.find((i) => cur[at] === sel && cur[i] !== sel);
+    return z !== undefined ? z : at;
   }
   if (at >= 0 && tgt[at] === sel && cur[at] !== sel) return at;
-  if (hz >= 0 && tgt[hz] === sel && cur[hz] !== sel) return hz;
+  const zw = zone.find((i) => tgt[i] === sel && cur[i] !== sel);
+  if (zw !== undefined) return zw;
   const rad = Math.round(30 * scale);
   let best = -1, bd = Infinity;
   for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
@@ -748,7 +946,8 @@ function pickRegion(x, y, scale) {
   if (best >= 0) return best;
   // the part under the finger is done but a tiny part in this zone isn't: aim the
   // "wrong colour" flash + swatch hint at the tiny part
-  if (hz >= 0 && cur[hz] !== tgt[hz] && (at < 0 || cur[at] === tgt[at])) return hz;
+  const zl = zone.find((i) => cur[i] !== tgt[i]);
+  if (zl !== undefined && (at < 0 || cur[at] === tgt[at])) return zl;
   return at;
 }
 cv.addEventListener('pointerdown', (e) => {
@@ -790,7 +989,10 @@ $('resetBtn').addEventListener('click', () => {
   if (!F) return; ac(); sfx.tap();
   openFlag(F, painting);
 });
-$('backBtn').addEventListener('click', () => { ac(); sfx.tap(); setMode(painting === 'free' ? 'free' : 'follow', true); });
+$('backBtn').addEventListener('click', () => {
+  ac(); sfx.tap();
+  setMode(mode === 'know' || mode === 'map' ? mode : painting === 'free' ? 'free' : 'follow', true);   // back to where the flag was opened
+});
 
 // ---- finished: the real flag waves, name + greeting + fact ----
 let waveRaf = 0;
@@ -819,24 +1021,70 @@ function win() {
   $('palette').classList.add('hidden'); $('resetBtn').classList.add('hidden');
   sfx.win(); vib([40, 60, 40, 60, 120]); confetti();
   stopWave(); waveRaf = requestAnimationFrame(wave);
-  const f = F, info = $('info');
+  const { lines, mark } = fillInfo($('info'), F);
+  $('info').classList.remove('hidden');
+  $('nextBtn').classList.remove('hidden'); $('mapBtn').classList.remove('hidden');
+  say(lines, mark);
+}
+// name · English / hello / fact — every row is tap-to-hear
+function fillInfo(info, f) {
   info.innerHTML = '';
   const rows = [
-    ['nm', `${f.th} <small>· ${f.en}</small>`, [0, 1]],
+    ['nm', `${f.th}${f.full ? ` <small>(${f.full})</small>` : ''} <small>· ${f.en}</small>`, [0, 1]],
     ['hi', `${f.hi} <small>${f.hiTh ? '(' + f.hiTh + ') · ' : ''}${f.hiL}</small>`, [2]],
     ['ft', '💡 ' + f.fact, [3]],
   ];
   const lines = flagLines(f), els = [];
+  const mark = (li) => els.forEach(([d, idx]) => d.classList.toggle('say', idx.includes(li)));
   rows.forEach(([cls, html, idx]) => {
     const d = document.createElement('div'); d.className = 'ln ' + cls; d.innerHTML = html;
     d.addEventListener('click', () => { ac(); say(idx.map((i) => lines[i]), (s) => mark(s < 0 ? -1 : idx[s])); });
     info.appendChild(d); els.push([d, idx]);
   });
-  const mark = (li) => els.forEach(([d, idx]) => d.classList.toggle('say', idx.includes(li)));
-  info.classList.remove('hidden');
-  $('nextBtn').classList.remove('hidden'); $('mapBtn').classList.remove('hidden');
-  say(lines, mark);
+  return { lines, mark };
 }
+
+// ============================================================================
+// 👆 Know — tap any flag to hear its name, English name and hello; no painting
+// ============================================================================
+const REGIONS = [
+  ['all', '🌈 ทั้งหมด', null],
+  ['asean', 'อาเซียน', 'th la kh mm my id vn ph sg bn tl'],
+  ['asia', 'เอเชีย', 'jp cn kr in np mn bd pk lk bt ae qa tr'],
+  ['europe', 'ยุโรป', 'fr de it ua ru nl es se fi ch gr gb pt be ie at pl dk no is cz'],
+  ['america', 'อเมริกา', 'us ca br ar mx cl pe co jm'],
+  ['africa', 'แอฟริกา', 'za eg ke ng et ma'],
+  ['oceania', 'โอเชียเนีย', 'au nz'],
+];
+let kRegion = 'all', kFlag = null;
+function renderKnow() {
+  const kc = $('kChips'); kc.innerHTML = '';
+  for (const [id, label] of REGIONS) {
+    const b = document.createElement('button'); b.className = 'chip' + (id === kRegion ? ' on' : ''); b.textContent = label;
+    b.addEventListener('click', () => { sfx.tap(); kRegion = id; renderKnow(); });
+    kc.appendChild(b);
+  }
+  const ids = REGIONS.find((r) => r[0] === kRegion)[2];
+  const list = ids ? ids.split(' ').map((id) => BY[id]) : FLAGS;
+  const g = $('kGrid'); g.innerHTML = '';
+  for (const f of list) {
+    const b = document.createElement('button'); b.className = 'fcard' + (f === kFlag ? ' on' : ''); b.dataset.id = f.id;
+    const box = document.createElement('div'); box.className = 'fl'; box.appendChild(flagImg(f)); b.appendChild(box);
+    const sp = document.createElement('span'); sp.textContent = f.th; b.appendChild(sp);
+    b.addEventListener('click', () => { ac(); vib(10); knowFlag(f); });
+    g.appendChild(b);
+  }
+}
+function knowFlag(f) {
+  kFlag = f;
+  $('kGrid').querySelectorAll('.fcard').forEach((c) => c.classList.toggle('on', c.dataset.id === f.id));
+  const im = $('kImg');
+  im.src = trueUrl(f); im.className = f.id === 'np' ? 'np' : ''; void im.offsetWidth; im.classList.add('fly');
+  const { lines, mark } = fillInfo($('kInfo'), f);
+  $('kPaint').classList.remove('hidden');
+  say(lines.slice(0, 3), mark);
+}
+$('kPaint').addEventListener('click', () => { if (!kFlag) return; ac(); sfx.tap(); openFlag(kFlag, 'follow'); });
 $('nextBtn').addEventListener('click', () => {
   ac(); sfx.tap();
   const list = pool().length ? pool() : FLAGS;
@@ -869,10 +1117,10 @@ const ZOOMS = [
   ['america', 'อเมริกา', [90, 30, 230, 250], 0.06],
   ['south', 'แอฟริกา · ออสเตรเลีย', [330, 100, 380, 175], 0.055],
 ];
-let zoom = 'world';
+let zoom = 'world', mapAll = false;
 const capXY = (f) => [(f.lon + 180) * 2, (84 - f.lat) * 2];
 function zoomFor(f) {
-  if (['th', 'la', 'kh', 'mm', 'my', 'id', 'vn', 'ph'].includes(f.id)) return 'asean';
+  if (REGIONS[1][2].split(' ').includes(f.id)) return 'asean';
   const [x, y] = capXY(f);
   for (const [id, , [vx, vy, vw, vh]] of ZOOMS.slice(2)) if (x > vx && x < vx + vw && y > vy && y < vy + vh) return id;
   return 'world';
@@ -886,6 +1134,9 @@ function drawMap() {
     b.addEventListener('click', () => { sfx.tap(); zoom = id; drawMap(); });
     zc.appendChild(b);
   }
+  const all = document.createElement('button'); all.className = 'chip' + (mapAll ? ' on' : ''); all.textContent = '🚩 ทุกธง';
+  all.addEventListener('click', () => { sfx.tap(); mapAll = !mapAll; drawMap(); });
+  zc.appendChild(all);
   const [, , vb, fs] = ZOOMS.find((z) => z[0] === zoom);
   const svg = $('mapSvg'); svg.innerHTML = '';
   svg.setAttribute('viewBox', vb.join(' '));
@@ -895,12 +1146,12 @@ function drawMap() {
   const list = FLAGS.slice().sort((a, b) => b.lat - a.lat);
   for (const f of list) {
     const [x, y] = capXY(f), [, , w, h] = vbOf(f), fh = fw * Math.min(h / w, 1.2), ffw = f.id === 'np' ? fh * w / h : fw;
-    const top = y - fh * 1.7, isDone = done.includes(f.id);
+    const top = y - fh * 1.7, isDone = done.includes(f.id), shown = isDone || mapAll;
     const g = el('g', { class: 'pin' }, svg);
     el('rect', { x: x - fw * 0.4, y: top - fw * 0.3, width: ffw + fw * 0.8, height: y - top + fw * 0.6, fill: 'transparent' }, g);
     el('line', { x1: x, y1: y, x2: x, y2: top, stroke: '#5d4037', 'stroke-width': fw * 0.06, 'stroke-linecap': 'round' }, g);
     el('circle', { cx: x, cy: y, r: fw * 0.09, fill: isDone ? '#e54b82' : '#636e72' }, g);
-    if (isDone) {
+    if (shown) {
       const im = el('image', { x, y: top, width: ffw, height: fh, preserveAspectRatio: 'none' }, g);
       im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', trueUrl(f)); im.setAttribute('href', trueUrl(f));
       if (f.id !== 'np') el('rect', { x, y: top, width: ffw, height: fh, fill: 'none', stroke: 'rgba(0,0,0,.35)', 'stroke-width': fw * 0.02 }, g);
@@ -911,7 +1162,7 @@ function drawMap() {
     }
     g.addEventListener('click', () => {
       ac(); sfx.tap();
-      if (isDone) say(flagLines(f).slice(0, 3));
+      if (shown) say(flagLines(f).slice(0, 3));
       else { openFlag(f, 'follow'); say([LINES.notyet]); }
     });
   }
@@ -955,10 +1206,10 @@ function answer(f, b) {
 $('qSay').addEventListener('click', () => { ac(); if (qAns) say(['ธงไหนเป็นของประเทศ' + sayName(qAns)]); });
 $('qNext').addEventListener('click', () => { ac(); sfx.tap(); newQuestion(); });
 
-// #jp opens a flag to paint, #map / #quiz / #free open a mode
+// #jp opens a flag to paint, #map / #quiz / #free / #know open a mode
 const H = location.hash.slice(1);
 if (BY[H]) { setMode('follow', true); openFlag(BY[H], 'follow'); }
-else if (['map', 'quiz', 'free'].includes(H)) setMode(H, true);
+else if (['map', 'quiz', 'free', 'know'].includes(H)) setMode(H, true);
 else setMode('follow', true);
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->

@@ -32,7 +32,15 @@ for _loc, _voice in [('en-GB', 'SoniaNeural'), ('en-AU', 'NatashaNeural'), ('en-
                      ('es-ES', 'ElviraNeural'), ('es-AR', 'ElenaNeural'), ('sv-SE', 'SofieNeural'),
                      ('fi-FI', 'SelmaNeural'), ('el-GR', 'AthinaNeural'), ('nl-NL', 'ColetteNeural'),
                      ('uk-UA', 'PolinaNeural'), ('ru-RU', 'SvetlanaNeural'), ('pt-BR', 'FranciscaNeural'),
-                     ('zu-ZA', 'ThandoNeural')]:
+                     ('zu-ZA', 'ThandoNeural'), ('en-SG', 'LunaNeural'), ('en-NG', 'EzinneNeural'),
+                     ('en-NZ', 'MollyNeural'), ('pt-PT', 'RaquelNeural'), ('mn-MN', 'YesuiNeural'),
+                     ('bn-BD', 'NabanitaNeural'), ('ur-PK', 'UzmaNeural'), ('si-LK', 'ThiliniNeural'),
+                     ('ar-AE', 'FatimaNeural'), ('ar-QA', 'AmalNeural'), ('ar-EG', 'SalmaNeural'),
+                     ('ar-MA', 'MounaNeural'), ('nl-BE', 'DenaNeural'), ('ga-IE', 'OrlaNeural'),
+                     ('de-AT', 'IngridNeural'), ('pl-PL', 'AgnieszkaNeural'), ('da-DK', 'ChristelNeural'),
+                     ('nb-NO', 'PernilleNeural'), ('is-IS', 'GudrunNeural'), ('cs-CZ', 'VlastaNeural'),
+                     ('es-MX', 'DaliaNeural'), ('es-CL', 'CatalinaNeural'), ('es-PE', 'CamilaNeural'),
+                     ('es-CO', 'SalomeNeural'), ('sw-KE', 'ZuriNeural'), ('am-ET', 'MekdesNeural')]:
     VOICES[_loc.lower()] = (_loc, f'{_loc}-{_voice}', '-10%')
 
 
