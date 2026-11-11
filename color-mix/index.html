@@ -110,6 +110,22 @@
   .saved { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; min-height: 8px; }
   .saved .swatch { width: 54px; height: 54px; }
 
+  /* pour mode */
+  .pots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .pot {
+    min-height: 84px; border-radius: 22px; border: 3px solid #fff; background: rgba(255,255,255,0.85); cursor: pointer; touch-action: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+    font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,0.15); padding: 4px 2px;
+    -webkit-touch-callout: none;
+  }
+  .pot svg { width: 56px; height: 50px; pointer-events: none; }
+  .pot span { pointer-events: none; }
+  .pot.on { border-color: var(--brand); background: #fff0f5; }
+  .pot.pouring { transform: scale(.94); }
+  .ratio { display: flex; height: 30px; border-radius: 999px; overflow: hidden; margin-top: 10px; background: #eef0f5; border: 3px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+  .ratio div { height: 100%; transition: width .15s; min-width: 0; }
+  .ratio:empty::after { content: ''; }
+
   /* paint mode */
   .wells { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
   .well { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.18), inset 0 -6px 0 rgba(0,0,0,0.12); cursor: pointer; }
@@ -133,6 +149,7 @@
   <header><h1>🎨 ผสมสี</h1></header>
   <div class="modes" id="modes">
     <button class="chip on" data-mode="mix">🎨 ผสม</button>
+    <button class="chip" data-mode="pour">🫗 เทสี</button>
     <button class="chip" data-mode="target">🎯 โจทย์</button>
     <button class="chip" data-mode="paint">🖌️ ระบาย</button>
     <button class="chip" data-mode="light">🔦 แสงสี</button>
@@ -154,6 +171,19 @@
       <button class="btn" id="toPaint">🖌️ เอาไประบาย</button>
     </div>
     <div class="saved" id="saved"></div>
+  </div>
+
+  <!-- POUR: paint buckets + a big glass -->
+  <div id="pourUI" class="hidden">
+    <div class="view"><canvas id="pourC" width="800" height="640" aria-label="แก้วผสมสี"></canvas></div>
+    <div class="ratio" id="ratio"></div>
+    <div class="result" id="pourRes"></div>
+    <div class="pots" id="pots"></div>
+    <div class="row">
+      <button class="btn" id="emptyBtn">🫗 เทออก</button>
+      <button class="btn" id="pSaveBtn">💾 เก็บสี</button>
+      <button class="btn" id="pToPaint">🖌️ เอาไประบาย</button>
+    </div>
   </div>
 
   <!-- PAINT -->
@@ -694,11 +724,216 @@ const endLight = () => {
 lightC.addEventListener('pointerup', endLight); lightC.addEventListener('pointercancel', endLight);
 
 // ============================================================================
+// 🫗 POUR — hold a paint bucket to pour it into a big glass. Every drop is added to
+// the same Kubelka–Munk mixture as the palette, so the glass changes colour as it
+// fills, in proportion to how long each colour was poured. Ticks = 1 ส่วน each.
+// ============================================================================
+const pourC = $('pourC'), qc = pourC.getContext('2d');
+const POTS = [['แดง', { red: 1 }], ['เหลือง', { yellow: 1 }], ['น้ำเงิน', { blue: 1 }], ['ขาว', { white: 1 }], ['ดำ', { black: 1 }],
+  ['ส้ม', NAME_REF['ส้ม']], ['เขียว', NAME_REF['เขียว']], ['ม่วง', NAME_REF['ม่วง']], ['ชมพู', NAME_REF['ชมพู']], ['ฟ้า', NAME_REF['ฟ้า']]]
+  .map(([th, r]) => { const v = vec(r), s = v.reduce((a, b) => a + b, 0); const c = v.map((x) => x / s); return { th, c, rgb: kmRGB(c) }; });
+const CAP = 10, RATE = 1.5;                               // glass holds 10 ส่วน; 1.5 ส่วน per second of pouring
+const GT = 200, GB = 610, FILL_TOP = 236, IN_BOT = 586;   // glass rim, base, max level, inner floor
+const gxl = (y) => 302 + 30 * (y - GT) / (GB - GT), gxr = (y) => 880 - gxl(y);
+const POUR_ANG = 1.15, CAN = { x: 300, y: 110 };
+let gT = [0, 0, 0, 0, 0], shown = [0, 0, 0, 0, 0], potAmt = new Array(POTS.length).fill(0), potOrder = [];
+let potSel = -1, pouring = false, canAng = 0, streamOff = 9, drain = 0, swirls = [], pourLast = 0, pourSaid = '', fullSaid = false, pourTimer = 0;
+let pourSnd = null;
+const gVol = () => gT.reduce((a, b) => a + b, 0);
+const levelY = (v) => IN_BOT - (IN_BOT - FILL_TOP) * Math.min(1, v / CAP);
+function potSvg(col) {
+  return `<svg viewBox="0 0 60 54"><path d="M12,16 Q30,-4 48,16" fill="none" stroke="#7b8794" stroke-width="3"/>
+    <path d="M10,16 h40 l-4,34 h-32 z" fill="#dfe5ec" stroke="#7b8794" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M10,16 h40 l-1,7 h-38 z" fill="${col}"/><path d="M36,22 v14 q0,4 3,4 q3,0 3,-4 v-14 z" fill="${col}"/></svg>`;
+}
+function buildPots() {
+  $('pots').innerHTML = POTS.map((p, i) => `<button class="pot" data-i="${i}">${potSvg(hex(p.rgb))}<span>${p.th}</span></button>`).join('');
+  for (const b of $('pots').children) {
+    b.addEventListener('pointerdown', (ev) => { ev.preventDefault(); try { b.setPointerCapture(ev.pointerId); } catch (e) {} startPour(+b.dataset.i); });
+    b.addEventListener('pointerup', stopPour); b.addEventListener('pointercancel', stopPour);
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+}
+function markPots() { for (const b of $('pots').children) { b.classList.toggle('on', +b.dataset.i === potSel); b.classList.toggle('pouring', pouring && +b.dataset.i === potSel); } }
+function startPour(i) {
+  ensureAudio(); buzz(10);
+  if (drain > 0) return;
+  if (i !== potSel) { potSel = i; speak('สี' + POTS[i].th); }
+  if (gVol() >= CAP - 0.01) { sayFull(); markPots(); return; }
+  pouring = true; pourLast = 0; clearTimeout(pourTimer); markPots(); pourSound(true);
+}
+function stopPour() {
+  if (!pouring) return;
+  pouring = false; markPots(); pourSound(false);
+  clearTimeout(pourTimer); pourTimer = setTimeout(announcePour, 700);
+}
+function sayFull() { if (!fullSaid) { fullSaid = true; speak('แก้วเต็มแล้ว เทออกแล้วเริ่มใหม่นะ'); } }
+function announcePour() {
+  renderPourInfo();
+  if (potOrder.filter((i) => potAmt[i] > 0.05).length < 2) return;
+  const nm = nameOf(kmRGB(gT)), key = recipeLine(gT) + '|' + nm;
+  if (key === pourSaid) return;
+  pourSaid = key; chime(); speakSeq([recipeLine(gT), 'ได้สี' + nm]);
+}
+function renderPourInfo() {
+  const v = gVol();
+  $('ratio').innerHTML = potOrder.map((i) => `<div style="width:${(potAmt[i] / CAP * 100).toFixed(1)}%;background:${hex(POTS[i].rgb)}"></div>`).join('');
+  if (v < 0.05) { $('pourRes').innerHTML = ''; return; }
+  const nm = nameOf(kmRGB(gT));
+  $('pourRes').innerHTML = `<div class="swatch" style="background:${hex(kmRGB(gT))}" id="pRes"></div><div class="rname">สี${nm}</div>`;
+  $('pRes').onclick = () => { ensureAudio(); speakSeq(potOrder.length > 1 ? [recipeLine(gT), 'ได้สี' + nm] : ['สี' + nm]); };
+}
+function pourSound(on) {
+  if (!AC) return;
+  if (on && !pourSnd) {
+    const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = AC.createBufferSource(), bp = AC.createBiquadFilter(), g = AC.createGain();
+    s.buffer = b; s.loop = true; bp.type = 'bandpass'; bp.Q.value = 4; bp.frequency.value = 400; g.gain.value = 0;
+    g.gain.linearRampToValueAtTime(0.35, AC.currentTime + 0.08);
+    s.connect(bp).connect(g).connect(AC.destination); s.start();
+    pourSnd = { s, bp, g };
+  } else if (!on && pourSnd) {
+    const { s, g } = pourSnd; pourSnd = null;
+    try { g.gain.cancelScheduledValues(AC.currentTime); g.gain.setValueAtTime(g.gain.value, AC.currentTime); g.gain.linearRampToValueAtTime(0, AC.currentTime + 0.12); s.stop(AC.currentTime + 0.15); } catch (e) {}
+  }
+}
+function emptyGlass() {
+  ensureAudio(); buzz(12);
+  if (gVol() < 0.05) return;
+  stopPour(); drain = 1; noise(0.7, 600, 1.5, 0.4); speak('เทสีออกแล้ว');
+}
+$('emptyBtn').addEventListener('click', emptyGlass);
+$('pSaveBtn').addEventListener('click', () => {
+  ensureAudio(); const v = gVol();
+  if (v < 0.05) { speak('เทสีลงแก้วก่อนนะ'); return; }
+  const s = gT.map((x) => x / v); saved.unshift(s); saved = saved.slice(0, 14);
+  try { localStorage.setItem('colorMix2', JSON.stringify(saved)); } catch (e) {}
+  renderSaved(); chime(); buzz(10); speak('เก็บสี' + nameOf(kmRGB(s)) + 'ไว้แล้ว');
+});
+$('pToPaint').addEventListener('click', () => {
+  ensureAudio(); const v = gVol();
+  if (v > 0.05) loadBrush(gT.map((x) => x / v), true);
+  setMode('paint');
+});
+// hold on the glass = keep pouring the chosen bucket
+pourC.addEventListener('pointerdown', (ev) => {
+  ensureAudio();
+  if (potSel < 0) { speak('แตะค้างที่ถังสี แล้วเทลงแก้วเลย'); return; }
+  try { pourC.setPointerCapture(ev.pointerId); } catch (e) {} startPour(potSel);
+});
+pourC.addEventListener('pointerup', stopPour); pourC.addEventListener('pointercancel', stopPour);
+
+function glassPath(ctx, top, bot) {
+  ctx.beginPath(); ctx.moveTo(gxl(top), top); ctx.lineTo(gxl(bot), bot); ctx.lineTo(gxr(bot), bot); ctx.lineTo(gxr(top), top); ctx.closePath();
+}
+const tint = (rgb, k, to = 255) => `rgb(${rgb.map((v) => Math.round(v + (to - v) * k)).join(',')})`;
+function pourTick(dt, now) {
+  // pour
+  canAng += ((pouring ? POUR_ANG : 0) - canAng) * Math.min(1, dt * 10);
+  const flowing = pouring && canAng > POUR_ANG - 0.25;
+  if (flowing) {
+    const add = Math.min(RATE * dt, CAP - gVol());
+    if (add > 0) {
+      const P = POTS[potSel];
+      for (let k = 0; k < 5; k++) gT[k] += P.c[k] * add;
+      if (!potAmt[potSel]) potOrder.push(potSel);
+      potAmt[potSel] += add; fullSaid = false;
+      if ((pourLast += dt) > 0.12) { pourLast = 0; renderPourInfo(); }
+    }
+    if (gVol() >= CAP - 0.01) { stopPour(); sayFull(); buzz([20, 40, 20]); }
+    streamOff = 0;
+  } else streamOff += dt;
+  // drain
+  if (drain > 0) {
+    drain -= dt * 1.6;
+    if (drain <= 0) { drain = 0; gT = [0, 0, 0, 0, 0]; shown = [0, 0, 0, 0, 0]; potAmt.fill(0); potOrder = []; swirls = []; pourSaid = ''; fullSaid = false; renderPourInfo(); }
+  }
+  const vol = gVol() * (drain > 0 ? drain : 1), lv = levelY(vol);
+  for (let k = 0; k < 5; k++) shown[k] += (gT[k] - shown[k]) * Math.min(1, dt * 2.5);
+  if (pourSnd) pourSnd.bp.frequency.value = 320 + 900 * vol / CAP;    // pitch rises as the glass fills
+
+  // scene
+  qc.fillStyle = '#fffef9'; qc.fillRect(0, 0, 800, 640);
+  qc.fillStyle = '#f3ecdf'; qc.fillRect(0, 0, 800, 560);
+  qc.fillStyle = '#c98c55'; qc.fillRect(0, 600, 800, 40); qc.fillStyle = '#a86d3c'; qc.fillRect(0, 600, 800, 6);
+  // glass back
+  glassPath(qc, GT, GB); qc.fillStyle = 'rgba(214,236,250,0.45)'; qc.fill();
+  // liquid
+  if (vol > 0.01) {
+    const rgb = kmRGB(shown.some((v) => v > 0) ? shown : gT);
+    qc.save(); glassPath(qc, lv, IN_BOT); qc.clip();
+    qc.fillStyle = hex(rgb); qc.fillRect(0, lv, 800, IN_BOT - lv + 2);
+    // incoming colour swirls
+    if (flowing) for (let n = 0; n < 2; n++) swirls.push({ x: 382 + Math.random() * 10, y: lv + 6, vx: 30 + Math.random() * 90, vy: 40 + Math.random() * 80, r: 10 + Math.random() * 8, life: 1, col: POTS[potSel].rgb });
+    for (const s of swirls) {
+      s.life -= dt * 0.9; s.x += s.vx * dt; s.y += s.vy * dt; s.r += dt * 26;
+      const cx = 440; s.vx += (cx - s.x) * dt * 0.8 + (s.y - lv) * dt * 0.5; s.vy += (s.x - cx) * dt * 0.3;
+      if (s.y > IN_BOT - 10) s.vy = -Math.abs(s.vy) * 0.5;
+      qc.fillStyle = `rgba(${s.col.join(',')},${Math.max(0, s.life * 0.5).toFixed(3)})`;
+      qc.beginPath(); qc.arc(s.x, s.y, s.r, 0, Math.PI * 2); qc.fill();
+    }
+    swirls = swirls.filter((s) => s.life > 0);
+    const sh = qc.createLinearGradient(gxl(lv), 0, gxr(lv), 0);
+    sh.addColorStop(0, 'rgba(0,0,0,0.12)'); sh.addColorStop(0.35, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.16)');
+    qc.fillStyle = sh; qc.fillRect(0, lv, 800, IN_BOT - lv + 2);
+    qc.restore();
+    // surface
+    const rx = (gxr(lv) - gxl(lv)) / 2;
+    qc.fillStyle = tint(rgb, 0.18); qc.beginPath(); qc.ellipse(440, lv, rx, 11, 0, 0, Math.PI * 2); qc.fill();
+    if (flowing) {                                        // ripples where the stream lands
+      qc.strokeStyle = 'rgba(255,255,255,0.55)'; qc.lineWidth = 3;
+      for (let k = 0; k < 2; k++) { const ph = (now / 600 + k / 2) % 1; qc.globalAlpha = 1 - ph; qc.beginPath(); qc.ellipse(384, lv, 14 + ph * 50, 4 + ph * 7, 0, 0, Math.PI * 2); qc.stroke(); }
+      qc.globalAlpha = 1;
+    }
+  } else if (potSel < 0 || !pouring) {
+    // empty: a bouncing hand points at the buckets
+    qc.font = '90px sans-serif'; qc.textAlign = 'center'; qc.textBaseline = 'middle';
+    qc.fillText('👇', 440, 430 + Math.sin(now / 260) * 14);
+  }
+  // stream
+  if (potSel >= 0 && streamOff < 0.35) {
+    const c = Math.cos(canAng), s = Math.sin(canAng);
+    const lx = CAN.x + 58 * c + 48 * s, ly = CAN.y + 58 * s - 48 * c;
+    const fall = streamOff > 0 ? streamOff * streamOff * 4000 : 0;
+    const y0 = Math.min(lv, ly + fall), wob = Math.sin(now / 45) * 1.5;
+    if (y0 < lv - 2) {
+      qc.strokeStyle = hex(POTS[potSel].rgb); qc.lineCap = 'round'; qc.lineWidth = 15;
+      qc.beginPath(); qc.moveTo(lx + (y0 - ly) * 0.0 + Math.min(14, (y0 - ly) * 0.3), y0);
+      qc.quadraticCurveTo(lx + 16 + wob, Math.max(y0, ly + 14), 384 + wob, lv); qc.stroke();
+      qc.strokeStyle = 'rgba(255,255,255,0.35)'; qc.lineWidth = 4;
+      qc.beginPath(); qc.moveTo(380 + wob, Math.max(y0, ly + 30)); qc.lineTo(380 + wob, lv - 6); qc.stroke();
+    }
+  }
+  // glass front: outline, measuring ticks (1 ส่วน each), shine, thick base
+  qc.strokeStyle = 'rgba(110,150,180,0.95)'; qc.lineWidth = 6; qc.lineJoin = 'round';
+  qc.beginPath(); qc.moveTo(gxl(GT) - 10, GT); qc.lineTo(gxl(GB) - 10, GB); qc.lineTo(gxr(GB) + 10, GB); qc.lineTo(gxr(GT) + 10, GT); qc.stroke();
+  qc.fillStyle = 'rgba(200,225,240,0.75)'; qc.fillRect(gxl(GB) - 7, IN_BOT + 2, gxr(GB) - gxl(GB) + 14, GB - IN_BOT - 5);
+  qc.strokeStyle = 'rgba(90,120,150,0.6)'; qc.lineWidth = 3;
+  for (let k = 1; k <= CAP; k++) { const y = levelY(k), x = gxr(y); qc.beginPath(); qc.moveTo(x - (k % 5 ? 16 : 30), y); qc.lineTo(x, y); qc.stroke(); }
+  qc.fillStyle = 'rgba(255,255,255,0.55)';
+  qc.beginPath(); qc.moveTo(gxl(GT) + 14, GT + 20); qc.lineTo(gxl(GT) + 34, GT + 20); qc.lineTo(gxl(GB) + 34, GB - 50); qc.lineTo(gxl(GB) + 16, GB - 50); qc.closePath(); qc.fill();
+  // the chosen bucket, tipping over the glass
+  if (potSel >= 0) {
+    const col = hex(POTS[potSel].rgb);
+    qc.save(); qc.translate(CAN.x, CAN.y); qc.rotate(canAng);
+    qc.strokeStyle = '#6b7785'; qc.lineWidth = 5; qc.beginPath(); qc.arc(0, -40, 50, Math.PI * 1.1, Math.PI * 1.9); qc.stroke();
+    qc.fillStyle = '#dfe5ec'; qc.strokeStyle = '#6b7785'; qc.lineWidth = 5;
+    qc.beginPath(); qc.moveTo(-58, -48); qc.lineTo(58, -48); qc.lineTo(50, 48); qc.lineTo(-50, 48); qc.closePath(); qc.fill(); qc.stroke();
+    qc.fillStyle = col; qc.fillRect(-55, -45, 110, 14);
+    qc.beginPath(); qc.moveTo(30, -32); qc.lineTo(30, -6); qc.arc(36, -6, 6, Math.PI, 0, true); qc.lineTo(42, -32); qc.fill();
+    qc.restore();
+  }
+}
+
+// ============================================================================
 // MODES + TIPS
 // ============================================================================
 const TIPS = {
   mix: ['สีแม่ 3 สี คือ แดง เหลือง น้ำเงิน ผสมกันได้เกือบทุกสี', 'แตะหลอดสีเพื่อบีบสีลงจาน แล้วลากพู่กันวนๆ ให้สีเข้ากัน',
     'ใส่สีไหนมากกว่า สีที่ได้จะเอียงไปทางสีนั้น', 'เติมสีขาวให้สีอ่อนลง เติมสีดำให้สีเข้มขึ้น', 'ผสมสีแม่ทั้งสามสีเข้าด้วยกัน จะได้สีน้ำตาลหม่นๆ'],
+  pour: ['แตะค้างที่ถังสี สีจะไหลลงแก้ว ยกนิ้วขึ้นเมื่อไหร่ก็หยุดเท', 'เทสีไหนนานกว่า สีในแก้วจะเอียงไปทางสีนั้น',
+    'ขีดข้างแก้วนับเป็นส่วนๆ ลองเทแดงหนึ่งขีด เหลืองสองขีด ดูสิ', 'สีขาวกับสีดำแรงมาก เทนิดเดียวสีก็เปลี่ยนเยอะ'],
   target: ['ดูสีในวงกลม แล้วผสมให้เหมือน ถ้าสีเพี้ยนไป ล้างจานแล้วเริ่มใหม่ได้'],
   light: ['ลากวงไฟให้ซ้อนกันดูสิ แสงยิ่งผสมยิ่งสว่าง ไม่เหมือนสีน้ำที่ยิ่งผสมยิ่งเข้ม',
     'จอโทรศัพท์และทีวีมีจุดแสงแดง เขียว น้ำเงิน เล็กๆ เต็มไปหมด รวมกันเป็นทุกสีที่เราเห็น'],
@@ -712,10 +947,13 @@ function setMode(m) {
   $('mixUI').classList.toggle('hidden', !(m === 'mix' || m === 'target'));
   $('targetBox').classList.toggle('hidden', m !== 'target');
   $('paintUI').classList.toggle('hidden', m !== 'paint');
+  $('pourUI').classList.toggle('hidden', m !== 'pour');
+  if (m !== 'pour') stopPour();
   $('lightUI').classList.toggle('hidden', m !== 'light');
   ['saveBtn', 'toPaint'].forEach((id) => $(id).classList.toggle('hidden', m === 'target'));
   $('saved').classList.toggle('hidden', m === 'target');
   if (m === 'mix') { setFact(TIPS.mix[tipN++ % TIPS.mix.length]); speak('บีบสีลงจาน แล้วลากพู่กันผสมสีเลย'); }
+  else if (m === 'pour') { setFact(TIPS.pour[tipN++ % TIPS.pour.length]); markPots(); renderPourInfo(); speak('แตะค้างที่ถังสี แล้วเทลงแก้วเลย'); }
   else if (m === 'target') { setFact(TIPS.target[0]); startTarget(); }
   else if (m === 'paint') { buildWells(); renderBrush(); startPic(); }
   else if (m === 'light') { setFact(TIPS.light[tipN++ % 2]); drawLight(); speak('ลากไฟฉายให้แสงซ้อนกันดูสิ'); }
@@ -791,18 +1029,25 @@ function celebrate(n) {
     setTimeout(() => c.remove(), 3800);
   }
 }
-function loop() { if (palDirty && (mode === 'mix' || mode === 'target')) renderPal(); requestAnimationFrame(loop); }
+let loopT = 0;
+function loop(now) {
+  const dt = loopT ? Math.min(0.05, (now - loopT) / 1000) : 0.016; loopT = now;
+  if (palDirty && (mode === 'mix' || mode === 'target')) renderPal();
+  if (mode === 'pour') pourTick(dt, now);
+  requestAnimationFrame(loop);
+}
 
 // Block double-tap zoom on iOS
 let lastTouchEnd = 0;
 document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
 
-buildTubes(); renderSaved(); setFact(TIPS.mix[tipN++]); renderPal(); requestAnimationFrame(loop);
+buildTubes(); buildPots(); renderSaved(); setFact(TIPS.mix[tipN++]); renderPal(); requestAnimationFrame(loop);
 
 // Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
 VoiceClips.lines(() => {
   const L = ['บีบสีลงจาน แล้วลากพู่กันผสมสีเลย', 'บีบสีลงจานก่อนนะ', 'ล้างจานสีแล้ว', 'สีเพี้ยนไปแล้ว ล้างจานแล้วเริ่มใหม่นะ', 'จุ่มพู่กันในสีก่อนนะ',
     'สีเก่าติดมาด้วย ล้างพู่กันในแก้วน้ำก่อนนะ', 'เปลี่ยนน้ำใหม่แล้ว', 'น้ำล้างพู่กันสกปรกแล้ว แตะแก้วอีกทีเพื่อเปลี่ยนน้ำ', 'ล้างพู่กันแล้ว', 'ลากไฟฉายให้แสงซ้อนกันดูสิ',
+    'แตะค้างที่ถังสี แล้วเทลงแก้วเลย', 'แก้วเต็มแล้ว เทออกแล้วเริ่มใหม่นะ', 'เทสีออกแล้ว', 'เทสีลงแก้วก่อนนะ',
     ...Object.values(LIGHT_SAY), ...Object.values(TIPS).flat()];
   for (const [n] of NAMES) L.push('สี' + n, 'ได้สี' + n, 'เก็บสี' + n + 'ไว้แล้ว');
   for (const n of TARGETS) L.push('ผสมให้ได้สี' + n, 'เก่งมาก ได้สี' + n + 'แล้ว');
