@@ -132,8 +132,14 @@
     position: absolute; right: 14px; bottom: 10px; max-width: 55%;
     font-size: 12px; color: #aab3e6; text-align: right; line-height: 1.3;
   }
-  #sizeWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  #sizeSvg { min-width: 1000px; }
+  #sizeWrap { position: relative; height: clamp(360px, 64vh, 680px); background: radial-gradient(ellipse at 20% 50%, #1b2156 0%, #0b1033 70%); }
+  #sizeWrap canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  #szFront { touch-action: none; cursor: grab; }
+  .szbar { position: absolute; right: 10px; top: 10px; display: flex; gap: 8px; z-index: 2; }
+  .szzoom { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 8px; z-index: 2; }
+  .szzoom .chip { min-width: 60px; min-height: 60px; }
+  .szhint { position: absolute; left: 50%; top: 80px; transform: translateX(-50%); pointer-events: none; font-size: 14px; color: #fff; background: rgba(0,0,0,0.45); padding: 5px 14px; border-radius: 999px; white-space: nowrap; animation: szfade 1s 6s forwards; }
+  @keyframes szfade { to { opacity: 0; } }
 
   .vctrls { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
   .vlab { font-size: 28px; }
@@ -295,8 +301,17 @@
         <div class="note">ขนาดดาวและระยะทางย่อให้ดูง่าย<br>ของจริงอยู่ห่างกันมากกว่านี้มาก</div>
       </div>
       <div class="view hidden" id="sizeView">
-        <div id="sizeWrap"><svg id="sizeSvg" viewBox="0 0 1900 1100" aria-label="เทียบขนาดดาว"></svg></div>
-        <div class="note" style="position:static;max-width:none;text-align:center;padding:0 12px 10px">ขนาดในหน้านี้เทียบกันตามจริง · ดวงอาทิตย์ใหญ่จนล้นจอ! · เลื่อนไปทางขวาดูต่อ</div>
+        <div id="sizeWrap" aria-label="เทียบขนาดดาว">
+          <canvas id="szBack"></canvas><canvas id="szGL"></canvas><canvas id="szFront"></canvas>
+          <div class="szbar">
+            <button class="chip on" id="szSys">🌙 ดวงจันทร์</button><button class="chip" id="szRow">📏 เรียงชิด</button>
+          </div>
+          <div class="szzoom">
+            <button class="chip icon" id="szIn" aria-label="ซูมเข้า">➕</button><button class="chip icon" id="szOut" aria-label="ซูมออก">➖</button><button class="chip icon" id="szSun" aria-label="ดูดวงอาทิตย์ทั้งดวง">☀️</button>
+          </div>
+          <div class="szhint">👆 ลากดาวดวงใหญ่เพื่อหมุน · ถ่างนิ้วเพื่อซูม</div>
+        </div>
+        <div class="note" id="sizeNote" style="position:static;max-width:none;text-align:center;padding:6px 12px 10px"></div>
       </div>
       <div class="view hidden" id="jumpView"><svg id="jumpSvg" viewBox="0 0 1000 700" aria-label="ไปเยือนดาว"></svg></div>
       <div class="view hidden" id="tripView"><svg id="tripSvg" viewBox="0 0 1000 700" aria-label="นั่งจรวดไปดาว"></svg></div>
@@ -769,6 +784,7 @@ function tick(now) {
   meteorTick(dt);
   if ((mode === 'explore' || mode === 'mission') && (follow || flight) && speed === 0) placeOrbit();
   if (mode === 'explore' || mode === 'mission') renderGlobe(dt);
+  if (mode === 'size') sizeTick(dt);
   if ((mode === 'explore' || mode === 'mission') && speed > 0 && !document.hidden) {
     const dd = dt * DAYS_PER_SEC * speed;
     days += dd;
@@ -900,12 +916,7 @@ const PINS = { earth: [15, 101, '📍 ประเทศไทย'], mars: [18.6
 const gcv = document.getElementById('globe');
 let gl = null, gprog = null, GU = {}, globeOn = false, globeRcss = 0, viewLat = 0.25;
 const texObj = {}, texLoading = {}, gspin = {};
-function glInit() {
-  if (gl !== null) return !!gl;
-  try { gl = gcv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true }); } catch (e) { gl = false; }
-  if (!gl) { gl = false; return false; }
-  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-  const fs = `precision highp float;
+const GLOBE_FS = `precision highp float;
 uniform vec2 uC;uniform float uR;uniform mat3 uM;uniform mat3 uMT;uniform vec3 uL;
 uniform sampler2D uTex;uniform sampler2D uCloud;uniform sampler2D uRing;
 uniform float uEmis;uniform float uHasCloud;uniform float uHasRing;uniform float uRin;uniform float uRout;
@@ -939,6 +950,12 @@ void main(){
   }
   gl_FragColor=vec4(col.rgb*col.a,col.a);
 }`;
+function glInit() {
+  if (gl !== null) return !!gl;
+  try { gl = gcv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true }); } catch (e) { gl = false; }
+  if (!gl) { gl = false; return false; }
+  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs = GLOBE_FS;
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
   try {
     gprog = gl.createProgram();
@@ -1064,51 +1081,377 @@ function renderGlobe(dt) {
 }
 
 // ============================================================================
-// SIZE VIEW — all diameters to the same true scale (Earth radius = 16 units)
+// SIZE VIEW — one true scale for everything (km), zoom from the whole Sun down to
+// a single planet. Every body is a real-texture sphere that spins (drag one to turn
+// it); the big moons orbit their planet at their TRUE size, TRUE distance and TRUE
+// relative speed (1 second = 1 day). 📏 เรียงชิด packs the bodies side by side to
+// compare sizes; 🌙 ดวงจันทร์ spaces them out so each moon system fits.
+// Layers: back 2D canvas (glow, orbit lines) → WebGL spheres → front 2D canvas
+// (labels, specks too small for WebGL, selection ring).
 // ============================================================================
-// Row 1: everything in distance order at ONE true scale (the Moon and the dwarf planets
-// are specks — that is the point). Row 2: Earth, the Moon and the dwarf planets ×10.
+// Moons: diameter km, semi-major axis km, period days (− = retrograde), orbit-plane
+// tilt in degrees (from the planet's equator; the Moon's is the ecliptic), colour(s).
+// Sources: NASA planetary fact sheets / JPL satellite parameters.
+const MOONS = [
+  { id: 'moon', p: 'earth', d: 3474.8, a: 384400, P: 27.32, plane: 5.1, ecl: true },
+  { id: 'phobos', th: 'โฟบอส', p: 'mars', d: 22.5, a: 9376, P: 0.319, c: ['#7a6a5e'] },
+  { id: 'deimos', th: 'ดีมอส', p: 'mars', d: 12.4, a: 23463, P: 1.263, c: ['#a08f80'] },
+  { id: 'io', th: 'ไอโอ', p: 'jupiter', d: 3643, a: 421700, P: 1.769, c: ['#e2cf5e', '#d9a441'] },
+  { id: 'europa', th: 'ยูโรปา', p: 'jupiter', d: 3122, a: 671034, P: 3.551, c: ['#ddd0b4', '#b99c78'] },
+  { id: 'ganymede', th: 'แกนีมีด', p: 'jupiter', d: 5268, a: 1070412, P: 7.155, c: ['#a49886', '#7d7266'] },
+  { id: 'callisto', th: 'คัลลิสโต', p: 'jupiter', d: 4821, a: 1882709, P: 16.689, c: ['#6e6458', '#8c8274'] },
+  { id: 'mimas', th: 'ไมมัส', p: 'saturn', d: 396, a: 185539, P: 0.942, c: ['#c8c6c2'] },
+  { id: 'enceladus', th: 'เอนเซลาดัส', p: 'saturn', d: 504, a: 237948, P: 1.370, c: ['#f4f6f8'] },
+  { id: 'tethys', th: 'ทีทิส', p: 'saturn', d: 1062, a: 294619, P: 1.888, c: ['#dcdad6'] },
+  { id: 'dione', th: 'ไดโอนี', p: 'saturn', d: 1123, a: 377396, P: 2.737, c: ['#cfcac2'] },
+  { id: 'rhea', th: 'รีอา', p: 'saturn', d: 1527, a: 527108, P: 4.518, c: ['#bdb8b0'] },
+  { id: 'titan', th: 'ไททัน', p: 'saturn', d: 5150, a: 1221870, P: 15.945, c: ['#d9a441', '#c98f2f'] },
+  { id: 'iapetus', th: 'ไอแอปิทัส', p: 'saturn', d: 1469, a: 3560820, P: 79.32, plane: 15.5, c: ['#4a3d30', '#e6e1d6'] },  // dark/bright halves
+  { id: 'miranda', th: 'มิแรนดา', p: 'uranus', d: 472, a: 129390, P: 1.413, c: ['#bfbfbf'] },
+  { id: 'ariel', th: 'แอเรียล', p: 'uranus', d: 1158, a: 191020, P: 2.520, c: ['#c9c6c0'] },
+  { id: 'umbriel', th: 'อัมเบรียล', p: 'uranus', d: 1169, a: 266000, P: 4.144, c: ['#7a7672'] },
+  { id: 'titania', th: 'ไททาเนีย', p: 'uranus', d: 1577, a: 435910, P: 8.706, c: ['#b4aaa0'] },
+  { id: 'oberon', th: 'โอเบอรอน', p: 'uranus', d: 1523, a: 583520, P: 13.463, c: ['#9a8f86'] },
+  { id: 'triton', th: 'ไทรทัน', p: 'neptune', d: 2707, a: 354759, P: -5.877, plane: 23, c: ['#e0d2c8', '#c9b3a8'] },   // goes backwards
+  { id: 'charon', th: 'แครอน', p: 'pluto', d: 1212, a: 19591, P: 6.387, c: ['#a69d97', '#8a807a'] },
+  { id: 'dysnomia', th: 'ดิสโนเมีย', p: 'eris', d: 615, a: 37273, P: 15.786, plane: 78, c: ['#8a8580'] },
+];
+const MOON_BY = Object.fromEntries(MOONS.map((m) => [m.id, m]));
+const moonLine = (m) => m.th + ' ดวงจันทร์ของ' + BY[m.p].th;
+// how many moons each world really has (the drawing shows only the big ones)
+const MOON_COUNT = { earth: '1 ดวง', mars: '2 ดวง', jupiter: 'มากกว่า 90 ดวง', saturn: 'มากกว่า 270 ดวง', uranus: 'มากกว่า 25 ดวง', neptune: '16 ดวง', pluto: '5 ดวง', haumea: '2 ดวง', makemake: '1 ดวง', eris: '1 ดวง' };
+// spin (days per turn, − = backwards); shown slowed down to 6–60 s per turn
+const SPIN_D = { sun: 25.4, mercury: 58.6, venus: -243, earth: 1, mars: 1.03, jupiter: 0.41, saturn: 0.44, uranus: 0.72, neptune: 0.67, pluto: 6.39, ceres: 0.38, makemake: 0.95, eris: 15.8 };
+const TILT2 = Object.assign({}, AXIS, { pluto: 122.5, ceres: 4, eris: 0, makemake: 0, haumea: 0 });
+const FLAT = { mercury: '#9c9a97', venus: '#e3c58f', earth: '#4a78b8', mars: '#c1653a', jupiter: '#c9a27c', saturn: '#d8c08c',
+  uranus: '#9fd6dc', neptune: '#4a6fd8', moon: '#a9a9a9', sun: '#ffcc55', ceres: '#8d8a86', pluto: '#d9b48f', haumea: '#e8ecef', makemake: '#b5704d', eris: '#eef1f5' };
 const SIZE_ROW = ['mercury', 'venus', 'earth', 'moon', 'mars', 'ceres', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'haumea', 'makemake', 'eris'];
-const ZOOM_ROW = ['earth', 'moon', 'pluto', 'eris', 'haumea', 'makemake', 'ceres'];
-function buildSize() {
-  const sv = document.getElementById('sizeSvg');
-  const K = 16 / (EARTH_D / 2);                 // units per km of radius
-  const cy = 300;
-  const sunR = BY.sun.d / 2 * K;                // ≈ 1747 — far bigger than the screen
-  const label = (x, y, t, fs = 22) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Mitr" font-size="${fs}" font-weight="600" fill="#fff">${t}</text>`;
-  let s = `<g data-id="sun">${art('sun', 210 - sunR, cy, sunR, { cartoon: true })}</g>`;
-  s += `<text x="40" y="${cy}" font-family="Mitr" font-size="30" font-weight="600" fill="#5a2a00">ดวงอาทิตย์</text>`;
-  let x = 250, small = 0;
+const SUN_R = 1392700 / 2;
+const radiusKm = (id) => (MOON_BY[id] && id !== 'moon' ? MOON_BY[id].d : BY[id].d) / 2;
+
+const szBack = document.getElementById('szBack'), szGL = document.getElementById('szGL'), szFront = document.getElementById('szFront');
+const SZ = { gl: null, U: {}, tex: {}, loading: {}, W: 0, H: 0, dpr: 1,
+  cam: { x: 0, y: 0, s: 1 }, fly: null, t: 1, tTarget: 1, time: 0, spin: {}, user: {}, entered: false, pos: {} };
+// x positions (km) of every body in both layouts
+const ROW_X = {}, SYS_X = {}, SYS_HALF = {};
+(function layouts() {
+  let x = SUN_R + 30000;
   for (const id of SIZE_ROW) {
-    const p = BY[id], r = p.d / 2 * K;
-    const half = id === 'saturn' ? r * 2.27 : Math.max(r, 7);   // Saturn's main rings reach ~2.27× its radius
-    x += half;
-    s += `<g data-id="${id}"><circle cx="${x}" cy="${cy}" r="${Math.max(half, 22)}" fill="transparent"/>${art(id, x, cy, r)}</g>`;
-    if (r > 40) s += label(x, cy + r + 44, p.th, 24);
-    else { const y = [140, 205, 270][small++ % 3]; s += `<line x1="${x}" y1="${cy + r + 6}" x2="${x}" y2="${cy + y - 26}" stroke="#aab3e6" stroke-width="2"/>` + label(x, cy + y, p.th); }
-    x += half + (r > 40 ? 34 : 46);
+    const r = radiusKm(id), half = id === 'saturn' ? r * 2.27 : r;
+    x += half; ROW_X[id] = x; x += half + 22000;
   }
-  // row 2 — magnified ×10, still to scale with each other
-  const K2 = K * 10, cy2 = 860;
-  s += `<line x1="30" y1="640" x2="${x}" y2="640" stroke="rgba(255,255,255,0.18)" stroke-width="3" stroke-dasharray="10 10"/>`;
-  s += `<text x="40" y="690" font-family="Mitr" font-size="28" font-weight="600" fill="#ffd93d">🔍 ขยาย 10 เท่า · โลก ดวงจันทร์ และดาวเคราะห์แคระ (ยังเทียบกันตามจริง)</text>`;
-  let x2 = 40;
-  for (const id of ZOOM_ROW) {
-    const r = BY[id].d / 2 * K2;
-    x2 += r;
-    s += `<g data-id="${id}"><circle cx="${x2}" cy="${cy2}" r="${Math.max(r, 40)}" fill="transparent"/>${art(id, x2, cy2, r)}</g>`;
-    s += label(x2, id === 'earth' ? cy2 + r + 34 : cy2 + 200, BY[id].th);
-    if (id !== 'earth') s += `<line x1="${x2}" y1="${cy2 + r * (id === 'haumea' ? 0.49 : 1) + 6}" x2="${x2}" y2="${cy2 + 172}" stroke="#aab3e6" stroke-width="2"/>`;
-    x2 += r + (id === 'earth' ? 70 : id === 'haumea' ? 60 : 90);
+  ROW_X.end = x;
+  x = SUN_R + 40000;
+  for (const id of SIZE_ROW.filter((i) => i !== 'moon')) {
+    const r = radiusKm(id), far = Math.max(0, ...MOONS.filter((m) => m.p === id).map((m) => m.a));
+    const half = Math.max(id === 'saturn' ? r * 2.27 : r, far * 1.06) + 25000;
+    x += half; SYS_X[id] = x; SYS_HALF[id] = half; x += half + 25000;
   }
-  s += `<text x="${x2 + 10}" y="${cy2 - 10}" font-family="Mitr" font-size="20" fill="#cfd6ff">☄️ แกนดาวหางแฮลลีย์ยาวแค่ราว 15 กม.</text><text x="${x2 + 10}" y="${cy2 + 20}" font-family="Mitr" font-size="20" fill="#cfd6ff">ขยายแล้วก็ยังเล็กกว่าจุดนี้ →  ·</text>`;
-  sv.setAttribute('viewBox', `0 0 ${Math.max(x, x2 + 420) + 40} 1100`);
-  sv.innerHTML = s;
-  sv.addEventListener('pointerdown', (e) => {
-    const g = e.target.closest('[data-id]'); ensureAudio();
-    if (g) choose(g.dataset.id); else deselect();
-  });
+  SYS_X.end = x;
+})();
+
+function szInitGL() {
+  if (SZ.gl !== null) return !!SZ.gl;
+  let gl = null;
+  try { gl = szGL.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true }); } catch (e) {}
+  if (!gl) { SZ.gl = false; return false; }
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  try {
+    const pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, GLOBE_FS));
+    gl.linkProgram(pr); gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    for (const n of ['uC', 'uR', 'uM', 'uMT', 'uL', 'uTex', 'uCloud', 'uRing', 'uEmis', 'uHasCloud', 'uHasRing', 'uRin', 'uRout']) SZ.U[n] = gl.getUniformLocation(pr, n);
+    gl.uniform1i(SZ.U.uTex, 0); gl.uniform1i(SZ.U.uCloud, 1); gl.uniform1i(SZ.U.uRing, 2);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.enable(gl.SCISSOR_TEST);
+  } catch (e) { SZ.gl = false; return false; }
+  SZ.gl = gl;
+  // flat colour "maps" for the worlds without a photo map (moons, dwarf planets)
+  const solid = (cols) => {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    const px = new Uint8Array(cols.length * 4);
+    cols.forEach((c, i) => { px.set([parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16), 255], i * 4); });
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, cols.length, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  };
+  for (const m of MOONS) if (m.c) SZ.tex[m.id] = solid(m.c);
+  for (const id of ['ceres', 'pluto', 'makemake', 'eris']) SZ.tex[id] = solid([FLAT[id]]);
+  const load = (key, file, clampS) => {
+    if (SZ.loading[key]) return; SZ.loading[key] = true;
+    const img = new Image();
+    img.onload = () => { SZ.tex[key] = szMakeTex(img, clampS); };
+    img.onerror = () => { SZ.loading[key] = false; };
+    img.src = 'tex/' + file;
+  };
+  for (const id in TEX) load(id, TEX[id]);
+  load('clouds', '2k_earth_clouds.jpg'); load('ring', '2k_saturn_ring_alpha.png', true);
+  return true;
 }
+function szMakeTex(img, clampS) {
+  const gl = SZ.gl, tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, clampS ? gl.CLAMP_TO_EDGE : gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return tx;
+}
+
+function szResize() {
+  const r = szFront.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (!r.width) return false;
+  const W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+  if (W !== SZ.W || H !== SZ.H) {
+    for (const c of [szBack, szGL, szFront]) { c.width = W; c.height = H; }
+    SZ.W = W; SZ.H = H; SZ.dpr = dpr;
+  }
+  SZ.cw = r.width; SZ.ch = r.height;
+  return true;
+}
+// camera: world km → css px.  s = px per km
+const szX = (wx) => SZ.cw / 2 + (wx - SZ.cam.x) * SZ.cam.s;
+const szY = (wy) => SZ.ch / 2 + (wy - SZ.cam.y) * SZ.cam.s;
+function szFitSun() { return { x: SUN_R * 0.55, y: 0, s: Math.min(SZ.cw * 0.62, SZ.ch * 0.86) / (2 * SUN_R) }; }
+function szFrame(id) {
+  if (id === 'sun') return szFitSun();
+  const sys = SZ.tTarget > 0.5;
+  // aim at where the body will BE once the layout change finishes
+  let x = (sys ? SYS_X : ROW_X)[id], y = 0;
+  if (id === 'moon') { if (sys) { x = SYS_X.earth; id = 'earth'; } }
+  if (x === undefined) { const b = SZ.pos[id] || { x: 0, y: 0 }; x = b.x; y = b.y; }
+  let half = (id === 'saturn' ? 2.4 : 1.25) * radiusKm(id) * 2.2;
+  const as = MOONS.filter((m) => m.p === id).map((m) => m.a).sort((p, q) => p - q);
+  // frame out to the 2nd-closest moon: the planet stays big enough to see, the far moons
+  // sail off-screen (zoom out to see them — that distance is the real thing)
+  if (sys && as.length) half = Math.max(half, as[Math.min(1, as.length - 1)] * 1.15);
+  return { x, y, s: Math.min(SZ.cw * 0.46, SZ.ch * 0.42) / half };
+}
+// the whole side-by-side row, Sun included
+const szFitRow = () => ({ x: (ROW_X.end - SUN_R) / 2, y: 0, s: SZ.cw * 0.94 / (ROW_X.end + SUN_R) });
+function sizeFocus(id) { if (SZ.cw) SZ.fly = szFrame(id); }
+function sizeEnter() {
+  szResize();
+  if (!SZ.entered && SZ.cw) { SZ.entered = true; SZ.cam = szFitSun(); }
+  szInitGL();
+}
+
+// body orientation matrix (same convention as the zoom-in globe)
+const SZ_VIEW = 0.32;     // we look from a little above the planets' orbit plane
+function szMoonOffset(m, t) {
+  const th = SZ.time / Math.abs(m.P) * Math.PI * 2 * (m.P < 0 ? -1 : 1) + (m.a % 7);    // fixed spread-out start angles
+  const tilt = (m.ecl ? m.plane : (TILT2[m.p] || 0) + (m.plane || 0)) * Math.PI / 180;
+  const R = mul(Rx(SZ_VIEW), Rz(tilt));
+  const p = [m.a * Math.cos(th), 0, -m.a * Math.sin(th)];
+  return { v: [R[0] * p[0] + R[1] * p[1] + R[2] * p[2], R[3] * p[0] + R[4] * p[1] + R[5] * p[2], R[6] * p[0] + R[7] * p[1] + R[8] * p[2]], th, R };
+}
+function szBodies() {
+  const t = SZ.t, out = [];
+  out.push({ id: 'sun', x: 0, y: 0, z: 0, r: SUN_R, a: 1 });
+  for (const id of SIZE_ROW) {
+    if (id === 'moon') continue;
+    out.push({ id, x: ROW_X[id] + (SYS_X[id] - ROW_X[id]) * t, y: 0, z: 0, r: radiusKm(id), a: 1 });
+  }
+  const at = Object.fromEntries(out.map((b) => [b.id, b]));
+  for (const m of MOONS) {
+    const P = at[m.p], o = szMoonOffset(m, t);
+    if (m.id === 'moon') {   // our Moon has its own place in the side-by-side row
+      const ox = P.x + o.v[0], oy = -o.v[1];
+      out.push({ id: 'moon', x: ROW_X.moon + (ox - ROW_X.moon) * t, y: oy * t, z: o.v[2] * t, r: radiusKm('moon'), a: 1, moon: m, th: o.th, R: o.R });
+    } else out.push({ id: m.id, x: P.x + o.v[0], y: -o.v[1], z: o.v[2], r: m.d / 2, a: t, moon: m, th: o.th, R: o.R });
+  }
+  SZ.pos = Object.fromEntries(out.map((b) => [b.id, b]));
+  return out;
+}
+
+function sizeTick(dt) {
+  if (document.hidden || !szResize()) return;
+  if (!SZ.entered) sizeEnter();
+  SZ.time += dt;                                         // 1 s = 1 day
+  SZ.t += Math.sign(SZ.tTarget - SZ.t) * Math.min(Math.abs(SZ.tTarget - SZ.t), dt * 1.4);
+  if (SZ.fly) {                                          // glide the camera (scale in log space)
+    const k = 1 - Math.pow(0.0025, dt), c = SZ.cam, f = SZ.fly;
+    c.x += (f.x - c.x) * k; c.y += (f.y - c.y) * k; c.s = Math.exp(Math.log(c.s) + (Math.log(f.s) - Math.log(c.s)) * k);
+    if (Math.abs(Math.log(f.s / c.s)) < 0.01 && Math.abs(f.x - c.x) * c.s < 1 && Math.abs(f.y - c.y) * c.s < 1) SZ.fly = null;
+  }
+  for (const id in SPIN_D) SZ.spin[id] = (SZ.spin[id] || 0) + dt * Math.PI * 2 / Math.min(60, Math.max(6, Math.abs(SPIN_D[id]))) * Math.sign(SPIN_D[id]);
+  const bodies = szBodies();
+  const W = SZ.cw, H = SZ.ch, dpr = SZ.dpr, s = SZ.cam.s;
+  const bx = szBack.getContext('2d'), fx = szFront.getContext('2d');
+  for (const c of [bx, fx]) { c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H); }
+  // the Sun's glow
+  const sx = szX(0), sy = szY(0), sr = SUN_R * s;
+  const gg = bx.createRadialGradient(sx, sy, sr * 0.9, sx, sy, sr * 1.5);
+  gg.addColorStop(0, 'rgba(255,190,80,0.45)'); gg.addColorStop(1, 'rgba(255,190,80,0)');
+  bx.fillStyle = gg; bx.beginPath(); bx.arc(sx, sy, sr * 1.5, 0, Math.PI * 2); bx.fill();
+  // moon orbits
+  if (SZ.t > 0.02) {
+    bx.lineWidth = 1.2;
+    for (const m of MOONS) {
+      const P = SZ.pos[m.p], rr = m.a * s;
+      if (rr < 6 || szX(P.x) + rr < -20 || szX(P.x) - rr > W + 20) continue;
+      bx.strokeStyle = `rgba(170,190,255,${0.35 * SZ.t})`; bx.beginPath();
+      const o = szMoonOffset(m), R = o.R;
+      for (let i = 0; i <= 96; i++) {
+        const a = i / 96 * Math.PI * 2, p = [m.a * Math.cos(a), 0, -m.a * Math.sin(a)];
+        const X = szX(P.x + R[0] * p[0] + R[2] * p[2]), Y = szY(-(R[3] * p[0] + R[5] * p[2]));
+        i ? bx.lineTo(X, Y) : bx.moveTo(X, Y);
+      }
+      bx.stroke();
+    }
+  }
+  // spheres, back to front
+  const gl = SZ.gl, specks = [];
+  if (gl) {
+    gl.viewport(0, 0, SZ.W, SZ.H); gl.disable(gl.SCISSOR_TEST); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.enable(gl.SCISSOR_TEST);
+  }
+  for (const b of bodies.slice().sort((p, q) => p.z - q.z)) {
+    if (b.a < 0.03) continue;
+    const X = szX(b.x), Y = szY(b.y), R = b.r * s, ext = b.id === 'saturn' ? R * 2.3 : b.id === 'haumea' ? R : R;
+    if (X + ext < -4 || X - ext > W + 4 || Y + ext < -4 || Y - ext > H + 4) continue;
+    // hidden behind its planet?
+    if (b.moon) { const P = SZ.pos[b.moon.p]; if (b.z < 0 && Math.hypot(b.x - P.x, b.y - P.y) < P.r) continue; }
+    const tex = gl && SZ.tex[b.id];
+    if (R < 1.6 || !tex || b.id === 'haumea') { specks.push({ b, X, Y, R }); continue; }
+    const tilt = (b.moon ? 0 : TILT2[b.id] || 0) * Math.PI / 180;
+    const spin = b.moon ? -b.th + Math.PI / 2 : (SZ.spin[b.id] || 0) + (SZ.user[b.id] || 0);   // moons keep one face to their planet
+    const M = b.moon && b.R ? mul(Rx(SZ_VIEW), mul(Rz((b.moon.ecl ? b.moon.plane : (TILT2[b.moon.p] || 0) + (b.moon.plane || 0)) * Math.PI / 180), Ry(spin)))
+                            : mul(Rx(SZ_VIEW), mul(Rz(tilt), Ry(spin)));
+    gl.uniformMatrix3fv(SZ.U.uM, false, colMajor(M)); gl.uniformMatrix3fv(SZ.U.uMT, false, colMajor(transposeRM(M)));
+    let L = [0, 0, 1];
+    if (b.id !== 'sun') { L = [-b.x, b.y * 0.2, Math.max(SUN_R, Math.abs(b.x)) * 0.45]; const l = Math.hypot(...L); L = L.map((v) => v / l); }
+    gl.uniform3f(SZ.U.uL, L[0], L[1], L[2]);
+    gl.uniform2f(SZ.U.uC, X * dpr, (H - Y) * dpr); gl.uniform1f(SZ.U.uR, R * dpr);
+    gl.uniform1f(SZ.U.uEmis, b.id === 'sun' ? 1 : 0);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+    const cl = b.id === 'earth' && SZ.tex.clouds, rg = b.id === 'saturn' && SZ.tex.ring;
+    gl.uniform1f(SZ.U.uHasCloud, cl ? 1 : 0); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, cl || tex);
+    gl.uniform1f(SZ.U.uHasRing, rg ? 1 : 0); gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, rg || tex);
+    gl.uniform1f(SZ.U.uRin, 1.24); gl.uniform1f(SZ.U.uRout, 2.27);
+    const x0 = Math.max(0, Math.floor((X - ext - 2) * dpr)), y0 = Math.max(0, Math.floor((H - Y - ext - 2) * dpr));
+    const x1 = Math.min(SZ.W, Math.ceil((X + ext + 2) * dpr)), y1 = Math.min(SZ.H, Math.ceil((H - Y + ext + 2) * dpr));
+    if (x1 <= x0 || y1 <= y0) continue;
+    gl.scissor(x0, y0, x1 - x0, y1 - y0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  // specks: too small for a sphere (or Haumea's egg shape)
+  for (const { b, X, Y, R } of specks) {
+    fx.globalAlpha = b.a; fx.fillStyle = (b.moon && b.moon.c ? b.moon.c[0] : FLAT[b.id]) || '#ccc';
+    fx.beginPath();
+    if (b.id === 'haumea' && R >= 1.6) fx.ellipse(X, Y, R, R * 0.49, 0, 0, Math.PI * 2);
+    else fx.arc(X, Y, Math.max(R, 1.1), 0, Math.PI * 2);
+    fx.fill();
+  }
+  fx.globalAlpha = 1;
+  // labels — biggest first, never overlapping
+  const used = [], fits = (x, y, w, h) => { if (used.some((u) => x < u.x + u.w && x + w > u.x && y < u.y + u.h && y + h > u.y)) return false; used.push({ x, y, w, h }); return true; };
+  fx.textAlign = 'center'; fx.textBaseline = 'top'; fx.lineJoin = 'round';
+  const order = bodies.filter((b) => b.a > 0.5).sort((p, q) => (q.id === selected) - (p.id === selected) || (!!p.moon - !!q.moon) || q.r - p.r);
+  for (const b of order) {
+    const X = szX(b.x), Y = szY(b.y), R = b.r * s * (b.id === 'saturn' ? 1.1 : 1);
+    if (X < -40 || X > W + 40 || Y < -40 || Y > H + 40) continue;
+    if (b.moon && b.id !== 'moon' && b.moon.a * s < 34) continue;
+    const name = b.moon && b.moon.th ? b.moon.th : BY[b.id].th;
+    const fs = b.moon ? 13 : b.id === selected ? 17 : 15;
+    fx.font = `600 ${fs}px Mitr, sans-serif`;
+    const w = fx.measureText(name).width + 8, ty = b.id === 'sun' ? Math.min(Y + R + 6, H - 26) : Y + Math.max(R, b.moon ? 3 : 7) + 4;
+    if (!fits(X - w / 2, ty, w, fs + 4)) continue;
+    fx.strokeStyle = 'rgba(11,16,51,0.9)'; fx.lineWidth = 4; fx.strokeText(name, X, ty);
+    fx.fillStyle = b.id === selected ? '#ffd93d' : b.moon ? '#cfd6ff' : '#fff'; fx.fillText(name, X, ty);
+  }
+  // selection ring
+  if (selected && SZ.pos[selected]) {
+    const b = SZ.pos[selected], R = Math.max(b.r * s * (selected === 'saturn' ? 2.3 : 1), 3) + 6;
+    fx.strokeStyle = '#ffd93d'; fx.lineWidth = 2.5; fx.setLineDash([6, 5]);
+    fx.beginPath(); fx.arc(szX(b.x), szY(b.y), R, 0, Math.PI * 2); fx.stroke(); fx.setLineDash([]);
+  }
+  szNote();
+}
+let szNoteLast = '';
+function szNote() {
+  const sel = selected && MOON_COUNT[selected] && SZ.t > 0.5 ? ` · ${BY[selected].th}มีดวงจันทร์ ${MOON_COUNT[selected]}${MOONS.filter((m) => m.p === selected).length < parseInt(MOON_COUNT[selected].replace(/\D/g, '')) ? ' (วาดเฉพาะดวงใหญ่)' : ''}` : '';
+  const txt = SZ.tTarget > 0.5
+    ? 'ขนาดทุกดวง และระยะ-ความเร็วที่ดวงจันทร์โคจรรอบดาวของมัน เทียบกันตามจริง · 1 วินาที = 1 วัน · ดาวหมุนรอบตัวเองช้าลงให้ดูทัน · ระยะห่างระหว่างดาวเคราะห์ย่อไว้' + sel
+    : 'ขนาดเทียบกันตามจริง · เรียงชิดกันเพื่อเทียบขนาด (ระยะห่างไม่จริง)';
+  if (txt !== szNoteLast) { szNoteLast = txt; document.getElementById('sizeNote').textContent = txt; }
+}
+
+// gestures: drag a big body = turn it · drag space = pan · two fingers / wheel = zoom · tap = pick
+const szPtr = new Map();
+let szG = null;
+function szHit(cx, cy, slack) {
+  let best = null, bd = Infinity;
+  for (const id in SZ.pos) {
+    const b = SZ.pos[id]; if (b.a < 0.5) continue;
+    const d = Math.hypot(szX(b.x) - cx, szY(b.y) - cy), R = b.r * SZ.cam.s * (id === 'saturn' ? 1.2 : 1);
+    if (d < R + slack && d - R < bd) { bd = d - R; best = id; }
+  }
+  return best;
+}
+const szLocal = (e) => { const r = szFront.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+function szZoomAt(f, cx, cy) {
+  const c = SZ.cam, wx = c.x + (cx - SZ.cw / 2) / c.s, wy = c.y + (cy - SZ.ch / 2) / c.s;
+  const ns = Math.min(Math.max(c.s * f, SZ.ch * 0.08 / SYS_X.end), SZ.ch * 0.9 / 4879);
+  c.x = wx - (cx - SZ.cw / 2) / ns; c.y = wy - (cy - SZ.ch / 2) / ns; c.s = ns;
+}
+szFront.addEventListener('pointerdown', (e) => {
+  ensureAudio(); szFront.setPointerCapture(e.pointerId);
+  szPtr.set(e.pointerId, szLocal(e)); SZ.fly = null;
+  if (szPtr.size === 1) {
+    const [x, y] = szLocal(e), id = szHit(x, y, 0);
+    const big = id && !MOON_BY[id] && SZ.pos[id].r * SZ.cam.s > 26;
+    szG = { x0: x, y0: y, cam: { ...SZ.cam }, spinId: big ? id : null, spin0: big ? SZ.user[id] || 0 : 0, moved: false };
+  } else if (szPtr.size === 2) {
+    const [a, b] = [...szPtr.values()];
+    szG = { pinch: Math.hypot(a[0] - b[0], a[1] - b[1]), moved: true };
+  }
+});
+szFront.addEventListener('pointermove', (e) => {
+  if (!szPtr.has(e.pointerId) || !szG) return;
+  szPtr.set(e.pointerId, szLocal(e));
+  if (szPtr.size >= 2 && szG.pinch) {
+    const [a, b] = [...szPtr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    szZoomAt(d / szG.pinch, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); szG.pinch = d;
+    return;
+  }
+  const [x, y] = szLocal(e), dx = x - szG.x0, dy = y - szG.y0;
+  if (Math.hypot(dx, dy) > 6) szG.moved = true;
+  if (!szG.moved) return;
+  if (szG.spinId) SZ.user[szG.spinId] = szG.spin0 + dx / (SZ.pos[szG.spinId].r * SZ.cam.s);
+  else { SZ.cam.x = szG.cam.x - dx / SZ.cam.s; SZ.cam.y = szG.cam.y - dy / SZ.cam.s; }
+});
+function szUp(e) {
+  if (!szPtr.has(e.pointerId)) return;
+  const was = szG; szPtr.delete(e.pointerId);
+  if (szPtr.size === 0) {
+    if (was && !was.moved && !was.pinch) {
+      const [x, y] = szLocal(e), id = szHit(x, y, 22);
+      if (id && !MOON_BY[id]) choose(id);
+      else if (id) { const m = MOON_BY[id]; if (m.th) { speak(moonLine(m)); blip(900); } }
+      else deselect();
+    }
+    szG = null;
+  } else if (szPtr.size === 1) {   // one finger left after a pinch → carry on panning from here
+    const [p] = [...szPtr.values()];
+    szG = { x0: p[0], y0: p[1], cam: { ...SZ.cam }, spinId: null, moved: true };
+  }
+}
+szFront.addEventListener('pointerup', szUp);
+szFront.addEventListener('pointercancel', szUp);
+szFront.addEventListener('wheel', (e) => { e.preventDefault(); SZ.fly = null; const [x, y] = szLocal(e); szZoomAt(Math.exp(-e.deltaY * 0.0015), x, y); }, { passive: false });
+document.getElementById('szIn').addEventListener('click', () => { buzz(8); SZ.fly = null; szZoomAt(1.8, SZ.cw / 2, SZ.ch / 2); });
+document.getElementById('szOut').addEventListener('click', () => { buzz(8); SZ.fly = null; szZoomAt(1 / 1.8, SZ.cw / 2, SZ.ch / 2); });
+document.getElementById('szSun').addEventListener('click', () => { buzz(8); blip(700); SZ.fly = szFitSun(); });
+function szLayout(sys) {
+  SZ.tTarget = sys ? 1 : 0; buzz(8); blip(sys ? 880 : 660);
+  document.getElementById('szSys').classList.toggle('on', sys); document.getElementById('szRow').classList.toggle('on', !sys);
+  SZ.fly = sys ? (selected && selected !== 'sun' ? szFrame(selected) : szFitSun()) : szFitRow();
+}
+document.getElementById('szSys').addEventListener('click', () => szLayout(true));
+document.getElementById('szRow').addEventListener('click', () => szLayout(false));
+function buildSize() { /* the size view draws itself every frame in sizeTick() */ }
 
 // ============================================================================
 // PICKER STRIP + INFO PANEL
@@ -1224,6 +1567,7 @@ function choose(id) {
   markStrip(id);
   renderInfo(id);
   placeOrbit();
+  if (mode === 'size') sizeFocus(id);
   blip(560 + (STRIP_IDS.indexOf(id) * 40)); buzz(10);
   speak(BY[id].say);
 }
@@ -1640,7 +1984,7 @@ function setMode(m) {
   else if (m === 'comet') { cLastR = null; cState = ''; buildComet(); renderCometPanel(); speak(cometIntro); }
   else if (m === 'far') { buildFar(); buildFarStrip(); renderFarCard(farSel); speak(farIntro); }
   else if (m === 'meteor') { mets = []; buildMeteorChips(); buildMeteor(); speak(meteorIntro); }
-  else { renderInfo(selected); markStrip(selected); }
+  else { if (m === 'size') sizeEnter(); renderInfo(selected); markStrip(selected); }
 }
 for (const b of document.querySelectorAll('#modes .chip[data-mode]')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.mode); });
 for (const b of document.querySelectorAll('#ctrls .chip[data-speed]')) b.addEventListener('click', () => {
@@ -2789,6 +3133,7 @@ VoiceClips.lines(() => {
   for (const p of PLANETS) for (const a of AGES) L.push(ageLine(p.id, a));
   for (let d = 0; d < 360; d += 0.25) L.push(phaseInfo(d * Math.PI / 180).name);
   L.push('สาม', 'สอง', 'หนึ่ง', 'ปล่อยจรวด!', tripChooseLine('earth'));
+  for (const m of MOONS) if (m.th) L.push(moonLine(m));
   for (const id in TRIPS) L.push(tripChooseLine(id), tripArriveLine(id));
   for (const c of SKY) L.push(skyIntro(c), skyDone(c));
   L.push(dayIntro, seasonIntro, cometIntro, farIntro, meteorIntro, ...Object.values(COMET_SAY));
