@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🤖 ขับยานดาวอังคาร — คิดส์เล่น</title>
+<meta name="description" content="ขับยานสำรวจแบบเพอร์เซเวียแรนซ์บนดาวอังคาร เจาะหินเก็บตัวอย่าง ถ่ายรูป บินเฮลิคอปเตอร์อินเจนูอิตี และส่งสัญญาณกลับโลก ข้อมูลจริงจาก NASA">
+<meta name="theme-color" content="#7a2e12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ขับยานดาวอังคาร">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Mitr', -apple-system, sans-serif; color: var(--ink);
+    background: linear-gradient(180deg, #e9b98c 0%, #c9773f 70%, #8a3a17 100%);
+    user-select: none; -webkit-user-select: none; overflow: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px; opacity: 0.18; pointer-events: none;
+    letter-spacing: 80px; animation: drift 40s linear infinite; z-index: 2;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .wrap { position: relative; z-index: 1; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .top {
+    position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 74px; right: 10px; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; pointer-events: none;
+  }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal; margin: 0;
+    font-size: clamp(22px, 4.6vw, 36px); color: #fff; text-shadow: 2px 2px 0 #7a2e12, 4px 4px 0 rgba(0,0,0,0.15);
+    white-space: nowrap;
+  }
+  .counts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .count { background: rgba(255,255,255,0.9); border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 17px; box-shadow: 0 3px 0 rgba(0,0,0,0.15); }
+  .fact {
+    position: absolute; left: 50%; transform: translateX(-50%); top: calc(70px + env(safe-area-inset-top)); z-index: 5;
+    width: min(94%, 720px); background: rgba(255,255,255,0.94); border: 3px solid var(--card-border);
+    border-radius: 22px; padding: 8px 14px; font-size: 17px; line-height: 1.4; font-weight: 500;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15); cursor: pointer; transition: opacity .3s;
+  }
+  .fact::before { content: '💡 '; }
+  .fact.off { opacity: 0; pointer-events: none; }
+  .bar {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, #6b2a10, #4a1c0a);
+  }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; flex: 1; }
+  .btn {
+    min-width: 64px; min-height: 64px; border-radius: 22px; border: 3px solid #fff;
+    background: #fff; color: var(--ink); font-family: 'Mitr', sans-serif; font-size: 15px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 2px 8px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); cursor: pointer; transition: transform .1s, opacity .2s; touch-action: none;
+    -webkit-touch-callout: none;
+  }
+  .btn .e { font-size: 28px; line-height: 1.1; pointer-events: none; }
+  .btn span { pointer-events: none; }
+  .btn:active, .btn.held { transform: translateY(2px) scale(0.95); }
+  .btn.dim { opacity: 0.45; }
+  .btn.ready { border-color: var(--gold); animation: glow 1s ease-in-out infinite; }
+  @keyframes glow { 50% { box-shadow: 0 4px 0 rgba(0,0,0,0.35), 0 0 0 6px rgba(255,217,61,0.6); } }
+  .drive { width: 84px; height: 76px; font-size: 34px; background: var(--brand); color: #fff; border-color: #fff; }
+  @media (max-width: 520px) {
+    .btn { min-width: 58px; padding: 2px 4px; font-size: 13px; } .btn .e { font-size: 24px; }
+    .drive { width: 70px; height: 70px; }
+    .acts { gap: 5px; }
+    .count { font-size: 14px; padding: 3px 8px; }
+    .fact { font-size: 15px; }
+    h1 { display: none; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="top">
+      <h1>🤖 ขับยานดาวอังคาร</h1>
+      <div class="counts"><span class="count" id="cTube">🧪 0</span><span class="count" id="cPhoto">📸 0</span><span class="count" id="cFly">🚁 0</span></div>
+    </div>
+    <div class="fact" id="fact"></div>
+  </div>
+  <div class="bar">
+    <button class="btn drive" id="left" aria-label="ถอยหลัง">◀</button>
+    <div class="acts">
+      <button class="btn" id="drill" aria-label="เจาะหิน"><span class="e">🦾</span><span>เจาะหิน</span></button>
+      <button class="btn" id="photo" aria-label="ถ่ายรูป"><span class="e">📸</span><span>ถ่ายรูป</span></button>
+      <button class="btn" id="fly" aria-label="บินเฮลิคอปเตอร์"><span class="e">🚁</span><span>บิน</span></button>
+      <button class="btn" id="send" aria-label="ส่งสัญญาณกลับโลก"><span class="e">📡</span><span>ส่งโลก</span></button>
+      <button class="btn" id="sky" aria-label="เปลี่ยนเวลา"><span class="e" id="skyE">🌅</span><span>เวลา</span></button>
+    </div>
+    <button class="btn drive" id="right" aria-label="เดินหน้า">▶</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// ============================================================================
+// FACTS — NASA Mars 2020 / Ingenuity mission pages, NASA Mars facts
+// ============================================================================
+const F = {
+  intro: 'กดปุ่มลูกศรค้างไว้ เพื่อขับยานสำรวจดาวอังคาร หาหินที่มีประกายแล้วเจาะเก็บตัวอย่าง',
+  speed: 'ยานของจริงวิ่งช้ามาก เร็วสุดราว 152 เมตรต่อชั่วโมง ในเกมเราเร่งให้เร็วขึ้น',
+  drill: 'ยานเจาะหิน แล้วเก็บแกนหินไว้ในหลอด รอวันที่จะนำกลับมาตรวจที่โลก',
+  leopard: 'หินก้อนนี้มีจุดลายเหมือนเสือดาว นักวิทยาศาสตร์อยากรู้ว่า เคยมีสิ่งมีชีวิตเล็กๆ อยู่ที่นี่ไหม',
+  noRock: 'ขับไปหาหินที่มีประกายก่อนนะ',
+  heli: 'อินเจนูอิตี เป็นเฮลิคอปเตอร์ลำแรกที่บินบนดาวดวงอื่น บินไปทั้งหมด 72 เที่ยว',
+  thin: 'อากาศบนดาวอังคารเบาบางมาก ใบพัดจึงต้องหมุนเร็วมาก',
+  sunset: 'บนดาวอังคาร ตอนพระอาทิตย์ตก ท้องฟ้ารอบดวงอาทิตย์เป็นสีฟ้า',
+  night: 'ดาวอังคารมีดวงจันทร์สองดวง ชื่อโฟบอสกับดีมอส',
+  day: 'หนึ่งวันบนดาวอังคาร ยาวกว่าบนโลกนิดหน่อย คือ 24 ชั่วโมง 39 นาที',
+  devil: 'นั่นคือฝุ่นหมุน หรือปีศาจฝุ่น เกิดบ่อยบนดาวอังคาร',
+};
+const PHOTO = [
+  'ยานเพอร์เซเวียแรนซ์มีกล้องติดตัวมากถึง 19 ตัว',
+  'ยานถ่ายรูปเซลฟีด้วยกล้องที่ปลายแขนกล',
+  'ดาวอังคารเป็นสีแดง เพราะดินและฝุ่นมีสนิมเหล็ก',
+];
+const ROVER = [
+  'ยานเพอร์เซเวียแรนซ์ลงจอดที่หลุมเจซีโร เมื่อวันที่ 18 กุมภาพันธ์ 2021 หลุมนี้เคยเป็นทะเลสาบมาก่อน',
+  'ยานใหญ่ประมาณรถยนต์ ยาว 3 เมตร หนักราว 1,025 กิโลกรัม',
+  'ยานมีล้อหกล้อ ใช้พลังงานจากแบตเตอรี่นิวเคลียร์ ไม่ใช้แผงโซลาร์',
+  'อุณหภูมิเฉลี่ยบนดาวอังคาร ราวลบ 60 องศาเซลเซียส หนาวมาก',
+];
+const sigLine = (m) => 'สัญญาณวิทยุจากดาวอังคารถึงโลกวันนี้ ใช้เวลา ' + m + ' นาที';
+
+// Earth–Mars light time for today: JPL approximate Keplerian elements (Standish, J2000 ecliptic)
+function helio(el, T) {
+  const [a, e, I, L, w, O] = el.map(([v, r]) => v + r * T);
+  const rad = Math.PI / 180, M = ((L - w) % 360) * rad, om = (w - O) * rad;
+  let E = M; for (let i = 0; i < 8; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  const x = a * (Math.cos(E) - e), y = a * Math.sqrt(1 - e * e) * Math.sin(E);
+  const co = Math.cos(om), so = Math.sin(om), cO = Math.cos(O * rad), sO = Math.sin(O * rad), cI = Math.cos(I * rad), sI = Math.sin(I * rad);
+  return [(co * cO - so * sO * cI) * x + (-so * cO - co * sO * cI) * y,
+          (co * sO + so * cO * cI) * x + (-so * sO + co * cO * cI) * y,
+          (so * sI) * x + (co * sI) * y];
+}
+const EARTH = [[1.00000261, 0.00000562], [0.01671123, -0.00004392], [-0.00001531, -0.01294668], [100.46457166, 35999.37244981], [102.93768193, 0.32327364], [0, 0]];
+const MARS = [[1.52371034, 0.00001847], [0.09339410, 0.00007882], [1.84969142, -0.00813131], [-4.55343205, 19140.30268499], [-23.94362959, 0.44441088], [49.55953891, -0.29257343]];
+function lightMinutes() {
+  const T = (Date.now() / 86400000 + 2440587.5 - 2451545) / 36525;
+  const a = helio(EARTH, T), b = helio(MARS, T);
+  const au = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  return Math.min(23, Math.max(3, Math.round(au * 499.005 / 60)));
+}
+
+// ============================================================================
+// WORLD — design units: the view is 600 tall; x runs forever
+// ============================================================================
+const cv = $('c'), ctx = cv.getContext('2d'), stage = $('stage');
+let W = 0, H = 0, DPR = 1, S = 1, VW = 1000;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = stage.clientWidth; H = stage.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  S = Math.min(H / 600, W / 420); VW = W / S;
+}
+window.addEventListener('resize', resize);
+const GY = 470;                                           // ground baseline (design units)
+const ground = (x) => GY + 16 * Math.sin(x / 310) + 9 * Math.sin(x / 127 + 1.3) + 4 * Math.sin(x / 53 + 0.7);
+const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+
+// target rocks every ~650 units; every 7th has leopard spots
+const TARGET_GAP = 650;
+const drilled = new Set();
+function targetAt(i) {
+  if (i < 1) return null;
+  return { i, x: i * TARGET_GAP + (hash(i) - 0.5) * 200, r: 26 + hash(i + 9) * 10, leopard: i % 7 === 3 };
+}
+
+let st = { x: 200, v: 0, dir: 0, busy: null, t0: 0, tubes: 0, photos: 0, flights: 0, sky: 0, factT: 0, drove: 0, spoken: {}, roverFact: 0, photoFact: 0 };
+try { const s = JSON.parse(localStorage.getItem('marsRover') || '{}'); st.tubes = s.tubes || 0; st.photos = s.photos || 0; st.flights = s.flights || 0; } catch (e) {}
+const save = () => { try { localStorage.setItem('marsRover', JSON.stringify({ tubes: st.tubes, photos: st.photos, flights: st.flights })); } catch (e) {} };
+const heli = { x: 120, y: 0, alt: 0, flying: false, t0: 0, from: 0, to: 0 };
+let signal = null, devil = { x: -1, t: 0 }, shutter = 0, dust = [];
+const camX = () => st.x - VW * 0.38;
+
+function nearTarget() {
+  const i0 = Math.round((st.x + 80) / TARGET_GAP);
+  for (const i of [i0 - 1, i0, i0 + 1]) {
+    const t = targetAt(i);
+    if (t && !drilled.has(i) && Math.abs(t.x - (st.x + 95)) < 75) return t;
+  }
+  return null;
+}
+
+// ============================================================================
+// DRAWING
+// ============================================================================
+const SKIES = [
+  { top: '#e9c49a', bot: '#d89a62', sun: [0.75, 0.18] },        // day: butterscotch
+  { top: '#5a4a6a', bot: '#d58a55', sun: [0.62, 0.66], blue: 1 }, // sunset: blue glow round the Sun
+  { top: '#0d0b1e', bot: '#2a1a28', night: 1 },
+];
+function wheelY(x) { return ground(x) - 14; }
+function drawRover(x, now) {
+  const wx = [x - 52, x, x + 52];
+  const wy = wx.map(wheelY);
+  const by = (wy[0] + wy[1] + wy[2]) / 3 - 36;
+  const tilt = Math.atan2(wy[2] - wy[0], 104);
+  ctx.save();
+  // rocker-bogie (side view: three wheels on the near side)
+  ctx.lineWidth = 6; ctx.strokeStyle = '#3a3f47'; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(wx[0], wy[0]); ctx.lineTo(x - 22, by + 18); ctx.lineTo(wx[1], wy[1]);
+  ctx.moveTo(x - 22, by + 18); ctx.lineTo(x + 10, by + 14); ctx.lineTo(wx[2], wy[2]); ctx.stroke();
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = '#9aa1a8'; ctx.beginPath(); ctx.arc(wx[i], wy[i], 14, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.translate(wx[i], wy[i]); ctx.rotate(x / 14);
+    ctx.strokeStyle = '#5b6168'; ctx.lineWidth = 2;
+    for (let k = 0; k < 4; k++) { ctx.rotate(Math.PI / 4); ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(12, 0); ctx.stroke(); }
+    ctx.restore();
+  }
+  ctx.translate(x, by); ctx.rotate(tilt);
+  // MMRTG (nuclear battery) at the back
+  ctx.save(); ctx.translate(-66, -6); ctx.rotate(-0.5);
+  ctx.fillStyle = '#4b4f55'; ctx.fillRect(-14, -10, 30, 20);
+  ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2;
+  for (let k = -12; k < 16; k += 5) { ctx.beginPath(); ctx.moveTo(k, -14); ctx.lineTo(k, 14); ctx.stroke(); }
+  ctx.restore();
+  // body
+  ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(-58, -14, 116, 30, 6); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#c9b48a'; ctx.fillRect(-54, -20, 108, 7); ctx.strokeRect(-54, -20, 108, 7);
+  // arm: folded, or reaching down to the rock while drilling
+  let armA = 0.2, armB = 2.2;
+  if (st.busy === 'drill') {
+    const u = Math.min(1, (now - st.t0) / 600), back = Math.max(0, (now - st.t0 - 2200) / 500);
+    const k = Math.max(0, Math.min(1, u - back));
+    armA = 0.2 + k * 0.7; armB = 2.2 - k * 1.9;
+  }
+  ctx.save(); ctx.translate(58, 2); ctx.rotate(armA);
+  ctx.strokeStyle = '#d7d2c4'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(38, 0); ctx.stroke();
+  ctx.translate(38, 0); ctx.rotate(armB - 1.6);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(34, 0); ctx.stroke();
+  ctx.translate(34, 0);
+  ctx.fillStyle = '#6b7178'; ctx.fillRect(-6, -8, 14, 16);
+  if (st.busy === 'drill' && now - st.t0 > 600 && now - st.t0 < 2200) {   // spinning bit
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3; const j = (now / 30) % 2;
+    ctx.beginPath(); ctx.moveTo(8, -3 + j * 3); ctx.lineTo(18, 0); ctx.lineTo(8, 3 - j * 3); ctx.stroke();
+  }
+  ctx.restore();
+  // mast + camera head ("eyes")
+  ctx.strokeStyle = '#d7d2c4'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(38, -20); ctx.lineTo(38, -78); ctx.stroke();
+  ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(22, -98, 36, 20, 5); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2b3a67';
+  ctx.beginPath(); ctx.arc(46, -88, 4.5, 0, 7); ctx.arc(55, -88, 4.5, 0, 7); ctx.fill();
+  // antenna dish
+  ctx.fillStyle = '#e6e2d8'; ctx.beginPath(); ctx.ellipse(-26, -28, 13, 6, -0.3, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.restore();
+  return { mastX: x + 40, mastY: by - 90 };
+}
+function drawHeli(now) {
+  const x = heli.x, y = ground(x) - 14 - heli.alt;
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2;
+  for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * 5, 2); ctx.lineTo(s * 14, 14); ctx.stroke(); }
+  ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-8, -8, 16, 12); ctx.strokeRect(-8, -8, 16, 12);
+  ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, -30); ctx.stroke();
+  ctx.fillStyle = '#3d4a6b'; ctx.fillRect(-9, -36, 18, 5);           // solar panel on top
+  const spin = heli.flying ? 0.35 + 0.65 * Math.abs(Math.sin(now / 25)) : 1;
+  ctx.strokeStyle = '#4b4f55'; ctx.lineWidth = 3;
+  for (const yy of [-18, -26]) { ctx.beginPath(); ctx.moveTo(-26 * spin, yy); ctx.lineTo(26 * spin, yy); ctx.stroke(); }
+  ctx.restore();
+}
+function drawRock(x, r, flat, leopard, hole) {
+  const y = ground(x) + 4;
+  ctx.fillStyle = '#7d3b1f'; ctx.strokeStyle = '#4a1e0d'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(x, y - r * 0.45, r, r * flat, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  if (leopard) {
+    ctx.fillStyle = '#2a1209';
+    for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(x - r * 0.6 + k * r * 0.3, y - r * 0.55 - (k % 2) * r * 0.25, 3.2, 0, 7); ctx.fill(); }
+  }
+  if (hole) { ctx.fillStyle = '#c9b8a0'; ctx.beginPath(); ctx.arc(x + r * 0.2, y - r * 0.6, 6, 0, 7); ctx.fill(); }
+}
+function draw(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const sky = SKIES[st.sky];
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, sky.top); g.addColorStop(0.75, sky.bot);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.setTransform(DPR * S, 0, 0, DPR * S, 0, 0);
+  if (sky.night) {
+    for (let i = 0; i < 90; i++) { ctx.fillStyle = 'rgba(255,255,255,' + (0.4 + hash(i) * 0.6) + ')'; ctx.fillRect(hash(i + 1) * VW, hash(i + 2) * 380, 1.6, 1.6); }
+    // Phobos (bigger, close) and Deimos (a dot)
+    ctx.fillStyle = '#b9aa98'; ctx.beginPath(); ctx.ellipse(VW * 0.3, 120, 9, 6, 0.4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.arc(VW * 0.62, 90, 2.4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '600 16px Mitr'; ctx.textAlign = 'center';
+    ctx.fillText('โฟบอส', VW * 0.3, 150); ctx.fillText('ดีมอส', VW * 0.62, 112);
+  } else {
+    const [sx, sy] = sky.sun, X = VW * sx, Y = 600 * sy;
+    if (sky.blue) {
+      const b = ctx.createRadialGradient(X, Y, 4, X, Y, 150);
+      b.addColorStop(0, 'rgba(180,215,255,0.95)'); b.addColorStop(1, 'rgba(120,160,230,0)');
+      ctx.fillStyle = b; ctx.beginPath(); ctx.arc(X, Y, 150, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = sky.blue ? '#f4f7ff' : '#fff6e0'; ctx.beginPath(); ctx.arc(X, Y, 14, 0, 7); ctx.fill();   // the Sun looks smaller from Mars
+  }
+  if (st.sky > 0) {        // Earth: a bright blue "star" in the twilight / night sky
+    ctx.fillStyle = '#9fd4ff'; ctx.beginPath(); ctx.arc(VW * 0.86, 70, 4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '600 16px Mitr'; ctx.textAlign = 'center'; ctx.fillText('โลก', VW * 0.86, 96);
+  }
+  const cx = camX();
+  // far crater rim (parallax)
+  ctx.fillStyle = st.sky === 2 ? '#3a2220' : '#b36a3c';
+  ctx.beginPath(); ctx.moveTo(0, 600);
+  for (let x = 0; x <= VW + 20; x += 20) { const wx = x + cx * 0.3; ctx.lineTo(x, 380 - 40 * Math.sin(wx / 400) - 22 * Math.sin(wx / 170 + 2) - 10); }
+  ctx.lineTo(VW + 20, 600); ctx.fill();
+  // dust devil (far away, drifting)
+  if (devil.x > -100) {
+    const dx = devil.x, top = 230, bot = 370;
+    ctx.fillStyle = st.sky === 2 ? 'rgba(80,60,60,0.35)' : 'rgba(225,180,130,0.55)';
+    ctx.beginPath(); ctx.moveTo(dx - 8, bot); ctx.lineTo(dx - 34 + Math.sin(now / 200) * 5, top); ctx.lineTo(dx + 34 + Math.sin(now / 230) * 5, top); ctx.lineTo(dx + 8, bot); ctx.fill();
+  }
+  ctx.save(); ctx.translate(-cx, 0);
+  // ground
+  ctx.fillStyle = st.sky === 2 ? '#4a2416' : '#c0612f';
+  ctx.beginPath(); ctx.moveTo(cx - 20, 3000);
+  for (let x = cx - 20; x <= cx + VW + 20; x += 10) ctx.lineTo(x, ground(x));
+  ctx.lineTo(cx + VW + 20, 3000); ctx.fill();
+  ctx.fillStyle = st.sky === 2 ? '#3a1c10' : '#a24e25';
+  for (let k = Math.floor(cx / 90); k < (cx + VW) / 90 + 1; k++) {     // pebbles
+    const x = k * 90 + hash(k) * 60; ctx.beginPath(); ctx.ellipse(x, ground(x) + 10 + hash(k + 3) * 30, 4 + hash(k + 5) * 6, 3, 0, 0, 7); ctx.fill();
+  }
+  for (let k = Math.floor(cx / 240); k < (cx + VW) / 240 + 1; k++) {   // small rocks
+    const x = k * 240 + hash(k + 50) * 120;
+    if (hash(k + 80) > 0.45) drawRock(x, 9 + hash(k + 60) * 9, 0.6, false, false);
+  }
+  // wheel tracks behind the rover (the treads leave a pattern)
+  ctx.strokeStyle = 'rgba(90,35,12,0.35)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]);
+  ctx.beginPath(); for (let x = Math.max(cx, 0); x < st.x - 60; x += 8) ctx.lineTo(x, ground(x) + 1); ctx.stroke(); ctx.setLineDash([]);
+  // target rocks
+  const near = nearTarget();
+  for (let i = Math.floor(cx / TARGET_GAP) - 1; i < (cx + VW) / TARGET_GAP + 1; i++) {
+    const t = targetAt(i); if (!t) continue;
+    drawRock(t.x, t.r, 0.9, t.leopard, drilled.has(i));
+    if (!drilled.has(i)) {
+      const tw = 0.5 + 0.5 * Math.sin(now / 250 + i);
+      ctx.font = (22 + tw * 8) + 'px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('✨', t.x + 4, ground(t.x) - t.r * 1.5 - 8);
+      if (near && near.i === i) { ctx.strokeStyle = '#ffd93d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(t.x, ground(t.x) - t.r * 0.5, t.r + 14 + tw * 4, 0, 7); ctx.stroke(); }
+    }
+  }
+  drawHeli(now);
+  const m = drawRover(st.x, now);
+  for (const d of dust) { ctx.fillStyle = 'rgba(200,120,70,' + d.a + ')'; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 7); ctx.fill(); }
+  if (signal) {
+    const u = Math.min(1, (now - signal.t0) / 2200), ex = cx + VW * 0.86, ey = st.sky > 0 ? 70 : -40;
+    for (let k = 0; k < 3; k++) {
+      const uu = Math.max(0, u - k * 0.08), xx = m.mastX + (ex - m.mastX) * uu, yy = m.mastY + (ey - m.mastY) * uu;
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 - k * 0.25) + ')'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(xx, yy, 8 + k * 4, 0, 7); ctx.stroke();
+    }
+  }
+  ctx.restore();
+  if (shutter > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,255,255,' + shutter + ')'; ctx.fillRect(0, 0, W, H); }
+}
+
+// ============================================================================
+// LOOP
+// ============================================================================
+let last = performance.now();
+function loop(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+  const busy = st.busy === 'drill';
+  const target = busy ? 0 : st.dir * 150;
+  st.v += (target - st.v) * Math.min(1, dt * 5);
+  if (Math.abs(st.v) > 1) {
+    st.x = Math.max(60, st.x + st.v * dt); st.drove += Math.abs(st.v * dt);
+    if (Math.random() < Math.abs(st.v) * dt * 0.15) dust.push({ x: st.x - Math.sign(st.v) * 60, y: ground(st.x) - 6, r: 3 + Math.random() * 4, a: 0.5, vx: -Math.sign(st.v) * 20, vy: -15 });
+  }
+  for (const d of dust) { d.x += d.vx * dt; d.y += d.vy * dt; d.a -= dt * 0.5; d.r += dt * 4; }
+  dust = dust.filter(d => d.a > 0);
+  if (st.drove > 500 && !st.spoken.speed) { st.spoken.speed = 1; tell(F.speed); }
+  hum(Math.abs(st.v) / 150);
+  // drilling
+  if (busy && now - st.t0 > 2700) {
+    st.busy = null;
+    const t = st.drillTarget; drilled.add(t.i);
+    st.tubes++; save(); renderCounts();
+    cheer(); buzz([30, 30, 60]);
+    tell(t.leopard ? F.leopard : F.drill);
+  }
+  if (busy && now - st.t0 > 600 && now - st.t0 < 2200 && Math.random() < 0.5) {
+    const t = st.drillTarget;
+    dust.push({ x: t.x + 10, y: ground(t.x) - t.r * 0.6, r: 2 + Math.random() * 2, a: 0.7, vx: (Math.random() - 0.5) * 60, vy: -30 - Math.random() * 30 });
+  }
+  // helicopter
+  if (heli.flying) {
+    const u = (now - heli.t0) / 5000;
+    if (u >= 1) { heli.flying = false; heli.alt = 0; heli.x = heli.to; whirr(false); tone(300, 0.15, 'sine', 0.08); }
+    else {
+      heli.alt = 130 * Math.max(0, Math.min(1, u * 5, (1 - u) * 5));
+      const m = Math.max(0, Math.min(1, (u - 0.2) / 0.6));
+      heli.x = heli.from + (heli.to - heli.from) * (m * m * (3 - 2 * m));
+    }
+  } else if (heli.x < camX() - 200) heli.x = st.x - 140;     // left far behind: it waits near the rover
+  // signal
+  if (signal && now - signal.t0 > 2400) { const m = signal.min; signal = null; tone(1200, 0.1); setTimeout(() => tone(1500, 0.12), 140); tell(sigLine(m)); }
+  // dust devil now and then
+  if (devil.x < -100 && Math.random() < dt / 30) devil.x = VW + 60;
+  if (devil.x > -100) devil.x -= dt * 40;
+  shutter = Math.max(0, shutter - dt * 3);
+  renderButtons();
+  draw(now);
+  requestAnimationFrame(loop);
+}
+
+// ============================================================================
+// CONTROLS
+// ============================================================================
+function hold(id, dir) {
+  const b = $(id);
+  const on = (e) => { e.preventDefault(); ensureAudio(); st.dir = dir; b.classList.add('held'); try { b.setPointerCapture(e.pointerId); } catch (_) {} buzz(8); };
+  const off = () => { if (st.dir === dir) st.dir = 0; b.classList.remove('held'); };
+  b.addEventListener('pointerdown', on);
+  b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('lostpointercapture', off);
+  b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+hold('left', -1); hold('right', 1);
+document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') st.dir = 1; if (e.key === 'ArrowLeft') st.dir = -1; });
+document.addEventListener('keyup', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') st.dir = 0; });
+
+$('drill').addEventListener('click', () => {
+  ensureAudio();
+  if (st.busy) return;
+  const t = nearTarget();
+  if (!t) { tone(200, 0.15, 'triangle', 0.08); tell(F.noRock); return; }
+  st.busy = 'drill'; st.t0 = performance.now(); st.drillTarget = t; st.v = 0;
+  drillSound(); buzz(20);
+});
+$('photo').addEventListener('click', () => {
+  ensureAudio();
+  shutter = 0.9; click(); buzz(15);
+  st.photos++; save(); renderCounts();
+  tell(PHOTO[st.photoFact++ % PHOTO.length]);
+});
+$('fly').addEventListener('click', () => {
+  ensureAudio();
+  if (heli.flying) return;
+  heli.flying = true; heli.t0 = performance.now(); heli.from = heli.x;
+  heli.to = Math.max(heli.x + 250, st.x + 320);
+  st.flights++; save(); renderCounts(); whirr(true); buzz(15);
+  tell(st.flights % 2 ? F.heli : F.thin);
+});
+$('send').addEventListener('click', () => {
+  ensureAudio();
+  if (signal) return;
+  signal = { t0: performance.now(), min: lightMinutes() };
+  [880, 1100, 880].forEach((f, i) => setTimeout(() => tone(f, 0.08, 'square', 0.05), i * 120));
+});
+$('sky').addEventListener('click', () => {
+  ensureAudio();
+  st.sky = (st.sky + 1) % 3; buzz(10); blip(500 + st.sky * 120);
+  $('skyE').textContent = ['🌅', '🌙', '☀️'][st.sky];
+  tell([F.day, F.sunset, F.night][st.sky]);
+});
+cv.addEventListener('pointerdown', (e) => {
+  ensureAudio();
+  const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / S + camX(), y = (e.clientY - r.top) / S;
+  if (Math.abs(x - st.x) < 80 && y > ground(st.x) - 140 && y < ground(st.x) + 10) { buzz(10); tell(ROVER[st.roverFact++ % ROVER.length]); return; }
+  if (devil.x > -100 && Math.abs((e.clientX - r.left) / S - devil.x) < 50 && y > 220 && y < 380) { tell(F.devil); return; }
+  if (Math.abs(x - heli.x) < 40 && y > ground(heli.x) - 60 - heli.alt && y < ground(heli.x)) { tell(F.heli); }
+});
+$('fact').addEventListener('click', () => { if (st.lastFact) speak(st.lastFact); });
+
+function renderCounts() {
+  $('cTube').textContent = '🧪 ' + st.tubes;
+  $('cPhoto').textContent = '📸 ' + st.photos;
+  $('cFly').textContent = '🚁 ' + st.flights;
+}
+let lastReady = null;
+function renderButtons() {
+  const ready = !!nearTarget() && !st.busy;
+  if (ready !== lastReady) {
+    lastReady = ready;
+    $('drill').classList.toggle('ready', ready);
+    $('drill').classList.toggle('dim', !ready);
+    if (ready) { tone(990, 0.08, 'sine', 0.07); }
+  }
+}
+let factHide = 0;
+function tell(text) {
+  st.lastFact = text;
+  const f = $('fact'); f.textContent = text; f.classList.remove('off');
+  clearTimeout(factHide); factHide = setTimeout(() => f.classList.add('off'), 9000);
+  speak(text);
+}
+
+// ============================================================================
+// SOUND + SPEECH
+// ============================================================================
+let AC = null, motor = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch (e) {}
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function hum(level) {
+  if (!AC) return;
+  try {
+    if (!motor) {
+      const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+      o.type = 'sawtooth'; o.frequency.value = 70; f.type = 'lowpass'; f.frequency.value = 400; g.gain.value = 0;
+      o.connect(f).connect(g).connect(AC.destination); o.start(); motor = { o, g };
+    }
+    motor.g.gain.setTargetAtTime(level * 0.05, AC.currentTime, 0.08);
+    motor.o.frequency.setTargetAtTime(60 + level * 40, AC.currentTime, 0.1);
+  } catch (e) {}
+}
+function noise(dur, freq, vol) {
+  if (!AC) return;
+  try {
+    const n = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+    f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol;
+    s.buffer = buf; s.connect(f).connect(g).connect(AC.destination); s.start();
+  } catch (e) {}
+}
+const click = () => noise(0.08, 3000, 0.4);
+function drillSound() {
+  if (!AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + 0.6;
+    o.type = 'square'; o.frequency.value = 180;
+    o.connect(g).connect(AC.destination);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.04, t + 0.05); g.gain.setValueAtTime(0.04, t + 1.5); g.gain.linearRampToValueAtTime(0, t + 1.6);
+    o.frequency.setValueAtTime(180, t); o.frequency.linearRampToValueAtTime(240, t + 1.6);
+    o.start(t); o.stop(t + 1.7);
+  } catch (e) {}
+}
+let rotor = null;
+function whirr(on) {
+  if (!AC) return;
+  try {
+    if (on && !rotor) {
+      const o = AC.createOscillator(), g = AC.createGain(), lfo = AC.createOscillator(), lg = AC.createGain();
+      o.type = 'triangle'; o.frequency.value = 160; lfo.frequency.value = 40; lg.gain.value = 0.03;
+      lfo.connect(lg).connect(g.gain); g.gain.value = 0.03;
+      o.connect(g).connect(AC.destination); o.start(); lfo.start(); rotor = { o, lfo };
+    } else if (!on && rotor) { rotor.o.stop(); rotor.lfo.stop(); rotor = null; }
+  } catch (e) {}
+}
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function speak(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  if (window.VoiceClips) VoiceClips.say(text, AC, deviceSpeak); else deviceSpeak(text);
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+resize(); renderCounts();
+$('fact').textContent = F.intro;
+st.lastFact = F.intro;
+let firstTap = true;
+document.addEventListener('pointerdown', () => { if (firstTap) { firstTap = false; ensureAudio(); if (!st.drove) speak(F.intro); } }, true);
+requestAnimationFrame(loop);
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+if (window.VoiceClips) VoiceClips.lines(() => {
+  const out = [...Object.values(F), ...PHOTO, ...ROVER];
+  for (let m = 3; m <= 23; m++) out.push(sigLine(m));
+  return out;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🪐 สร้างระบบสุริยะ — คิดส์เล่น</title>
+<meta name="description" content="สร้างระบบสุริยะเอง ปัดดาวเคราะห์ออกไปรอบดวงอาทิตย์ แรงโน้มถ่วงจริง ช้าไปตกใส่ดวงอาทิตย์ เร็วไปหลุดไปในอวกาศ พอดีก็โคจร">
+<meta name="theme-color" content="#0b1033">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="สร้างระบบสุริยะ">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+    --space: #0b1033; --space-2: #1b2160;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Mitr', -apple-system, sans-serif; color: #fff;
+    background: radial-gradient(ellipse at 50% 40%, var(--space-2) 0%, var(--space) 60%, #05071c 100%);
+    user-select: none; -webkit-user-select: none; overflow: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px; opacity: 0.12; pointer-events: none;
+    letter-spacing: 80px; animation: drift 40s linear infinite; z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .wrap {
+    position: relative; z-index: 1; height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column;
+    padding: calc(10px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 56px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(26px, 5.5vw, 42px); margin: 4px 0 0;
+    color: var(--gold); text-shadow: 3px 3px 0 var(--brand-dark);
+  }
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 18px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  @media (max-width: 480px) { .chip { font-size: 16px; padding: 0 14px; } .chip .lbl { display: none; } }
+  @media (orientation: landscape) and (min-width: 820px) {
+    header { display: flex; align-items: center; justify-content: center; gap: 14px; }
+    h1 { margin: 0; }
+  }
+  .mission {
+    display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+    margin: 2px auto 4px; padding: 6px 16px; border-radius: 999px; max-width: 760px;
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25);
+    font-size: 18px; font-weight: 600; cursor: pointer;
+  }
+  .mission .stars { letter-spacing: 2px; }
+  .hidden { display: none !important; }
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; touch-action: none; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .toast {
+    position: absolute; left: 50%; top: 10px; transform: translateX(-50%);
+    background: var(--gold); color: var(--ink); border: 3px solid #fff; border-radius: 999px;
+    padding: 8px 20px; font-size: 20px; font-weight: 700; white-space: nowrap; max-width: 96%;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3); pointer-events: none; opacity: 0; transition: opacity .25s;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .toast.show { opacity: 1; }
+  .toast.bad { background: #ff8a80; }
+  .hint {
+    position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; pointer-events: none;
+    font-size: 17px; opacity: .75;
+  }
+  .tray { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; padding-top: 6px; }
+  .pl {
+    width: 68px; height: 72px; border-radius: 20px; border: 3px solid transparent;
+    background: rgba(255,255,255,0.08); cursor: pointer; padding: 2px 0 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    color: #fff; font-family: 'Mitr', sans-serif; font-size: 13px; font-weight: 600; transition: transform .1s;
+  }
+  .pl img { width: 46px; height: 46px; object-fit: contain; pointer-events: none; }
+  .pl.on { border-color: var(--gold); background: rgba(255,217,61,0.18); transform: scale(1.06); }
+  .pl:active { transform: scale(0.94); }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="wrap">
+  <header>
+    <h1>🪐 สร้างระบบสุริยะ</h1>
+    <div class="chips">
+      <button class="chip on" data-mode="free">🪐 อิสระ</button>
+      <button class="chip" data-mode="mission">🎯 ภารกิจ</button>
+      <button class="chip" id="clearBtn" aria-label="ล้าง">🧹<span class="lbl"> ล้าง</span></button>
+    </div>
+  </header>
+  <div class="mission hidden" id="mission"><span id="mText"></span><span class="stars" id="mStars"></span></div>
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="toast" id="toast"></div>
+    <div class="hint" id="hint">👆 แตะที่ว่าง แล้วลากนิ้ว · ขนาดดาวไม่ตามจริง</div>
+  </div>
+  <div class="tray" id="tray"></div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// ============================================================================
+// WORLD — one Sun, real inverse-square gravity (planets don't pull on each other:
+// they are tiny next to the Sun). Units: 1 u = 45 % of the shorter screen side.
+// GM is picked so a circle at 0.6 u takes ~6 s. Planet sizes are NOT to scale.
+// ============================================================================
+const GM = 0.24, SUN_R = 0.1, K_LAUNCH = 2.2, MAX_DRAG = 0.85;
+const PL = [
+  { id: 'mercury', th: 'ดาวพุธ',     s: 'พุธ',     r: 0.044, col: '#c9c4bd' },
+  { id: 'venus',   th: 'ดาวศุกร์',    s: 'ศุกร์',    r: 0.062, col: '#f0cf8a' },
+  { id: 'earth',   th: 'โลก',        s: 'โลก',     r: 0.065,  col: '#6fb6ff' },
+  { id: 'mars',    th: 'ดาวอังคาร',   s: 'อังคาร',   r: 0.052,  col: '#ff7a4d' },
+  { id: 'jupiter', th: 'ดาวพฤหัสบดี', s: 'พฤหัสฯ',  r: 0.104,  col: '#e3b07c' },
+  { id: 'saturn',  th: 'ดาวเสาร์',    s: 'เสาร์',    r: 0.091,  col: '#ecd9a0', ring: true },
+  { id: 'uranus',  th: 'ดาวยูเรนัส',  s: 'ยูเรนัส',  r: 0.075, col: '#9fe8f2' },
+  { id: 'neptune', th: 'ดาวเนปจูน',   s: 'เนปจูน',  r: 0.075, col: '#6d8dff' },
+];
+const IMG = {};
+for (const id of ['sun', ...PL.map(p => p.id)]) { const im = new Image(); im.src = '../solar-system/img/' + id + '.webp'; IMG[id] = im; }
+
+const LINES = {
+  intro: 'แตะที่ว่าง แล้วลากนิ้วเพื่อปล่อยดาวเคราะห์ ให้มันโคจรรอบดวงอาทิตย์',
+  crash: 'ตกลงไปในดวงอาทิตย์แล้ว ลองปัดไปด้านข้างให้แรงขึ้นนะ',
+  escape: 'เร็วเกินไป ดาวหลุดออกไปในอวกาศแล้ว',
+  orbit: 'โคจรได้แล้ว! แรงโน้มถ่วงของดวงอาทิตย์ดึงดาวไว้ ไม่ให้หลุดไป',
+  ellipse: 'วงโคจรเป็นวงรี ตอนเข้าใกล้ดวงอาทิตย์ดาววิ่งเร็วขึ้น ตอนอยู่ไกลวิ่งช้าลง',
+  kepler: 'ดาวที่อยู่ไกลดวงอาทิตย์ ใช้เวลาโคจรครบรอบนานกว่าดาวที่อยู่ใกล้',
+  tooRound: 'ยังเป็นวงรีอยู่ ลองปัดไปด้านข้าง แรงพอดีๆ',
+  notLong: 'ยังรีไม่พอ ลองปัดเบาๆ ไปด้านข้าง',
+  done: 'ภารกิจสำเร็จ!',
+  allDone: 'ทำภารกิจครบทุกข้อแล้ว เก่งมาก',
+};
+const MISSIONS = [
+  { t: '🎯 ทำให้ดาวโคจรครบ 1 รอบ', say: 'ภารกิจ ทำให้ดาวโคจรรอบดวงอาทิตย์ให้ครบหนึ่งรอบ',
+    ok: (ev) => ev.type === 'orbit', fact: 'โลกของเราโคจรรอบดวงอาทิตย์ครบหนึ่งรอบ ใช้เวลาหนึ่งปี' },
+  { t: '⭕ ทำวงโคจรให้กลมที่สุด', say: 'ภารกิจ ทำวงโคจรให้กลมที่สุด',
+    ok: (ev) => ev.type === 'orbit' && ev.e < 0.12, miss: (ev) => ev.type === 'orbit' && 'tooRound', fact: 'วงโคจรของโลกเกือบกลมจริงๆ' },
+  { t: '🥚 ทำวงรียาวๆ แบบดาวหาง', say: 'ภารกิจ ทำวงโคจรเป็นวงรียาวๆ แบบดาวหาง',
+    ok: (ev) => ev.type === 'orbit' && ev.e > 0.6, miss: (ev) => ev.type === 'orbit' && 'notLong', fact: 'ดาวหางฮัลเลย์มีวงโคจรเป็นวงรียาวมาก กลับมาให้เห็นทุกประมาณ 76 ปี' },
+  { t: '🚀 ปล่อยดาวให้หลุดออกไปในอวกาศ', say: 'ภารกิจ ปล่อยดาวให้เร็วจนหลุดออกไปในอวกาศ',
+    ok: (ev) => ev.type === 'escape', fact: 'ยานวอยเอเจอร์หนึ่ง วิ่งเร็วพอจะหลุดออกจากระบบสุริยะ' },
+  { t: '🔄 4 ดวงโคจรไปทางเดียวกัน', say: 'ภารกิจ ให้ดาวสี่ดวงโคจรไปทางเดียวกัน แบบระบบสุริยะจริง',
+    ok: (ev) => ev.type === 'orbit' && sameDir() >= 4, fact: 'ดาวเคราะห์ทั้งแปดดวงโคจรไปทางเดียวกัน คือทวนเข็มนาฬิกา เมื่อมองจากด้านบน' },
+];
+
+// ============================================================================
+// STATE
+// ============================================================================
+const cv = $('c'), ctx = cv.getContext('2d'), stage = $('stage');
+let W = 0, H = 0, DPR = 1, U = 100, CX = 0, CY = 0;
+let bodies = [], sel = 2, mode = 'free', drag = null;
+let said = {}, stars = [];
+let prog = { done: [] };
+try { prog = Object.assign(prog, JSON.parse(localStorage.getItem('orbitLab') || '{}')); } catch (e) {}
+const saveProg = () => { try { localStorage.setItem('orbitLab', JSON.stringify(prog)); } catch (e) {} };
+let mIdx = Math.max(0, MISSIONS.findIndex((m, i) => !prog.done[i]));
+
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = stage.clientWidth; H = stage.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  U = Math.min(W, H) * 0.45; CX = W / 2; CY = H / 2;
+  stars = [];
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 160; i++) stars.push([rnd() * W, rnd() * H, rnd() * 1.4 + 0.3, rnd()]);
+}
+window.addEventListener('resize', resize);
+
+const toU = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - CX) / U, y: (e.clientY - r.top - CY) / U }; };
+const px = (x) => CX + x * U, py = (y) => CY + y * U;
+
+// ============================================================================
+// PHYSICS — leapfrog with smaller steps near the Sun
+// ============================================================================
+function acc(x, y) { const r2 = x * x + y * y, r = Math.sqrt(r2), k = -GM / (r2 * r); return [k * x, k * y]; }
+function advance(b, dt) {
+  let t = dt;
+  while (t > 1e-6) {
+    const r = Math.hypot(b.x, b.y);
+    const h = Math.min(t, 0.004 * Math.min(1, Math.max(0.06, Math.pow(r / 0.35, 1.5))));
+    let [ax, ay] = acc(b.x, b.y);
+    b.vx += ax * h / 2; b.vy += ay * h / 2;
+    b.x += b.vx * h; b.y += b.vy * h;
+    [ax, ay] = acc(b.x, b.y);
+    b.vx += ax * h / 2; b.vy += ay * h / 2;
+    t -= h;
+    if (Math.hypot(b.x, b.y) < SUN_R + b.p.r * 0.5) return 'crash';
+  }
+  return null;
+}
+function elements(b) {
+  const r = Math.hypot(b.x, b.y), v2 = b.vx * b.vx + b.vy * b.vy;
+  const E = v2 / 2 - GM / r, h = b.x * b.vy - b.y * b.vx;
+  const e = Math.sqrt(Math.max(0, 1 + 2 * E * h * h / (GM * GM)));
+  return { E, h, e, a: E < 0 ? -GM / (2 * E) : Infinity };
+}
+function sameDir() {
+  let cw = 0, ccw = 0;
+  for (const b of bodies) if (b.orbits >= 1) (elements(b).h > 0 ? ccw++ : cw++);
+  return Math.max(cw, ccw);
+}
+
+// ============================================================================
+// LAUNCH (drag) + EVENTS
+// ============================================================================
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault(); ensureAudio();
+  const p = toU(e);
+  if (Math.hypot(p.x, p.y) < SUN_R + 0.06) { tone(160, 0.2, 'sawtooth', 0.06); return; }
+  drag = { id: e.pointerId, x: p.x, y: p.y, dx: 0, dy: 0 };
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  $('hint').classList.add('hidden');
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const p = toU(e);
+  let dx = p.x - drag.x, dy = p.y - drag.y;
+  const L = Math.hypot(dx, dy);
+  if (L > MAX_DRAG) { dx *= MAX_DRAG / L; dy *= MAX_DRAG / L; }
+  drag.dx = dx; drag.dy = dy;
+});
+function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  if (e.type === 'pointercancel') return;
+  launch(d.x, d.y, d.dx * K_LAUNCH, d.dy * K_LAUNCH);
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+
+function launch(x, y, vx, vy) {
+  const p = PL[sel];
+  if (bodies.length >= 8) bodies.shift();
+  const a = Math.atan2(y, x);
+  bodies.push({ p, x, y, vx, vy, trail: [[x, y]], prev: a, th: 0, orbits: 0, spark: 0 });
+  tone(330 + Math.hypot(vx, vy) * 300, 0.18, 'triangle', 0.1); buzz(12);
+}
+function event(ev) {
+  if (mode !== 'mission') return false;
+  const m = MISSIONS[mIdx];
+  if (!m) return false;
+  if (m.ok(ev)) {
+    prog.done[mIdx] = true; saveProg();
+    cheer(); buzz([30, 30, 60]);
+    toast('⭐ ภารกิจสำเร็จ!');
+    sayChain([LINES.done, m.fact]).then(() => {
+      const next = MISSIONS.findIndex((_, i) => !prog.done[i]);
+      if (next < 0) { mIdx = MISSIONS.length; renderMission(); speak(LINES.allDone); return; }
+      mIdx = next; renderMission(); speak(MISSIONS[mIdx].say);
+    });
+    return true;
+  }
+  const miss = m.miss && m.miss(ev);
+  if (miss) { toast(miss === 'tooRound' ? 'ยังรีอยู่ ลองอีกนะ' : 'ยังรีไม่พอ ลองอีกนะ', true); speak(LINES[miss]); return true; }
+  return false;
+}
+function onOrbit(b) {
+  const el = elements(b);
+  b.spark = 1;
+  tone(880, 0.12, 'sine', 0.09);
+  if (b.orbits > 1) return;
+  if (event({ type: 'orbit', e: el.e })) return;
+  if (!said.orbit) { said.orbit = 1; toast('⭐ โคจรได้แล้ว!'); speak(LINES.orbit); return; }
+  if (el.e > 0.45 && !said.ellipse) { said.ellipse = 1; toast('🥚 วงรี'); speak(LINES.ellipse); return; }
+  if (!said.kepler) {
+    const as = bodies.filter(o => o.orbits >= 1).map(o => elements(o).a).filter(isFinite);
+    if (as.length >= 2 && Math.max(...as) / Math.min(...as) > 1.8) { said.kepler = 1; speak(LINES.kepler); }
+  }
+}
+function onCrash(b) {
+  boom(); buzz([20, 20, 20]);
+  if (event({ type: 'crash' })) return;
+  toast('🔥 ตกใส่ดวงอาทิตย์', true);
+  if (!said.crash || Math.random() < 0.4) { said.crash = 1; speak(LINES.crash); }
+}
+function onEscape(b) {
+  tone(500, 0.5, 'sine', 0.08); setTimeout(() => tone(300, 0.5, 'sine', 0.06), 150);
+  if (event({ type: 'escape' })) return;
+  toast('🚀 หลุดออกไปในอวกาศ', true);
+  if (!said.escape || Math.random() < 0.4) { said.escape = 1; speak(LINES.escape); }
+}
+
+// ============================================================================
+// LOOP + DRAW
+// ============================================================================
+let last = performance.now(), flash = 0;
+function loop(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+  for (const b of bodies.slice()) {
+    const res = advance(b, dt);
+    if (res === 'crash') { bodies.splice(bodies.indexOf(b), 1); flash = 1; onCrash(b); continue; }
+    const a = Math.atan2(b.y, b.x);
+    let d = a - b.prev; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+    b.th += d; b.prev = a;
+    if (Math.abs(b.th) >= 2 * Math.PI * (b.orbits + 1)) { b.orbits++; onOrbit(b); }
+    const t = b.trail[b.trail.length - 1];
+    if (Math.hypot(b.x - t[0], b.y - t[1]) > 0.012) { b.trail.push([b.x, b.y]); if (b.trail.length > 700) b.trail.shift(); }
+    const r = Math.hypot(b.x, b.y), far = Math.max(W, H) / 2 / U + 0.3;
+    if (r > far) {
+      if (elements(b).E >= 0) { bodies.splice(bodies.indexOf(b), 1); onEscape(b); continue; }
+      if (r > far * 5) { bodies.splice(bodies.indexOf(b), 1); continue; }
+    }
+    b.spark = Math.max(0, b.spark - dt * 1.2);
+  }
+  flash = Math.max(0, flash - dt * 2);
+  draw(now);
+  requestAnimationFrame(loop);
+}
+function drawPlanet(p, x, y, alpha) {
+  const im = IMG[p.id], R = p.r * U;
+  ctx.globalAlpha = alpha;
+  if (im.complete && im.naturalWidth) {
+    const s = p.ring ? R * 2 / 0.43 : R * 2.05;
+    ctx.drawImage(im, x - s / 2, y - s / 2, s, s);
+  } else { ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
+function draw(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  for (const [x, y, r, ph] of stars) {
+    ctx.globalAlpha = 0.45 + 0.35 * Math.sin(now / 900 + ph * 9);
+    ctx.fillStyle = '#fff'; ctx.fillRect(x, y, r, r);
+  }
+  ctx.globalAlpha = 1;
+  // Sun
+  const sr = SUN_R * U;
+  const g = ctx.createRadialGradient(CX, CY, sr * 0.6, CX, CY, sr * (2.6 + flash));
+  g.addColorStop(0, 'rgba(255,200,80,0.55)'); g.addColorStop(1, 'rgba(255,140,40,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(CX, CY, sr * (2.6 + flash), 0, 7); ctx.fill();
+  if (IMG.sun.complete && IMG.sun.naturalWidth) ctx.drawImage(IMG.sun, CX - sr * 1.08, CY - sr * 1.08, sr * 2.16, sr * 2.16);
+  else { ctx.fillStyle = '#ffb300'; ctx.beginPath(); ctx.arc(CX, CY, sr, 0, 7); ctx.fill(); }
+  // trails
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const b of bodies) {
+    const T = b.trail, n = T.length;
+    ctx.strokeStyle = b.p.col; ctx.lineWidth = 3;
+    for (let i = 1; i < n; i++) {
+      ctx.globalAlpha = 0.08 + 0.7 * (i / n);
+      ctx.beginPath(); ctx.moveTo(px(T[i - 1][0]), py(T[i - 1][1])); ctx.lineTo(px(T[i][0]), py(T[i][1])); ctx.stroke();
+    }
+    ctx.globalAlpha = 0.7 * (n > 1 ? 1 : 0);
+    ctx.beginPath(); ctx.moveTo(px(T[n - 1][0]), py(T[n - 1][1])); ctx.lineTo(px(b.x), py(b.y)); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  for (const b of bodies) {
+    if (b.spark > 0) {
+      ctx.globalAlpha = b.spark; ctx.strokeStyle = '#ffd93d'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(px(b.x), py(b.y), b.p.r * U * (1.4 + (1 - b.spark) * 1.6), 0, 7); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    drawPlanet(b.p, px(b.x), py(b.y), 1);
+    for (let k = 0; k < Math.min(b.orbits, 5); k++) {   // one small star per orbit done
+      ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('⭐', px(b.x) - 16 + k * 8, py(b.y) - b.p.r * U - 8);
+    }
+  }
+  // drag preview: arrow + where it would go for the next ~1.5 s
+  if (drag) {
+    const vx = drag.dx * K_LAUNCH, vy = drag.dy * K_LAUNCH;
+    const r = Math.hypot(drag.x, drag.y), E = (vx * vx + vy * vy) / 2 - GM / r;
+    const col = E >= 0 ? '#ff8a80' : '#ffd93d';
+    const sim = { x: drag.x, y: drag.y, vx, vy, p: PL[sel] };
+    ctx.fillStyle = col;
+    for (let i = 0; i < 30; i++) {
+      if (advance(sim, 0.05)) break;
+      ctx.globalAlpha = 0.9 - i / 34;
+      ctx.beginPath(); ctx.arc(px(sim.x), py(sim.y), 3, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    drawPlanet(PL[sel], px(drag.x), py(drag.y), 0.85);
+    const x0 = px(drag.x), y0 = py(drag.y), x1 = px(drag.x + drag.dx), y1 = py(drag.y + drag.dy);
+    if (Math.hypot(x1 - x0, y1 - y0) > 6) {
+      ctx.strokeStyle = col; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      const a = Math.atan2(y1 - y0, x1 - x0);
+      ctx.fillStyle = col; ctx.beginPath();
+      ctx.moveTo(x1 + Math.cos(a) * 14, y1 + Math.sin(a) * 14);
+      ctx.lineTo(x1 + Math.cos(a + 2.4) * 16, y1 + Math.sin(a + 2.4) * 16);
+      ctx.lineTo(x1 + Math.cos(a - 2.4) * 16, y1 + Math.sin(a - 2.4) * 16);
+      ctx.fill();
+    }
+  }
+}
+
+// ============================================================================
+// UI
+// ============================================================================
+function renderTray() {
+  const tray = $('tray'); tray.innerHTML = '';
+  PL.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.className = 'pl' + (i === sel ? ' on' : '');
+    b.setAttribute('aria-label', p.th);
+    b.innerHTML = `<img src="../solar-system/img/${p.id}.webp" alt="" style="${p.ring ? 'transform:scale(1.35)' : ''}"><span>${p.s}</span>`;
+    b.addEventListener('click', () => { ensureAudio(); sel = i; renderTray(); blip(500 + i * 60); speak(p.th); });
+    tray.appendChild(b);
+  });
+}
+function renderMission() {
+  const box = $('mission');
+  box.classList.toggle('hidden', mode !== 'mission');
+  const m = MISSIONS[mIdx];
+  $('mText').textContent = m ? m.t : '🏆 ทำครบทุกภารกิจแล้ว!';
+  $('mStars').textContent = MISSIONS.map((_, i) => prog.done[i] ? '⭐' : '☆').join('');
+}
+$('mission').addEventListener('click', () => {
+  const m = MISSIONS[mIdx];
+  if (m) speak(m.say);
+  else { prog.done = []; saveProg(); mIdx = 0; renderMission(); speak(MISSIONS[0].say); }   // all done → tap to play again
+});
+for (const c of document.querySelectorAll('[data-mode]')) c.addEventListener('click', () => {
+  ensureAudio();
+  mode = c.dataset.mode;
+  for (const o of document.querySelectorAll('[data-mode]')) o.classList.toggle('on', o === c);
+  renderMission(); buzz(8);
+  if (mode === 'mission') { const m = MISSIONS[mIdx]; speak(m ? m.say : LINES.allDone); }
+  else speak(LINES.intro);
+});
+$('clearBtn').addEventListener('click', () => { bodies = []; buzz(15); tone(400, 0.15, 'triangle', 0.1); });
+let firstTap = true;
+document.addEventListener('pointerdown', (e) => {
+  if (!firstTap) return; firstTap = false;
+  if (e.target === cv || e.target.closest('button')) return;
+  ensureAudio(); speak(LINES.intro);
+}, true);
+
+let toastT = 0;
+function toast(t, bad) {
+  const el = $('toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ============================================================================
+// SOUND + SPEECH
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch (e) {}
+}
+const blip = (f) => tone(f, 0.12, 'sine', 0.1);
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function boom() {
+  if (!AC) return;
+  try {
+    const n = AC.sampleRate * 0.6, buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+    f.type = 'lowpass'; f.frequency.value = 900; g.gain.value = 0.25;
+    s.buffer = buf; s.connect(f).connect(g).connect(AC.destination); s.start();
+  } catch (e) {}
+}
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+    setTimeout(end, 9000);
+  } catch (e) { end(); }
+}
+let sayTok = 0;
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+function speak(text) { sayTok++; return sayNow(text); }
+async function sayChain(list) {
+  const my = ++sayTok;
+  for (const t of list) { if (my !== sayTok) return; await sayNow(t); }
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+resize(); renderTray(); renderMission();
+requestAnimationFrame(loop);
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+if (window.VoiceClips) VoiceClips.lines(() => [
+  ...Object.values(LINES), ...PL.map(p => p.th), ...MISSIONS.map(m => m.say), ...MISSIONS.map(m => m.fact),
+]);
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

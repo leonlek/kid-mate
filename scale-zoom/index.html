@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🔬 จิ๋วไปยักษ์ — คิดส์เล่น</title>
+<meta name="description" content="ซูมจากอะตอม ไวรัส เม็ดเลือด มด เด็ก ช้าง วาฬ ตึก ภูเขา ดาวเคราะห์ ดวงอาทิตย์ ไปจนถึงกาแล็กซีและจักรวาล ทุกอย่างขนาดเทียบกันจริง">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="จิ๋วไปยักษ์">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Mitr', -apple-system, sans-serif; color: var(--ink);
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 65%, #7ed957 100%);
+    user-select: none; -webkit-user-select: none; overflow: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px; opacity: 0.3; pointer-events: none;
+    letter-spacing: 80px; animation: drift 40s linear infinite; z-index: 2;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60; transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .wrap { position: relative; z-index: 1; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; touch-action: none; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  h1 {
+    position: absolute; top: calc(12px + env(safe-area-inset-top)); left: 0; right: 0; z-index: 3; text-align: center;
+    font-family: 'Itim', cursive; font-weight: normal; margin: 0; pointer-events: none;
+    font-size: clamp(26px, 5.5vw, 42px); color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+    transition: color .4s, text-shadow .4s;
+  }
+  h1.dark { color: var(--gold); text-shadow: 3px 3px 0 var(--brand-dark); }
+  .ruler {
+    position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 3;
+    display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 15px; pointer-events: none;
+    background: rgba(255,255,255,0.85); border-radius: 999px; padding: 3px 12px;
+  }
+  .ruler i { display: block; height: 8px; border: 3px solid var(--ink); border-top: 0; }
+  .panel {
+    flex: 0 0 auto; background: var(--card); border-top: 4px solid var(--card-border);
+    border-radius: 26px 26px 0 0; box-shadow: 0 -4px 0 rgba(0,0,0,0.06);
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .card { display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 64px; max-width: 760px; margin: 0 auto; }
+  .card .big { font-size: 40px; width: 52px; text-align: center; flex-shrink: 0; }
+  .card .name { font-family: 'Itim', cursive; font-size: 28px; color: var(--brand-dark); line-height: 1.1; }
+  .card .size { font-size: 18px; font-weight: 600; }
+  .card .cmp { font-size: 15px; color: #6b7280; }
+  .card .spk { margin-left: auto; font-size: 28px; flex-shrink: 0; }
+  .ctrls { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
+  .btn {
+    min-width: 64px; min-height: 64px; border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; font-family: 'Mitr', sans-serif; font-size: 26px; font-weight: 700; color: var(--ink);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15); cursor: pointer; padding: 0 16px; transition: transform .1s; touch-action: none;
+  }
+  .btn:active, .btn.held { transform: translateY(2px) scale(0.95); }
+  .btn.main { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .dots { display: flex; justify-content: center; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  .dots b { width: 8px; height: 8px; border-radius: 50%; background: #e3e7ec; }
+  .dots b.on { background: var(--brand); transform: scale(1.4); }
+  .dots b.seen { background: #ffc2d6; }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <h1 id="title">🔬 จิ๋วไปยักษ์</h1>
+    <div class="ruler" id="ruler"><i id="rulerBar"></i><span id="rulerTxt"></span></div>
+  </div>
+  <div class="panel">
+    <div class="card" id="card"><div class="big" id="cEmoji"></div><div><div class="name" id="cName"></div><div class="size" id="cSize"></div><div class="cmp" id="cCmp"></div></div><div class="spk">🔊</div></div>
+    <div class="ctrls">
+      <button class="btn" id="prev" aria-label="เล็กลง">◀ 🐜</button>
+      <button class="btn" id="zout" aria-label="ซูมออก">➖</button>
+      <button class="btn" id="zin" aria-label="ซูมเข้า">➕</button>
+      <button class="btn main" id="next" aria-label="ใหญ่ขึ้น">🐘 ▶</button>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// ============================================================================
+// THINGS — every size is a real measurement (sources in CREDITS / CLAUDE.md):
+// L = the size we compare (metres), w × h = the drawing box, all at ONE scale.
+// ============================================================================
+const LY = 9.4607e15, AU = 1.496e11;
+const IMG = {};
+for (const id of ['moon', 'earth', 'jupiter', 'sun']) { const im = new Image(); im.src = '../solar-system/img/' + id + '.webp'; IMG[id] = im; }
+
+const T = [
+  { id: 'atom', e: '⚛️', name: 'อะตอมไฮโดรเจน', L: 1.06e-10, w: 1.06e-10, h: 1.06e-10, show: 'กว้างราว 0.1 นาโนเมตร', say: 'อะตอมไฮโดรเจน กว้างราว ศูนย์จุดหนึ่ง นาโนเมตร เล็กที่สุดในเกมนี้', draw: atom },
+  { id: 'dna', e: '🧬', name: 'ดีเอ็นเอ', L: 2e-9, w: 2e-9, h: 1.4e-8, show: 'เส้นกว้างราว 2 นาโนเมตร', say: 'เส้นดีเอ็นเอ กว้างราว 2 นาโนเมตร', draw: dna },
+  { id: 'virus', e: '🦠', name: 'ไวรัสไข้หวัดใหญ่', L: 1e-7, w: 1e-7, h: 1e-7, show: 'กว้างราว 0.1 ไมโครเมตร (80–120 นาโนเมตร)', say: 'ไวรัสไข้หวัดใหญ่ กว้างราว 100 นาโนเมตร', draw: virus },
+  { id: 'bact', e: '🦠', name: 'แบคทีเรีย อีโคไล', L: 2e-6, w: 2e-6, h: 0.8e-6, show: 'ยาวราว 2 ไมโครเมตร', say: 'แบคทีเรียอีโคไล ยาวราว 2 ไมโครเมตร', draw: bacterium },
+  { id: 'rbc', e: '🩸', name: 'เม็ดเลือดแดง', L: 7.5e-6, w: 7.5e-6, h: 7.5e-6, show: 'กว้างราว 7.5 ไมโครเมตร (6–8)', say: 'เม็ดเลือดแดง กว้างราว 7.5 ไมโครเมตร ในเลือดหนึ่งหยดมีหลายร้อยล้านเม็ด', draw: rbc },
+  { id: 'hair', e: '💇', name: 'เส้นผม', L: 7e-5, w: 7e-5, h: 6e-4, show: 'หนาราว 0.07 มิลลิเมตร', say: 'เส้นผมหนาราว 0.07 มิลลิเมตร', draw: hair },
+  { id: 'mite', e: '🔍', name: 'ไรฝุ่น', L: 3e-4, w: 3e-4, h: 2e-4, show: 'ยาวราว 0.3 มิลลิเมตร', say: 'ไรฝุ่น ยาวราว 0.3 มิลลิเมตร ตัวเล็กจนมองด้วยตาเปล่าแทบไม่เห็น', draw: mite },
+  { id: 'ant', e: '🐜', name: 'มดแดง', L: 9e-3, w: 9e-3, h: 4.5e-3, show: 'ยาวราว 8–10 มิลลิเมตร (มดตัวใหญ่ในรัง)', say: 'มดแดง ยาวราว 1 เซนติเมตร', draw: emoji('🐜', 1.25, 0.25) },
+  { id: 'kid', e: '🧍', name: 'เด็ก 7 ขวบ', L: 1.2, w: 0.45, h: 1.2, show: 'สูงราว 120 เซนติเมตร', say: 'เด็กเจ็ดขวบ สูงราว 120 เซนติเมตร', draw: kid },
+  { id: 'ele', e: '🐘', name: 'ช้างเอเชีย', L: 2.7, w: 3.5, h: 2.7, show: 'สูงที่ไหล่ราว 2.4–2.7 เมตร', say: 'ช้างเอเชีย สูงที่ไหล่ราว 2.7 เมตร', draw: emoji('🐘', 1.25, -0.035) },
+  { id: 'whale', e: '🐋', name: 'วาฬสีน้ำเงิน', L: 29.9, w: 29.9, h: 7, show: 'ยาวได้ถึงราว 30 เมตร สัตว์ใหญ่ที่สุดในโลก', say: 'วาฬสีน้ำเงิน ยาวได้ถึงราว 30 เมตร เป็นสัตว์ที่ใหญ่ที่สุดที่เคยมีมา', draw: whale },
+  { id: 'mhn', e: '🏙️', name: 'ตึกมหานคร', L: 314, w: 55, h: 314, show: 'สูง 314 เมตร กรุงเทพฯ', say: 'ตึกมหานคร ในกรุงเทพ สูง 314 เมตร', draw: mahanakhon },
+  { id: 'burj', e: '🏢', name: 'บุรจญ์เคาะลีฟะฮ์', L: 828, w: 110, h: 828, show: 'สูง 828 เมตร ตึกที่สูงที่สุดในโลก', say: 'บุรจญ์เคาะลีฟะฮ์ ที่ดูไบ สูง 828 เมตร เป็นตึกที่สูงที่สุดในโลก', draw: burj },
+  { id: 'everest', e: '🏔️', name: 'ยอดเขาเอเวอเรสต์', L: 8849, w: 22000, h: 8849, show: 'สูง 8,849 เมตร จากระดับน้ำทะเล', say: 'ยอดเขาเอเวอเรสต์ สูง 8,849 เมตร เป็นยอดเขาที่สูงที่สุดในโลก', draw: everest },
+  { id: 'moon', e: '🌙', name: 'ดวงจันทร์', L: 3.475e6, w: 3.475e6, h: 3.475e6, show: 'กว้าง 3,475 กิโลเมตร', say: 'ดวงจันทร์ กว้าง 3,475 กิโลเมตร', draw: sprite('moon', 1) },
+  { id: 'earth', e: '🌏', name: 'โลก', L: 1.2756e7, w: 1.2756e7, h: 1.2756e7, show: 'กว้าง 12,756 กิโลเมตร', say: 'โลกของเรา กว้าง 12,756 กิโลเมตร', draw: sprite('earth', 1) },
+  { id: 'jupiter', e: '🪐', name: 'ดาวพฤหัสบดี', L: 1.42984e8, w: 1.42984e8, h: 1.42984e8, show: 'กว้าง 142,984 กิโลเมตร ดาวเคราะห์ใหญ่ที่สุด', say: 'ดาวพฤหัสบดี กว้าง 142,984 กิโลเมตร ใหญ่ที่สุดในระบบสุริยะ ยกเว้นดวงอาทิตย์', draw: sprite('jupiter', 1) },
+  { id: 'sun', e: '☀️', name: 'ดวงอาทิตย์', L: 1.3914e9, w: 1.3914e9, h: 1.3914e9, show: 'กว้างราว 1.39 ล้านกิโลเมตร', say: 'ดวงอาทิตย์ กว้างราว 1.39 ล้านกิโลเมตร ใส่โลกได้กว่า 1 ล้านใบ', draw: sprite('sun', 1) },
+  { id: 'betel', e: '🔴', name: 'ดาวบีเทลจุส', L: 764 * 1.3914e9, w: 764 * 1.3914e9, h: 764 * 1.3914e9, show: 'ราว 760 เท่าของดวงอาทิตย์ (ค่าประมาณ)', say: 'ดาวบีเทลจุส ในกลุ่มดาวเต่า ใหญ่กว่าดวงอาทิตย์ราว 760 เท่า นักดาราศาสตร์ยังวัดได้ไม่ตรงกัน', draw: betelgeuse },
+  { id: 'ss', e: '🌀', name: 'ระบบสุริยะ (ถึงดาวเนปจูน)', L: 60.1 * AU, w: 60.1 * AU, h: 60.1 * AU, show: 'กว้างราว 9,000 ล้านกิโลเมตร', say: 'วงโคจรของดาวเนปจูน กว้างราว 9,000 ล้านกิโลเมตร แสงต้องเดินทางกว่า 8 ชั่วโมง จึงข้ามจากฝั่งหนึ่งไปอีกฝั่งได้', draw: solar },
+  { id: 'mw', e: '🌌', name: 'กาแล็กซีทางช้างเผือก', L: 1e5 * LY, w: 1e5 * LY, h: 1e5 * LY, show: 'กว้างราว 100,000 ปีแสง', say: 'กาแล็กซีทางช้างเผือก บ้านของเรา กว้างราว 1 แสนปีแสง มีดาวหลายแสนล้านดวง', draw: galaxy },
+  { id: 'uni', e: '✨', name: 'จักรวาลที่มองเห็นได้', L: 9.3e10 * LY, w: 9.3e10 * LY, h: 9.3e10 * LY, show: 'กว้างราว 93,000 ล้านปีแสง', say: 'จักรวาลที่เรามองเห็นได้ กว้างราว 93,000 ล้านปีแสง ใหญ่ที่สุดในเกมนี้', draw: universe },
+];
+// lay everything out in a row on the same ground line, left = smallest
+{
+  let x = 0;
+  for (const t of T) { t.x = x; x += t.w + Math.max(t.w * 0.35, 0); }
+}
+const N = T.length;
+
+// ============================================================================
+// DRAWINGS — (c, x, y, w, h): x,y = bottom-left on screen in px, w,h = box in px
+// ============================================================================
+function atom(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2, r = w / 2;
+  const g = c.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0, 'rgba(120,170,255,0.75)'); g.addColorStop(1, 'rgba(120,170,255,0)');
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+  c.fillStyle = '#ff6b6b'; c.beginPath(); c.arc(cx, cy, Math.max(1, r * 0.06), 0, 7); c.fill();
+  c.fillStyle = '#3a6fd8'; c.beginPath(); c.arc(cx + r * 0.55, cy - r * 0.3, Math.max(1, r * 0.05), 0, 7); c.fill();
+}
+function dna(c, x, y, w, h) {
+  c.lineWidth = Math.max(1, w * 0.12);
+  for (const [col, ph] of [['#ff6b9d', 0], ['#5bc0eb', Math.PI]]) {
+    c.strokeStyle = col; c.beginPath();
+    for (let k = 0; k <= 60; k++) { const u = k / 60; c.lineTo(x + w / 2 + Math.sin(u * 14 + ph) * w * 0.45, y - u * h); }
+    c.stroke();
+  }
+  c.strokeStyle = '#b8c0c8'; c.lineWidth = Math.max(1, w * 0.06);
+  for (let k = 0; k < 24; k++) { const u = (k + 0.5) / 24, s = Math.sin(u * 14) * w * 0.45; c.beginPath(); c.moveTo(x + w / 2 + s, y - u * h); c.lineTo(x + w / 2 - s, y - u * h); c.stroke(); }
+}
+function virus(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2, r = w * 0.38;
+  c.strokeStyle = '#8e44ad'; c.lineWidth = Math.max(1, r * 0.08);
+  for (let k = 0; k < 18; k++) { const a = k / 18 * 6.283; c.beginPath(); c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); c.lineTo(cx + Math.cos(a) * r * 1.3, cy + Math.sin(a) * r * 1.3); c.stroke(); }
+  c.fillStyle = '#c39bd3'; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+  c.strokeStyle = '#6c3483'; c.lineWidth = Math.max(1, r * 0.05); c.stroke();
+}
+function bacterium(c, x, y, w, h) {
+  c.strokeStyle = '#3d8b3d'; c.lineWidth = Math.max(1, h * 0.04);
+  for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(x, y - h / 2); for (let u = 0; u <= 1; u += 0.05) c.lineTo(x - u * w * 0.8, y - h / 2 + Math.sin(u * 12 + k) * h * 0.25 + (k - 1) * h * 0.2); c.stroke(); }
+  c.fillStyle = '#7ed957'; c.strokeStyle = '#3d8b3d'; c.lineWidth = Math.max(1, h * 0.06);
+  c.beginPath(); c.roundRect(x, y - h, w, h, h / 2); c.fill(); c.stroke();
+}
+function rbc(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2;
+  const g = c.createRadialGradient(cx, cy, 0, cx, cy, w / 2);
+  g.addColorStop(0, '#ff9a9a'); g.addColorStop(0.45, '#e74c3c'); g.addColorStop(1, '#a93226');
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cy, w / 2, 0, 7); c.fill();
+}
+function hair(c, x, y, w, h) {
+  c.fillStyle = '#4a3020'; c.fillRect(x, y - h, w, h);
+  c.fillStyle = 'rgba(255,255,255,0.18)'; c.fillRect(x + w * 0.2, y - h, w * 0.15, h);
+}
+function mite(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h * 0.5;
+  c.strokeStyle = '#a0784a'; c.lineWidth = Math.max(1, w * 0.035);
+  for (let k = 0; k < 4; k++) for (const s of [-1, 1]) {
+    const bx = cx - w * 0.25 + k * w * 0.16;
+    c.beginPath(); c.moveTo(bx, cy); c.lineTo(bx + s * w * 0.04, cy + h * 0.5); c.stroke();
+  }
+  c.fillStyle = '#e8d5b0'; c.strokeStyle = '#a0784a';
+  c.beginPath(); c.ellipse(cx, cy - h * 0.05, w * 0.42, h * 0.38, 0, 0, 7); c.fill(); c.stroke();
+}
+function emoji(ch, scale, drop) {
+  return (c, x, y, w, h) => {
+    const s = Math.max(w, h) * scale;
+    if (s > 4000) return;
+    c.font = s + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    c.fillText(ch, x + w / 2, y + s * drop * 0.6);
+  };
+}
+function kid(c, x, y, w, h) {
+  const cx = x + w / 2, s = h / 120;
+  c.lineCap = 'round';
+  c.fillStyle = '#3d6fd8'; c.fillRect(cx - 9 * s, y - 52 * s, 7 * s, 52 * s); c.fillRect(cx + 2 * s, y - 52 * s, 7 * s, 52 * s);
+  c.fillStyle = '#ff6b9d'; c.beginPath(); c.roundRect(cx - 13 * s, y - 92 * s, 26 * s, 44 * s, 8 * s); c.fill();
+  c.strokeStyle = '#f2c09b'; c.lineWidth = 7 * s;
+  c.beginPath(); c.moveTo(cx - 13 * s, y - 86 * s); c.lineTo(cx - 20 * s, y - 56 * s); c.moveTo(cx + 13 * s, y - 86 * s); c.lineTo(cx + 20 * s, y - 56 * s); c.stroke();
+  c.fillStyle = '#f2c09b'; c.beginPath(); c.arc(cx, y - 105 * s, 14 * s, 0, 7); c.fill();
+  c.fillStyle = '#2d3436'; c.beginPath(); c.arc(cx, y - 110 * s, 14.5 * s, Math.PI, 0); c.fill();
+}
+function whale(c, x, y, w, h) {
+  c.fillStyle = '#5b7fa6';
+  c.beginPath();
+  c.moveTo(x, y - h * 0.55);
+  c.quadraticCurveTo(x + w * 0.1, y - h * 1.0, x + w * 0.45, y - h * 0.85);
+  c.quadraticCurveTo(x + w * 0.85, y - h * 0.65, x + w * 0.92, y - h * 0.45);
+  c.lineTo(x + w, y - h * 0.85); c.lineTo(x + w * 0.97, y - h * 0.4); c.lineTo(x + w, y);
+  c.lineTo(x + w * 0.9, y - h * 0.3);
+  c.quadraticCurveTo(x + w * 0.5, y - h * 0.05, x + w * 0.15, y - h * 0.15);
+  c.quadraticCurveTo(x, y - h * 0.25, x, y - h * 0.55);
+  c.fill();
+  c.fillStyle = '#c6d6e6'; c.beginPath(); c.ellipse(x + w * 0.3, y - h * 0.2, w * 0.2, h * 0.1, 0.05, 0, 7); c.fill();
+  c.fillStyle = '#1b2a3a'; c.beginPath(); c.arc(x + w * 0.12, y - h * 0.5, Math.max(1, h * 0.05), 0, 7); c.fill();
+}
+function mahanakhon(c, x, y, w, h) {
+  c.fillStyle = '#9fb3c8'; c.fillRect(x, y - h, w, h);
+  c.fillStyle = '#4a5d73';
+  for (let k = 0; k < 14; k++) {          // the "pixelated" cut spiralling up the tower
+    const u = k / 14, cw = w * 0.35;
+    c.fillRect(x + (k % 2 ? w - cw : 0), y - h * (0.1 + u * 0.85), cw, h * 0.05);
+  }
+}
+function burj(c, x, y, w, h) {
+  c.fillStyle = '#b8c6d6';
+  c.beginPath(); c.moveTo(x, y);
+  const steps = [[0, 0], [0.05, 0.3], [0.15, 0.5], [0.25, 0.65], [0.33, 0.78], [0.42, 0.9], [0.48, 1]];
+  for (const [a, b] of steps) c.lineTo(x + w * a, y - h * b);
+  for (const [a, b] of steps.slice().reverse()) c.lineTo(x + w * (1 - a), y - h * b);
+  c.fill();
+  c.strokeStyle = '#8899aa'; c.lineWidth = Math.max(1, w * 0.02); c.beginPath(); c.moveTo(x + w / 2, y); c.lineTo(x + w / 2, y - h); c.stroke();
+}
+function everest(c, x, y, w, h) {
+  c.fillStyle = '#7d8b99';
+  c.beginPath(); c.moveTo(x, y); c.lineTo(x + w * 0.32, y - h * 0.55); c.lineTo(x + w * 0.42, y - h * 0.62); c.lineTo(x + w * 0.5, y - h); c.lineTo(x + w * 0.6, y - h * 0.7); c.lineTo(x + w * 0.7, y - h * 0.6); c.lineTo(x + w, y); c.fill();
+  c.fillStyle = '#fff';
+  c.beginPath(); c.moveTo(x + w * 0.5, y - h); c.lineTo(x + w * 0.44, y - h * 0.72); c.lineTo(x + w * 0.48, y - h * 0.76); c.lineTo(x + w * 0.52, y - h * 0.7); c.lineTo(x + w * 0.57, y - h * 0.74); c.fill();
+}
+function sprite(id) {
+  return (c, x, y, w, h) => {
+    const im = IMG[id];
+    if (id === 'sun') {
+      const g = c.createRadialGradient(x + w / 2, y - h / 2, w * 0.4, x + w / 2, y - h / 2, w * 0.8);
+      g.addColorStop(0, 'rgba(255,200,80,0.5)'); g.addColorStop(1, 'rgba(255,160,40,0)');
+      c.fillStyle = g; c.beginPath(); c.arc(x + w / 2, y - h / 2, w * 0.8, 0, 7); c.fill();
+    }
+    if (im.complete && im.naturalWidth) c.drawImage(im, x - w * 0.02, y - h * 1.02, w * 1.04, h * 1.04);
+    else { c.fillStyle = '#ccc'; c.beginPath(); c.arc(x + w / 2, y - h / 2, w / 2, 0, 7); c.fill(); }
+  };
+}
+function betelgeuse(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2;
+  const g = c.createRadialGradient(cx, cy, w * 0.1, cx, cy, w * 0.62);
+  g.addColorStop(0, '#ffb070'); g.addColorStop(0.75, '#e2552a'); g.addColorStop(0.82, 'rgba(200,60,30,0.6)'); g.addColorStop(1, 'rgba(200,60,30,0)');
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cy, w * 0.62, 0, 7); c.fill();
+}
+function solar(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2, R = w / 2, A = 30.07;
+  const orbits = [0.387, 0.723, 1, 1.524, 5.203, 9.537, 19.19, 30.07];
+  c.lineWidth = 1.5; c.strokeStyle = 'rgba(255,255,255,0.45)';
+  for (const a of orbits) { const r = R * a / A; if (r > 1) { c.beginPath(); c.arc(cx, cy, r, 0, 7); c.stroke(); } }
+  c.fillStyle = '#ffd93d'; c.beginPath(); c.arc(cx, cy, Math.max(2.5, R * 0.00155), 0, 7); c.fill();
+}
+function galaxy(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2, R = w / 2;
+  const g = c.createRadialGradient(cx, cy, 0, cx, cy, R * 0.25);
+  g.addColorStop(0, 'rgba(255,240,200,0.95)'); g.addColorStop(1, 'rgba(255,220,160,0)');
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * 0.25, 0, 7); c.fill();
+  for (let arm = 0; arm < 4; arm++) for (let k = 0; k < 220; k++) {
+    const u = k / 220, a = arm * Math.PI / 2 + u * 5.5, r = R * (0.1 + 0.9 * u);
+    const jx = (hash(arm * 999 + k) - 0.5) * R * 0.09, jy = (hash(arm * 777 + k) - 0.5) * R * 0.09;
+    c.fillStyle = 'rgba(200,215,255,' + (0.7 - u * 0.45) + ')';
+    c.fillRect(cx + Math.cos(a) * r + jx, cy + Math.sin(a) * r * 0.92 + jy, Math.max(1, R * 0.008), Math.max(1, R * 0.008));
+  }
+  // "we are here": the Sun sits ~26,000 light-years from the centre
+  const sx = cx + R * 0.52, sy = cy;
+  c.strokeStyle = '#ffd93d'; c.lineWidth = 3; c.beginPath(); c.arc(sx, sy, Math.max(8, R * 0.03), 0, 7); c.stroke();
+  c.fillStyle = '#ffd93d'; c.font = '600 ' + Math.max(14, Math.min(26, R * 0.05)) + 'px Mitr'; c.textAlign = 'left';
+  c.fillText('☀️ เราอยู่ตรงนี้', sx + Math.max(10, R * 0.035), sy + 6);
+}
+function universe(c, x, y, w, h) {
+  const cx = x + w / 2, cy = y - h / 2, R = w / 2;
+  c.save(); c.beginPath(); c.arc(cx, cy, R, 0, 7); c.clip();
+  c.fillStyle = 'rgba(40,30,80,0.6)'; c.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+  for (let k = 0; k < 900; k++) {
+    const a = hash(k) * 6.283, r = Math.sqrt(hash(k + 5000)) * R;
+    c.fillStyle = 'rgba(' + (180 + hash(k + 9) * 75 | 0) + ',190,255,0.8)';
+    c.fillRect(cx + Math.cos(a) * r, cy + Math.sin(a) * r, Math.max(1, R * 0.004), Math.max(1, R * 0.004));
+  }
+  c.restore();
+  c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
+}
+function hash(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+
+// ============================================================================
+// CAMERA — one number f (0 … N-1): integer = that thing framed in the middle
+// ============================================================================
+const cv = $('c'), ctx = cv.getContext('2d'), stage = $('stage');
+let W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = stage.clientWidth; H = stage.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+}
+window.addEventListener('resize', resize);
+const fitK = (t) => Math.min(W * 0.55 / t.w, (H - 140) * 0.62 / t.h);
+function cam(f) {
+  f = Math.max(0, Math.min(N - 1, f));
+  const i = Math.min(N - 2, Math.floor(f)), u = f - i, s = u * u * (3 - 2 * u);
+  const a = T[i], b = T[i + 1];
+  const k = Math.exp(Math.log(fitK(a)) * (1 - u) + Math.log(fitK(b)) * u);
+  const cx = (a.x + a.w / 2) * (1 - s) + (b.x + b.w / 2) * s;
+  const cy = (a.h / 2) * (1 - s) + (b.h / 2) * s;
+  return { k, cx, cy };
+}
+let f = 0, goal = 0, seen = new Set([0]), lastIdx = -1;
+
+// background: micro (pale lab blue) → everyday (sky + grass) → space (dark)
+function bgMix(f) {
+  const day = Math.max(0, Math.min(1, (f - 6.5) / 1)) * Math.max(0, Math.min(1, (13.6 - f) / 0.8));
+  const space = Math.max(0, Math.min(1, (f - 13) / 1));
+  return { day, space, micro: Math.max(0, 1 - day - space) };
+}
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const m = bgMix(f);
+  const mix = (a, b, c2) => a.map((v, i) => Math.round(v * m.micro + b[i] * m.day + c2[i] * m.space));
+  const top = mix([232, 246, 255], [181, 232, 255], [11, 16, 51]), bot = mix([214, 236, 250], [217, 243, 201], [5, 7, 28]);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, `rgb(${top})`); g.addColorStop(1, `rgb(${bot})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (m.space > 0) {
+    ctx.fillStyle = '#fff';
+    for (let k = 0; k < 120; k++) { ctx.globalAlpha = m.space * (0.3 + hash(k) * 0.6); ctx.fillRect(hash(k + 1) * W, hash(k + 2) * H, 1.5, 1.5); }
+    ctx.globalAlpha = 1;
+  }
+  if (m.micro > 0.05) {          // faint microscope grid
+    ctx.strokeStyle = `rgba(120,170,220,${0.25 * m.micro})`; ctx.lineWidth = 1;
+    for (let x = (W / 2) % 60; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  }
+  const c = cam(f);
+  const sx = (x) => W / 2 + (x - c.cx) * c.k, sy = (y) => H * 0.55 - (y - c.cy) * c.k;
+  if (m.day > 0) {               // grass under the everyday things
+    const gy = sy(0);
+    ctx.globalAlpha = m.day; ctx.fillStyle = '#7ed957'; ctx.fillRect(0, gy, W, H - gy + 2);
+    ctx.fillStyle = '#5fb83c'; ctx.fillRect(0, gy, W, 6); ctx.globalAlpha = 1;
+  }
+  for (let j = 0; j < N; j++) {
+    const t = T[j], w = t.w * c.k, h = t.h * c.k, x = sx(t.x), y = sy(0);
+    if (w < 0.6 && h < 0.6) continue;
+    if (x > W + 50 || x + w < -50) continue;
+    if (w > 2e6 || h > 2e6) continue;
+    ctx.save(); t.draw(ctx, x, y, w, h); ctx.restore();
+    if (w < 6 && h < 6 && j < Math.round(f)) {       // too small to see: mark it with a ring
+      ctx.strokeStyle = 'rgba(229,75,130,0.8)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x + w / 2, y - h / 2, 9, 0, 7); ctx.stroke();
+    }
+  }
+  // scale bar: a round number of metres that is 60–150 px long
+  const mPerPx = 1 / c.k;
+  const max = mPerPx * 150;
+  const unit = UNITS.find(u => u[0] <= max) || UNITS[UNITS.length - 1];
+  const v = max / unit[0], base = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = base * ([5, 2, 1].find(s => base * s <= v) || 1);
+  $('rulerBar').style.width = Math.max(20, n * unit[0] / mPerPx) + 'px';
+  $('rulerTxt').textContent = Number(n.toPrecision(3)).toLocaleString('en-US') + ' ' + unit[1];
+  $('title').classList.toggle('dark', m.space > 0.5);
+}
+const UNITS = [[LY, 'ปีแสง'], [1e9, 'ล้าน กม.'], [1e3, 'กม.'], [1, 'ม.'], [1e-2, 'ซม.'], [1e-3, 'มม.'], [1e-6, 'ไมโครเมตร'], [1e-9, 'นาโนเมตร']];
+function fmtLen(m) {
+  const n = (v) => { const r = Number(v.toPrecision(2)); return r >= 1000 ? r.toLocaleString('en-US') : String(r); };
+  if (m >= LY * 0.5) return n(m / LY) + ' ปีแสง';
+  if (m >= 1e9) return n(m / 1e9) + ' ล้าน กม.';
+  if (m >= 1000) return n(m / 1000) + ' กม.';
+  if (m >= 1) return n(m) + ' ม.';
+  if (m >= 0.01) return n(m * 100) + ' ซม.';
+  if (m >= 1e-3) return n(m * 1000) + ' มม.';
+  if (m >= 1e-6) return n(m * 1e6) + ' ไมโครเมตร';
+  return n(m * 1e9) + ' นาโนเมตร';
+}
+// "X is about N times bigger than Y"
+function times(r) {
+  const n = Number(r.toPrecision(r < 10 ? 1 : 2));
+  if (n >= 1e12) return Number((n / 1e12).toPrecision(2)) + ' ล้านล้าน';
+  if (n >= 1e6) return Number((n / 1e6).toPrecision(2)) + ' ล้าน';
+  if (n >= 1e5) return Number((n / 1e5).toPrecision(2)) + ' แสน';
+  if (n >= 1e4) return Number((n / 1e4).toPrecision(2)) + ' หมื่น';
+  return n.toLocaleString('en-US');
+}
+const cmpLine = (i) => i > 0 ? T[i].name + ' ใหญ่กว่า' + T[i - 1].name + ' ราว ' + times(T[i].L / T[i - 1].L) + ' เท่า' : '';
+
+function renderCard(i) {
+  const t = T[i];
+  $('cEmoji').textContent = t.e; $('cName').textContent = t.name; $('cSize').textContent = t.show;
+  $('cCmp').textContent = i > 0 ? '↔ ใหญ่กว่า' + T[i - 1].name + ' ราว ' + times(t.L / T[i - 1].L) + ' เท่า' : 'เล็กที่สุดในเกมนี้';
+  $('prev').textContent = i > 0 ? '◀ ' + T[i - 1].e : '◀';
+  $('next').textContent = i < N - 1 ? T[i + 1].e + ' ▶' : '▶';
+  const dots = $('dots'); dots.innerHTML = '';
+  T.forEach((_, j) => { const b = document.createElement('b'); b.className = j === i ? 'on' : seen.has(j) ? 'seen' : ''; dots.appendChild(b); });
+}
+
+// ============================================================================
+// INPUT — ◀ ▶ hop one thing, hold ➕ ➖ to zoom smoothly, drag/pinch/wheel
+// ============================================================================
+let zoomDir = 0, dragging = null, pinch = null;
+const pts = new Map();
+function hop(d) { ensureAudio(); goal = Math.max(0, Math.min(N - 1, Math.round(goal) + d)); buzz(10); blip(400 + goal * 25); }
+$('prev').addEventListener('click', () => hop(-1));
+$('next').addEventListener('click', () => hop(1));
+function holdZoom(id, d) {
+  const b = $(id);
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); zoomDir = d; b.classList.add('held'); try { b.setPointerCapture(e.pointerId); } catch (_) {} });
+  const off = () => { if (zoomDir === d) { zoomDir = 0; goal = Math.round(f); } b.classList.remove('held'); };
+  b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('lostpointercapture', off);
+}
+holdZoom('zin', -1); holdZoom('zout', 1);
+cv.addEventListener('pointerdown', (e) => {
+  ensureAudio(); pts.set(e.pointerId, [e.clientX, e.clientY]);
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  if (pts.size === 1) dragging = { x: e.clientX, f0: f };
+  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), f0: f }; dragging = null; }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!pts.has(e.pointerId)) return;
+  pts.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && pts.size === 2) {
+    const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    goal = f = Math.max(0, Math.min(N - 1, pinch.f0 - Math.log(d / pinch.d) / Math.log(6)));
+  } else if (dragging) {
+    goal = f = Math.max(0, Math.min(N - 1, dragging.f0 - (e.clientX - dragging.x) / Math.max(220, W * 0.4)));
+  }
+});
+function up(e) {
+  pts.delete(e.pointerId);
+  if (pts.size < 2) pinch = null;
+  if (pts.size === 0) { dragging = null; goal = Math.round(f); }
+}
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('wheel', (e) => { e.preventDefault(); goal = f = Math.max(0, Math.min(N - 1, f + e.deltaY * 0.004)); clearTimeout(cv._w); cv._w = setTimeout(() => { goal = Math.round(f); }, 250); }, { passive: false });
+$('card').addEventListener('click', () => { const i = Math.round(f); sayChain([T[i].say, cmpLine(i)].filter(Boolean)); });
+
+let last = performance.now();
+function loop(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+  if (zoomDir) { f = Math.max(0, Math.min(N - 1, f + zoomDir * dt * 0.9)); goal = f; }
+  else if (!dragging && !pinch) f += (goal - f) * Math.min(1, dt * 4.5);
+  if (Math.abs(goal - f) < 0.002) f = goal;
+  const i = Math.round(f);
+  if (i !== lastIdx) { lastIdx = i; seen.add(i); renderCard(i); }
+  if (f === goal && Number.isInteger(goal) && goal !== spokenIdx) { spokenIdx = goal; if (started) sayChain([T[goal].say, cmpLine(goal)].filter(Boolean)); }
+  draw();
+  requestAnimationFrame(loop);
+}
+let spokenIdx = 0, started = false;
+document.addEventListener('pointerdown', () => { if (!started) { started = true; ensureAudio(); if (f === 0 && goal === 0) sayChain([LINE_INTRO, T[0].say]); } }, true);
+const LINE_INTRO = 'กดลูกศร หรือปัดนิ้ว เพื่อดูของที่ใหญ่ขึ้นเรื่อยๆ ทุกอย่างขนาดเทียบกันจริง';
+
+// ============================================================================
+// SOUND + SPEECH
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(fq, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.value = fq; o.connect(g).connect(AC.destination);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch (e) {}
+}
+const blip = (fq) => tone(fq, 0.12, 'sine', 0.1);
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+    setTimeout(end, 12000);
+  } catch (e) { end(); }
+}
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+let sayTok = 0;
+async function sayChain(list) {
+  const my = ++sayTok;
+  for (const t of list) { if (my !== sayTok) return; await sayNow(t); }
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+resize(); renderCard(0);
+requestAnimationFrame(loop);
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+if (window.VoiceClips) VoiceClips.lines(() => [LINE_INTRO, ...T.map(t => t.say), ...T.map((_, i) => cmpLine(i)).filter(Boolean)]);
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
