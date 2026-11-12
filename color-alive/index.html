@@ -105,6 +105,15 @@
     box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
   }
   .done-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  /* iPad landscape: colours + done button in a column beside the picture, so nothing needs scrolling */
+  @media (orientation: landscape) and (min-width: 900px) {
+    #paintScreen:not(.hidden) { display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 16px; align-items: center; }
+    #paintScreen .view { width: 100%; max-width: calc((100dvh - 190px) * 4 / 3); justify-self: center; }
+    #paintScreen .side { display: flex; flex-direction: column; }
+    #paintScreen .palette { display: grid; grid-template-columns: repeat(3, 64px); gap: 12px; justify-content: center; margin: 0; }
+    #worldScreen .view { max-width: calc((100dvh - 300px) * 1000 / 640); margin: 0 auto; }
+    #worldScreen .done-btn { display: block; max-width: 520px; margin: 12px auto 0; }
+  }
   .region { cursor: pointer; transition: fill .15s; }
   .pop { animation: pop .35s ease; transform-box: fill-box; transform-origin: center; }
   @keyframes pop { 50% { transform: scale(1.06); } }
@@ -126,8 +135,10 @@
   <div id="pickScreen"><div class="pick" id="pick"></div></div>
   <div id="paintScreen" class="hidden">
     <div class="view"><svg id="canvas" viewBox="0 0 400 300" aria-label="ระบายสี"></svg></div>
-    <div class="palette" id="palette"></div>
-    <button class="done-btn" id="doneBtn">✨ ให้มีชีวิต!</button>
+    <div class="side">
+      <div class="palette" id="palette"></div>
+      <button class="done-btn" id="doneBtn">✨ ให้มีชีวิต!</button>
+    </div>
   </div>
   <div id="worldScreen" class="hidden">
     <div class="view"><svg id="world" viewBox="0 0 1000 640" aria-label="ทุ่งของหนู"></svg></div>
