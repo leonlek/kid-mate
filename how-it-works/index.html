@@ -7,9 +7,10 @@
 <script src="voice/map.js"></script>
 <script>window.TOPICS = [];</script>
 <script src="topics/fire.js"></script>
+<script src="topics/rain.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🤔 ทำไมนะ? — คิดส์เล่น</title>
-<meta name="description" content="ทำไมนะ? ลงมือทำเองทีละขั้นแล้วรู้ว่ามันทำงานยังไง เรื่องแรก จุดไฟแบบโบราณ 5 วิธี สว่านมือ ธนูสีไฟ เลื่อยไม้ไผ่ ลูกสูบไฟ ตีเหล็กไฟ">
+<meta name="description" content="ทำไมนะ? ลงมือทำเองทีละขั้นแล้วรู้ว่ามันทำงานยังไง จุดไฟแบบโบราณ 5 วิธี และฝนตกได้ยังไง ตั้งแต่น้ำระเหยจนเป็นเม็ดฝน">
 <meta name="theme-color" content="#ff6b9d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -102,6 +103,13 @@
   .stepdots b { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.7); border: 2px solid rgba(0,0,0,0.15); }
   .stepdots b.on { background: var(--brand); }
   .stepdots b.ok { background: var(--gold); }
+  /* how-long-does-each-step-take strip (api.timeline) */
+  .tline { position: absolute; top: 40px; left: 6px; right: 6px; z-index: 3; display: flex; gap: 3px; justify-content: center; pointer-events: none; }
+  .tline div { flex: 0 1 120px; min-width: 0; background: rgba(255,255,255,0.85); border-radius: 14px; padding: 3px 2px; text-align: center; font-size: 13px; font-weight: 700; line-height: 1.15; }
+  .tline div b { display: block; font-size: 20px; }
+  .tline div.ok { background: rgba(255,217,61,0.95); }
+  .tline div.on { background: var(--brand); color: #fff; transform: scale(1.06); }
+  @media (min-width: 700px) { .tline div { font-size: 15px; } .tline div b { font-size: 24px; } }
   .caption {
     position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 3;
     background: rgba(255,255,255,0.95); border: 3px solid var(--card-border); border-radius: 20px;
@@ -147,6 +155,7 @@
     <canvas id="c"></canvas>
     <div class="safety hidden" id="safety">⚠️ ต้องมีผู้ใหญ่อยู่ด้วย</div>
     <div class="stepdots" id="dots"></div>
+    <div class="tline hidden" id="tline"></div>
     <div class="caption" id="caption"><span id="capText"></span></div>
   </div>
   <div class="acts" id="acts"></div>
@@ -200,7 +209,6 @@ function show(which) {
 function openTopic(t) {
   topic = t; show('topic');
   $('tTitle').textContent = t.emoji + ' ' + t.title;
-  $('safety').classList.toggle('hidden', !t.warn);
   renderItems();
   resize();
   openItem(t.items[0].id, true);
@@ -218,17 +226,22 @@ function renderItems() {
 function openItem(id, first) {
   if (scene && scene.destroy) scene.destroy();
   itemId = id; renderItems();
-  setButtons([]); setSteps(0, 0);
+  setButtons([]); setSteps(0, 0); api.timeline(null);
   scene = topic.create(api, id);
   resize();
-  if (first && topic.warn) sayChain([topic.warn, lastCaption]);
+  // a warning can belong to the whole topic (fire) or to one item (an experiment with hot water)
+  const it = topic.items.find(i => i.id === id), w = it.warn || topic.warn;
+  curWarn = w;
+  $('safety').classList.toggle('hidden', !w);
+  if (w && (first || it.warn)) sayChain([w, lastCaption]);
 }
 $('backBtn').addEventListener('click', () => {
   if (scene && scene.destroy) scene.destroy();
   scene = null; topic = null; itemId = null;
   stopSpeech(); renderShelf(); show('shelf'); buzz(8);
 });
-$('safety').addEventListener('click', () => { if (topic && topic.warn) speak(topic.warn); });
+let curWarn = null;
+$('safety').addEventListener('click', () => { if (curWarn) speak(curWarn); });
 $('caption').addEventListener('click', () => { if (lastCaption) speak(lastCaption); });
 
 // ---- the api a scene gets ----
@@ -240,6 +253,11 @@ const api = {
   sayChain: (list) => sayChain(list),
   buttons: (list) => setButtons(list),
   steps: (i, n) => setSteps(i, n),
+  timeline(list, cur) {        // [[emoji, 'how long'], …] or null to hide
+    const box = $('tline'); box.classList.toggle('hidden', !list);
+    if (!list) return;
+    box.innerHTML = list.map(([e, t], i) => `<div class="${i < cur ? 'ok' : i === cur ? 'on' : ''}"><b>${e}</b>${t}</div>`).join('');
+  },
   win() {
     prog[topic.id] = prog[topic.id] || {}; prog[topic.id][itemId] = true; saveProg();
     renderItems(); cheer(); confetti(110); buzz([40, 30, 60]);
@@ -413,7 +431,7 @@ requestAnimationFrame(loop);
 })();
 let lastTouchEnd = 0;
 document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
-if (window.VoiceClips) VoiceClips.lines(() => [...Object.values(ENGINE_LINES), ...TOPICS.flatMap(t => [t.warn, ...t.lines()].filter(Boolean))]);
+if (window.VoiceClips) VoiceClips.lines(() => [...Object.values(ENGINE_LINES), ...TOPICS.flatMap(t => [t.warn, ...t.items.map(i => i.warn), ...t.lines()].filter(Boolean))]);
 </script>
 <script>
 /* Auto-update: offer a "tap to update" pill when a new version is deployed

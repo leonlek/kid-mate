@@ -341,8 +341,8 @@
         // sky + ground
         const sky = c.createLinearGradient(0, 0, 0, GY);
         sky.addColorStop(0, '#b5e8ff'); sky.addColorStop(1, '#e8f6d8');
-        c.fillStyle = sky; c.fillRect(-500, -300, 2000, GY + 300);
-        c.fillStyle = '#8fce5a'; c.fillRect(-500, GY, 2000, 600);
+        c.fillStyle = sky; c.fillRect(-500, -1500, 2000, GY + 1500);
+        c.fillStyle = '#8fce5a'; c.fillRect(-500, GY, 2000, 1600);
         c.fillStyle = '#7ab94a'; c.fillRect(-500, GY, 2000, 10);
         nest(c, now);
         woodPile(c);
