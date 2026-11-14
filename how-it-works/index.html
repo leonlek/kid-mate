@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<script>window.TOPICS = [];</script>
+<script src="topics/fire.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🤔 ทำไมนะ? — คิดส์เล่น</title>
+<meta name="description" content="ทำไมนะ? ลงมือทำเองทีละขั้นแล้วรู้ว่ามันทำงานยังไง เรื่องแรก จุดไฟแบบโบราณ 5 วิธี สว่านมือ ธนูสีไฟ เลื่อยไม้ไผ่ ลูกสูบไฟ ตีเหล็กไฟ">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ทำไมนะ?">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4; --paper: #fffef9;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Mitr', -apple-system, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(ellipse at 20% 10%, #fff9c4 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, #ffcfd2 0%, transparent 45%),
+      linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 65%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px; opacity: 0.55; pointer-events: none;
+    letter-spacing: 80px; animation: drift 40s linear infinite; z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+  .home-btn, .back-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top));
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; text-decoration: none; color: var(--ink); z-index: 60; transition: transform .12s;
+    font-family: inherit; padding: 0; cursor: pointer;
+  }
+  .home-btn { left: 12px; font-size: 26px; }
+  .back-btn { right: 12px; }
+  .home-btn:active, .back-btn:active { transform: scale(0.92); }
+  .hidden { display: none !important; }
+
+  /* SHELF */
+  #shelf { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 16px 30px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal; text-align: center;
+    font-size: clamp(38px, 8.5vw, 64px); margin: 4px 60px 4px; color: var(--brand-dark);
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(0,0,0,0.08);
+  }
+  .sub { text-align: center; font-size: 18px; font-weight: 500; color: #555; margin-bottom: 18px; }
+  .topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .tcard {
+    position: relative; background: var(--card); border: 4px solid var(--card-border); border-radius: 26px;
+    padding: 16px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.08); text-align: center;
+    transition: transform .12s; font-family: inherit; color: var(--ink);
+  }
+  .tcard:active { transform: scale(0.96) translateY(2px); }
+  .tcard .em { font-size: 64px; line-height: 1.1; }
+  .tcard .tt { font-family: 'Itim', cursive; font-size: 28px; color: var(--brand-dark); }
+  .tcard .dd { font-size: 15px; color: #666; margin-top: 2px; }
+  .tcard .st { margin-top: 6px; font-size: 16px; letter-spacing: 2px; }
+  .tcard .warn { position: absolute; top: 8px; right: 10px; font-size: 13px; font-weight: 700; background: #fff3cd; border: 2px solid #ffb703; border-radius: 999px; padding: 1px 8px; }
+  .tcard.soon { opacity: .55; cursor: default; border-style: dashed; }
+
+  /* TOPIC */
+  #topic { position: relative; z-index: 1; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: calc(10px + env(safe-area-inset-top)) 0 env(safe-area-inset-bottom); }
+  .thead { text-align: center; margin: 0 70px; }
+  .thead h2 { font-family: 'Itim', cursive; font-weight: normal; margin: 4px 0 2px; font-size: clamp(26px, 5.5vw, 40px); color: var(--brand-dark); text-shadow: 2px 2px 0 #fff; white-space: nowrap; }
+  .items { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 4px 10px; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 17px; font-weight: 600;
+    min-height: 56px; min-width: 64px; padding: 0 14px;
+    border-radius: 999px; border: 3px solid var(--card-border);
+    background: #fff; color: var(--ink); cursor: pointer; position: relative;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12); transition: transform .1s;
+  }
+  .chip:active { transform: translateY(2px) scale(0.96); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .chip .done { position: absolute; top: -8px; right: -4px; font-size: 16px; }
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; margin: 6px 10px 0; border-radius: 26px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 6px 0 rgba(0,0,0,0.1); touch-action: none; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .safety { position: absolute; top: 8px; left: 8px; z-index: 3; background: #fff3cd; border: 3px solid #ffb703; border-radius: 999px; padding: 3px 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .stepdots { position: absolute; top: 10px; right: 12px; z-index: 3; display: flex; gap: 5px; }
+  .stepdots b { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.7); border: 2px solid rgba(0,0,0,0.15); }
+  .stepdots b.on { background: var(--brand); }
+  .stepdots b.ok { background: var(--gold); }
+  .caption {
+    position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 3;
+    background: rgba(255,255,255,0.95); border: 3px solid var(--card-border); border-radius: 20px;
+    padding: 8px 12px 8px 14px; font-size: 18px; line-height: 1.4; font-weight: 500;
+    display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 56px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+  }
+  .caption span { flex: 1; }
+  .caption::after { content: '🔊'; font-size: 24px; }
+  .acts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 8px 10px; min-height: 84px; align-items: center; }
+  .act {
+    min-height: 68px; min-width: 120px; padding: 0 22px; border-radius: 999px;
+    font-family: 'Mitr', sans-serif; font-size: 21px; font-weight: 700;
+    background: var(--brand); color: #fff; border: 3px solid var(--brand-dark); box-shadow: 0 5px 0 var(--brand-dark);
+    cursor: pointer; touch-action: none; -webkit-touch-callout: none; transition: transform .1s;
+  }
+  .act.alt { background: #fff; color: var(--ink); border-color: var(--card-border); box-shadow: 0 5px 0 rgba(0,0,0,0.12); }
+  .act:active, .act.held { transform: translateY(3px); box-shadow: 0 2px 0 var(--brand-dark); }
+  .acts .hint { font-size: 16px; color: #555; font-weight: 600; }
+  @media (max-width: 520px) {
+    .chip { font-size: 15px; padding: 0 10px; min-height: 52px; }
+    .caption { font-size: 16px; }
+    .act { min-width: 96px; font-size: 18px; padding: 0 14px; }
+  }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+<button class="back-btn hidden" id="backBtn" type="button" aria-label="กลับไปเลือกเรื่อง">📚</button>
+
+<section id="shelf">
+  <h1>🤔 ทำไมนะ?</h1>
+  <div class="sub">ลงมือทำเองทีละขั้น แล้วรู้ว่ามันทำงานยังไง</div>
+  <div class="topics" id="topics"></div>
+</section>
+
+<section id="topic" class="hidden">
+  <div class="thead"><h2 id="tTitle"></h2></div>
+  <div class="items" id="items"></div>
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="safety hidden" id="safety">⚠️ ต้องมีผู้ใหญ่อยู่ด้วย</div>
+    <div class="stepdots" id="dots"></div>
+    <div class="caption" id="caption"><span id="capText"></span></div>
+  </div>
+  <div class="acts" id="acts"></div>
+</section>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// ============================================================================
+// ENGINE — each topic file pushes { id, emoji, title, desc, warn, items, lines, create }
+// into window.TOPICS. create(api, itemId) returns a scene:
+//   { focus, tick(dt, now), draw(ctx, now), down(p), move(p), up(p), action(id, holding), destroy() }
+// Scenes draw in a 1000 × 700 box that the engine fits onto the stage; `focus: [x0, x1]` = the part
+// that must stay on screen (the sides may crop on a narrow phone, so draw backgrounds wider than 1000).
+// ============================================================================
+const SOON = [
+  { emoji: '🚽', title: 'ชักโครก' }, { emoji: '💡', title: 'หลอดไฟ' }, { emoji: '🌈', title: 'รุ้งกินน้ำ' },
+];
+const ENGINE_LINES = { pick: 'เลือกเรื่องที่อยากรู้เลย', again: 'อยากลองวิธีอื่นไหม เลือกได้เลย' };
+let prog = {};
+try { prog = JSON.parse(localStorage.getItem('whyNa') || '{}'); } catch (e) {}
+const saveProg = () => { try { localStorage.setItem('whyNa', JSON.stringify(prog)); } catch (e) {} };
+let topic = null, itemId = null, scene = null;
+
+function renderShelf() {
+  const box = $('topics'); box.innerHTML = '';
+  for (const t of TOPICS) {
+    const done = t.items.filter(i => (prog[t.id] || {})[i.id]).length;
+    const b = document.createElement('button');
+    b.className = 'tcard';
+    b.innerHTML = `${t.warn ? '<span class="warn">⚠️ มีผู้ใหญ่</span>' : ''}<div class="em">${t.emoji}</div><div class="tt">${t.title}</div><div class="dd">${t.desc}</div>
+      <div class="st">${t.items.map(i => (prog[t.id] || {})[i.id] ? '⭐' : '☆').join('')}</div>`;
+    b.setAttribute('aria-label', t.title + ' ทำแล้ว ' + done);
+    b.addEventListener('click', () => { ensureAudio(); openTopic(t); });
+    box.appendChild(b);
+  }
+  for (const s of SOON) {
+    const d = document.createElement('div');
+    d.className = 'tcard soon';
+    d.innerHTML = `<div class="em">${s.emoji}</div><div class="tt">${s.title}</div><div class="dd">เร็วๆ นี้</div>`;
+    box.appendChild(d);
+  }
+}
+function show(which) {
+  $('shelf').classList.toggle('hidden', which !== 'shelf');
+  $('topic').classList.toggle('hidden', which !== 'topic');
+  $('backBtn').classList.toggle('hidden', which !== 'topic');
+  document.body.style.overflow = which === 'topic' ? 'hidden' : '';
+}
+function openTopic(t) {
+  topic = t; show('topic');
+  $('tTitle').textContent = t.emoji + ' ' + t.title;
+  $('safety').classList.toggle('hidden', !t.warn);
+  renderItems();
+  resize();
+  openItem(t.items[0].id, true);
+}
+function renderItems() {
+  const box = $('items'); box.innerHTML = '';
+  for (const it of topic.items) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (it.id === itemId ? ' on' : '');
+    b.innerHTML = `${it.emoji} ${it.title}${(prog[topic.id] || {})[it.id] ? '<span class="done">⭐</span>' : ''}`;
+    b.addEventListener('click', () => { ensureAudio(); buzz(8); openItem(it.id); });
+    box.appendChild(b);
+  }
+}
+function openItem(id, first) {
+  if (scene && scene.destroy) scene.destroy();
+  itemId = id; renderItems();
+  setButtons([]); setSteps(0, 0);
+  scene = topic.create(api, id);
+  resize();
+  if (first && topic.warn) sayChain([topic.warn, lastCaption]);
+}
+$('backBtn').addEventListener('click', () => {
+  if (scene && scene.destroy) scene.destroy();
+  scene = null; topic = null; itemId = null;
+  stopSpeech(); renderShelf(); show('shelf'); buzz(8);
+});
+$('safety').addEventListener('click', () => { if (topic && topic.warn) speak(topic.warn); });
+$('caption').addEventListener('click', () => { if (lastCaption) speak(lastCaption); });
+
+// ---- the api a scene gets ----
+let lastCaption = '';
+const api = {
+  W: 1000, H: 700,
+  caption(text, quiet) { lastCaption = text; $('capText').textContent = text; if (!quiet) return speak(text); return Promise.resolve(); },
+  say: (t) => speak(t),
+  sayChain: (list) => sayChain(list),
+  buttons: (list) => setButtons(list),
+  steps: (i, n) => setSteps(i, n),
+  win() {
+    prog[topic.id] = prog[topic.id] || {}; prog[topic.id][itemId] = true; saveProg();
+    renderItems(); cheer(); confetti(110); buzz([40, 30, 60]);
+  },
+  tone, noise, noiseLoop, buzz,
+};
+function setButtons(list) {
+  const box = $('acts'); box.innerHTML = '';
+  if (!list.length) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = '👆 ทำบนภาพได้เลย'; box.appendChild(h); return; }
+  for (const b of list) {
+    const el = document.createElement('button');
+    el.className = 'act' + (b.alt ? ' alt' : '');
+    el.textContent = b.label;
+    if (b.hold) {
+      const on = (e) => { e.preventDefault(); ensureAudio(); el.classList.add('held'); try { el.setPointerCapture(e.pointerId); } catch (_) {} if (scene) scene.action(b.id, true); };
+      const off = () => { if (!el.classList.contains('held')) return; el.classList.remove('held'); if (scene) scene.action(b.id, false); };
+      el.addEventListener('pointerdown', on); el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off); el.addEventListener('lostpointercapture', off);
+      el.addEventListener('contextmenu', (e) => e.preventDefault());
+    } else el.addEventListener('click', () => { ensureAudio(); buzz(10); if (scene) scene.action(b.id); });
+    box.appendChild(el);
+  }
+}
+function setSteps(i, n) {
+  const box = $('dots'); box.innerHTML = '';
+  for (let k = 0; k < n; k++) { const d = document.createElement('b'); d.className = k < i ? 'ok' : k === i ? 'on' : ''; box.appendChild(d); }
+}
+
+// ---- stage: letterboxed 1000 × 700 ----
+const cv = $('c'), ctx = cv.getContext('2d'), stage = $('stage');
+let CW = 0, CH = 0, DPR = 1, SC = 1, OX = 0, OY = 0;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  CW = stage.clientWidth; CH = stage.clientHeight;
+  cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
+  // a scene may name the part that must stay visible (focus: [x0, x1]); the rest can crop on narrow screens
+  const F = (scene && scene.focus) || [0, 1000];
+  SC = Math.min(CW / (F[1] - F[0]), CH / 700); OX = CW / 2 - (F[0] + F[1]) / 2 * SC; OY = (CH - 700 * SC) / 2;
+}
+window.addEventListener('resize', resize);
+const toP = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - OX) / SC, y: (e.clientY - r.top - OY) / SC, t: performance.now() }; };
+let ptr = null;
+cv.addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (ptr !== null) return; ptr = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (_) {} if (scene && scene.down) scene.down(toP(e)); });
+cv.addEventListener('pointermove', (e) => {
+  if (e.pointerId !== ptr || !scene || !scene.move) return;
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e])) scene.move(toP(ev));
+});
+const upP = (e) => { if (e.pointerId !== ptr) return; ptr = null; if (scene && scene.up) scene.up(toP(e)); };
+cv.addEventListener('pointerup', upP); cv.addEventListener('pointercancel', upP);
+
+let last = performance.now();
+function loop(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+  if (scene) {
+    if (scene.tick) scene.tick(dt, now);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.fillStyle = scene.bg || '#cfeeff'; ctx.fillRect(0, 0, CW, CH);
+    ctx.setTransform(DPR * SC, 0, 0, DPR * SC, DPR * OX, DPR * OY);
+    scene.draw(ctx, now);
+  }
+  requestAnimationFrame(loop);
+}
+
+// ============================================================================
+// SOUND + SPEECH
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch (e) {}
+}
+let noiseBuf = null;
+function getNoise() {
+  if (!noiseBuf && AC) {
+    const n = AC.sampleRate * 2; noiseBuf = AC.createBuffer(1, n, AC.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+function noise(dur, freq, vol, type = 'bandpass') {
+  if (!AC) return;
+  try {
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(), t = AC.currentTime;
+    s.buffer = getNoise(); f.type = type; f.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f).connect(g).connect(AC.destination); s.start(t, Math.random()); s.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+// a looping filtered noise whose loudness the scene sets every frame (rubbing, blowing, fire)
+function noiseLoop(freq, type = 'bandpass', q = 1) {
+  if (!AC) return { set() {}, stop() {} };
+  try {
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+    s.buffer = getNoise(); s.loop = true; f.type = type; f.frequency.value = freq; f.Q.value = q; g.gain.value = 0;
+    s.connect(f).connect(g).connect(AC.destination); s.start();
+    return {
+      set(v, fq) { try { g.gain.setTargetAtTime(v, AC.currentTime, 0.05); if (fq) f.frequency.setTargetAtTime(fq, AC.currentTime, 0.05); } catch (e) {} },
+      stop() { try { s.stop(); } catch (e) {} },
+    };
+  } catch (e) { return { set() {}, stop() {} }; }
+}
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+function deviceSpeak(text, done) {
+  let fin = false;
+  const end = () => { if (!fin) { fin = true; if (done) done(true); } };
+  if (!('speechSynthesis' in window)) { setTimeout(end, 0); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = end; u.onerror = end;
+    speechSynthesis.speak(u);
+    setTimeout(end, 12000);
+  } catch (e) { end(); }
+}
+function sayNow(text) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  ensureAudio();
+  return new Promise((res) => {
+    let fell = false;
+    const fb = (t) => { fell = true; deviceSpeak(t, res); };
+    if (!window.VoiceClips) { fb(text); return; }
+    VoiceClips.say(text, AC, fb).then((ok) => { if (!fell) res(ok); });
+  });
+}
+let sayTok = 0;
+function speak(text) { sayTok++; return sayNow(text); }
+async function sayChain(list) {
+  const my = ++sayTok;
+  for (const t of list) { if (my !== sayTok) return; await sayNow(t); }
+}
+function stopSpeech() { sayTok++; try { speechSynthesis.cancel(); } catch (e) {} if (window.VoiceClips && VoiceClips.stop) VoiceClips.stop(); }
+function confetti(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#ff914d', '#b388ff'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[Math.floor(Math.random() * cols.length)];
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.6 + 's';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// ============================================================================
+// INIT — deep link: #fire or #fire/flint
+// ============================================================================
+renderShelf();
+requestAnimationFrame(loop);
+(function () {
+  const [tid, iid] = location.hash.slice(1).split('/');
+  const t = TOPICS.find(x => x.id === tid);
+  if (t) { openTopic(t); if (iid && t.items.some(i => i.id === iid)) openItem(iid); }
+})();
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+if (window.VoiceClips) VoiceClips.lines(() => [...Object.values(ENGINE_LINES), ...TOPICS.flatMap(t => [t.warn, ...t.lines()].filter(Boolean))]);
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
