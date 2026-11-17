@@ -5,6 +5,7 @@
 <script src="../audio-unlock.js"></script>
 <script src="../voice-clips.js"></script>
 <script src="voice/map.js"></script>
+<script src="pics.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🎨 ผสมสี — คิดส์เล่น</title>
 <meta name="description" content="ผสมสีบนจานสีด้วยพู่กันเหมือนจริง สีผสมตามหลักสีจริง ใส่มากใส่น้อยได้เฉดต่างกัน เอาไประบายรูป และผสมแสงสี สำหรับเด็ก">
@@ -163,14 +164,19 @@
   .brushNow { display: flex; align-items: center; gap: 8px; justify-content: center; font-weight: 700; margin-top: 8px; }
   .brushNow .swatch { width: 44px; height: 44px; }
   .pics { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+  .pics .cats { width: 100%; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding-bottom: 8px; border-bottom: 3px dashed var(--card-border); margin-bottom: 2px; }
+  .pics .chip.pic { font-size: 30px; padding: 0 10px; }
+  .pics .chip.cat { font-size: 16px; padding: 0 14px; }
   /* the picture shrinks to the screen height so the paint wells never need scrolling */
-  #paintUI .view { max-width: max(260px, calc(100dvh - var(--pv, 430px))); margin: 0 auto; }
+  #paintUI .view { max-width: max(260px, calc(100dvh - var(--pv, 510px))); margin: 0 auto; }
   @media (orientation: landscape) and (min-width: 900px) and (min-height: 600px) {
     #paintUI:not(.hidden) { display: grid; grid-template-columns: auto 250px; grid-template-areas: "v b" "v w" "v p"; grid-template-rows: auto auto 1fr; gap: 10px 16px; justify-content: center; align-items: start; }
     #paintUI .view { grid-area: v; width: calc(100dvh - 130px); max-width: calc(100vw - 320px); }
     #paintUI .brushNow { grid-area: b; margin-top: 0; }
     #paintUI .wells { grid-area: w; margin-top: 0; }
     #paintUI .pics { grid-area: p; margin-top: 0; }
+    #paintUI .pics .cats { display: grid; grid-template-columns: 1fr 1fr; }
+    #paintUI .pics .chip.cat { font-size: 14px; padding: 0 6px; }
   }
 
   .fact { margin-top: 12px; background: #fff; border: 4px solid var(--card-border); border-radius: 24px; padding: 12px 16px; font-size: 18px; line-height: 1.45; box-shadow: 0 5px 0 rgba(0,0,0,0.12); cursor: pointer; }
@@ -555,43 +561,17 @@ $('tSwatch').addEventListener('click', () => { ensureAudio(); speak('ผสม�
 // ============================================================================
 const pic = $('pic'), qctx = pic.getContext('2d');
 const layer = document.createElement('canvas'); layer.width = 800; layer.height = 800; const lctx = layer.getContext('2d');
-const circ = (cx, cy, r) => `M${cx - r},${cy} a${r},${r} 0 1 0 ${2 * r},0 a${r},${r} 0 1 0 ${-2 * r},0 Z`;
-const PICS = [
-  { id: 'fruit', icon: '🍎', th: 'ผลไม้', regions: [
-    { th: 'ส้ม', real: 'ส้ม', d: circ(210, 520, 130) },
-    { th: 'แอปเปิล', real: 'แดง', d: 'M560,330 C470,280 400,360 420,450 C440,560 520,620 590,590 C660,620 740,560 760,450 C780,360 710,280 620,330 C600,340 580,340 560,330 Z' },
-    { th: 'ใบไม้', real: 'เขียว', d: 'M600,320 C620,230 700,200 760,220 C730,290 670,330 600,320 Z' },
-    { th: 'องุ่น', real: 'ม่วง', d: [[300, 170], [370, 170], [440, 170], [335, 235], [405, 235], [370, 300]].map(([x, y]) => circ(x, y, 42)).join(' ') },
-    { th: 'กล้วย', real: 'เหลือง', d: 'M120,720 C260,800 520,790 660,690 C680,670 670,650 650,655 C520,720 300,730 150,680 C120,670 100,705 120,720 Z' } ] },
-  { id: 'tree', icon: '🌳', th: 'ต้นไม้', regions: [
-    { th: 'ท้องฟ้า', real: 'ฟ้า', d: 'M0,0 H800 V560 H0 Z', back: true },
-    { th: 'ดวงอาทิตย์', real: 'เหลือง', d: circ(660, 130, 75) },
-    { th: 'ลำต้น', real: 'น้ำตาล', d: 'M365,330 L435,330 L460,640 L340,640 Z' },
-    { th: 'ใบไม้', real: 'เขียว', d: [[330, 270, 130], [460, 250, 120], [400, 160, 110], [270, 380, 90], [520, 370, 100]].map(([x, y, r]) => circ(x, y, r)).join(' ') },
-    { th: 'สนามหญ้า', real: 'เขียวอ่อน', d: 'M0,560 H800 V800 H0 Z' } ] },
-  { id: 'flower', icon: '🌷', th: 'ดอกไม้', regions: [
-    { th: 'ก้าน', real: 'เขียว', d: 'M385,300 H415 V640 H385 Z' },
-    { th: 'กลีบดอก', real: 'ชมพู', d: [0, 1, 2, 3, 4, 5].map((i) => circ(400 + 120 * Math.cos(i * Math.PI / 3), 260 + 120 * Math.sin(i * Math.PI / 3), 85)).join(' ') },
-    { th: 'เกสร', real: 'เหลือง', d: circ(400, 260, 70) },
-    { th: 'ใบ', real: 'เขียว', d: 'M410,540 C470,470 560,470 600,500 C550,560 470,570 410,540 Z M390,500 C330,430 240,430 200,460 C250,520 330,530 390,500 Z' },
-    { th: 'กระถาง', real: 'น้ำตาล', d: 'M260,620 H540 L500,780 H300 Z' } ] },
-  { id: 'house', icon: '🏠', th: 'บ้าน', regions: [
-    { th: 'หลังคา', real: 'แดง', d: 'M120,380 L400,140 L680,380 Z' },
-    { th: 'ผนัง', real: 'ครีม', d: 'M180,380 H620 V720 H180 Z' },
-    { th: 'ประตู', real: 'น้ำตาล', d: 'M350,520 H450 V720 H350 Z' },
-    { th: 'หน้าต่าง', real: 'ฟ้า', d: 'M220,440 H320 V530 H220 Z M480,440 H580 V530 H480 Z' },
-    { th: 'ก้อนเมฆ', real: 'ขาว', d: [[120, 120, 45], [180, 100, 60], [240, 125, 45]].map(([x, y, r]) => circ(x, y, r)).join(' ') } ] },
-  { id: 'fish', icon: '🐠', th: 'ปลา', regions: [
-    { th: 'น้ำทะเล', real: 'ฟ้า', d: 'M0,0 H800 V800 H0 Z', back: true },
-    { th: 'ตัวปลา', real: null, d: 'M180,400 C260,250 520,240 600,400 C520,560 260,550 180,400 Z' },
-    { th: 'หางปลา', real: null, d: 'M590,400 L740,280 L720,400 L740,520 Z' },
-    { th: 'ทราย', real: 'ครีม', d: 'M0,720 C200,690 600,700 800,720 V800 H0 Z' },
-    { th: 'สาหร่าย', real: 'เขียว', d: 'M90,800 C60,700 130,640 100,560 C140,620 150,720 130,800 Z M680,800 C650,720 720,660 690,600 C730,660 740,740 720,800 Z' } ] },
-];
+// PICS / PIC_CATS / circ come from pics.js
 let picIdx = 0, regionPaths = [], region = null, regionStars = {}, brush = { c: null, load: 0 }, water = [0, 0, 0, 0, 0], washes = 0, lastP = null;
 function buildPics() {
-  $('pics').innerHTML = PICS.map((p, i) => `<button class="chip${i === picIdx ? ' on' : ''}" data-i="${i}">${p.icon} ${p.th}</button>`).join('');
-  for (const b of $('pics').children) b.addEventListener('click', () => { ensureAudio(); buzz(8); picIdx = +b.dataset.i; startPic(); });
+  const cat = PICS[picIdx].cat;
+  $('pics').innerHTML = '<div class="cats">' + PIC_CATS.map((c) => `<button class="chip cat${c.id === cat ? ' on' : ''}" data-c="${c.id}">${c.icon} ${c.th}</button>`).join('') + '</div>' +
+    PICS.map((p, i) => p.cat !== cat ? '' : `<button class="chip pic${i === picIdx ? ' on' : ''}" data-i="${i}" aria-label="${p.th}">${p.icon}</button>`).join('');
+  for (const b of $('pics').querySelectorAll('.pic')) b.addEventListener('click', () => { ensureAudio(); buzz(8); picIdx = +b.dataset.i; startPic(); });
+  for (const b of $('pics').querySelectorAll('.cat')) b.addEventListener('click', () => {
+    ensureAudio(); buzz(8); if (b.dataset.c === cat) return;
+    picIdx = PICS.findIndex((p) => p.cat === b.dataset.c); startPic();
+  });
 }
 const realLine = (P) => { const real = P.regions.filter((r) => r.real && !r.back).map((r) => r.th + 'สี' + r.real); return real.length ? 'สีจริงเป็นยังไง? ' + real.join(' · ') : 'ระบายตามใจเลย'; };
 function startPic() {
@@ -627,6 +607,17 @@ function outlineFor(P) {
     for (let j = i + 1; j < regionPaths.length; j++) x.fill(regionPaths[j]);   // hidden behind a shape in front
     o.drawImage(one, 0, 0);
   });
+  for (const k of P.deco || []) {                         // eyes, stripes… drawn over the paint
+    o.save();
+    if (k.clip != null) {
+      o.clip(regionPaths[k.clip]);
+      for (let j = k.clip + 1; j < regionPaths.length; j++) { const out = new Path2D(); out.rect(0, 0, 800, 800); out.addPath(regionPaths[j]); o.clip(out, 'evenodd'); }
+    }
+    const path = new Path2D(k.d);
+    if (k.fill) { o.fillStyle = k.fill === true ? '#2d3436' : k.fill; o.fill(path); }
+    else { o.lineWidth = k.w || 10; o.lineCap = o.lineJoin = 'round'; o.strokeStyle = '#2d3436'; o.stroke(path); }
+    o.restore();
+  }
   return (outlines[P.id] = c);
 }
 function starAt(i) {                                      // a point inside the region for its ⭐
