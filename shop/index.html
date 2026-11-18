@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<script src="../audio-unlock.js"></script>
+<script src="../voice-clips.js"></script>
+<script src="voice/map.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🛒 ร้านของหนู — คิดส์เล่น</title>
+<meta name="description" content="เล่นขายของกับเพื่อนสัตว์ จ่ายเงินด้วยเหรียญบาทและแบงก์ไทย ทอนเงินให้ลูกค้า และรู้จักเงินไทยแต่ละแบบ ฝึกนับและบวกลบ สำหรับเด็ก">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ร้านของหนู">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Itim&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #ff6b9d; --brand-dark: #e54b82;
+    --gold: #ffd93d; --ink: #2d3436;
+    --card: #ffffff; --card-border: #ffd6e4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mitr', -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d9f3c9 60%, #7ed957 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '☁️ ☁️     ☁️';
+    position: fixed; top: 20px; left: 0; right: 0;
+    text-align: center; font-size: 42px;
+    opacity: 0.5; pointer-events: none;
+    letter-spacing: 80px;
+    animation: drift 40s linear infinite;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+
+  .home-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--brand); box-shadow: 0 3px 0 var(--brand-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; text-decoration: none; color: var(--ink); z-index: 60;
+    transition: transform .12s;
+  }
+  .home-btn:active { transform: scale(0.92); }
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header { text-align: center; margin: 0 60px 8px; }
+  h1 {
+    font-family: 'Itim', cursive; font-weight: normal;
+    font-size: clamp(28px, 6vw, 48px); margin: 4px 0 0;
+    color: var(--brand-dark); text-shadow: 3px 3px 0 #fff;
+  }
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
+  .chip {
+    font-family: 'Mitr', sans-serif; font-size: 18px; font-weight: 700;
+    min-height: 64px; min-width: 64px; padding: 0 18px; border-radius: 999px;
+    border: 3px solid var(--card-border); background: #fff; color: var(--ink); cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
+  }
+  .chip:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .chip.on { background: var(--brand); border-color: var(--brand-dark); color: #fff; }
+  .chip.lv { font-size: 16px; padding: 0 12px; }
+  .hidden { display: none !important; }
+
+  /* the shop counter */
+  .shop { background: #fffef9; border: 4px solid #fff; border-radius: 28px; box-shadow: 0 6px 0 rgba(0,0,0,0.15); padding: 12px; margin-top: 8px; position: relative; overflow: hidden; }
+  .awning { height: 26px; margin: -12px -12px 10px; background: repeating-linear-gradient(90deg, #ff6b9d 0 40px, #fff 40px 80px); border-bottom: 4px solid #e54b82; border-radius: 0 0 18px 18px; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who .face { font-size: 70px; line-height: 1; animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-5px); } }
+  .bubble { flex: 1; background: #fff; border: 3px solid var(--card-border); border-radius: 22px; padding: 8px 14px; font-size: 19px; font-weight: 600; position: relative; cursor: pointer; }
+  .bubble::before { content: ''; position: absolute; left: -14px; top: 26px; border: 8px solid transparent; border-right: 8px solid var(--card-border); }
+  .goods { display: flex; gap: 14px; justify-content: center; align-items: flex-end; flex-wrap: wrap; margin: 10px 0 4px; min-height: 120px; }
+  .good { text-align: center; }
+  .good .em { font-size: 76px; line-height: 1.05; display: block; }
+  .tag { display: inline-block; background: var(--gold); border: 3px solid #e0b400; border-radius: 12px 26px 26px 12px; padding: 2px 14px 2px 10px; font-size: 22px; font-weight: 700; box-shadow: 0 3px 0 rgba(0,0,0,0.15); }
+  .tag.big { font-size: 26px; }
+  .pay { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 6px 0; font-size: 20px; font-weight: 700; align-items: center; }
+  .pay .box { background: #fff; border: 3px dashed var(--card-border); border-radius: 18px; padding: 4px 14px; }
+  .pay .ask { color: var(--brand-dark); font-size: 26px; }
+  .tray { min-height: 104px; border: 4px dashed #c8d6e5; border-radius: 22px; background: #f6fbff; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: center; padding: 8px; position: relative; }
+  .tray.ok { border-color: #7ed957; background: #effbe6; }
+  .tray.over { border-color: #ff914d; background: #fff4ea; }
+  .tray .lbl { position: absolute; left: 12px; top: 6px; font-size: 15px; font-weight: 700; opacity: .6; }
+  .tray .sum { position: absolute; right: 12px; bottom: 6px; font-size: 22px; font-weight: 700; }
+  .basket { font-size: 22px; font-weight: 700; white-space: nowrap; }
+  .basket:empty { display: none; }
+  @media (max-width: 500px) { .good .em { font-size: 60px; } .goods { min-height: 90px; margin: 6px 0 2px; } .who .face { font-size: 56px; } }
+  .purse { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-top: 12px; padding: 10px; background: #fff3d6; border-radius: 26px; border: 4px solid #f0d49a; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .btn {
+    font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 700; min-height: 64px; padding: 0 22px; border-radius: 999px;
+    border: 3px solid var(--brand-dark); background: var(--brand); color: #fff; box-shadow: 0 5px 0 var(--brand-dark); cursor: pointer;
+  }
+  .btn.alt { background: #fff; color: var(--ink); border-color: var(--card-border); box-shadow: 0 5px 0 rgba(0,0,0,0.18); }
+  .btn:active { transform: translateY(3px); }
+
+  /* money — sizes keep the real ratios (coins: 1฿ 20 mm, 2฿ 21.75, 5฿ 24, 10฿ 26; notes 138/144/150 × 72 mm) */
+  .m { border: none; padding: 0; cursor: pointer; font-family: 'Mitr', sans-serif; font-weight: 700; color: #2d3436; flex-shrink: 0; position: relative; }
+  .m:active { transform: scale(.92); }
+  .coin { border-radius: 50%; width: calc(var(--d) * var(--k, 3.2px)); height: calc(var(--d) * var(--k, 3.2px)); display: flex; align-items: center; justify-content: center; font-size: calc(var(--d) * var(--k, 3.2px) * 0.36); box-shadow: 0 4px 0 rgba(0,0,0,0.25), inset 0 0 0 3px rgba(255,255,255,0.5); }
+  .c1 { --d: 20; background: radial-gradient(circle at 35% 30%, #fbfbfb, #b9c0c7 70%, #8f989f); }
+  .c2 { --d: 21.75; background: radial-gradient(circle at 35% 30%, #fff3b0, #e3b941 70%, #b98f1f); }
+  .c5 { --d: 24; background: radial-gradient(circle at 35% 30%, #fbfbfb, #b9c0c7 70%, #8f989f); box-shadow: 0 4px 0 rgba(0,0,0,0.25), inset 0 0 0 3px #c47a4a; }
+  .c10 { --d: 26; background: radial-gradient(circle, #f3cf5a 0 55%, #b9c0c7 57% 100%); }
+  .c10 span { background: radial-gradient(circle at 35% 30%, #fff3b0, #e3b941); border-radius: 50%; width: 62%; height: 62%; display: flex; align-items: center; justify-content: center; }
+  .note { width: calc(var(--w) * var(--kn, 0.9px)); height: calc(72 * var(--kn, 0.9px)); border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: calc(72 * var(--kn, 0.9px) * 0.42); color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,0.3); box-shadow: 0 4px 0 rgba(0,0,0,0.25); overflow: hidden; }
+  .note::before { content: ''; position: absolute; left: 10%; top: 18%; width: 30%; height: 64%; border-radius: 50%; background: rgba(255,255,255,0.25); }
+  .n20 { --w: 138; background: linear-gradient(135deg, #5fb36a, #2f7d3b); }
+  .n50 { --w: 144; background: linear-gradient(135deg, #5b8fd9, #23559e); }
+  .n100 { --w: 150; background: linear-gradient(135deg, #e86a5a, #b02a26); }
+  .tray .m { --k: 2.6px; --kn: 0.72px; }
+  .tray .m.pop { animation: pop .25s ease-out; }
+  @keyframes pop { from { transform: scale(1.5) translateY(-30px); opacity: .3; } }
+  .m.wig { animation: wig .5s; }
+  @keyframes wig { 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+
+  /* know-your-money */
+  .know { display: grid; gap: 16px; }
+  .know .row2 { display: flex; gap: 16px; justify-content: center; align-items: flex-end; flex-wrap: wrap; }
+  .know .m { --k: 4.2px; --kn: 1.5px; }
+  .know .cap { text-align: center; font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .equal { min-height: 90px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; background: #fff; border-radius: 22px; border: 3px dashed var(--card-border); padding: 8px; font-size: 26px; font-weight: 700; }
+  .equal .m { --k: 2.4px; --kn: 0.6px; cursor: default; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 18px; z-index: 90; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .purse { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+<a class="home-btn" href="../" aria-label="กลับหน้าหลัก">🏠</a>
+
+<div class="app">
+  <header><h1>🛒 ร้านของหนู</h1></header>
+  <div class="chips" id="modes">
+    <button class="chip on" data-m="buy">🧺 ซื้อของ</button>
+    <button class="chip" data-m="change">💰 ทอนเงิน</button>
+    <button class="chip" data-m="know">🪙 รู้จักเงิน</button>
+  </div>
+  <div class="chips" id="levels">
+    <button class="chip lv on" data-l="1">⭐</button>
+    <button class="chip lv" data-l="2">⭐⭐</button>
+    <button class="chip lv" data-l="3">⭐⭐⭐</button>
+  </div>
+
+  <div id="play" class="main">
+    <div class="shop">
+      <div class="awning"></div>
+      <div class="who"><div class="face" id="face">🐻</div><div class="bubble" id="bubble"></div><div class="basket" id="basket"></div></div>
+      <div class="goods" id="goods"></div>
+      <div class="pay" id="payInfo"></div>
+      <div class="tray" id="tray"><span class="lbl" id="trayLbl">ถาดจ่ายเงิน</span><span class="sum" id="sum"></span></div>
+    </div>
+    <div>
+      <div class="purse" id="purse"></div>
+      <div class="row">
+        <button class="btn alt" id="hintBtn">💡 ช่วยหน่อย</button>
+        <button class="btn" id="nextBtn">➡️ ต่อไป</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="knowUI" class="hidden">
+    <div class="shop know">
+      <div class="awning"></div>
+      <div class="row2" id="coins"></div>
+      <div class="row2" id="notes"></div>
+      <div class="equal" id="equal">👆 แตะเหรียญหรือแบงก์</div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+// ---- money ----
+const MONEY = {
+  1: { cls: 'coin c1', name: 'เหรียญหนึ่งบาท', fact: 'เหรียญหนึ่งบาท สีเงิน เป็นเหรียญบาทที่เล็กที่สุด' },
+  2: { cls: 'coin c2', name: 'เหรียญสองบาท', fact: 'เหรียญสองบาท สีทอง เท่ากับเหรียญหนึ่งบาท สองเหรียญ' },
+  5: { cls: 'coin c5', name: 'เหรียญห้าบาท', fact: 'เหรียญห้าบาท สีเงิน มีขอบสีทองแดง เท่ากับเหรียญหนึ่งบาท ห้าเหรียญ' },
+  10: { cls: 'coin c10', name: 'เหรียญสิบบาท', fact: 'เหรียญสิบบาท มีสองสี ตรงกลางสีทอง ขอบสีเงิน เท่ากับเหรียญห้าบาท สองเหรียญ' },
+  20: { cls: 'note n20', name: 'แบงก์ยี่สิบ', fact: 'แบงก์ยี่สิบ สีเขียว เท่ากับเหรียญสิบบาท สองเหรียญ' },
+  50: { cls: 'note n50', name: 'แบงก์ห้าสิบ', fact: 'แบงก์ห้าสิบ สีน้ำเงิน เท่ากับแบงก์ยี่สิบ สองใบ กับเหรียญสิบบาท อีกหนึ่งเหรียญ' },
+  100: { cls: 'note n100', name: 'แบงก์ร้อย', fact: 'แบงก์ร้อย สีแดง เท่ากับแบงก์ห้าสิบ สองใบ' },
+};
+const EQUAL = { 2: [1, 1], 5: [1, 1, 1, 1, 1], 10: [5, 5], 20: [10, 10], 50: [20, 20, 10], 100: [50, 50] };
+function moneyEl(v, tag = 'button') {
+  const e = document.createElement(tag);
+  e.className = 'm ' + MONEY[v].cls; e.dataset.v = v; e.setAttribute('aria-label', v + ' บาท');
+  e.innerHTML = v === 10 ? '<span>10</span>' : String(v);
+  return e;
+}
+
+// ---- shop goods (pretend prices for the game) ----
+const GOODS = [
+  { em: '🍬', th: 'ลูกอม', p: [1, 3] }, { em: '🍌', th: 'กล้วย', p: [2, 5] }, { em: '🥚', th: 'ไข่', p: [3, 6] },
+  { em: '✏️', th: 'ดินสอ', p: [4, 10] }, { em: '🍡', th: 'ลูกชิ้น', p: [5, 10] }, { em: '🍎', th: 'แอปเปิล', p: [5, 15] },
+  { em: '🥛', th: 'นม', p: [10, 15] }, { em: '🧃', th: 'น้ำผลไม้', p: [10, 20] }, { em: '🍦', th: 'ไอศกรีม', p: [10, 20] },
+  { em: '🎈', th: 'ลูกโป่ง', p: [10, 20] }, { em: '🍞', th: 'ขนมปัง', p: [15, 25] }, { em: '🍉', th: 'แตงโม', p: [20, 40] },
+  { em: '🧸', th: 'ตุ๊กตา', p: [30, 50] }, { em: '⚽', th: 'ลูกบอล', p: [40, 80] },
+];
+const FACES = { '🐻': 'หมี', '🐼': 'แพนด้า', '🐰': 'กระต่าย', '🐷': 'หมู', '🐶': 'หมา', '🐱': 'แมว', '🐵': 'ลิง' };
+const baht = (n) => n + ' บาท';
+const L = {
+  buyHi: 'แตะเหรียญจ่ายเงินเลย', changeHi: 'หนูเป็นแม่ค้า แตะเหรียญทอนเงินให้ลูกค้า',
+  paid: 'ครบแล้ว ขอบคุณจ้า', over: 'เกินมา', short: 'ยังขาดอีก', back: 'แตะเหรียญในถาด เพื่อเอาคืนได้นะ',
+  price: 'ราคา', both: 'รวมกัน', payWith: 'ลูกค้าจ่ายมา', give: 'ต้องทอน', changed: 'ทอนครบแล้ว ขอบคุณจ้า', overGive: 'ทอนเกินไปแล้ว',
+  kn: 'แตะเหรียญหรือแบงก์ ฟังชื่อ และดูว่าเท่ากับเงินเท่าไหร่', and: 'กับ',
+};
+
+let mode = 'buy', level = 1, R = null, tray = [], bought = 0;
+try { bought = +localStorage.getItem('shopBought') || 0; } catch (e) {}
+
+function newRound() {
+  tray = []; const face = pick(Object.keys(FACES));
+  $('face').textContent = face;
+  if (mode === 'buy') {
+    const n = level === 3 ? 2 : 1, items = [];
+    const pool = level === 1 ? GOODS.filter(g => g.p[0] <= 5) : level === 2 ? GOODS.filter(g => g.p[0] <= 15) : GOODS.filter(g => g.p[1] <= 25);
+    while (items.length < n) {
+      const g = pick(pool); if (items.some(i => i.g === g)) continue;
+      const lo = g.p[0], hi = level === 1 ? Math.min(5, g.p[1]) : g.p[1];
+      items.push({ g, p: rnd(lo, hi) });
+    }
+    R = { items, total: items.reduce((a, i) => a + i.p, 0), wallet: level === 1 ? [1] : level === 2 ? [1, 2, 5, 10] : [1, 2, 5, 10, 20], done: false };
+  } else {
+    const B = level === 1 ? 10 : level === 2 ? 20 : pick([50, 100]);
+    const lo = B === 100 ? 30 : B === 50 ? 15 : 5, hi = B - 1;
+    const g = pick(GOODS.filter(g => g.p[0] <= hi && g.p[1] >= lo)), p = rnd(Math.max(g.p[0], lo), Math.min(g.p[1], hi));
+    R = { items: [{ g, p }], total: p, B, change: B - p, wallet: level === 1 ? [1, 2, 5] : [1, 2, 5, 10, 20], done: false };
+  }
+  render(); intro();
+}
+function introParts() {
+  const it = R.items;
+  if (mode === 'buy') {
+    if (it.length === 1) return [it[0].g.th, L.price, baht(it[0].p), L.buyHi];
+    return [it[0].g.th, baht(it[0].p), L.and, it[1].g.th, baht(it[1].p), L.buyHi];
+  }
+  return [it[0].g.th, L.price, baht(it[0].p), L.payWith, baht(R.B), level === 1 ? L.give : L.changeHi, ...(level === 1 ? [baht(R.change)] : [])];
+}
+function intro() { speakSeq(introParts()); }
+const trayTotal = () => tray.reduce((a, b) => a + b, 0);
+const target = () => mode === 'buy' ? R.total : R.change;
+
+function render() {
+  const it = R.items;
+  $('goods').innerHTML = it.map(i => `<div class="good"><span class="em">${i.g.em}</span><span class="tag${it.length === 1 ? ' big' : ''}">🏷️ ${i.p} บาท</span></div>`).join('');
+  if (mode === 'buy') {
+    $('bubble').textContent = it.length === 1 ? `${it[0].g.th} ราคา ${it[0].p} บาท จ้า` : `${it[0].g.th} ${it[0].p} บาท กับ${it[1].g.th} ${it[1].p} บาท`;
+    $('payInfo').innerHTML = it.length === 1 ? '' : `<span class="box">รวม <span class="ask">${R.revealed ? R.total : '?'}</span> บาท</span>`;
+    $('trayLbl').textContent = 'ถาดจ่ายเงิน';
+  } else {
+    $('bubble').innerHTML = `ขอ${it[0].g.th}จ้า นี่เงิน <b>${R.B} บาท</b>`;
+    $('payInfo').innerHTML = `<span class="box">ลูกค้าจ่าย</span>` + moneyEl(R.B, 'span').outerHTML +
+      `<span class="box">ทอน <span class="ask">${level === 1 || R.revealed ? R.change : '?'}</span> บาท</span>`;
+    $('trayLbl').textContent = 'เงินทอน';
+  }
+  renderTray();
+  $('purse').innerHTML = '';
+  for (const v of R.wallet) { const e = moneyEl(v); e.addEventListener('click', () => addMoney(v, e)); $('purse').appendChild(e); }
+  $('basket').textContent = mode === 'buy' ? '🧺 ' + bought : '';
+}
+function renderTray(popLast) {
+  const box = $('tray');
+  [...box.querySelectorAll('.m')].forEach(e => e.remove());
+  tray.forEach((v, i) => {
+    const e = moneyEl(v); if (popLast && i === tray.length - 1) e.classList.add('pop');
+    e.addEventListener('click', () => removeMoney(i));
+    box.insertBefore(e, $('sum'));
+  });
+  const t = trayTotal();
+  $('sum').textContent = t ? 'รวม ' + t + ' บาท' : '';
+  box.classList.toggle('ok', R.done); box.classList.toggle('over', !R.done && t > target());
+}
+function addMoney(v, el) {
+  ensureAudio(); buzz(8);
+  if (R.done) { speak(L.paid); return; }
+  if (tray.length >= 30) return;
+  tray.push(v); clink(v); renderTray(true); check(el);
+}
+function removeMoney(i) {
+  ensureAudio(); buzz(8);
+  if (R.done) return;
+  tray.splice(i, 1); tone(500, 0.08, 'triangle', 0.08); renderTray(); check();
+}
+function check(el) {
+  const t = trayTotal(), want = target();
+  if (t === want) {
+    R.done = true; renderTray(); cheer(); celebrate(50); buzz([30, 30, 60]);
+    if (mode === 'buy') { bought++; try { localStorage.setItem('shopBought', bought); } catch (e) {} $('basket').textContent = '🧺 ' + bought; }
+    speakSeq(mode === 'buy' ? [baht(t), L.paid] : [baht(t), L.changed]);
+    $('nextBtn').classList.add('wig');
+    setTimeout(() => $('nextBtn').classList.remove('wig'), 600);
+  } else if (t > want) {
+    speakSeq(mode === 'buy' ? [L.over, baht(t - want), L.back] : [L.overGive, L.over, baht(t - want), L.back]);
+  } else speak(baht(t));
+}
+function clink(v) { const f = v >= 20 ? 0 : 1; if (f) { tone(1800 + v * 30, 0.06, 'triangle', 0.1); setTimeout(() => tone(2400 + v * 30, 0.08, 'sine', 0.07), 50); } else noise(0.12, 2500); }
+$('hintBtn').addEventListener('click', () => {
+  ensureAudio(); buzz(8);
+  const t = trayTotal(), want = target();
+  R.revealed = true; render();
+  if (mode === 'buy' && R.items.length === 2 && t === 0) { speakSeq([L.both, baht(R.total)]); return; }
+  if (t < want) speakSeq([...(mode === 'change' ? [L.give, baht(want)] : [L.price, baht(want)]), L.short, baht(want - t)]);
+  else if (t > want) speakSeq([L.over, baht(t - want), L.back]);
+  else speak(L.paid);
+});
+$('nextBtn').addEventListener('click', () => { ensureAudio(); buzz(8); newRound(); });
+$('bubble').addEventListener('click', () => { ensureAudio(); intro(); });
+
+// ---- know your money ----
+function buildKnow() {
+  $('coins').innerHTML = ''; $('notes').innerHTML = '';
+  for (const v of [1, 2, 5, 10, 20, 50, 100]) {
+    const w = document.createElement('div'); const e = moneyEl(v); w.appendChild(e);
+    const c = document.createElement('div'); c.className = 'cap'; c.textContent = v + ' บาท'; w.appendChild(c);
+    e.addEventListener('click', () => {
+      ensureAudio(); buzz(8); clink(v); speak(MONEY[v].fact);
+      const eq = $('equal'); eq.innerHTML = '';
+      eq.appendChild(moneyEl(v, 'span'));
+      if (EQUAL[v]) { eq.append(' = '); EQUAL[v].forEach((x, i) => { if (i) eq.append(' + '); eq.appendChild(moneyEl(x, 'span')); }); }
+      else eq.append(' ' + MONEY[v].name);
+    });
+    (v >= 20 ? $('notes') : $('coins')).appendChild(w);
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  for (const b of document.querySelectorAll('#modes .chip')) b.classList.toggle('on', b.dataset.m === m);
+  $('levels').classList.toggle('hidden', m === 'know');
+  $('play').classList.toggle('hidden', m === 'know');
+  $('knowUI').classList.toggle('hidden', m !== 'know');
+  if (m === 'know') { buildKnow(); speak(L.kn); } else newRound();
+}
+for (const b of document.querySelectorAll('#modes .chip')) b.addEventListener('click', () => { ensureAudio(); buzz(8); setMode(b.dataset.m); });
+for (const b of document.querySelectorAll('#levels .chip')) b.addEventListener('click', () => {
+  ensureAudio(); buzz(8); level = +b.dataset.l;
+  for (const x of document.querySelectorAll('#levels .chip')) x.classList.toggle('on', x === b);
+  newRound();
+});
+
+// ============================================================================
+// SOUND + SPEECH + FX
+// ============================================================================
+let AC = null;
+function ensureAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state !== 'running') { try { AC.resume(); } catch (e) {} }
+}
+function tone(f, d, type = 'sine', v = 0.12) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.value = f; o.connect(g).connect(AC.destination);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.linearRampToValueAtTime(0, t + d);
+  o.start(t); o.stop(t + d + 0.02);
+}
+function noise(d, f) {
+  if (!AC) return;
+  const n = AC.sampleRate * d, b = AC.createBuffer(1, n, AC.sampleRate), x = b.getChannelData(0);
+  for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const s = AC.createBufferSource(), fl = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = b; fl.type = 'bandpass'; fl.frequency.value = f; g.gain.value = 0.25;
+  s.connect(fl).connect(g).connect(AC.destination); s.start();
+}
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'triangle', 0.15), i * 110)); }
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function pickVoice() {
+  try { return (speechSynthesis.getVoices() || []).find(v => (v.lang || '').toLowerCase().startsWith('th')) || null; } catch (e) { return null; }
+}
+if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+let seqTok = 0;
+async function speakSeq(parts) {
+  const my = ++seqTok;
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  for (const p of parts) {
+    if (my !== seqTok) return;
+    const ok = await new Promise((res) => {
+      if (!window.VoiceClips) { deviceSpeak(p); setTimeout(() => res(true), 400 + p.length * 110); return; }
+      ensureAudio();
+      let fell = false;
+      VoiceClips.say(p, AC, (t) => { fell = true; deviceSpeak(t); setTimeout(() => res(true), 400 + t.length * 110); }).then((r) => { if (!fell) res(r); });
+    });
+    if (!ok || my !== seqTok) return;
+  }
+}
+function speak(text) { speakSeq([text]); }
+function deviceSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = 0.9; u.pitch = 1.05;
+    const v = pickVoice(); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function celebrate(n) {
+  const cols = ['#ff6b9d', '#ffd93d', '#7ed957', '#5bc0eb', '#9b59b6', '#ff914d'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3800);
+  }
+}
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+
+setMode('buy');
+
+// Every line the game can say — `index.html?lines` prints them for tools/gen_voice.py.
+VoiceClips.lines(() => {
+  const out = [...Object.values(L)];
+  for (let n = 1; n <= 100; n++) out.push(baht(n));
+  for (const g of GOODS) out.push(g.th);
+  for (const v in MONEY) out.push(MONEY[v].fact);
+  return out;
+});
+</script>
+<script>
+/* Auto-update: offer a "tap to update" pill when a new version is deployed
+   (never reload on its own while a child is playing). */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = navigator.serviceWorker, reloading = false, shown = false;
+  if (sw.controller) {
+    sw.addEventListener('controllerchange', function () {
+      if (reloading) return; reloading = true; location.reload();
+    });
+  }
+  function offer(worker) {
+    if (shown || !worker || !sw.controller) return;
+    shown = true;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes swUpIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}';
+    document.head.appendChild(st);
+    var b = document.createElement('button');
+    b.textContent = '✨ มีเวอร์ชันใหม่ · แตะอัปเดต';
+    b.setAttribute('style', 'position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));'
+      + 'transform:translateX(-50%);z-index:99999;font-family:inherit;font-size:16px;font-weight:600;'
+      + 'color:#fff;background:#ff6b9d;border:3px solid #e54b82;border-radius:999px;padding:11px 20px;'
+      + 'box-shadow:0 4px 0 rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:swUpIn .3s ease;');
+    b.onclick = function () { b.disabled = true; b.textContent = '⏳ กำลังอัปเดต…'; worker.postMessage({ type: 'skipWaiting' }); };
+    document.body.appendChild(b);
+  }
+  function track(w) {
+    if (!w) return;
+    if (w.state === 'installed') { offer(w); return; }
+    w.addEventListener('statechange', function () { if (w.state === 'installed') offer(w); });
+  }
+  function watch(reg) {
+    if (!reg) return;
+    if (reg.waiting) offer(reg.waiting);
+    track(reg.installing);
+    reg.addEventListener('updatefound', function () { track(reg.installing); });
+    function check() { reg.update().catch(function () {}); }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setInterval(check, 60000);
+  }
+  sw.getRegistration().then(watch).catch(function () {});
+})();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c482e4c3c51640e49646e4d60f52d282"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

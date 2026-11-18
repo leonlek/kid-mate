@@ -5,7 +5,7 @@
 //     responses are cached opportunistically so fonts (and anything else the
 //     user touches) survive the next offline visit.
 // Bump CACHE when shell files change so old caches are evicted on activate.
-const CACHE = 'kid-games-v148';
+const CACHE = 'kid-games-v149';
 // Voice clips (<game>/voice/<hash>.mp3) are named by content hash, so they never go
 // stale: they live in their own cache that a CACHE bump does NOT wipe. Otherwise every
 // deploy deletes them and an offline session falls back to the robotic device voice.
@@ -161,6 +161,17 @@ const SHELL = [
   './how-it-works/voice/map.js',
   './how-it-works/topics/fire.js',
   './how-it-works/topics/rain.js',
+  './how-it-works/topics/bulb.js',
+  './how-it-works/topics/rainbow.js',
+  './shop/',
+  './shop/index.html',
+  './shop/voice/map.js',
+  './thai-fest/',
+  './thai-fest/index.html',
+  './thai-fest/voice/map.js',
+  './thai-fest/topics/krathong.js',
+  './thai-fest/topics/songkran.js',
+  './thai-fest/topics/kite.js',
   './tangram/',
   './tangram/index.html',
   './size-order/',
