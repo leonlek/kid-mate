@@ -6,6 +6,7 @@
 <script src="../voice-clips.js"></script>
 <script src="voice/map.js"></script>
 <script src="art.js"></script>
+<script src="more.js"></script>
 <script src="world.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>🌏 ธงนานาชาติ — คิดส์เล่น</title>
@@ -211,6 +212,7 @@
 
   <section id="pick">
     <div class="chips" id="lvChips"></div>
+    <div class="chips" id="rgChips"></div>
     <div class="grid" id="grid"></div>
   </section>
 
@@ -251,6 +253,7 @@
 
   <section id="quiz" class="hidden">
     <div class="chips" id="qChips"></div>
+    <div class="chips" id="qrChips"></div>
     <div class="q"><button class="btn" id="qSay" aria-label="ฟังอีกครั้ง">🔊</button><div class="txt" id="qTxt"></div></div>
     <div class="opts" id="opts"></div>
     <div class="stars" id="qStars"></div>
@@ -587,24 +590,32 @@ const FLAGS = [
     vb: '0 0 900 600', col: { r: '#CE1126', w: '#FFFFFF', k: '#000000' },
     regs: [['r', R(0, 0, 900, 200)], ['w', R(0, 200, 900, 200)], ['k', R(0, 400, 900, 200)]], decor: ART.egEagle },
 ];
-// Official shades of navy, dark green and red look dull and muddy on a phone, so the
-// screen lifts their lightness and saturation a little. The hue stays the same, and
-// maroons such as Qatar's and Sri Lanka's stay dark. f.real keeps the official values.
+// Official shades are often dark (navy, forest green, deep red) and kids want bright
+// paint, so the screen pushes every colour toward its vivid version: same hue family,
+// more saturation, mid lightness. Maroons (Qatar, Latvia, Sri Lanka) stay a darker red
+// so they still read as "not red". f.real keeps the official values.
 function liven(hex) {
   let [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
   let L = (mx + mn) / 2, S = mx === mn ? 0 : (mx - mn) / (1 - Math.abs(2 * L - 1)), H = 0;
   if (mx !== mn) H = mx === r ? 60 * (((g - b) / (mx - mn)) % 6) : mx === g ? 60 * ((b - r) / (mx - mn) + 2) : 60 * ((r - g) / (mx - mn) + 4);
   H = (H + 360) % 360;
-  if (S < 0.2) return hex;                                                   // white, black, greys
-  if (H >= 190 && H <= 262) { H = Math.min(H, 236); L = Math.max(L, 0.33); S = Math.max(S, 0.68); }   // navy → clear blue
-  else if (H >= 90 && H < 190) { L = Math.max(L, 0.27); S = Math.max(S, 0.7); }                     // deep greens
-  else if ((H >= 330 || H < 20) && L >= 0.34) { L = Math.max(L, 0.42); }                            // dim reds (maroons stay)
+  if (S < 0.2 || L < 0.06 || L > 0.94) return hex;                           // white, black, greys
+  if (H >= 190 && H <= 262) { H = Math.min(H, 228); S = Math.max(S, 0.9); L = L > 0.55 ? L : Math.min(Math.max(L, 0.44), 0.5); }   // blues
+  else if (H >= 75 && H < 190) { S = Math.max(S, 0.85); L = Math.min(Math.max(L, 0.38), 0.45); }                                    // greens
+  else if (H >= 330 || H < 15) {                                                                                                      // reds
+    if (L < 0.34) { S = Math.max(S, 0.7); L = Math.max(L, 0.3); }                                                                    // maroon stays dark
+    else { H = H >= 330 ? Math.max(H, 352) : H; S = Math.max(S, 0.9); L = Math.min(Math.max(L, 0.47), 0.52); }
+  }
+  else if (H >= 15 && H < 75) { S = Math.max(S, 0.95); L = Math.min(Math.max(L, 0.5), 0.56); }                                      // orange, gold, yellow
   else return hex;
   const C = (1 - Math.abs(2 * L - 1)) * S, X = C * (1 - Math.abs((H / 60) % 2 - 1)), m0 = L - C / 2;
   const [r1, g1, b1] = H < 60 ? [C, X, 0] : H < 120 ? [X, C, 0] : H < 180 ? [0, C, X] : H < 240 ? [0, X, C] : H < 300 ? [X, 0, C] : [C, 0, X];
   return '#' + [r1, g1, b1].map((v) => Math.round((v + m0) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
+// 101 more flags live in more.js (generated from the Commons SVGs); keep ⭐ → ⭐⭐⭐ order
+FLAGS.push(...(window.FLAGS_MORE || []));
+FLAGS.sort((a, b) => a.lv - b.lv);
 for (const f of FLAGS) { f.real = f.col; f.col = Object.fromEntries(Object.entries(f.col).map(([k, v]) => [k, liven(v)])); }
 const BY = Object.fromEntries(FLAGS.map((f) => [f.id, f]));
 const sayName = (f) => f.say || f.th;
@@ -706,7 +717,27 @@ function markDone(id) {
 // ============================================================================
 let mode = 'follow', level = 0;
 const LEVELS = [[0, '🌈 ทั้งหมด'], [1, '⭐'], [2, '⭐⭐'], [3, '⭐⭐⭐']];
-const pool = () => FLAGS.filter((f) => !level || f.lv === level);
+const REGIONS = [
+  ['all', '🌈 ทั้งหมด', null],
+  ['asean', 'อาเซียน', 'th la kh mm my id vn ph sg bn tl'],
+  ['asia', 'เอเชีย', 'jp cn kr in np mn bd pk lk bt ae qa tr'],
+  ['europe', 'ยุโรป', 'fr de it ua ru nl es se fi ch gr gb pt be ie at pl dk no is cz'],
+  ['america', 'อเมริกา', 'us ca br ar mx cl pe co jm'],
+  ['africa', 'แอฟริกา', 'za eg ke ng et ma'],
+  ['oceania', 'โอเชียเนีย', 'au nz'],
+];
+const regOf = (f) => f.reg || (REGIONS[1][2].split(' ').includes(f.id) ? 'asia' : (REGIONS.find((r) => r[2] && r[2].split(' ').includes(f.id)) || [])[0]);
+const inRegion = (f, id) => id === 'all' || (id === 'asean' ? REGIONS[1][2].split(' ').includes(f.id) : regOf(f) === id);
+let region = 'all';
+const pool = () => FLAGS.filter((f) => (!level || f.lv === level) && inRegion(f, region));
+function renderRegionChips(box, onChange) {
+  box.innerHTML = '';
+  for (const [id, label] of REGIONS) {
+    const b = document.createElement('button'); b.className = 'chip' + (id === region ? ' on' : ''); b.textContent = label;
+    b.addEventListener('click', () => { sfx.tap(); region = id; renderRegionChips(box, onChange); onChange(); });
+    box.appendChild(b);
+  }
+}
 function show(id) {
   for (const s of ['pick', 'paint', 'know', 'map', 'quiz']) $(s).classList.toggle('hidden', s !== id);
   $('modes').classList.toggle('hidden', id === 'paint');
@@ -719,7 +750,7 @@ function setMode(m, quiet) {
   chainId++; VoiceClips.stop();
   if (m === 'map') { show('map'); drawMap(); if (!quiet) say([LINES.map]); }
   else if (m === 'know') { show('know'); renderKnow(); if (!quiet) say([LINES.know]); }
-  else if (m === 'quiz') { show('quiz'); renderChips($('qChips'), () => newQuestion()); newQuestion(); }
+  else if (m === 'quiz') { show('quiz'); renderChips($('qChips'), () => newQuestion()); renderRegionChips($('qrChips'), () => newQuestion()); newQuestion(); }
   else { show('pick'); renderPick(); if (!quiet) say([m === 'free' ? LINES.free : LINES.follow]); }
 }
 document.querySelectorAll('.mode').forEach((b) => b.addEventListener('click', () => { ac(); sfx.tap(); setMode(b.dataset.m); }));
@@ -740,6 +771,7 @@ function flagImg(f) {
 }
 function renderPick() {
   renderChips($('lvChips'), renderPick);
+  renderRegionChips($('rgChips'), renderPick);
   const g = $('grid'); g.innerHTML = '';
   for (const f of pool()) {
     const b = document.createElement('button'); b.className = 'fcard';
@@ -797,17 +829,33 @@ async function openFlag(f, from) {
       for (let p = 0, q = 3; p < lab.length; p++, q += 4) if (a[q] >= 128) lab[p] = i;
     }
   } catch (e) { console.warn(e); }
-  // hit zones of tiny parts + a gold glow mask for each
+  // how much of each part shows, and where
+  const cnt = new Int32Array(f.regs.length), bb = f.regs.map(() => [IW, IH, -1, -1]);
+  for (let y = 0; y < IH; y++) for (let x = 0; x < IW; x++) {
+    const L = lab[y * IW + x]; if (L < 0) continue;
+    cnt[L]++; const b = bb[L];
+    if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y;
+  }
+  // hit zones of tiny parts + a gold glow mask for each. A part drawn with a hand-made
+  // zone (3rd item) uses it; any other part smaller than ~1.2 % of the flag gets its
+  // bounding box, padded, so a small finger can still land on it.
   hits = []; glowCv = [];
   try {
     for (let i = 0; i < f.regs.length; i++) {
-      if (!f.regs[i][2]) continue;
-      const im = await loadImg(dataUrl(svgDoc(f, `<g fill="#000">${f.regs[i][2]}</g>`, IW, IH)));
-      if (F !== f) return;
-      sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
-      const a = sx.getImageData(0, 0, IW, IH).data;
+      const auto = !f.regs[i][2] && cnt[i] > 0 && cnt[i] < IW * IH * 0.012;
+      if (!f.regs[i][2] && !auto) continue;
       const m = new Uint8Array(IW * IH);
-      for (let p = 0, q = 3; p < m.length; p++, q += 4) if (a[q] >= 128) m[p] = 1;
+      if (auto) {
+        const pd = Math.round(IW * 0.035), [x0, y0, x1, y1] = bb[i];
+        for (let y = Math.max(0, y0 - pd); y <= Math.min(IH - 1, y1 + pd); y++)
+          for (let x = Math.max(0, x0 - pd); x <= Math.min(IW - 1, x1 + pd); x++) m[y * IW + x] = 1;
+      } else {
+        const im = await loadImg(dataUrl(svgDoc(f, `<g fill="#000">${f.regs[i][2]}</g>`, IW, IH)));
+        if (F !== f) return;
+        sx.clearRect(0, 0, IW, IH); sx.drawImage(im, 0, 0, IW, IH);
+        const a = sx.getImageData(0, 0, IW, IH).data;
+        for (let p = 0, q = 3; p < m.length; p++, q += 4) if (a[q] >= 128) m[p] = 1;
+      }
       hits.push({ i, m });
       const g = document.createElement('canvas'); g.width = IW; g.height = IH;
       const gx = g.getContext('2d'), gd = gx.createImageData(IW, IH);
@@ -834,6 +882,7 @@ async function openFlag(f, from) {
   if (F !== f) return;
   img = cx.createImageData(IW, IH);
   tgt = f.regs.map((r) => r[0]); cur = f.regs.map(() => null);
+  cnt.forEach((c, i) => { if (!c) cur[i] = tgt[i]; });   // a part that's fully covered needs no paint
   buildPalette();
   compose();
   say([LINES.tip]);
@@ -1047,25 +1096,10 @@ function fillInfo(info, f) {
 // ============================================================================
 // 👆 Know — tap any flag to hear its name, English name and hello; no painting
 // ============================================================================
-const REGIONS = [
-  ['all', '🌈 ทั้งหมด', null],
-  ['asean', 'อาเซียน', 'th la kh mm my id vn ph sg bn tl'],
-  ['asia', 'เอเชีย', 'jp cn kr in np mn bd pk lk bt ae qa tr'],
-  ['europe', 'ยุโรป', 'fr de it ua ru nl es se fi ch gr gb pt be ie at pl dk no is cz'],
-  ['america', 'อเมริกา', 'us ca br ar mx cl pe co jm'],
-  ['africa', 'แอฟริกา', 'za eg ke ng et ma'],
-  ['oceania', 'โอเชียเนีย', 'au nz'],
-];
-let kRegion = 'all', kFlag = null;
+let kFlag = null;
 function renderKnow() {
-  const kc = $('kChips'); kc.innerHTML = '';
-  for (const [id, label] of REGIONS) {
-    const b = document.createElement('button'); b.className = 'chip' + (id === kRegion ? ' on' : ''); b.textContent = label;
-    b.addEventListener('click', () => { sfx.tap(); kRegion = id; renderKnow(); });
-    kc.appendChild(b);
-  }
-  const ids = REGIONS.find((r) => r[0] === kRegion)[2];
-  const list = ids ? ids.split(' ').map((id) => BY[id]) : FLAGS;
+  renderRegionChips($('kChips'), renderKnow);
+  const list = FLAGS.filter((f) => inRegion(f, region));
   const g = $('kGrid'); g.innerHTML = '';
   for (const f of list) {
     const b = document.createElement('button'); b.className = 'fcard' + (f === kFlag ? ' on' : ''); b.dataset.id = f.id;
@@ -1110,17 +1144,21 @@ function confetti() {
 // each flag stands on its capital city.
 // ============================================================================
 const ZOOMS = [
-  ['world', '🌏 ทั้งโลก', [0, 0, 720, 284], 0.05],
+  ['world', '🌏 ทั้งโลก', [0, 0, 720, 284], 0.03],
   ['asean', 'อาเซียน', [530, 104, 92, 92], 0.07],
-  ['asia', 'เอเชีย', [470, 50, 200, 160], 0.06],
-  ['europe', 'ยุโรป', [330, 22, 125, 90], 0.055],
+  ['asia', 'เอเชีย', [420, 50, 250, 160], 0.055],
+  ['europe', 'ยุโรป', [330, 22, 140, 95], 0.05],
   ['america', 'อเมริกา', [90, 30, 230, 250], 0.06],
-  ['south', 'แอฟริกา · ออสเตรเลีย', [330, 100, 380, 175], 0.055],
+  ['africa', 'แอฟริกา', [320, 90, 175, 170], 0.05],
+  ['oceania', 'โอเชียเนีย', [540, 140, 250, 135], 0.05],
 ];
 let zoom = 'world', mapAll = false;
-const capXY = (f) => [(f.lon + 180) * 2, (84 - f.lat) * 2];
+// In the Oceania view the Pacific wraps past 180°: Samoa and Tonga sit right of Fiji.
+const capXY = (f) => [(f.lon + (zoom === 'oceania' && f.lon < -100 ? 540 : 180)) * 2, (84 - f.lat) * 2];
 function zoomFor(f) {
   if (REGIONS[1][2].split(' ').includes(f.id)) return 'asean';
+  const r = regOf(f);
+  if (r && r !== 'asia') return r;
   const [x, y] = capXY(f);
   for (const [id, , [vx, vy, vw, vh]] of ZOOMS.slice(2)) if (x > vx && x < vx + vw && y > vy && y < vy + vh) return id;
   return 'world';
@@ -1141,7 +1179,9 @@ function drawMap() {
   const svg = $('mapSvg'); svg.innerHTML = '';
   svg.setAttribute('viewBox', vb.join(' '));
   el('rect', { x: -10, y: -10, width: 740, height: 310, fill: '#8fd3f4' }, svg);
-  el('path', { d: window.WORLD_LAND || '', fill: '#a8e27f', stroke: '#5f9e43', 'stroke-width': vb[2] / 720 * 0.8, 'stroke-linejoin': 'round' }, svg);
+  el('rect', { x: 710, y: -10, width: 100, height: 310, fill: '#8fd3f4' }, svg);
+  for (const dx of zoom === 'oceania' ? [0, 720] : [0])
+    el('path', { d: window.WORLD_LAND || '', transform: `translate(${dx} 0)`, fill: '#a8e27f', stroke: '#5f9e43', 'stroke-width': vb[2] / 720 * 0.8, 'stroke-linejoin': 'round' }, svg);
   const fw = vb[2] * fs;
   const list = FLAGS.slice().sort((a, b) => b.lat - a.lat);
   for (const f of list) {

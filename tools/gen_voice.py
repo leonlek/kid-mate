@@ -40,7 +40,19 @@ for _loc, _voice in [('en-GB', 'SoniaNeural'), ('en-AU', 'NatashaNeural'), ('en-
                      ('de-AT', 'IngridNeural'), ('pl-PL', 'AgnieszkaNeural'), ('da-DK', 'ChristelNeural'),
                      ('nb-NO', 'PernilleNeural'), ('is-IS', 'GudrunNeural'), ('cs-CZ', 'VlastaNeural'),
                      ('es-MX', 'DaliaNeural'), ('es-CL', 'CatalinaNeural'), ('es-PE', 'CamilaNeural'),
-                     ('es-CO', 'SalomeNeural'), ('sw-KE', 'ZuriNeural'), ('am-ET', 'MekdesNeural')]:
+                     ('es-CO', 'SalomeNeural'), ('sw-KE', 'ZuriNeural'), ('am-ET', 'MekdesNeural'),
+                     ('hu-HU', 'NoemiNeural'), ('ro-RO', 'AlinaNeural'), ('bg-BG', 'KalinaNeural'),
+                     ('et-EE', 'AnuNeural'), ('lv-LV', 'EveritaNeural'), ('lt-LT', 'OnaNeural'),
+                     ('hy-AM', 'AnahitNeural'), ('ka-GE', 'EkaNeural'), ('az-AZ', 'BanuNeural'),
+                     ('bs-BA', 'VesnaNeural'), ('mk-MK', 'MarijaNeural'), ('mt-MT', 'GraceNeural'),
+                     ('sq-AL', 'AnilaNeural'), ('hr-HR', 'GabrijelaNeural'), ('sk-SK', 'ViktoriaNeural'),
+                     ('sl-SI', 'PetraNeural'), ('kk-KZ', 'AigulNeural'), ('uz-UZ', 'MadinaNeural'),
+                     ('ar-JO', 'SanaNeural'), ('ar-KW', 'NouraNeural'), ('ar-BH', 'LailaNeural'),
+                     ('ar-YE', 'MaryamNeural'), ('ar-LB', 'LaylaNeural'), ('ar-DZ', 'AminaNeural'),
+                     ('ar-TN', 'ReemNeural'), ('ar-LY', 'ImanNeural'), ('so-SO', 'UbaxNeural'),
+                     ('sw-TZ', 'RehemaNeural'), ('es-CU', 'BelkysNeural'), ('es-PA', 'MargaritaNeural'),
+                     ('es-HN', 'KarlaNeural'), ('es-VE', 'PaolaNeural'), ('es-UY', 'ValentinaNeural'),
+                     ('es-BO', 'SofiaNeural'), ('es-CR', 'MariaNeural')]:
     VOICES[_loc.lower()] = (_loc, f'{_loc}-{_voice}', '-10%')
 
 
